@@ -26,10 +26,10 @@ export default function HoldingGroups() {
   ])
 
   const [gridData, setGridData] = useState()
-  
+
   function handleFilters({ title = '', value = '' }) {
-    if(value) {
-      setActiveFilters([...activeFilters.filter(el => el.title != title), {title, value}])
+    if (value) {
+      setActiveFilters([...activeFilters.filter(el => el.title != title), { title, value }])
     } else {
       setActiveFilters([...activeFilters.filter(el => el.title != title)])
     }
@@ -44,20 +44,20 @@ export default function HoldingGroups() {
       setGridData(gridDataValues)
     }
     getGroups()
-  },[opened])
+  }, [opened])
 
   function handleOpened(id) {
     setOpened(id)
   }
-  
+
   useEffect(() => {
-    if(gridData && gridHeader) {
+    if (gridData && gridHeader) {
       applyFilters(activeFilters, gridData, gridHeader, orderBy, setGridData)
     }
-  },[activeFilters, orderBy])
+  }, [activeFilters, orderBy])
 
   return <div className='h-full bg-white flex flex-1 flex-col justify-between items-start rounded-tr-2xl p-4'>
-  <div className='border-b w-full flex flex-row justify-between items-start px-2'>
+    <div className='border-b w-full flex flex-row justify-between items-start px-2'>
       <Breadcrumbs />
       <FiltersBar>
         <Filter size={14} /> Custom Filters
@@ -66,8 +66,8 @@ export default function HoldingGroups() {
     <Filters handleNew={() => setOpened('new')} search handleFilters={handleFilters} gridHeader={gridHeader} gridData={gridData} setGridHeader={setGridHeader} activeFilters={activeFilters} />
 
     <Grid gridData={gridData} gridHeader={gridHeader} orderBy={orderBy} setOrderBy={setOrderBy} handleOpened={handleOpened} opened={opened}>
-      {opened && <div className='fixed left-0 top-0 z-50 w-full h-full' style={{ background: 'rgba(0,0,0,.2)' }}></div>}
-      {opened && <FilialsPreview id={opened} handleOpened={handleOpened} setOpened={setOpened} />}
+      {/* {opened && <div className='fixed left-0 top-0 z-50 w-full h-full' style={{ background: 'rgba(0,0,0,.2)' }}></div>}
+      {opened && <FilialsPreview id={opened} handleOpened={handleOpened} setOpened={setOpened} />} */}
     </Grid>
-</div>;
+  </div>;
 }

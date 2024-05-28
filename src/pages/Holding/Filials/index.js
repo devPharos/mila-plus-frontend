@@ -7,12 +7,18 @@ import Grid from '~/components/Grid';
 import api from '~/services/api';
 import FilialsPreview from './Preview';
 import { applyFilters } from '~/functions';
+import { ToastContainer } from 'react-toastify';
 
 export default function HoldingFilials() {
   const [activeFilters, setActiveFilters] = useState([])
   const [opened, setOpened] = useState(false)
   const [orderBy, setOrderBy] = useState({ column: 'Name', asc: true })
   const [gridHeader, setGridHeader] = useState([
+    {
+      title: 'Active',
+      type: 'boolean',
+      filter: true,
+    },
     {
       title: 'Alias',
       type: 'text',
@@ -51,11 +57,13 @@ export default function HoldingFilials() {
   ])
 
   const [gridData, setGridData] = useState()
-  
+
   function handleFilters({ title = '', value = '' }) {
-    if(value) {
-      setActiveFilters([...activeFilters.filter(el => el.title != title), {title, value}])
+    console.log(title)
+    if (value || (title === 'Active' && value !== '')) {
+      setActiveFilters([...activeFilters.filter(el => el.title != title), { title, value }])
     } else {
+      console.log('aqui n');
       setActiveFilters([...activeFilters.filter(el => el.title != title)])
     }
   }
@@ -63,26 +71,26 @@ export default function HoldingFilials() {
   useEffect(() => {
     async function getFilials() {
       const { data } = await api.get('/filials')
-      const gridDataValues = data.map(({ id, alias, name, type, ein, city, state, country }) => {
-        return { show: true, id, fields: [alias, name, type, ein, city, state, country ] }
+      const gridDataValues = data.map(({ id, active, alias, name, type, ein, city, state, country }) => {
+        return { show: true, id, fields: [active, alias, name, type, ein, city, state, country] }
       })
       setGridData(gridDataValues)
     }
     getFilials()
-  },[opened])
+  }, [opened])
 
   function handleOpened(id) {
     setOpened(id)
   }
-  
+
   useEffect(() => {
-    if(gridData && gridHeader) {
+    if (gridData && gridHeader) {
       applyFilters(activeFilters, gridData, gridHeader, orderBy, setGridData)
     }
-  },[activeFilters, orderBy])
+  }, [activeFilters, orderBy])
 
   return <div className='h-full bg-white flex flex-1 flex-col justify-between items-start rounded-tr-2xl p-4'>
-  <div className='border-b w-full flex flex-row justify-between items-start px-2'>
+    <div className='border-b w-full flex flex-row justify-between items-start px-2'>
       <Breadcrumbs />
       <FiltersBar>
         <Filter size={14} /> Custom Filters
@@ -94,5 +102,5 @@ export default function HoldingFilials() {
       {opened && <div className='fixed left-0 top-0 z-50 w-full h-full' style={{ background: 'rgba(0,0,0,.2)' }}></div>}
       {opened && <FilialsPreview id={opened} handleOpened={handleOpened} setOpened={setOpened} />}
     </Grid>
-</div>;
+  </div>;
 }

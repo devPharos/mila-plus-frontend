@@ -1,8 +1,9 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useContext, useEffect, useRef } from 'react'
 import { useField } from '@unform/core'
 import { Asterisk } from 'lucide-react'
+import { InputContext } from '~/pages/Holding/Filials/Preview'
 
-const Select = ({ name, title, options = [], ...rest }) => {
+const Select = ({ name, title, grow, shrink, type, options = [], ...rest }) => {
   const inputRef = useRef()
   const { fieldName, registerField, setValue, error } = useField(name)
   const { defaultValue, required } = { ...rest }
@@ -23,9 +24,10 @@ const Select = ({ name, title, options = [], ...rest }) => {
     })
   }, [fieldName, registerField, rest.isMulti])
 
+  const { setSuccessfullyUpdated } = useContext(InputContext)
 
   return (
-    <div className='flex flex-col justify-center items-start w-full min-w-56'>
+    <div className={`${type === 'hidden' ? 'hidden' : 'flex'} flex-col justify-center items-start relative ${shrink ? 'w-32' : 'w-48'} ${grow ? 'grow' : ''}`}>
       <div className='px-2 text-xs flex flex-row justify-between items-center'>{title} {required && <Asterisk color='#e00' size={12} />}</div>
       <div
         className={`border p-2 rounded-lg text-sm focus:outline-none flex-1 w-full bg-transparent`}>
@@ -33,7 +35,7 @@ const Select = ({ name, title, options = [], ...rest }) => {
           id={name}
           name={name}
           ref={inputRef}
-          onChange={setValue}
+          onChange={() => setSuccessfullyUpdated(false)}
           defaultValue={defaultValue}
           {...rest}
           className={`rounded-lg text-sm focus:outline-none flex-1 w-full bg-transparent`}

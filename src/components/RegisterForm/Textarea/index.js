@@ -1,9 +1,8 @@
 import React, { useContext, useEffect, useRef } from 'react'
 import { useField } from '@unform/core'
 import { Asterisk } from 'lucide-react';
-import { InputContext } from '~/pages/Holding/Filials/Preview';
 
-const Textarea = ({ name, title, rows = 1, ...rest }) => {
+const Textarea = ({ name, title, rows = 1, InputContext, ...rest }) => {
   const inputRef = useRef()
   const { fieldName, defaultValue, registerField, error } = useField(name)
   const { disabled, required } = { ...rest }

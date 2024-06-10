@@ -1,3 +1,4 @@
+import api from "~/services/api";
 
 export function hasAccessTo(accesses = null, menu_alias = 0) {
   return accesses && accesses.hierarchy && accesses.hierarchy.findIndex(access => access.alias === menu_alias) > -1
@@ -201,7 +202,6 @@ export const countries_list = [
   `Zimbabwe`
 ]
 
-
 export function applyFilters(activeFilters, gridData, gridHeader, orderBy, setGridData) {
 
   const search = activeFilters.filter(el => el.title === 'search');
@@ -254,4 +254,28 @@ export function applyFilters(activeFilters, gridData, gridHeader, orderBy, setGr
 
   setGridData(newData)
 
+}
+
+export async function getRegistries({ canceled_by = null, canceled_at = null, updated_by = null, updated_at = null, created_by = null, created_at = null }) {
+  // console.log({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
+  let registryBy = null;
+  let registryAt = null;
+  let registryStatus = null;
+  if (canceled_by) {
+    const { data: userRet } = await api.get(`users_short_info/${canceled_by}`)
+    registryBy = userRet.name
+    registryAt = canceled_at;
+    registryStatus = 'Canceled';
+  } else if (updated_by) {
+    const { data: userRet } = await api.get(`users_short_info/${updated_by}`)
+    registryBy = userRet.name
+    registryAt = updated_at;
+    registryStatus = 'Updated';
+  } else if (created_by) {
+    const { data: userRet } = await api.get(`users_short_info/${created_by}`)
+    registryBy = userRet.name
+    registryAt = created_at;
+    registryStatus = 'Created';
+  }
+  return { registryBy, registryAt, registryStatus }
 }

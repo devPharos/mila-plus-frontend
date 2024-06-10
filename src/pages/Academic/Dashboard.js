@@ -1,14 +1,92 @@
-import React from 'react';
+import { Filter } from 'lucide-react';
+import React, { useState } from 'react';
 import Breadcrumbs from '~/components/Breadcrumbs';
+import Filters from '~/components/Filters';
+import FiltersBar from '~/components/FiltersBar';
+import Grid from '~/components/Grid';
+import PageHeader from '~/components/PageHeader';
+
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 export default function AcademicDashboard() {
+  const [activeFilters, setActiveFilters] = useState([])
+  const [orderBy, setOrderBy] = useState({ column: 'Scheduled Date', asc: true })
+  const [gridHeader, setGridHeader] = useState(null)
+  const data = [
+    {
+      name: 'Page A',
+      uv: 4000,
+      pv: 2400,
+      amt: 2400,
+    },
+    {
+      name: 'Page B',
+      uv: 3000,
+      pv: 1398,
+      amt: 2210,
+    },
+    {
+      name: 'Page C',
+      uv: 2000,
+      pv: 9800,
+      amt: 2290,
+    },
+    {
+      name: 'Page D',
+      uv: 2780,
+      pv: 3908,
+      amt: 2000,
+    },
+    {
+      name: 'Page E',
+      uv: 1890,
+      pv: 4800,
+      amt: 2181,
+    },
+    {
+      name: 'Page F',
+      uv: 2390,
+      pv: 3800,
+      amt: 2500,
+    },
+    {
+      name: 'Page G',
+      uv: 3490,
+      pv: 4300,
+      amt: 2100,
+    },
+  ];
 
-  return <div className='h-full bg-white flex flex-1 flex-col justify-between items-start rounded-tr-2xl p-4'>
-  <div className='border-b w-full flex flex-row justify-between items-start pb-2 px-2'>
-    <Breadcrumbs />
-    
-  </div>
-  
+  return <div className='h-full bg-white flex flex-1 flex-col justify-between items-start rounded-tr-2xl px-4'>
+    <PageHeader>
+      <Breadcrumbs />
+      <FiltersBar>
+        <Filter size={14} /> Custom Filters
+      </FiltersBar>
+    </PageHeader>
 
-</div>;
+    <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'start', paddingTop: 24 }}>
+      <ResponsiveContainer width="50%" height="45%">
+        <BarChart
+          width={500}
+          height={300}
+          data={data}
+          margin={{
+            top: 5,
+            right: 30,
+            left: 20,
+            bottom: 5,
+          }}
+          barSize={20}
+        >
+          <XAxis dataKey="name" scale="point" padding={{ left: 10, right: 10 }} />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <CartesianGrid strokeDasharray="3 3" />
+          <Bar dataKey="pv" fill="#8884d8" background={{ fill: '#eee' }} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  </div>;
 }

@@ -15,34 +15,32 @@ import { persistor, store } from './store';
 import ProtectedRoute from './routes/ProtectedRoute';
 import UnprotectedRoute from './routes/UnprotectedRoute';
 import { ToastContainer } from 'react-toastify';
-import ComercialDashboard from './pages/Commercial/Dashboard';
-import AdministrativeDashboard from './pages/Administrative/Dashboard';
 import Login from './pages/Login';
-import Commercial from './pages/Commercial';
-import Administrative from './pages/Administrative';
-import CommercialDocuments from './pages/Commercial/Documents/Students';
-import CommercialStudents from './pages/Commercial/Students/Students';
 import AcademicDashboard from './pages/Academic/Dashboard';
 import Academic from './pages/Academic';
-import Operational from './pages/Operational';
-import OperationalDashboard from './pages/Operational/Dashboard';
-import Financial from './pages/Financial';
-import FinancialDashboard from './pages/Financial/Dashboard';
-import Holding from './pages/Holding';
-import HoldingDashboard from './pages/Holding/Dashboard';
-import HoldingFilials from './pages/Holding/Filials';
+import Administrative from './pages/Administrative';
+import AdministrativeDashboard from './pages/Administrative/Dashboard';
+import AdministrativeFilials from './pages/Administrative/Filials';
 
 import 'react-toastify/dist/ReactToastify.css';
-import HoldingGroups from './pages/Holding/Groups';
+import AdministrativeGroups from './pages/Administrative/Groups';
+import AdministrativeFilialTypes from './pages/Administrative/FilialTypes';
+import AdministrativeParameters from './pages/Administrative/Parameters';
+import AdministrativeChartOfAccounts from './pages/Administrative/ChartOfAccounts';
+import Languages from './pages/Academic/Languages';
+import StudyProgram from './pages/Academic/Study Program';
+import Levels from './pages/Academic/Levels';
+import Page404 from './pages/Errors/Page404';
+import Errors from './pages/Errors';
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
-    errorElement: 
-    <main style={{ flex: 1,flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start' }}>
-      <UnprotectedRoute>Error 404 <a href="/">home</a></UnprotectedRoute>
-    </main>,
+    errorElement:
+      <main style={{ flex: 1, flexDirection: 'column', justifyContent: 'center', alignItems: 'flex-start' }}>
+        <UnprotectedRoute>Error 404 <a href="/">home</a></UnprotectedRoute>
+      </main>,
     children: [
       {
         path: "/login",
@@ -55,49 +53,37 @@ const router = createBrowserRouter([
         element: <Navigate to="/login" />,
       },
       {
-        path: "/Holding",
-        element: <ProtectedRoute><Holding /></ProtectedRoute>,
-        children: [
-          {
-            path: "/Holding/Dashboard",
-            element: <HoldingDashboard />
-          },
-          {
-            path: "/Holding/Filials",
-            element: <HoldingFilials />
-          },
-          {
-            path: "/Holding/Groups",
-            element: <HoldingGroups />
-          },
-        ]
-      },
-      {
-        path: "/commercial",
-        element: <ProtectedRoute><Commercial /></ProtectedRoute>,
-        children: [
-          {
-            path: "/commercial/dashboard",
-            element: <ComercialDashboard />
-          },
-          {
-            path: "/commercial/students",
-            element: <CommercialStudents />
-          },
-          {
-            path: "/commercial/documents",
-            element: <CommercialDocuments />
-          }
-        ]
-      },
-      {
-        path: "/administrative",
+        path: "/Administrative",
         element: <ProtectedRoute><Administrative /></ProtectedRoute>,
         children: [
           {
-            path: "/administrative/dashboard",
+            path: "/Administrative/Dashboard",
             element: <AdministrativeDashboard />
-          }
+          },
+          {
+            path: "/Administrative/FilialTypes",
+            element: <AdministrativeFilialTypes />
+          },
+          {
+            path: "/Administrative/Filials",
+            element: <AdministrativeFilials />
+          },
+          {
+            path: "/Administrative/Parameters",
+            element: <AdministrativeParameters />
+          },
+          {
+            path: "/Administrative/ChartOfAccounts",
+            element: <AdministrativeChartOfAccounts />
+          },
+          {
+            path: "/Administrative/Groups",
+            element: <AdministrativeGroups />
+          },
+          {
+            path: "/Administrative/*",
+            element: <Page404 />
+          },
         ]
       },
       {
@@ -105,46 +91,40 @@ const router = createBrowserRouter([
         element: <ProtectedRoute><Academic /></ProtectedRoute>,
         children: [
           {
-            path: "/Academic/dashboard",
+            path: "/Academic/Dashboard",
             element: <AcademicDashboard />
-          }
-        ]
-      },
-      {
-        path: "/Operational",
-        element: <ProtectedRoute><Operational /></ProtectedRoute>,
-        children: [
+          },
           {
-            path: "/Operational/dashboard",
-            element: <OperationalDashboard />
-          }
-        ]
-      },
-      {
-        path: "/Financial",
-        element: <ProtectedRoute><Financial /></ProtectedRoute>,
-        children: [
+            path: "/Academic/Languages",
+            element: <Languages />
+          },
           {
-            path: "/Financial/dashboard",
-            element: <FinancialDashboard />
-          }
+            path: "/Academic/StudyPrograms",
+            element: <StudyProgram />
+          },
+          {
+            path: "/Academic/Levels",
+            element: <Levels />
+          },
+          {
+            path: "/Academic/*",
+            element: <Page404 />
+          },
         ]
       },
       {
         path: "/401",
         element: <UnprotectedRoute>
-            <div>401</div>
+          <div>401</div>
         </UnprotectedRoute>,
       },
       {
         path: "/*",
-        element: <ProtectedRoute>
-            <div>404</div>
-        </ProtectedRoute>,
+        element: <ProtectedRoute><Errors><Page404 /></Errors></ProtectedRoute>
       },
     ]
   },
-  
+
 ]);
 
 const root = createRoot(document.getElementById('root'));

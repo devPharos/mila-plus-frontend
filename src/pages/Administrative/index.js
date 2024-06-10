@@ -5,34 +5,53 @@ import Sidebar from '../Sidebar';
 export default function Administrative() {
   const { pathname } = useLocation()
   const navigate = useNavigate();
+
   const sidebarPages = [
     {
-      alias: 'administrative_dashboard',
+      alias: 'administrative-dashboard',
       path: '/Administrative/Dashboard',
       title: 'Dashboard',
       icon: 'LayoutDashboard',
     },
     {
-      alias: 'administrative_students',
-      path: '/Administrative/Students',
-      title: 'Students',
-      icon: 'Users'
+      alias: 'filial-types',
+      path: '/Administrative/FilialTypes',
+      title: 'Filial Types',
+      icon: 'Building2'
     },
     {
-      alias: 'administrative_documents',
-      path: '/Administrative/Documents',
-      title: 'Documents',
-      icon: 'Files'
+      alias: 'filials',
+      path: '/Administrative/Filials',
+      title: 'Filials',
+      icon: 'Building'
+    },
+    {
+      alias: 'parameters',
+      path: '/Administrative/Parameters',
+      title: 'Parameters',
+      icon: 'SlidersHorizontal'
+    },
+    {
+      alias: 'chart-of-accounts',
+      path: '/Administrative/ChartOfAccounts',
+      title: 'Chart of Accounts',
+      icon: 'GanttChart'
+    },
+    {
+      alias: 'groups',
+      path: '/Administrative/Groups',
+      title: 'Groups',
+      icon: 'Users'
     }
   ]
-    
+
   useEffect(() => {
-    if(pathname.toUpperCase() === '/administrative'.toUpperCase() || pathname.toUpperCase() === '/administrative/'.toUpperCase()) {
+    if (pathname.toUpperCase() === '/Administrative'.toUpperCase() || pathname.toUpperCase() === '/Administrative/'.toUpperCase()) {
       navigate("/Administrative/Dashboard")
     }
-  },[pathname])
+  }, [pathname])
 
-  return <div className='w-full flex flex-1 flex-row justify-between items-center px-4 shadow-lg'>
+  return <div className='w-full bg-gradient-to-br from-gray-300 via-indigo-300 to-mila_orange flex flex-1 flex-row justify-between items-center px-4 pt-8 shadow-lg'>
     <Sidebar pages={sidebarPages} />
     <Outlet />
   </div>

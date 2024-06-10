@@ -24,11 +24,11 @@ export default function auth(state = INITIAL_STATE, action) {
         draft.signed = true;
         draft.loading = false;
 
-        draft.department = 'Commercial';
+        draft.department = 'Administrative';
         break;
       }
       case "@auth/FILIAL_CHANGE": {
-        console.log({ filial_change: action.payload.filial})
+        console.log({ filial_change: action.payload.filial })
         draft.filial = action.payload.filial;
         break;
       }

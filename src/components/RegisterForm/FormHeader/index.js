@@ -1,11 +1,10 @@
 import { format } from 'date-fns';
 import { CheckCheck, Save, Scaling, X } from 'lucide-react';
 import React, { useContext } from 'react';
-import { InputContext } from '~/pages/Holding/Filials/Preview';
 
 // import { Container } from './styles';
 
-function FormHeader({ title = '', registry }) {
+export default function FormHeader({ title = '', registry, InputContext = null }) {
     const { registryBy, registryAt, registryStatus } = registry;
     const { id, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm } = useContext(InputContext)
 
@@ -25,5 +24,3 @@ function FormHeader({ title = '', registry }) {
         </div>
     </div>;
 }
-
-export default FormHeader;

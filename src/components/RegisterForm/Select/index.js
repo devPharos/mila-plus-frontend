@@ -1,11 +1,10 @@
 import React, { useContext, useEffect, useRef } from 'react'
 import { useField } from '@unform/core'
 import { Asterisk } from 'lucide-react'
-import { InputContext } from '~/pages/Holding/Filials/Preview'
 
-const Select = ({ name, title, grow, shrink, type, options = [], ...rest }) => {
+const Select = ({ name, title, grow, shrink, type, options = [], InputContext, generalForm, ...rest }) => {
   const inputRef = useRef()
-  const { fieldName, registerField, setValue, error } = useField(name)
+  const { fieldName, registerField, error } = useField(name)
   const { defaultValue, required } = { ...rest }
 
   useEffect(() => {
@@ -44,7 +43,7 @@ const Select = ({ name, title, grow, shrink, type, options = [], ...rest }) => {
             if (typeof option !== 'object') {
               return <option value={option} key={index} >{option}</option>
             }
-            return <option value={option.value} key={index} >{option.value}</option>
+            return <option value={option.value} key={index} >{option.label}</option>
           })}
         </select>
       </div>

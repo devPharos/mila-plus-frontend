@@ -8,32 +8,50 @@ export default function Academic() {
 
   const sidebarPages = [
     {
-      alias: 'academic_dashboard',
+      alias: 'academic-dashboard',
       path: '/Academic/Dashboard',
       title: 'Dashboard',
       icon: 'LayoutDashboard',
     },
     {
-      alias: 'academic_students',
-      path: '/Academic/Students',
-      title: 'Students',
-      icon: 'Users'
+      alias: 'languages',
+      path: '/Academic/Languages',
+      title: 'Languages',
+      icon: 'Languages'
     },
     {
-      alias: 'academic_documents',
-      path: '/Academic/Documents',
-      title: 'Documents',
-      icon: 'Files'
-    }
+      alias: 'study-programs',
+      path: '/Academic/StudyPrograms',
+      title: 'Study Programs',
+      icon: 'BookMarked'
+    },
+    {
+      alias: 'levels',
+      path: '/Academic/Levels',
+      title: 'Levels',
+      icon: 'School'
+    },
+    {
+      alias: 'language-modes',
+      path: '/Academic/LanguageModes',
+      title: 'Language Modes',
+      icon: 'BookType'
+    },
+    {
+      alias: 'workloads',
+      path: '/Academic/Workloads',
+      title: 'Workloads',
+      icon: 'CalendarClock'
+    },
   ]
-    
+
   useEffect(() => {
-    if(pathname.toUpperCase() === '/Academic'.toUpperCase() || pathname.toUpperCase() === '/Academic/'.toUpperCase()) {
+    if (pathname.toUpperCase() === '/Academic'.toUpperCase() || pathname.toUpperCase() === '/Academic/'.toUpperCase()) {
       navigate("/Academic/Dashboard")
     }
-  },[pathname])
+  }, [pathname])
 
-  return <div className='w-full flex flex-1 flex-row justify-between items-center px-4 shadow-lg'>
+  return <div className='w-full bg-gradient-to-br from-gray-300 via-indigo-300 to-mila_orange flex flex-1 flex-row justify-between items-center px-4 pt-8 shadow-lg'>
     <Sidebar pages={sidebarPages} />
     <Outlet />
   </div>

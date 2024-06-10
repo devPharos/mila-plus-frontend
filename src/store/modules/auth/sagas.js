@@ -17,12 +17,12 @@ export function* login({ payload }) {
 
     const { token, user } = data;
 
-    api.defaults.headers.Authorization = `Bearer ${token}`;
-    
-    const { data: accesses } = yield call(api.get,"MenuHierarchy/user/" + user.id)
+    api.defaults.headers.authorization = `Bearer ${token}`;
+
+    const { data: accesses } = yield call(api.get, "MenuHierarchy/user/" + user.id)
 
     let firstFilial = null;
-    if(user.filials.length > 0 && user.filials[0].filial) {
+    if (user.filials.length > 0 && user.filials[0].filial) {
       firstFilial = user.filials[0].filial;
     }
 
@@ -74,11 +74,11 @@ export function setFilial({ payload }) {
   if (payload) {
     api.defaults.headers.Filial = payload.filial.id;
   }
-  
+
 }
 
 export function setDepartment({ payload }) {
-  console.log('setDepartment', payload )
+  console.log('setDepartment', payload)
 }
 
 export default all([

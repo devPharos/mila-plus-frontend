@@ -28,7 +28,6 @@ export default function auth(state = INITIAL_STATE, action) {
         break;
       }
       case "@auth/FILIAL_CHANGE": {
-        console.log({ filial_change: action.payload.filial })
         draft.filial = action.payload.filial;
         break;
       }

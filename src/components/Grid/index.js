@@ -11,7 +11,7 @@ export default function Grid({ children, gridHeader = null, gridData = null, ord
   return <div className='relative flex flex-1 w-full h-full'>
     <table className="bg-secondary-50 rounded-xl p-4 w-full table-auto text-xs overflow-hidden text-left">
       <thead>
-        <tr className='bg-secondary h-8 sticky top-16'>
+        <tr className='bg-secondary h-8 sticky'>
 
           {/* <th className='px-4'>
             <div className='flex flex-row items-center gap-2'>Actions</div>

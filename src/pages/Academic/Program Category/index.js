@@ -7,9 +7,9 @@ import Grid from '~/components/Grid';
 import api from '~/services/api';
 import { applyFilters } from '~/functions';
 import PageHeader from '~/components/PageHeader';
-import LevelsPreview from './Preview';
+import ProgramCategoryPreview from './Preview';
 
-export default function Levels() {
+export default function ProgramCategory() {
   const [activeFilters, setActiveFilters] = useState([])
   const [opened, setOpened] = useState(false)
   const [orderBy, setOrderBy] = useState({ column: 'Name', asc: true })
@@ -20,7 +20,7 @@ export default function Levels() {
       filter: true,
     },
     {
-      title: 'Program Category',
+      title: 'Language',
       type: 'text',
       filter: true,
     },
@@ -37,15 +37,15 @@ export default function Levels() {
   }
 
   useEffect(() => {
-    async function getData() {
-      const { data } = await api.get('/levels')
-      const gridDataValues = data.map(({ id, name, Programcategory }) => {
-        const programcategory = Programcategory.name;
-        return { show: true, id, fields: [name, programcategory] }
+    async function getFilials() {
+      const { data } = await api.get('/programcategories')
+      const gridDataValues = data.map(({ id, name, Language }) => {
+        const languageName = Language.name;
+        return { show: true, id, fields: [name, languageName] }
       })
       setGridData(gridDataValues)
     }
-    getData()
+    getFilials()
   }, [opened])
 
   function handleOpened(id) {
@@ -69,7 +69,7 @@ export default function Levels() {
 
     <Grid gridData={gridData} gridHeader={gridHeader} orderBy={orderBy} setOrderBy={setOrderBy} handleOpened={handleOpened} opened={opened}>
       {opened && <div className='fixed left-0 top-0 z-50 w-full h-full' style={{ background: 'rgba(0,0,0,.2)' }}></div>}
-      {opened && <LevelsPreview id={opened} handleOpened={handleOpened} setOpened={setOpened} defaultFormType='full' />}
+      {opened && <ProgramCategoryPreview id={opened} handleOpened={handleOpened} setOpened={setOpened} defaultFormType='full' />}
     </Grid>
   </div>;
 }

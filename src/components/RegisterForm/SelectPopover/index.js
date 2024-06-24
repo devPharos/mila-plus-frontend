@@ -1,0 +1,81 @@
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { useField } from '@unform/core'
+import { Asterisk } from 'lucide-react'
+import AsyncSelect from 'react-select/async';
+import { createFilter } from 'react-select';
+
+export default function SelectPopover({ name, title, grow, shrink, type, options = [], isSearchable = false, InputContext, ...rest }) {
+  const inputRef = useRef()
+  const { fieldName, registerField, error } = useField(name)
+  const { defaultValue, required } = { ...rest }
+
+  const { setSuccessfullyUpdated } = useContext(InputContext)
+
+  const filterColors = (inputValue) => {
+    return options.filter((i) =>
+      i.label.toLowerCase().includes(inputValue.toLowerCase())
+    );
+  };
+
+  const loadOptions = (
+    inputValue,
+    callback
+  ) => {
+    setTimeout(() => {
+      callback(filterColors(inputValue));
+    }, 500);
+  };
+
+  useEffect(() => {
+    registerField({
+      name: fieldName,
+      ref: inputRef.current,
+      getValue: (ref) => {
+        if (rest.isMulti) {
+          if (!ref.state.selectValue) {
+            return [];
+          }
+          return ref.state.selectValue.map((option) => option.value);
+        }
+        if (!ref.state.selectValue) {
+          return '';
+        }
+        return ref.state.selectValue[0].value;
+      },
+    });
+
+  }, [fieldName, registerField, rest.isMulti]);
+
+  function handleChanged() {
+    setSuccessfullyUpdated(false)
+  }
+
+  return (
+    <div className={`${type === 'hidden' ? 'hidden' : 'flex'} flex-col justify-center items-start relative ${shrink ? 'w-32' : 'w-48'} ${grow ? 'grow' : ''}`}>
+      <div className='px-2 text-xs flex flex-row justify-between items-center'>{title} {required && <Asterisk color='#e00' size={12} />}</div>
+      <div
+        className={`text-sm focus:outline-none flex-1 w-full bg-transparent`}>
+        <AsyncSelect
+          type='hidden'
+          id={name}
+          name={name}
+          cacheOptions
+          defaultOptions={options}
+          isClearable={false}
+          loadOptions={loadOptions}
+          isSearchable={isSearchable}
+          // isLoading={true}
+          ref={inputRef}
+          onChange={handleChanged}
+          classNamePrefix="react-select"
+          // filterOption={filterOptions}
+          defaultValue={defaultValue}
+          {...rest}
+          className={`rounded-lg text-sm focus:outline-none flex-1 w-full bg-transparent text-left relative`}
+        />
+      </div>
+
+      {error && <span className="text-xs text-red-500 absolute top-7 bg-white px-2 rounded-full right-4">{error}</span>}
+    </div>
+  )
+}

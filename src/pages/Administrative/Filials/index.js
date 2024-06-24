@@ -69,8 +69,8 @@ export default function AdministrativeFilials() {
   useEffect(() => {
     async function getFilials() {
       const { data } = await api.get('/filials')
-      const gridDataValues = data.map(({ id, active, alias, name, types, ein, city, state, country }) => {
-        const type = types.name;
+      const gridDataValues = data.map(({ id, active, alias, name, Filialtype, ein, city, state, country }) => {
+        const type = Filialtype.name;
         return { show: true, id, fields: [active, alias, name, type, ein, city, state, country] }
       })
       setGridData(gridDataValues)

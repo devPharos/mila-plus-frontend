@@ -2,6 +2,7 @@ import { Form } from '@unform/web';
 import { Building, Pencil, X } from 'lucide-react';
 import React, { createContext, useEffect, useRef, useState } from 'react';
 import Input from '~/components/RegisterForm/Input';
+import SelectPopover from '~/components/RegisterForm/SelectPopover';
 import RegisterFormMenu from '~/components/RegisterForm/Menu';
 import InputLine from '~/components/RegisterForm/InputLine';
 import InputLineGroup from '~/components/RegisterForm/InputLineGroup';
@@ -10,14 +11,12 @@ import Preview from '~/components/Preview';
 import { Zoom, toast } from 'react-toastify';
 import api from '~/services/api';
 import { getRegistries } from '~/functions';
-import Select from '~/components/RegisterForm/Select';
 
 export const InputContext = createContext({})
 
 export default function LevelsPreview({ id, handleOpened, setOpened, defaultFormType = 'preview' }) {
     const [pageData, setPageData] = useState({
-        name: '',
-        studyprogram_id: null
+        name: ''
     })
     const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
     const [registry, setRegistry] = useState({ created_by: null, created_at: null, updated_by: null, updated_at: null, canceled_by: null, canceled_at: null })
@@ -25,8 +24,7 @@ export default function LevelsPreview({ id, handleOpened, setOpened, defaultForm
     const [fullscreen, setFullscreen] = useState(false)
     const [activeMenu, setActiveMenu] = useState('general')
     const generalForm = useRef()
-
-    const [studyProgramOptions, setStudyProgramOptions] = useState([])
+    const [programCategoriesOptions, setProgramCategoriesOptions] = useState([])
 
     function handleCloseForm() {
         if (!successfullyUpdated) {
@@ -97,23 +95,23 @@ export default function LevelsPreview({ id, handleOpened, setOpened, defaultForm
                 console.log(err)
             }
         }
-        async function getStudyPrograms() {
+        async function getDefaultOptions() {
             try {
-                const { data } = await api.get(`studyprograms`)
-                const studyPrograms = data.map(({ id, name }) => {
-                    return { value: id, label: name }
-
+                const { data } = await api.get(`programcategories`);
+                const programCategories = [];
+                data.map(d => {
+                    return programCategories.push({ value: d.id, label: d.name })
                 })
-                setStudyProgramOptions(studyPrograms)
+                setProgramCategoriesOptions(programCategories);
             } catch (err) {
                 console.log(err)
             }
         }
-        getStudyPrograms()
         if (id === 'new') {
             setFormType('full')
         } else if (id) {
             getPageData()
+            getDefaultOptions()
         }
     }, [])
 
@@ -152,7 +150,10 @@ export default function LevelsPreview({ id, handleOpened, setOpened, defaultForm
                                     <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
                                         <InputLine title='General Data'>
                                             <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
-                                            <Select type='text' name='studyprogram_id' required title='Study Program' options={studyProgramOptions} grow defaultValue={pageData.studyprogram_id} InputContext={InputContext} generalForm={generalForm} />
+                                            <Input type='text' name='total_hours' onlyInt required title='Total Hours' grow defaultValue={pageData.total_hours} InputContext={InputContext} />
+                                            {pageData && pageData.Programcategory &&
+                                                <SelectPopover name='programcategory_id' title='Type' generalForm={generalForm} options={programCategoriesOptions} defaultValue={{ value: pageData.programcategory_id, label: pageData.Programcategory.name }} InputContext={InputContext} />
+                                            }
                                         </InputLine>
 
                                     </InputLineGroup>

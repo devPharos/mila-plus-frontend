@@ -191,7 +191,7 @@ export const countries_list = [
   `Ukraine`,
   `United Arab Emirates`,
   `United Kingdom`,
-  `Unites States of America`,
+  `United States of America`,
   `Uruguay`,
   `Uzbekistan`,
   `Vanuatu`,

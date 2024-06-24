@@ -28,10 +28,12 @@ import AdministrativeFilialTypes from './pages/Administrative/FilialTypes';
 import AdministrativeParameters from './pages/Administrative/Parameters';
 import AdministrativeChartOfAccounts from './pages/Administrative/ChartOfAccounts';
 import Languages from './pages/Academic/Languages';
-import StudyProgram from './pages/Academic/Study Program';
+import ProgramCategory from './pages/Academic/Program Category';
 import Levels from './pages/Academic/Levels';
 import Page404 from './pages/Errors/Page404';
 import Errors from './pages/Errors';
+import LanguageMode from './pages/Academic/Language Mode';
+import Workloads from './pages/Academic/Workloads';
 
 const router = createBrowserRouter([
   {
@@ -99,12 +101,20 @@ const router = createBrowserRouter([
             element: <Languages />
           },
           {
-            path: "/Academic/StudyPrograms",
-            element: <StudyProgram />
+            path: "/Academic/ProgramCategory",
+            element: <ProgramCategory />
           },
           {
             path: "/Academic/Levels",
             element: <Levels />
+          },
+          {
+            path: "/Academic/LanguageModes",
+            element: <LanguageMode />
+          },
+          {
+            path: "/Academic/Workloads",
+            element: <Workloads />
           },
           {
             path: "/Academic/*",

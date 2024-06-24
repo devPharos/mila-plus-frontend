@@ -11,13 +11,15 @@ import { Zoom, toast } from 'react-toastify';
 import api from '~/services/api';
 import { getRegistries } from '~/functions';
 import Select from '~/components/RegisterForm/Select';
+import SelectPopover from '~/components/RegisterForm/SelectPopover';
 
 export const InputContext = createContext({})
 
-export default function StudyProgramPreview({ id, handleOpened, setOpened, defaultFormType = 'preview' }) {
+export default function ProgramCategoryPreview({ id, handleOpened, setOpened, defaultFormType = 'preview' }) {
     const [pageData, setPageData] = useState({
         name: '',
         language_id: null,
+        Language: null,
     })
     const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
     const [registry, setRegistry] = useState({ created_by: null, created_at: null, updated_by: null, updated_at: null, canceled_by: null, canceled_at: null })
@@ -41,8 +43,9 @@ export default function StudyProgramPreview({ id, handleOpened, setOpened, defau
             return
         }
         if (id === 'new') {
+            console.log('new')
             try {
-                const response = await api.post(`/studyprograms`, data)
+                const response = await api.post(`/programcategories`, data)
                 setOpened(response.data.id)
                 setPageData({ ...pageData, ...data })
                 setSuccessfullyUpdated(true)
@@ -52,6 +55,7 @@ export default function StudyProgramPreview({ id, handleOpened, setOpened, defau
                 console.log(err)
             }
         } else if (id !== 'new') {
+            console.log('edit')
             const dataInArray = Object.keys(data).map((key) => [key, data[key]])
             const pageDataInArray = Object.keys(pageData).map((key) => [key, pageData[key]]);
 
@@ -70,7 +74,8 @@ export default function StudyProgramPreview({ id, handleOpened, setOpened, defau
             if (updated.length > 0) {
                 const objUpdated = Object.fromEntries(updated);
                 try {
-                    await api.put(`/studyprograms/${id}`, objUpdated)
+                    // console.log(objUpdated)
+                    await api.put(`/programcategories/${id}`, objUpdated)
                     setPageData({ ...pageData, ...objUpdated })
                     setSuccessfullyUpdated(true)
                     toast("Saved!", { autoClose: 1000 })
@@ -88,7 +93,7 @@ export default function StudyProgramPreview({ id, handleOpened, setOpened, defau
     useEffect(() => {
         async function getPageData() {
             try {
-                const { data } = await api.get(`studyprograms/${id}`)
+                const { data } = await api.get(`programcategories/${id}`)
                 setPageData(data)
                 const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at } = data;
                 const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
@@ -109,12 +114,12 @@ export default function StudyProgramPreview({ id, handleOpened, setOpened, defau
                 console.log(err)
             }
         }
+        getLanguages()
         if (id === 'new') {
             setFormType('full')
         } else if (id) {
             getPageData()
         }
-        getLanguages()
     }, [])
 
     return <Preview formType={formType} fullscreen={fullscreen}>
@@ -152,7 +157,10 @@ export default function StudyProgramPreview({ id, handleOpened, setOpened, defau
                                     <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
                                         <InputLine title='General Data'>
                                             <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
-                                            <Select type='text' name='language_id' required title='Language' options={languageOptions} grow defaultValue={pageData.language_id} InputContext={InputContext} />
+                                            {id === 'new' || pageData.Language ?
+                                                <SelectPopover type='text' name='language_id' required title='Language' options={languageOptions} grow defaultValue={{ value: pageData.language_id, label: pageData.Language ? pageData.Language.name : '' }} InputContext={InputContext} />
+                                                : null
+                                            }
                                         </InputLine>
 
                                     </InputLineGroup>

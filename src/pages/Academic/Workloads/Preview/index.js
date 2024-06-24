@@ -2,64 +2,37 @@ import { Form } from '@unform/web';
 import { Building, Pencil, X } from 'lucide-react';
 import React, { createContext, useEffect, useRef, useState } from 'react';
 import Input from '~/components/RegisterForm/Input';
+import SelectPopover from '~/components/RegisterForm/SelectPopover';
 import RegisterFormMenu from '~/components/RegisterForm/Menu';
-import api from '~/services/api';
-import { Zoom, toast } from 'react-toastify';
 import InputLine from '~/components/RegisterForm/InputLine';
 import InputLineGroup from '~/components/RegisterForm/InputLineGroup';
 import FormHeader from '~/components/RegisterForm/FormHeader';
-import Select from '~/components/RegisterForm/Select';
 import Preview from '~/components/Preview';
+import { Zoom, toast } from 'react-toastify';
+import api from '~/services/api';
 import { getRegistries } from '~/functions';
-import SelectPopover from '~/components/RegisterForm/SelectPopover';
 
 export const InputContext = createContext({})
 
-export default function GroupsPreview({ id, handleOpened, setOpened, defaultFormType = 'preview' }) {
+export default function WorkloadPreview({ id, handleOpened, setOpened, defaultFormType = 'preview' }) {
     const [pageData, setPageData] = useState({
-        name: '',
-        filialtype_id: null,
-        Filialtype: null
+        name: ''
     })
+    const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
+    const [registry, setRegistry] = useState({ created_by: null, created_at: null, updated_by: null, updated_at: null, canceled_by: null, canceled_at: null })
     const [formType, setFormType] = useState(defaultFormType)
     const [fullscreen, setFullscreen] = useState(false)
     const [activeMenu, setActiveMenu] = useState('general')
-    const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
-    const [registry, setRegistry] = useState({ created_by: null, created_at: null, updated_by: null, updated_at: null, canceled_by: null, canceled_at: null })
-    const [filialTypesOptions, setFilialTypesOptions] = useState([])
     const generalForm = useRef()
+    const [levelOptions, setLevelOptions] = useState([])
+    const [languageModeOptions, setLanguageModeOptions] = useState([])
 
-    useEffect(() => {
-        async function getPageData() {
-            try {
-                const { data } = await api.get(`groups/${id}`)
-                setPageData(data)
-                const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at } = data;
-                const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
-                setRegistry(registries)
-            } catch (err) {
-                console.log(err)
-            }
+    function handleCloseForm() {
+        if (!successfullyUpdated) {
+            toast("Changes discarted!", { autoClose: 1000 })
         }
-        async function getDefaultOptions() {
-            try {
-                const { data } = await api.get(`filialtypes`)
-                const filialTypes = data.map(({ id, name }) => {
-                    return { value: id, label: name }
-                })
-                setFilialTypesOptions(filialTypes)
-            } catch (err) {
-                console.log(err)
-            }
-        }
-
-        getDefaultOptions()
-        if (id === 'new') {
-            setFormType('full')
-        } else if (id) {
-            getPageData()
-        }
-    }, [])
+        handleOpened(null)
+    }
 
     async function handleGeneralFormSubmit(data) {
         if (successfullyUpdated) {
@@ -68,7 +41,7 @@ export default function GroupsPreview({ id, handleOpened, setOpened, defaultForm
         }
         if (id === 'new') {
             try {
-                const response = await api.post(`/groups`, data)
+                const response = await api.post(`/workloads`, data)
                 setOpened(response.data.id)
                 setPageData({ ...pageData, ...data })
                 setSuccessfullyUpdated(true)
@@ -86,7 +59,7 @@ export default function GroupsPreview({ id, handleOpened, setOpened, defaultForm
                 const x = field[1] === 'Yes' ? true : field[1] === 'No' ? false : field[1];
                 // const y = 999;
                 // console.log(field[0])
-                const y = pageDataInArray.find(pageDataField => pageDataField[0] === field[0])[1];
+                const y = pageDataInArray.find(filialField => filialField[0] === field[0])[1];
 
                 if (x !== y && (x || y)) {
                     return field;
@@ -96,7 +69,7 @@ export default function GroupsPreview({ id, handleOpened, setOpened, defaultForm
             if (updated.length > 0) {
                 const objUpdated = Object.fromEntries(updated);
                 try {
-                    await api.put(`/groups/${id}`, objUpdated)
+                    await api.put(`/workloads/${id}`, objUpdated)
                     setPageData({ ...pageData, ...objUpdated })
                     setSuccessfullyUpdated(true)
                     toast("Saved!", { autoClose: 1000 })
@@ -111,22 +84,51 @@ export default function GroupsPreview({ id, handleOpened, setOpened, defaultForm
         }
     }
 
-    function handleCloseForm() {
-        if (!successfullyUpdated) {
-            toast("Changes discarted!", { autoClose: 1000 })
+    useEffect(() => {
+        async function getPageData() {
+            try {
+                const { data } = await api.get(`workloads/${id}`)
+                setPageData({ ...data, name: `${data.days_per_week.toString()} day(s) per week, ${data.hours_per_day.toString()} hour(s) per day.` })
+                const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at } = data;
+                const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
+                setRegistry(registries)
+            } catch (err) {
+                console.log(err)
+            }
         }
-        handleOpened(null)
-    }
+        async function getLevelsOptions() {
+            try {
+                const { data } = await api.get(`levels`)
+                const levels = data.map(({ id, name, Programcategory }) => {
+                    const programcategory_name = Programcategory.name;
+                    return { value: id, label: programcategory_name + ' - ' + name }
 
-    async function handleInactivate() {
-        try {
-            await api.delete(`groups/${id}`)
-            toast("Group Inactivated!", { autoClose: 1000 })
-            handleOpened(null)
-        } catch (err) {
-            console.log(err)
+                })
+                setLevelOptions(levels)
+            } catch (err) {
+                console.log(err)
+            }
         }
-    }
+        async function getLanguageModeOptions() {
+            try {
+                const { data } = await api.get(`languagemodes`)
+                const languagesmodes = data.map(({ id, name }) => {
+                    return { value: id, label: name }
+
+                })
+                setLanguageModeOptions(languagesmodes)
+            } catch (err) {
+                console.log(err)
+            }
+        }
+        if (id === 'new') {
+            setFormType('full')
+        } else if (id) {
+            getPageData()
+            getLevelsOptions()
+            getLanguageModeOptions()
+        }
+    }, [])
 
     return <Preview formType={formType} fullscreen={fullscreen}>
         {pageData ?
@@ -142,10 +144,6 @@ export default function GroupsPreview({ id, handleOpened, setOpened, defaultForm
                     <h2 style={{ fontSize: 24 }}>{pageData.name}</h2>
 
                 </div>
-                <div className='flex flex-1 flex-col items-left px-4 py-2 gap-1'>
-                    <p className='border-b mb-1 pb-1'>Group Information</p>
-                    <div className='flex flex-row items-center gap-1 text-xs'><strong>Name:</strong> {pageData.name}</div>
-                </div>
 
             </div>
                 :
@@ -160,14 +158,23 @@ export default function GroupsPreview({ id, handleOpened, setOpened, defaultForm
                     <div className='border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start'>
                         <div className='flex flex-col items-start justify-start text-sm overflow-y-scroll'>
                             <Form ref={generalForm} onSubmit={handleGeneralFormSubmit} className='w-full'>
-                                <InputContext.Provider value={{ id, setSuccessfullyUpdated, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm, handleInactivate, canceled: pageData.canceled_at }}>
+                                <InputContext.Provider value={{ id, generalForm, setSuccessfullyUpdated, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm }}>
 
                                     <FormHeader title={pageData.name} registry={registry} InputContext={InputContext} />
 
                                     <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
                                         <InputLine title='General Data'>
-                                            <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
-                                            {id === 'new' || pageData.Filialtype ? <SelectPopover name='filialtype_id' title='Filial Type' options={filialTypesOptions} defaultValue={{ value: pageData.filialtype_id, label: pageData.Filialtype ? pageData.Filialtype.name : '' }} InputContext={InputContext} /> : null}
+                                            <Input type='text' name='name' readOnly required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
+                                            {id === 'new' || pageData.Level &&
+                                                <SelectPopover type='text' name='level_id' required title='Level' options={levelOptions} grow defaultValue={pageData.Level ? { value: pageData.level_id, label: pageData.Level.Programcategory.name + ' - ' + pageData.Level.name } : null} InputContext={InputContext} />
+                                            }
+                                            {id === 'new' || pageData.Languagemode &&
+                                                <SelectPopover type='text' name='languagemode_id' required title='Language Mode' options={languageModeOptions} grow defaultValue={pageData.Languagemode ? { value: pageData.languagemode_id, label: pageData.Languagemode.name } : null} InputContext={InputContext} />
+                                            }
+                                        </InputLine>
+                                        <InputLine title='Configurations'>
+                                            <Input type='text' name='days_per_week' workloadUpdateName onlyInt required title='Days per Week' grow defaultValue={pageData.days_per_week} InputContext={InputContext} />
+                                            <Input type='text' name='hours_per_day' workloadUpdateName onlyFloat required title='Hours per Day' grow defaultValue={pageData.hours_per_day} InputContext={InputContext} />
                                         </InputLine>
 
                                     </InputLineGroup>
@@ -179,6 +186,5 @@ export default function GroupsPreview({ id, handleOpened, setOpened, defaultForm
                     </div>
                 </div>
             : null}
-
     </Preview>;
 }

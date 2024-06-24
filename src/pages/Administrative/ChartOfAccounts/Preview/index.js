@@ -10,19 +10,25 @@ import Preview from '~/components/Preview';
 import { Zoom, toast } from 'react-toastify';
 import api from '~/services/api';
 import { getRegistries } from '~/functions';
+import SelectPopover from '~/components/RegisterForm/SelectPopover';
 
 export const InputContext = createContext({})
 
 export default function ChartOfAccountsPreview({ id, handleOpened, setOpened, defaultFormType = 'preview' }) {
     const [pageData, setPageData] = useState({
+        father_id: null,
+        name: '',
         code: '',
-        name: ''
+        Father: {
+            name: ''
+        }
     })
     const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
     const [registry, setRegistry] = useState({ created_by: null, created_at: null, updated_by: null, updated_at: null, canceled_by: null, canceled_at: null })
     const [formType, setFormType] = useState(defaultFormType)
     const [fullscreen, setFullscreen] = useState(false)
     const [activeMenu, setActiveMenu] = useState('general')
+    const [chartOfAccountsOptions, setChartOfAccountsOptions] = useState([])
     const generalForm = useRef()
 
     function handleCloseForm() {
@@ -39,6 +45,7 @@ export default function ChartOfAccountsPreview({ id, handleOpened, setOpened, de
         }
         if (id === 'new') {
             try {
+                // console.log(data)
                 const response = await api.post(`/chartofaccounts`, data)
                 setOpened(response.data.id)
                 setPageData({ ...pageData, ...data })
@@ -67,6 +74,7 @@ export default function ChartOfAccountsPreview({ id, handleOpened, setOpened, de
             if (updated.length > 0) {
                 const objUpdated = Object.fromEntries(updated);
                 try {
+                    console.log(objUpdated)
                     await api.put(`/chartofaccounts/${id}`, objUpdated)
                     setPageData({ ...pageData, ...objUpdated })
                     setSuccessfullyUpdated(true)
@@ -86,6 +94,7 @@ export default function ChartOfAccountsPreview({ id, handleOpened, setOpened, de
         async function getPageData() {
             try {
                 const { data } = await api.get(`chartofaccounts/${id}`)
+                console.log(data)
                 setPageData(data)
                 const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at } = data;
                 const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
@@ -94,6 +103,26 @@ export default function ChartOfAccountsPreview({ id, handleOpened, setOpened, de
                 console.log(err)
             }
         }
+        async function getDefaultOptions() {
+            try {
+                const { data } = await api.get(`chartofaccounts`);
+                const chartsOfAccounts = data.filter(f => f.id !== id).map(({ id: chartId, name, code, Father }) => {
+                    let chartName = '';
+                    if (Father) {
+                        if (Father.Father) {
+                            chartName += Father.Father.name + ' > ';
+                        }
+                        chartName += Father.name + ' > ';
+                    }
+                    return { value: chartId, label: chartName + name }
+
+                })
+                setChartOfAccountsOptions(chartsOfAccounts)
+            } catch (err) {
+                console.log(err)
+            }
+        }
+        getDefaultOptions()
         if (id === 'new') {
             setFormType('full')
         } else if (id) {
@@ -135,7 +164,7 @@ export default function ChartOfAccountsPreview({ id, handleOpened, setOpened, de
 
                                     <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
                                         <InputLine title='General Data'>
-                                            <Input type='text' name='code' required title='Code' grow defaultValue={pageData.code} InputContext={InputContext} />
+                                            {id === 'new' || pageData.father_id ? <SelectPopover type='text' isSearchable name='father_id' required title='Father Account' options={chartOfAccountsOptions} grow defaultValue={pageData.father_id ? { value: pageData.father_id, label: pageData.code.substring(0, 2) === '01' ? 'Receipts > ' + pageData.Father.name : 'Expenses > ' + pageData.Father.name + pageData.Father.Father.name } : null} InputContext={InputContext} /> : null}
                                             <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
                                         </InputLine>
 

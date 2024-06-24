@@ -14,6 +14,7 @@ import FormHeader from '~/components/RegisterForm/FormHeader';
 import { Scope } from '@unform/core';
 import CheckboxInput from '~/components/RegisterForm/CheckboxInput';
 import Preview from '~/components/Preview';
+import SelectPopover from '~/components/RegisterForm/SelectPopover';
 
 export const InputContext = createContext({})
 
@@ -22,7 +23,7 @@ export default function FilialsPreview({ id, handleOpened, setOpened, defaultFor
         active: false,
         alias: '',
         name: '',
-        types: { id: null, name: '' },
+        Filialtype: { id: null, label: '' },
         ein: '',
         address: '',
         zipcode: '',
@@ -36,7 +37,12 @@ export default function FilialsPreview({ id, handleOpened, setOpened, defaultFor
     const [activeMenu, setActiveMenu] = useState('general')
     const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
     const [registry, setRegistry] = useState({ created_by: null, created_at: null, updated_by: null, updated_at: null, canceled_by: null, canceled_at: null })
+    const [filialTypesOptions, setFilialTypesOptions] = useState([])
     const generalForm = useRef()
+
+    const countriesOptions = countries_list.map(country => {
+        return { value: country, label: country }
+    })
 
     useEffect(() => {
         async function getPageData() {
@@ -50,6 +56,19 @@ export default function FilialsPreview({ id, handleOpened, setOpened, defaultFor
                 console.log(err)
             }
         }
+        async function getDefaultOptions() {
+            try {
+                const { data } = await api.get(`filialtypes`)
+                const filialTypes = data.map(({ id, name }) => {
+                    return { value: id, label: name }
+                })
+                setFilialTypesOptions(filialTypes)
+            } catch (err) {
+                console.log(err)
+            }
+        }
+
+        getDefaultOptions()
         if (id === 'new') {
             setFormType('full')
         } else if (id) {
@@ -159,7 +178,7 @@ export default function FilialsPreview({ id, handleOpened, setOpened, defaultFor
                 <div className='flex flex-1 flex-col items-left px-4 py-2 gap-1'>
                     <p className='border-b mb-1 pb-1'>Filial Information</p>
                     <div className='flex flex-row items-center gap-1 text-xs'><strong>Initials:</strong> {pageData.alias}</div>
-                    <div className='flex flex-row items-center gap-1 text-xs'><strong>Type:</strong> {pageData.types.name}</div>
+                    <div className='flex flex-row items-center gap-1 text-xs'><strong>Type:</strong> {pageData.Filialtype && pageData.Filialtype.name}</div>
                     <div className='flex flex-row items-center gap-1 text-xs'><strong>Ein:</strong> {pageData.ein}</div>
                 </div>
                 <div className='flex flex-1 flex-col items-left px-4 py-2 gap-1'>
@@ -205,7 +224,9 @@ export default function FilialsPreview({ id, handleOpened, setOpened, defaultFor
                                             <Input type='text' name='ein' required title='EIN' defaultValue={pageData.ein} InputContext={InputContext} />
                                             <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
                                             <Input type='text' name='alias' onlyUpperCase required title='Alias' defaultValue={pageData.alias} InputContext={InputContext} />
-                                            <Select name='active' title='Active' options={[{ value: 'Yes', label: 'Yes' }, { value: 'No', label: 'No' }]} defaultValue={pageData.active ? 'Yes' : 'No'} InputContext={InputContext} />
+                                            {/* {console.log(pageData.active)} */}
+                                            {id === 'new' || pageData.Filialtype ? <SelectPopover name='filialtype_id' title='Filial Type' options={filialTypesOptions} defaultValue={{ value: pageData.filialtype_id, label: pageData.Filialtype.name }} InputContext={InputContext} /> : null}
+                                            <SelectPopover name='active' title='Active' options={[{ value: 'Yes', label: 'Yes' }, { value: 'No', label: 'No' }]} defaultValue={{ value: pageData.active, label: pageData.active ? 'Yes' : 'No' }} InputContext={InputContext} />
                                         </InputLine>
 
                                         {/* <InputLine>
@@ -213,7 +234,7 @@ export default function FilialsPreview({ id, handleOpened, setOpened, defaultFor
                                     </InputLine> */}
 
                                         <InputLine title='Localization'>
-                                            <Select name='country' title='Country' required options={countries_list} defaultValue={pageData.country} InputContext={InputContext} />
+                                            <SelectPopover name='country' title='Country' required options={countriesOptions} isSearchable defaultValue={{ value: pageData.country, label: pageData.country }} InputContext={InputContext} />
                                             <Input type='text' name='state' required title='State' defaultValue={pageData.state} InputContext={InputContext} />
                                             <Input type='text' name='city' required title='City' defaultValue={pageData.city} InputContext={InputContext} />
                                             <Input type='text' name='zipcode' isZipCode grow required title='Zip Code' defaultValue={pageData.zipcode} placeholder='-----' InputContext={InputContext} />

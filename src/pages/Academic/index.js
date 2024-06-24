@@ -20,9 +20,9 @@ export default function Academic() {
       icon: 'Languages'
     },
     {
-      alias: 'study-programs',
-      path: '/Academic/StudyPrograms',
-      title: 'Study Programs',
+      alias: 'program-categories',
+      path: '/Academic/ProgramCategory',
+      title: 'Program Categories',
       icon: 'BookMarked'
     },
     {

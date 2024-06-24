@@ -1,4 +1,4 @@
-import { Filter } from 'lucide-react';
+import { ArrowUp, Filter } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import Breadcrumbs from '~/components/Breadcrumbs';
 import Filters from '~/components/Filters';
@@ -23,7 +23,12 @@ export default function AdministrativeChartOfAccounts() {
       title: 'Name',
       type: 'text',
       filter: true,
-    }
+    },
+    {
+      title: 'Type',
+      type: 'text',
+      filter: true,
+    },
   ])
 
   const [gridData, setGridData] = useState()
@@ -40,7 +45,7 @@ export default function AdministrativeChartOfAccounts() {
     async function getFilials() {
       const { data } = await api.get('/chartofaccounts')
       const gridDataValues = data.map(({ id, code, name }) => {
-        return { show: true, id, fields: [code, name] }
+        return { show: true, id, fields: [code, name, code.substring(0, 2) === '01' ? 'Receipts' : 'Expenses'] }
       })
       setGridData(gridDataValues)
     }

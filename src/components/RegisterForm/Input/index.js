@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useRef } from 'react'
 import { useField } from '@unform/core'
 import { Asterisk } from 'lucide-react'
 
-const Input = ({ name, title, grow, shrink, readOnly = false, type, isZipCode = false, onlyUpperCase = false, onlyLowerCase = false, isPhoneNumber = false, InputContext = null, ...rest }) => {
+const Input = ({ name, title, grow, shrink, workloadUpdateName = false, readOnly = false, type, isZipCode = false, onlyUpperCase = false, onlyLowerCase = false, onlyInt = false, onlyFloat = false, isPhoneNumber = false, InputContext = null, ...rest }) => {
   const inputRef = useRef()
   const { fieldName, defaultValue, registerField, error } = useField(name)
   const { disabled, required } = { ...rest }
@@ -68,6 +68,14 @@ const Input = ({ name, title, grow, shrink, readOnly = false, type, isZipCode = 
       const value = generalForm.current.getFieldValue(name);
       generalForm.current.setFieldValue(name, value.toLowerCase())
     }
+    if (onlyInt) {
+      const value = generalForm.current.getFieldValue(name);
+      generalForm.current.setFieldValue(name, value.replace(/\D/g, ""))
+    }
+    if (onlyFloat) {
+      const value = generalForm.current.getFieldValue(name);
+      generalForm.current.setFieldValue(name, value.match(/^[0-9]*\.?[0-9]*$/))
+    }
     if (isPhoneNumber) {
       const value = generalForm.current.getFieldValue(name);
       generalForm.current.setFieldValue(name, maskPhone(value))
@@ -76,6 +84,11 @@ const Input = ({ name, title, grow, shrink, readOnly = false, type, isZipCode = 
       const value = generalForm.current.getFieldValue(name);
       generalForm.current.setFieldValue(name, maskZipCode(value))
     }
+    if (workloadUpdateName) {
+      const days_per_week = generalForm.current.getFieldValue('days_per_week');
+      const hours_per_day = generalForm.current.getFieldValue('hours_per_day');
+      generalForm.current.setFieldValue('name', `${days_per_week.toString()} day(s) per week, ${hours_per_day.toString()} hour(s) per day.`)
+    }
 
     setSuccessfullyUpdated(false)
   }
@@ -83,7 +96,7 @@ const Input = ({ name, title, grow, shrink, readOnly = false, type, isZipCode = 
   return (
     <div className={`${type === 'hidden' ? 'hidden' : 'flex'} flex-col justify-center items-start relative ${shrink ? 'w-34' : ''} ${grow ? 'grow' : ''}`}>
       <div className='px-2 text-xs flex flex-row justify-between items-center'>{title} {required && <Asterisk color='#e00' size={12} />}</div>
-      <div htmlFor={name} className={`w-full border rounded-lg p-2 px-4 text-sm flex flex-row justify-between items-center gap-2 ${(disabled || readOnly) && 'bg-gray-100'} ${error && 'border-red-300'}`}>
+      <div htmlFor={name} className={`w-full border rounded-sm p-2 px-4 text-sm flex flex-row justify-between items-center gap-2 ${(disabled || readOnly) && 'bg-gray-100'} ${error && 'border-red-300'}`}>
         <input
           id={name}
           name={name}

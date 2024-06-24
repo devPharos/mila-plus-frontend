@@ -39,8 +39,9 @@ export default function AdministrativeGroups() {
   useEffect(() => {
     async function getGroups() {
       const { data } = await api.get('/groups')
-      const gridDataValues = data.map(({ id, name, filial_type }) => {
-        return { show: true, id, fields: [name, filial_type] }
+      const gridDataValues = data.map(({ id, name, Filialtype, canceled_at }) => {
+        const filialTypeName = Filialtype.name;
+        return { show: true, id, fields: [name, filialTypeName], canceled: canceled_at }
       })
       setGridData(gridDataValues)
     }

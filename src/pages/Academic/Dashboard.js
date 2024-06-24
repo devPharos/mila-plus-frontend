@@ -1,17 +1,12 @@
 import { Filter } from 'lucide-react';
-import React, { useState } from 'react';
+import React from 'react';
 import Breadcrumbs from '~/components/Breadcrumbs';
-import Filters from '~/components/Filters';
 import FiltersBar from '~/components/FiltersBar';
-import Grid from '~/components/Grid';
 import PageHeader from '~/components/PageHeader';
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 export default function AcademicDashboard() {
-  const [activeFilters, setActiveFilters] = useState([])
-  const [orderBy, setOrderBy] = useState({ column: 'Scheduled Date', asc: true })
-  const [gridHeader, setGridHeader] = useState(null)
   const data = [
     {
       name: 'Page A',

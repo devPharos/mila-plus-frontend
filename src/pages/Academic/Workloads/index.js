@@ -7,22 +7,37 @@ import Grid from '~/components/Grid';
 import api from '~/services/api';
 import { applyFilters } from '~/functions';
 import PageHeader from '~/components/PageHeader';
-import StudyProgramPreview from './Preview';
+import WorkloadPreview from './Preview';
 
-export default function StudyProgram() {
+export default function Workloads() {
   const [activeFilters, setActiveFilters] = useState([])
   const [opened, setOpened] = useState(false)
   const [orderBy, setOrderBy] = useState({ column: 'Name', asc: true })
   const [gridHeader, setGridHeader] = useState([
+    {
+      title: 'Level',
+      type: 'text',
+      filter: true,
+    },
+    {
+      title: 'Language Mode',
+      type: 'text',
+      filter: true,
+    },
     {
       title: 'Name',
       type: 'text',
       filter: true,
     },
     {
-      title: 'Language',
+      title: 'Day per Week',
       type: 'text',
-      filter: true,
+      filter: false,
+    },
+    {
+      title: 'Hours per Day',
+      type: 'text',
+      filter: false,
     },
   ])
 
@@ -37,15 +52,19 @@ export default function StudyProgram() {
   }
 
   useEffect(() => {
-    async function getFilials() {
-      const { data } = await api.get('/studyprograms')
-      const gridDataValues = data.map(({ id, name, language }) => {
-        const languageName = language.name;
-        return { show: true, id, fields: [name, languageName] }
+    async function getData() {
+      const { data } = await api.get('/workloads')
+      const gridDataValues = data.map(({ id, name, Level, Languagemode, days_per_week, hours_per_day }) => {
+        if (!name) {
+          name = `${days_per_week.toString()} day(s) per week, ${hours_per_day.toString()} hour(s) per day.`
+        }
+        const level_name = Level.Programcategory.name + ' - ' + Level.name;
+        const languagemode_name = Languagemode.name;
+        return { show: true, id, fields: [level_name, languagemode_name, name, days_per_week, hours_per_day] }
       })
       setGridData(gridDataValues)
     }
-    getFilials()
+    getData()
   }, [opened])
 
   function handleOpened(id) {
@@ -69,7 +88,7 @@ export default function StudyProgram() {
 
     <Grid gridData={gridData} gridHeader={gridHeader} orderBy={orderBy} setOrderBy={setOrderBy} handleOpened={handleOpened} opened={opened}>
       {opened && <div className='fixed left-0 top-0 z-50 w-full h-full' style={{ background: 'rgba(0,0,0,.2)' }}></div>}
-      {opened && <StudyProgramPreview id={opened} handleOpened={handleOpened} setOpened={setOpened} defaultFormType='full' />}
+      {opened && <WorkloadPreview id={opened} handleOpened={handleOpened} setOpened={setOpened} defaultFormType='full' />}
     </Grid>
   </div>;
 }

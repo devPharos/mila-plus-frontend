@@ -27,7 +27,7 @@ export default function Grid({ children, gridHeader = null, gridData = null, ord
       </thead>
       <tbody className='align-center'>
         {gridData.length > 0 ? gridData.map((row, index) => {
-          return row.show && <tr key={index} onClick={() => handleOpened(row.id || null)} className={`${opened === row.id ? 'bg-mila_orange text-white' : row.fields[0] ? 'odd:bg-white' : 'bg-gray-50 text-red-500'} h-10  hover:rounded hover:border hover:border-mila_orange cursor-pointer`}>
+          return row.show && <tr key={index} onClick={() => handleOpened(row.id || null)} className={`${opened === row.id ? 'bg-mila_orange text-white' : row.canceled ? 'opacity-40' : 'odd:bg-white'} h-10  hover:rounded hover:border hover:border-mila_orange cursor-pointer`}>
             {
               row.fields.map((field, index) => {
                 if (gridHeader[index].type === 'image') {

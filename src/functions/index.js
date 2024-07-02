@@ -3,9 +3,9 @@ import { useLocation } from "react-router-dom";
 import { PageContext } from "~/App";
 import api from "~/services/api";
 
-export function hasAccessTo(accesses = null, menu_alias = 0) {
+export function hasAccessTo(accesses = null, menu_alias = null) {
   const defaultFalse = { view: false, edit: false, create: false, inactivate: false };
-  if (!accesses || !accesses.hierarchy) {
+  if (!accesses || !accesses.hierarchy || !menu_alias) {
     return defaultFalse
   }
 

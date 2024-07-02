@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { NavLink } from 'react-router-dom';
+import { PageContext } from '~/App';
 import Icon from '~/components/Icon';
 import { hasAccessTo } from '~/functions';
 
@@ -32,16 +33,15 @@ export default function Sidebar({ pages }) {
 
     <div className='my-12 flex flex-1 flex-col justify-start items-start gap-8 w-full'>
       {pages.map((page, index) => {
-        if (!hasAccessTo(accesses, page.alias)) {
-          return null;
-        }
-        return <NavLink key={index} to={page.path} className='w-full'>
-          {({ isActive }) => (
-            <div className={`${isActive ? activeMenu.class : inactiveMenu.class}`}>
+        if (hasAccessTo(accesses, page.alias).view) {
+          return <NavLink key={index} to={page.path} className='w-full'>
+            {({ isActive }) => (<div className={`${isActive ? activeMenu.class : inactiveMenu.class}`}>
               <Icon name={page.icon} color={`${isActive ? activeMenu.color : inactiveMenu.color}`} size={20} /> {oppened && <div className={`flex-1 ${isActive ? 'text-white' : 'text-gray-500'}`}>{page.title}</div>}
             </div>
-          )}
-        </NavLink>
+            )}
+          </NavLink>
+        }
+
       })}
     </div>
   </div>

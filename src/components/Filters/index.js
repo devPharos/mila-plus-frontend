@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Popover from '../Popover';
 import PopoverAddFilter from '../Popover/PopoverAddFilter';
 
-export default function Filters({ handleNew = null, search, handleFilters = null, gridHeader = null, setGridHeader = () => null, gridData = null, activeFilters = null }) {
+export default function Filters({ access = { view: false, edit: false, create: false, inactivate: false }, handleNew = null, search, handleFilters = null, gridHeader = null, setGridHeader = () => null, gridData = null, activeFilters = null }) {
     if (!gridHeader || !gridData) {
         return null;
     }
@@ -38,7 +38,7 @@ export default function Filters({ handleNew = null, search, handleFilters = null
     }
 
     return <div className='flex flex-row justify-between items-center w-full'>
-        <button type='button' onClick={() => handleNew()} className='p-2 w-10 border border-mila_orange text-mila_orange transition-all hover:bg-mila_orange hover:text-white font-bold rounded text-xs'>+</button>
+        {access.create && <button type='button' onClick={() => handleNew()} className='p-2 w-10 border border-mila_orange text-mila_orange transition-all hover:bg-mila_orange hover:text-white font-bold rounded text-xs'>+</button>}
         {results === 0 && <p className='text-xs pl-2 text-gray-500'>No results</p>}
         {results > 0 && <p className='text-xs pl-2 text-gray-500'>Showing <span className='font-bold text-primary'>{results}</span> line(s)</p>}
         {search && <div className='flex flex-row flex-1 justify-start items-center bg-secondary rounded h-8 px-2 gap-2 m-2'>

@@ -18,7 +18,7 @@ import SelectPopover from '~/components/RegisterForm/SelectPopover';
 
 export const InputContext = createContext({})
 
-export default function PagePreview({ id, handleOpened, setOpened, defaultFormType = 'preview' }) {
+export default function PagePreview({ access, id, handleOpened, setOpened, defaultFormType = 'preview' }) {
     const [pageData, setPageData] = useState({
         active: false,
         alias: '',
@@ -153,7 +153,7 @@ export default function PagePreview({ id, handleOpened, setOpened, defaultFormTy
                 <div className='relative bg-gray-100 h-16 px-4 py-2 flex flex-row items-start justify-start'>
 
                     <button onClick={() => setFormType('full')} className='absolute top-2 right-20 text-md font-bold bg-mila_orange text-white rounded-md p-1 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1'>
-                        <Pencil size={16} color="#fff" /> Edit
+                        <Pencil size={16} color="#fff" /> Open
                     </button>
                     <button onClick={() => handleOpened(null)} className='absolute top-2 right-2 text-md font-bold bg-secondary rounded-md p-1 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1'>
                         <X size={16} /> Close
@@ -203,7 +203,7 @@ export default function PagePreview({ id, handleOpened, setOpened, defaultFormTy
                             <Form ref={generalForm} onSubmit={handleGeneralFormSubmit} className='w-full'>
                                 <InputContext.Provider value={{ id, generalForm, setSuccessfullyUpdated, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm }}>
 
-                                    <FormHeader title={pageData.name} registry={registry} InputContext={InputContext} />
+                                    <FormHeader access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
 
                                     <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
                                         <InputLine title='General Data'>

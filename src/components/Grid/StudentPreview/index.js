@@ -41,7 +41,7 @@ export default function StudentPreview({ id, handleOpened }) {
             <div className='relative bg-gray-100 h-28 px-4 py-2 flex flex-row items-start justify-start'>
 
                 <button onClick={() => setFormType('full')} className='absolute top-2 right-20 text-md font-bold bg-mila_orange text-white rounded-md p-1 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1'>
-                    <Pencil size={16} color="#fff" /> Edit
+                    <Pencil size={16} color="#fff" /> Open
                 </button>
                 <button onClick={() => handleOpened(null)} className='absolute top-2 right-2 text-md font-bold bg-secondary rounded-md p-1 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1'>
                     <X size={16} /> Close

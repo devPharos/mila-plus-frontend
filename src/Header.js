@@ -15,13 +15,12 @@ export default function Header() {
   const [activePopover, setActivePopover] = useState('');
   const { profile } = useSelector(state => state.user);
   const { accesses } = useSelector(state => state.auth);
-  const { filial } = useSelector(state => state.user);
 
   return <header className="z-50 sticky top-0 bg-white min-h-16 h-16 border-b flex">
     <div className="max-w-screen-2xl flex flex-row justify-between items-center w-screen">
       <div className='px-4 h-12 flex flex-row justify-between items-center border-r'>
         <Link to='/'>
-          <img alt='Mila' src={logo} className='h-8' />
+          <img alt='Mila' src={logo} style={{ height: 32 }} />
         </Link>
       </div>
       <div className='px-4 h-12 flex flex-1 flex-row justify-between items-center'>

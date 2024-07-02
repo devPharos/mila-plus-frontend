@@ -1,0 +1,9 @@
+{
+    "admin": {
+        "modules": [
+            {
+                "name": "Administrative"
+            }
+        ]
+    }
+}

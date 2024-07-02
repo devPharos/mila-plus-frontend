@@ -5,8 +5,10 @@ import FiltersBar from '~/components/FiltersBar';
 import PageHeader from '~/components/PageHeader';
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { getCurrentPage } from '~/functions';
 
 export default function AcademicDashboard() {
+  const currentPage = getCurrentPage();
   const data = [
     {
       name: 'Page A',
@@ -54,7 +56,7 @@ export default function AcademicDashboard() {
 
   return <div className='h-full bg-white flex flex-1 flex-col justify-between items-start rounded-tr-2xl px-4'>
     <PageHeader>
-      <Breadcrumbs />
+      <Breadcrumbs currentPage={currentPage} />
       <FiltersBar>
         <Filter size={14} /> Custom Filters
       </FiltersBar>

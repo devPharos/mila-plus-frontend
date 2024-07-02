@@ -4,7 +4,7 @@ import React, { useContext } from 'react';
 
 // import { Container } from './styles';
 
-export default function FormHeader({ title = '', registry, InputContext = null }) {
+export default function FormHeader({ access = { view: false, edit: false, create: false, inactivate: false }, title = '', registry, InputContext = null }) {
     const { registryBy, registryAt, registryStatus } = registry;
     const { id, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm, handleInactivate, canceled } = useContext(InputContext)
 
@@ -18,12 +18,18 @@ export default function FormHeader({ title = '', registry, InputContext = null }
             {/* <button type='button' onClick={() => handleInactivate()} className='text-md font-bold bg-secondary border hover:border-primary hover:text-primary rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1'>
                 {canceled ? <><Eye size={16} /> Reactivate</> : <><EyeOff size={16} /> Inactivate</>}
             </button> */}
-            <button type='button' onClick={() => handleCloseForm()} className='text-md font-bold bg-secondary border hover:border-primary hover:text-primary rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1'>
+            {(access.edit && id !== 'new' || access.create && id === 'new') ? <button type='button' onClick={() => handleCloseForm()} className='text-md font-bold bg-secondary border hover:border-primary hover:text-primary rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1'>
                 <X size={16} /> {successfullyUpdated ? 'Close' : 'Discard changes not saved'}
             </button>
-            <button type="submit" className={`text-md font-bold ${!successfullyUpdated ? 'bg-red-500' : 'bg-primary'} text-white rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1`}>
-                {id === 'new' ? <><Save size={16} /> Create</> : !successfullyUpdated ? <><Save size={16} /> Save changes</> : <><CheckCheck size={16} /> Saved</>}
-            </button>
+                : <button type='button' onClick={() => handleCloseForm()} className='text-md font-bold bg-secondary border hover:border-primary hover:text-primary rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1'>
+                    <X size={16} /> Close
+                </button>}
+            {access.create && id === 'new' && <button type="submit" className={`text-md font-bold ${!successfullyUpdated ? 'bg-red-500' : 'bg-primary'} text-white rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1`}>
+                <><Save size={16} /> Create</>
+            </button>}
+            {access.edit && id !== 'new' && <button type="submit" className={`text-md font-bold ${!successfullyUpdated ? 'bg-red-500' : 'bg-primary'} text-white rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1`}>
+                {!successfullyUpdated ? <><Save size={16} /> Save changes</> : <><CheckCheck size={16} /> Saved</>}
+            </button>}
         </div>
     </div>;
 }

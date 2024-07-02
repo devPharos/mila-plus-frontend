@@ -6,7 +6,7 @@ export default function Page404() {
 
     return <div className='h-full bg-white flex flex-1 flex-col justify-between items-start rounded-tr-2xl px-4'>
         <PageHeader>
-            <Breadcrumbs />
+            <Breadcrumbs currentPage={currentPage} />
         </PageHeader>
 
         <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'start', paddingTop: 24 }}>

@@ -7,10 +7,12 @@ import Grid from '~/components/Grid';
 import PageHeader from '~/components/PageHeader';
 
 import { BarChart, Bar, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { getCurrentPage } from '~/functions';
 
 export default function AdministrativeDashboard() {
   const [activeFilters, setActiveFilters] = useState([])
   const [orderBy, setOrderBy] = useState({ column: 'Scheduled Date', asc: true })
+  const currentPage = getCurrentPage();
   const [gridHeader, setGridHeader] = useState(null)
   const data = [
     {
@@ -364,7 +366,7 @@ export default function AdministrativeDashboard() {
 
   return <div className='h-full bg-white flex flex-1 flex-col justify-between items-start rounded-tr-2xl px-4'>
     <PageHeader>
-      <Breadcrumbs />
+      <Breadcrumbs currentPage={currentPage} />
       <FiltersBar>
         <Filter size={14} /> Custom Filters
       </FiltersBar>

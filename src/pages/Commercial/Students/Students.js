@@ -10,6 +10,8 @@ export default function ComercialStudents() {
   const [activeFilters, setActiveFilters] = useState([])
   const [opened, setOpened] = useState(false)
   const [orderBy, setOrderBy] = useState({ column: 'Scheduled Date', asc: true })
+  const { accesses } = useSelector(state => state.auth);
+  const currentPage = getCurrentPage();
   const [gridHeader, setGridHeader] = useState([
     {
       title: 'Avatar',
@@ -143,7 +145,7 @@ export default function ComercialStudents() {
 
   return <div className='h-full bg-white flex flex-1 flex-col justify-between items-start rounded-tr-2xl p-4'>
     <div className='border-b w-full flex flex-row justify-between items-start px-2'>
-      <Breadcrumbs />
+      <Breadcrumbs currentPage={currentPage} />
       <FiltersBar>
         <Filter size={14} /> Custom Filters
       </FiltersBar>

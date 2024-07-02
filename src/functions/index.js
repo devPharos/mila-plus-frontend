@@ -1,7 +1,15 @@
+import { useContext } from "react";
+import { useLocation } from "react-router-dom";
+import { PageContext } from "~/App";
 import api from "~/services/api";
 
 export function hasAccessTo(accesses = null, menu_alias = 0) {
-  return accesses && accesses.hierarchy && accesses.hierarchy.findIndex(access => access.alias === menu_alias) > -1
+  if (!accesses || !accesses.hierarchy) {
+    return null
+  }
+
+  const { view, edit, create, inactivate } = accesses.hierarchy.filter(access => access.alias === menu_alias)[0].MenuHierarchyXGroup;
+  return { view, edit, create, inactivate };
 }
 
 export const countries_list = [
@@ -286,11 +294,20 @@ export function handleUpdatedFields(data, pageData) {
 
   return dataInArray.filter((field) => {
     const x = field[1] === 'Yes' ? true : field[1] === 'No' ? false : field[1];
-    const y = pageDataInArray.find(filialField => filialField[0] === field[0])[1];
+    const y = pageDataInArray.filter(filialField => filialField[0] === field[0])[1];
 
     if (x != y && (x || y)) {
       return field;
     }
   })
 
+}
+
+export function getCurrentPage() {
+  const { pages } = useContext(PageContext)
+  const { pathname } = useLocation();
+  const paths = pathname.substring(1).split('/');
+  const currentModule = pages.filter(module => module.name === paths[0])[0];
+  const currentPage = currentModule.children.filter(page => page.path === pathname)[0];
+  return currentPage
 }

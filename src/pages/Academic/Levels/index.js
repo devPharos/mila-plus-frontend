@@ -7,7 +7,7 @@ import Grid from '~/components/Grid';
 import api from '~/services/api';
 import { applyFilters } from '~/functions';
 import PageHeader from '~/components/PageHeader';
-import LevelsPreview from './Preview';
+import PagePreview from './Preview';
 
 export default function Levels() {
   const [activeFilters, setActiveFilters] = useState([])
@@ -16,6 +16,11 @@ export default function Levels() {
   const [gridHeader, setGridHeader] = useState([
     {
       title: 'Name',
+      type: 'text',
+      filter: true,
+    },
+    {
+      title: 'Total Hours',
       type: 'text',
       filter: true,
     },
@@ -39,9 +44,9 @@ export default function Levels() {
   useEffect(() => {
     async function getData() {
       const { data } = await api.get('/levels')
-      const gridDataValues = data.map(({ id, name, Programcategory }) => {
+      const gridDataValues = data.map(({ id, name, total_hours, Programcategory }) => {
         const programcategory = Programcategory.name;
-        return { show: true, id, fields: [name, programcategory] }
+        return { show: true, id, fields: [name, total_hours.toString() + 'h', programcategory] }
       })
       setGridData(gridDataValues)
     }
@@ -68,8 +73,8 @@ export default function Levels() {
     <Filters handleNew={() => setOpened('new')} search handleFilters={handleFilters} gridHeader={gridHeader} gridData={gridData} setGridHeader={setGridHeader} activeFilters={activeFilters} />
 
     <Grid gridData={gridData} gridHeader={gridHeader} orderBy={orderBy} setOrderBy={setOrderBy} handleOpened={handleOpened} opened={opened}>
-      {opened && <div className='fixed left-0 top-0 z-50 w-full h-full' style={{ background: 'rgba(0,0,0,.2)' }}></div>}
-      {opened && <LevelsPreview id={opened} handleOpened={handleOpened} setOpened={setOpened} defaultFormType='full' />}
+      {opened && <div className='fixed left-0 top-0 z-40 w-full h-full' style={{ background: 'rgba(0,0,0,.2)' }}></div>}
+      {opened && <PagePreview id={opened} handleOpened={handleOpened} setOpened={setOpened} defaultFormType='full' />}
     </Grid>
   </div>;
 }

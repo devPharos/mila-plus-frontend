@@ -7,7 +7,7 @@ import Grid from '~/components/Grid';
 import api from '~/services/api';
 import { applyFilters } from '~/functions';
 import PageHeader from '~/components/PageHeader';
-import WorkloadPreview from './Preview';
+import PagePreview from './Preview';
 
 export default function Workloads() {
   const [activeFilters, setActiveFilters] = useState([])
@@ -87,8 +87,8 @@ export default function Workloads() {
     <Filters handleNew={() => setOpened('new')} search handleFilters={handleFilters} gridHeader={gridHeader} gridData={gridData} setGridHeader={setGridHeader} activeFilters={activeFilters} />
 
     <Grid gridData={gridData} gridHeader={gridHeader} orderBy={orderBy} setOrderBy={setOrderBy} handleOpened={handleOpened} opened={opened}>
-      {opened && <div className='fixed left-0 top-0 z-50 w-full h-full' style={{ background: 'rgba(0,0,0,.2)' }}></div>}
-      {opened && <WorkloadPreview id={opened} handleOpened={handleOpened} setOpened={setOpened} defaultFormType='full' />}
+      {opened && <div className='fixed left-0 top-0 z-40 w-full h-full' style={{ background: 'rgba(0,0,0,.2)' }}></div>}
+      {opened && <PagePreview id={opened} handleOpened={handleOpened} setOpened={setOpened} defaultFormType='full' />}
     </Grid>
   </div>;
 }

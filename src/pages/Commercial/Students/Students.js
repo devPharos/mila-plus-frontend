@@ -80,10 +80,10 @@ export default function ComercialStudents() {
       ]
     },
   ])
-  
+
   function handleFilters({ title = '', value = '' }) {
-    if(value) {
-      setActiveFilters([...activeFilters.filter(el => el.title != title), {title, value}])
+    if (value) {
+      setActiveFilters([...activeFilters.filter(el => el.title != title), { title, value }])
     } else {
       setActiveFilters([...activeFilters.filter(el => el.title != title)])
     }
@@ -93,68 +93,68 @@ export default function ComercialStudents() {
     setOpened(null)
     setTimeout(() => {
       setOpened(id)
-    },250)
+    }, 250)
   }
-  
+
   useEffect(() => {
     function applyFilters() {
 
       const search = activeFilters.filter(el => el.title === 'search');
       const filters = activeFilters.filter(el => el.title !== 'search');
 
-        const newData = gridData.map((line) => {
-          line.show = true;
-          filters.forEach(filter => {
-            const fieldPos = gridHeader.findIndex((el) => el.title === filter.title);
-            if(fieldPos > -1) {
-              if(Array.isArray(filter.value)) {
-                console.log(filter.value);
-              } else {
-                if(line.fields[fieldPos].toUpperCase().search(filter.value.toUpperCase()) === -1) {
-                  line.show = false;
-                }
+      const newData = gridData.map((line) => {
+        line.show = true;
+        filters.forEach(filter => {
+          const fieldPos = gridHeader.findIndex((el) => el.title === filter.title);
+          if (fieldPos > -1) {
+            if (Array.isArray(filter.value)) {
+              console.log(filter.value);
+            } else {
+              if (line.fields[fieldPos].toUpperCase().search(filter.value.toUpperCase()) === -1) {
+                line.show = false;
               }
             }
-          })
-
-          if(search.length > 0 && line.show) {
-            line.show = false;
-            line.fields.map((field) => {
-              if(field.toUpperCase().search(search[0].value.toUpperCase()) > -1) {
-                line.show = true;
-              }
-            })
           }
-          
-
-          return line
         })
 
-        if(orderBy.column) {
-          const fieldPos = gridHeader.findIndex((el) => el.title === orderBy.column);
-          newData.sort((a,b) => orderBy.asc ? a.fields[fieldPos] > b.fields[fieldPos] : a.fields[fieldPos] < b.fields[fieldPos])
+        if (search.length > 0 && line.show) {
+          line.show = false;
+          line.fields.map((field) => {
+            if (field.toUpperCase().search(search[0].value.toUpperCase()) > -1) {
+              line.show = true;
+            }
+          })
         }
-  
+
+
+        return line
+      })
+
+      if (orderBy.column) {
+        const fieldPos = gridHeader.findIndex((el) => el.title === orderBy.column);
+        newData.sort((a, b) => orderBy.asc ? a.fields[fieldPos] > b.fields[fieldPos] : a.fields[fieldPos] < b.fields[fieldPos])
+      }
+
       setGridData(newData)
-  
+
     }
     applyFilters()
-  },[activeFilters, orderBy])
+  }, [activeFilters, orderBy])
 
   return <div className='h-full bg-white flex flex-1 flex-col justify-between items-start rounded-tr-2xl p-4'>
-  <div className='border-b w-full flex flex-row justify-between items-start px-2'>
-    <Breadcrumbs />
-    <FiltersBar>
-      <Filter size={14} /> Custom Filters
-    </FiltersBar>
-  </div>
-  
-  <Filters search handleFilters={handleFilters} gridHeader={gridHeader} gridData={gridData} setGridHeader={setGridHeader} activeFilters={activeFilters} />
-  
-  <Grid gridData={gridData} gridHeader={gridHeader} orderBy={orderBy} setOrderBy={setOrderBy} handleOpened={handleOpened} opened={opened}>
-    {opened && <div className='fixed left-0 top-0 z-50 w-full h-full' style={{ background: 'rgba(0,0,0,.2)' }}></div>}
-    {opened && <StudentPreview id={opened} handleOpened={handleOpened} />}
-  </Grid>
+    <div className='border-b w-full flex flex-row justify-between items-start px-2'>
+      <Breadcrumbs />
+      <FiltersBar>
+        <Filter size={14} /> Custom Filters
+      </FiltersBar>
+    </div>
 
-</div>;
+    <Filters search handleFilters={handleFilters} gridHeader={gridHeader} gridData={gridData} setGridHeader={setGridHeader} activeFilters={activeFilters} />
+
+    <Grid gridData={gridData} gridHeader={gridHeader} orderBy={orderBy} setOrderBy={setOrderBy} handleOpened={handleOpened} opened={opened}>
+      {opened && <div className='fixed left-0 top-0 z-40 w-full h-full' style={{ background: 'rgba(0,0,0,.2)' }}></div>}
+      {opened && <StudentPreview id={opened} handleOpened={handleOpened} />}
+    </Grid>
+
+  </div>;
 }

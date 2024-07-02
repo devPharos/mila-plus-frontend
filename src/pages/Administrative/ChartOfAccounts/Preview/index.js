@@ -9,12 +9,12 @@ import FormHeader from '~/components/RegisterForm/FormHeader';
 import Preview from '~/components/Preview';
 import { Zoom, toast } from 'react-toastify';
 import api from '~/services/api';
-import { getRegistries } from '~/functions';
+import { getRegistries, handleUpdatedFields } from '~/functions';
 import SelectPopover from '~/components/RegisterForm/SelectPopover';
 
 export const InputContext = createContext({})
 
-export default function ChartOfAccountsPreview({ id, handleOpened, setOpened, defaultFormType = 'preview' }) {
+export default function PagePreview({ id, handleOpened, setOpened, defaultFormType = 'preview' }) {
     const [pageData, setPageData] = useState({
         father_id: null,
         name: '',
@@ -53,23 +53,10 @@ export default function ChartOfAccountsPreview({ id, handleOpened, setOpened, de
                 toast("Saved!", { autoClose: 1000 })
                 handleOpened(null)
             } catch (err) {
-                console.log(err)
+                toast(err.response.data.error, { type: 'error', autoClose: 3000 })
             }
         } else if (id !== 'new') {
-            const dataInArray = Object.keys(data).map((key) => [key, data[key]])
-            const pageDataInArray = Object.keys(pageData).map((key) => [key, pageData[key]]);
-
-            // console.log(pageDataInArray)
-            const updated = dataInArray.filter((field) => {
-                const x = field[1] === 'Yes' ? true : field[1] === 'No' ? false : field[1];
-                // const y = 999;
-                // console.log(field[0])
-                const y = pageDataInArray.find(filialField => filialField[0] === field[0])[1];
-
-                if (x !== y && (x || y)) {
-                    return field;
-                }
-            })
+            const updated = handleUpdatedFields(data, pageData)
 
             if (updated.length > 0) {
                 const objUpdated = Object.fromEntries(updated);
@@ -81,8 +68,7 @@ export default function ChartOfAccountsPreview({ id, handleOpened, setOpened, de
                     toast("Saved!", { autoClose: 1000 })
                     handleOpened(null)
                 } catch (err) {
-                    toast("An unexpected error occurred on this transactions. Please verify all fields again.", { type: 'error' })
-                    console.log(err)
+                    toast(err.response.data.error, { type: 'error', autoClose: 3000 })
                 }
             } else {
                 console.log(updated)
@@ -100,7 +86,7 @@ export default function ChartOfAccountsPreview({ id, handleOpened, setOpened, de
                 const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
                 setRegistry(registries)
             } catch (err) {
-                console.log(err)
+                toast(err.response.data.error, { type: 'error', autoClose: 3000 })
             }
         }
         async function getDefaultOptions() {
@@ -119,7 +105,7 @@ export default function ChartOfAccountsPreview({ id, handleOpened, setOpened, de
                 })
                 setChartOfAccountsOptions(chartsOfAccounts)
             } catch (err) {
-                console.log(err)
+                toast(err.response.data.error, { type: 'error', autoClose: 3000 })
             }
         }
         getDefaultOptions()

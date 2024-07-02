@@ -22,39 +22,39 @@ export default function Login() {
 
   const handleFormSubmit = async data => {
     try {
-    await schema.validate(data, {
-      abortEarly: false,
-    });
-    const { email, password } = data;
-
-    dispatch(loginRequest(email, password));
-
-    // navigate("/commercial/dashboard")
-  } catch(err) {
-    const validationErrors = {};
-    if (err instanceof Yup.ValidationError) {
-      err.inner.forEach(error => {
-        validationErrors[error.path] = error.message;
+      await schema.validate(data, {
+        abortEarly: false,
       });
-      formRef.current.setErrors(validationErrors);
-      // Validation failed
-      console.log(err);
+      const { email, password } = data;
 
+      dispatch(loginRequest(email, password));
+
+      // navigate("/commercial/dashboard")
+    } catch (err) {
+      const validationErrors = {};
+      if (err instanceof Yup.ValidationError) {
+        err.inner.forEach(error => {
+          validationErrors[error.path] = error.message;
+        });
+        formRef.current.setErrors(validationErrors);
+        // Validation failed
+        toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+
+      }
     }
-  }
 
   }
   // const { user } = useSelector(state => state);
   return <div className='h-full flex flex-1 flex-col justify-center items-center rounded-tr-2xl gap-8'>
-  
-  <div>
-    <img alt='Mila' src={logo} className='h-16' />
-  </div>
-  <Form ref={formRef} onSubmit={handleFormSubmit} className='flex flex-col justify-between items-center gap-4'>
-    <Input name="email" placeholder="E-mail" />
-    <Input name="password" placeholder="Password" type="password" />
-    <button type="submit" className='w-72 border rounded-full p-2 border-primary text-primary font-bold text-sm'>Log In</button>
-  </Form>
 
-</div>;
+    <div>
+      <img alt='Mila' src={logo} className='h-16' />
+    </div>
+    <Form ref={formRef} onSubmit={handleFormSubmit} className='flex flex-col justify-between items-center gap-4'>
+      <Input name="email" placeholder="E-mail" />
+      <Input name="password" placeholder="Password" type="password" />
+      <button type="submit" className='w-72 border rounded-full p-2 border-primary text-primary font-bold text-sm'>Log In</button>
+    </Form>
+
+  </div>;
 }

@@ -33,12 +33,12 @@ export default function Filters({ handleNew = null, search, handleFilters = null
                     return <button type='button' key={elIndex} onClick={() => { setActivePopover(''); handleFilters({ title, value: option }) }} className={`${active.length > 0 && active[0].value === option && 'bg-gray-300'} hover:bg-gray-300 px-2 py-2 rounded text-left whitespace-nowrap`}>{typeof option === 'boolean' ? option === true ? 'Yes' : 'No' : option}</button>
                 })}
                 {active.length > 0 && <button type='button' onClick={() => { setActivePopover(''); handleFilters({ title, value: '' }) }} className='text-primary font-bold hover:bg-gray-300 hover:text-white px-2 py-2 rounded text-left flex flex-row items-center justify-start gap-2 whitespace-nowrap'><Eraser size={12} /> Clear</button>}
-                {active.length === 0 && <button type='button' onClick={() => { handleAddFilter(gridHeader[index]) }} className='text-primary font-bold hover:bg-gray-300 hover:text-white px-2 py-2 rounded text-left flex flex-row items-center justify-start gap-2 whitespace-nowrap'><EyeOff size={12} /> Hide Filter</button>}
+                {active.length === 0 && <button type='button' onClick={() => { handleAddFilter(gridHeader[index]) }} className='text-primary font-bold transition-all hover:bg-gray-300 hover:text-white px-2 py-2 rounded text-left flex flex-row items-center justify-start gap-2 whitespace-nowrap'><EyeOff size={12} /> Hide Filter</button>}
             </div>);
     }
 
     return <div className='flex flex-row justify-between items-center w-full'>
-        <button type='button' onClick={() => handleNew()} className='p-2 w-10 border border-mila_orange text-mila_orange hover:bg-mila_orange hover:text-white font-bold rounded text-xs'>+</button>
+        <button type='button' onClick={() => handleNew()} className='p-2 w-10 border border-mila_orange text-mila_orange transition-all hover:bg-mila_orange hover:text-white font-bold rounded text-xs'>+</button>
         {results === 0 && <p className='text-xs pl-2 text-gray-500'>No results</p>}
         {results > 0 && <p className='text-xs pl-2 text-gray-500'>Showing <span className='font-bold text-primary'>{results}</span> line(s)</p>}
         {search && <div className='flex flex-row flex-1 justify-start items-center bg-secondary rounded h-8 px-2 gap-2 m-2'>

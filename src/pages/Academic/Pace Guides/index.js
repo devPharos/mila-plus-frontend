@@ -9,21 +9,26 @@ import { applyFilters } from '~/functions';
 import PageHeader from '~/components/PageHeader';
 import PagePreview from './Preview';
 
-export default function ProgramCategory() {
+export default function PaceGuides() {
   const [activeFilters, setActiveFilters] = useState([])
   const [opened, setOpened] = useState(false)
   const [orderBy, setOrderBy] = useState({ column: 'Name', asc: true })
   const [gridHeader, setGridHeader] = useState([
     {
-      title: 'Name',
+      title: 'Workload',
       type: 'text',
       filter: true,
     },
     {
-      title: 'Language',
+      title: 'Type',
       type: 'text',
       filter: true,
     },
+    {
+      title: 'Description',
+      type: 'text',
+      filter: true,
+    }
   ])
 
   const [gridData, setGridData] = useState()
@@ -37,15 +42,15 @@ export default function ProgramCategory() {
   }
 
   useEffect(() => {
-    async function getFilials() {
-      const { data } = await api.get('/programcategories')
-      const gridDataValues = data.map(({ id, name, Language }) => {
-        const languageName = Language.name;
-        return { show: true, id, fields: [name, languageName] }
+    async function getData() {
+      const { data } = await api.get('/paceguides')
+      const gridDataValues = data.map(({ id, Workload, type, description }) => {
+        const workload_name = Workload.name;
+        return { show: true, id, fields: [workload_name, type, description] }
       })
       setGridData(gridDataValues)
     }
-    getFilials()
+    getData()
   }, [opened])
 
   function handleOpened(id) {

@@ -24,7 +24,8 @@ export default function PagePreview({ id, handleOpened, setOpened, defaultFormTy
     const [fullscreen, setFullscreen] = useState(false)
     const [activeMenu, setActiveMenu] = useState('general')
     const generalForm = useRef()
-    const [programCategoriesOptions, setProgramCategoriesOptions] = useState([])
+    const [levelOptions, setLevelOptions] = useState([])
+    const [languageModeOptions, setLanguageModeOptions] = useState([])
 
     function handleCloseForm() {
         if (!successfullyUpdated) {
@@ -40,7 +41,7 @@ export default function PagePreview({ id, handleOpened, setOpened, defaultFormTy
         }
         if (id === 'new') {
             try {
-                const response = await api.post(`/levels`, data)
+                const response = await api.post(`/workloads`, data)
                 setOpened(response.data.id)
                 setPageData({ ...pageData, ...data })
                 setSuccessfullyUpdated(true)
@@ -55,7 +56,7 @@ export default function PagePreview({ id, handleOpened, setOpened, defaultFormTy
             if (updated.length > 0) {
                 const objUpdated = Object.fromEntries(updated);
                 try {
-                    await api.put(`/levels/${id}`, objUpdated)
+                    await api.put(`/workloads/${id}`, objUpdated)
                     setPageData({ ...pageData, ...objUpdated })
                     setSuccessfullyUpdated(true)
                     toast("Saved!", { autoClose: 1000 })
@@ -72,8 +73,8 @@ export default function PagePreview({ id, handleOpened, setOpened, defaultFormTy
     useEffect(() => {
         async function getPageData() {
             try {
-                const { data } = await api.get(`levels/${id}`)
-                setPageData(data)
+                const { data } = await api.get(`workloads/${id}`)
+                setPageData({ ...data, name: `${data.days_per_week.toString()} day(s) per week, ${data.hours_per_day.toString()} hour(s) per day.` })
                 const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at } = data;
                 const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
                 setRegistry(registries)
@@ -81,14 +82,27 @@ export default function PagePreview({ id, handleOpened, setOpened, defaultFormTy
                 toast(err.response.data.error, { type: 'error', autoClose: 3000 })
             }
         }
-        async function getDefaultOptions() {
+        async function getLevelsOptions() {
             try {
-                const { data } = await api.get(`programcategories`);
-                const programCategories = [];
-                data.map(d => {
-                    return programCategories.push({ value: d.id, label: d.name })
+                const { data } = await api.get(`levels`)
+                const levels = data.map(({ id, name, Programcategory }) => {
+                    const programcategory_name = Programcategory.name;
+                    return { value: id, label: programcategory_name + ' - ' + name }
+
                 })
-                setProgramCategoriesOptions(programCategories);
+                setLevelOptions(levels)
+            } catch (err) {
+                toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+            }
+        }
+        async function getLanguageModeOptions() {
+            try {
+                const { data } = await api.get(`languagemodes`)
+                const languagesmodes = data.map(({ id, name }) => {
+                    return { value: id, label: name }
+
+                })
+                setLanguageModeOptions(languagesmodes)
             } catch (err) {
                 toast(err.response.data.error, { type: 'error', autoClose: 3000 })
             }
@@ -97,7 +111,8 @@ export default function PagePreview({ id, handleOpened, setOpened, defaultFormTy
             setFormType('full')
         } else if (id) {
             getPageData()
-            getDefaultOptions()
+            getLevelsOptions()
+            getLanguageModeOptions()
         }
     }, [])
 
@@ -135,11 +150,17 @@ export default function PagePreview({ id, handleOpened, setOpened, defaultFormTy
 
                                     <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
                                         <InputLine title='General Data'>
-                                            <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
-                                            <Input type='text' name='total_hours' onlyInt required title='Total Hours' grow defaultValue={pageData.total_hours} InputContext={InputContext} />
-                                            {pageData && pageData.Programcategory &&
-                                                <SelectPopover name='programcategory_id' title='Type' generalForm={generalForm} options={programCategoriesOptions} defaultValue={{ value: pageData.programcategory_id, label: pageData.Programcategory.name }} InputContext={InputContext} />
+                                            <Input type='text' name='name' readOnly required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
+                                            {id === 'new' || pageData.Level &&
+                                                <SelectPopover type='text' name='level_id' required title='Level' options={levelOptions} grow defaultValue={pageData.Level ? { value: pageData.level_id, label: pageData.Level.Programcategory.name + ' - ' + pageData.Level.name } : null} InputContext={InputContext} />
                                             }
+                                            {id === 'new' || pageData.Languagemode &&
+                                                <SelectPopover type='text' name='languagemode_id' required title='Language Mode' options={languageModeOptions} grow defaultValue={pageData.Languagemode ? { value: pageData.languagemode_id, label: pageData.Languagemode.name } : null} InputContext={InputContext} />
+                                            }
+                                        </InputLine>
+                                        <InputLine title='Configurations'>
+                                            <Input type='text' name='days_per_week' workloadUpdateName onlyInt required title='Days per Week' grow defaultValue={pageData.days_per_week} InputContext={InputContext} />
+                                            <Input type='text' name='hours_per_day' workloadUpdateName onlyFloat required title='Hours per Day' grow defaultValue={pageData.hours_per_day} InputContext={InputContext} />
                                         </InputLine>
 
                                     </InputLineGroup>

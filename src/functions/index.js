@@ -279,3 +279,18 @@ export async function getRegistries({ canceled_by = null, canceled_at = null, up
   }
   return { registryBy, registryAt, registryStatus }
 }
+
+export function handleUpdatedFields(data, pageData) {
+  const dataInArray = Object.keys(data).map((key) => [key, data[key]])
+  const pageDataInArray = Object.keys(pageData).map((key) => [key, pageData[key]]);
+
+  return dataInArray.filter((field) => {
+    const x = field[1] === 'Yes' ? true : field[1] === 'No' ? false : field[1];
+    const y = pageDataInArray.find(filialField => filialField[0] === field[0])[1];
+
+    if (x != y && (x || y)) {
+      return field;
+    }
+  })
+
+}

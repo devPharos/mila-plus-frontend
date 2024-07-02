@@ -1,12 +1,10 @@
-import React, { useRef, useState } from 'react';
-import { useDispatch, useSelector } from "react-redux";
+import React, { useRef } from 'react';
+import { useDispatch } from "react-redux";
 import * as Yup from 'yup';
 import logo from '../assets/mila.png';
 import { Form } from '@unform/web'
 import Input from '~/components/LoginForm/Input';
-import api from '~/services/api';
 import { loginRequest } from '~/store/modules/auth/actions';
-import { useNavigate } from "react-router-dom";
 
 const schema = Yup.object().shape({
   email: Yup.string()
@@ -18,7 +16,6 @@ const schema = Yup.object().shape({
 export default function Login() {
   const dispatch = useDispatch();
   const formRef = useRef()
-  const navigate = useNavigate();
 
   const handleFormSubmit = async data => {
     try {

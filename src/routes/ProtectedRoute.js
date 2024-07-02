@@ -2,7 +2,6 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
 import Header from '~/Header';
-import bg from '../assets/bg.png';
 
 function ProtectedRoute({ children }) {
   const { signed } = useSelector(state => state.auth)

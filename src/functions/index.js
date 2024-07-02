@@ -4,11 +4,18 @@ import { PageContext } from "~/App";
 import api from "~/services/api";
 
 export function hasAccessTo(accesses = null, menu_alias = 0) {
+  const defaultFalse = { view: false, edit: false, create: false, inactivate: false };
   if (!accesses || !accesses.hierarchy) {
-    return null
+    return defaultFalse
   }
 
-  const { view, edit, create, inactivate } = accesses.hierarchy.filter(access => access.alias === menu_alias)[0].MenuHierarchyXGroup;
+  const current = accesses.hierarchy.filter(access => access.alias === menu_alias)[0];
+
+  if (!current.MenuHierarchyXGroup) {
+    return defaultFalse;
+  }
+
+  const { view, edit, create, inactivate } = current.MenuHierarchyXGroup;
   return { view, edit, create, inactivate };
 }
 

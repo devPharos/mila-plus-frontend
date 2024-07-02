@@ -21,15 +21,15 @@ function UnprotectedRoute({ children }) {
   if (signed) {
     // user is authenticated
     let module_page = '';
-    if (hasAccessTo(accesses, 'administrative')) {
+    if (hasAccessTo(accesses, 'administrative').view) {
       module_page = 'Administrative';
-    } else if (hasAccessTo(accesses, 'academic')) {
+    } else if (hasAccessTo(accesses, 'academic').view) {
       module_page = 'Academic';
-    } else if (hasAccessTo(accesses, 'operational')) {
+    } else if (hasAccessTo(accesses, 'operational').view) {
       module_page = 'Operational';
-    } else if (hasAccessTo(accesses, 'commercial')) {
+    } else if (hasAccessTo(accesses, 'commercial').view) {
       module_page = 'Commercial';
-    } else if (hasAccessTo(accesses, 'marketing')) {
+    } else if (hasAccessTo(accesses, 'marketing').view) {
       module_page = 'Marketing';
     }
     if (!module_page) {

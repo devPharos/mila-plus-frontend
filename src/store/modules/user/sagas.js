@@ -14,6 +14,7 @@ export function* updateProfile({ payload }) {
     id,
     oldEmail,
     filialDefault,
+    filial,
     ...rest
   } = payload.data;
   let data = {};
@@ -33,7 +34,8 @@ export function* updateProfile({ payload }) {
         id,
         oldEmail,
         avatar: data,
-        filialDefault
+        filialDefault,
+        filial
       },
       rest.oldPassword ? rest : {}
     );
@@ -58,7 +60,7 @@ export function* updateProfile({ payload }) {
         // toast.error(lang.errors.e5, { className: "error" });
         break;
       default:
-        // toast.error(lang.errors.e1, { className: "error" });
+      // toast.error(lang.errors.e1, { className: "error" });
     }
     yield put(updateProfileFailure());
   }

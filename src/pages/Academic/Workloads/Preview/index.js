@@ -113,17 +113,6 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
 
             if (updated.length > 0) {
                 const objUpdated = Object.fromEntries(updated);
-                async function send() {
-                    try {
-                        await api.put(`/workloads/${id}`, objUpdated)
-                        setPageData({ ...pageData, ...objUpdated })
-                        setSuccessfullyUpdated(true)
-                        toast("Saved!", { autoClose: 1000 })
-                        handleOpened(null)
-                    } catch (err) {
-                        toast(err.response.data.error, { type: 'error', autoClose: 3000 })
-                    }
-                }
                 if (objUpdated.hours_per_day || objUpdated.days_per_week) {
                     alertBox({
                         title: 'Attention!',
@@ -136,18 +125,30 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                             },
                             {
                                 onPress: async () => {
-                                    send();
+                                    send(objUpdated);
                                 },
                                 title: 'Ok'
                             }
                         ]
                     })
                 } else {
-                    send();
+                    send(objUpdated);
                 }
             } else {
                 console.log(updated)
             }
+        }
+    }
+
+    async function send(objUpdated) {
+        try {
+            await api.put(`/workloads/${id}`, objUpdated)
+            setPageData({ ...pageData, ...objUpdated })
+            setSuccessfullyUpdated(true)
+            toast("Saved!", { autoClose: 1000 })
+            handleOpened(null)
+        } catch (err) {
+            toast(err.response.data.error, { type: 'error', autoClose: 3000 })
         }
     }
 

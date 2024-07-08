@@ -5,6 +5,7 @@ import logo from '../assets/mila.png';
 import { Form } from '@unform/web'
 import Input from '~/components/LoginForm/Input';
 import { loginRequest } from '~/store/modules/auth/actions';
+import { toast } from 'react-toastify';
 
 const schema = Yup.object().shape({
   email: Yup.string()

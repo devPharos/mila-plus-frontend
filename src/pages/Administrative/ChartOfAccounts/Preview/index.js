@@ -150,7 +150,8 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
 
                                     <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
                                         <InputLine title='General Data'>
-                                            {id === 'new' || pageData.father_id ? <SelectPopover type='text' isSearchable name='father_id' required title='Father Account' options={chartOfAccountsOptions} grow defaultValue={pageData.father_id ? { value: pageData.father_id, label: pageData.code.substring(0, 2) === '01' ? 'Receipts > ' + pageData.Father.name : 'Expenses > ' + pageData.Father.name + pageData.Father.Father.name } : null} InputContext={InputContext} /> : null}
+                                            {console.log(pageData.Father)}
+                                            {id === 'new' || pageData.father_id ? <SelectPopover type='text' isSearchable name='father_id' required title='Father Account' options={chartOfAccountsOptions} grow defaultValue={pageData.father_id ? { value: pageData.father_id, label: pageData.Father.code.length === 2 ? pageData.Father.name : pageData.code.substring(0, 2) === '01' ? 'Receipts > ' + pageData.Father.name : 'Expenses > ' + pageData.Father.name + pageData.Father.Father.name } : null} InputContext={InputContext} /> : null}
                                             <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
                                         </InputLine>
 

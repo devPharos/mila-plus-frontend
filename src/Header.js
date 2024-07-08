@@ -10,11 +10,19 @@ import PopoverLocation from './components/Popover/PopoverLocation';
 import { Link, NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { hasAccessTo } from './functions';
+import HeaderLink from './components/HeaderLink';
 
 export default function Header() {
   const [activePopover, setActivePopover] = useState('');
   const { profile } = useSelector(state => state.user);
   const { accesses } = useSelector(state => state.auth);
+  const modules = [{
+    title: 'Academic',
+    alias: 'academic'
+  }, {
+    title: 'Administrative',
+    alias: 'administrative'
+  }]
 
   return <header className="z-50 sticky top-0 bg-white min-h-16 h-16 border-b flex">
     <div className="max-w-screen-2xl flex flex-row justify-between items-center w-screen">
@@ -34,17 +42,17 @@ export default function Header() {
         </div>
 
         <div className='flex flex-row justify-between items-center gap-x-8 text-xl'>
-          {hasAccessTo(accesses, 'administrative') && <NavLink to='/Administrative' className={`text-gray-400 text-sm`}>
-            {({ isActive }) => (
-              <div className={`transition ease-in-out ${isActive && 'scale-125 text-mila_orange font-bold'}`}>Administrative</div>
-            )
+          {modules.map((module, index) => {
+            if (hasAccessTo(accesses, module.alias)) {
+              return <NavLink key={index} to={`/${module.alias}`} className={`relative text-gray-400 text-sm`}>
+                {({ isActive }) => {
+
+                  return <HeaderLink isActive={isActive} title={module.title} />
+                }
+                }
+              </NavLink>
             }
-          </NavLink>}
-          {hasAccessTo(accesses, 'academic') && <NavLink to='/Academic' className={`text-gray-400 text-sm`}>
-            {({ isActive }) => (
-              <div className={`transition ease-in-out ${isActive && 'scale-125 text-mila_orange font-bold'}`}>Academic</div>
-            )
-            }</NavLink>}
+          })}
         </div>
 
 
@@ -62,10 +70,10 @@ export default function Header() {
         <Popover Content={PopoverInbox} name='inbox' active={activePopover} opened={activePopover} setOppened={setActivePopover}>
           <Secondary>
             <Inbox size={16} />
-            <span className="absolute top-0 right-0 flex h-2 w-2">
+            {/* <span className="absolute top-0 right-0 flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-mila_orange opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-mila_orange"></span>
-            </span>
+            </span> */}
           </Secondary>
         </Popover>
         <Popover Content={PopoverProfile} name='profile' active={activePopover} opened={activePopover} setOppened={setActivePopover}>

@@ -18,7 +18,7 @@ function UnprotectedRoute({ children }) {
     return <Navigate to="/login" />;
   }
 
-  if (signed) {
+  if (signed && accesses) {
     // user is authenticated
     let module_page = '';
     if (hasAccessTo(accesses, 'administrative').view) {

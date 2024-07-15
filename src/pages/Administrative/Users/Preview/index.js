@@ -187,7 +187,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                         <InputLine title='General Data'>
                                             <Input type='text' name='name' required title='Name' defaultValue={pageData.name} InputContext={InputContext} />
                                             <Input type='text' name='email' required title='E-mail' grow defaultValue={pageData.email} InputContext={InputContext} />
-                                            {id === 'new' || pageData.group_id ? <SelectPopover name='group_id' title='Group' required grow options={groupOptions} defaultValue={groupOptions.filter((group) => group.value === pageData.group_id)} InputContext={InputContext} /> : null}
+                                            {id === 'new' || pageData.group_id ? <SelectPopover disabled={pageData.group_id < 2} name='group_id' title='Group' required grow options={groupOptions} defaultValue={groupOptions.filter((group) => group.value === pageData.group_id)} InputContext={InputContext} /> : null}
                                         </InputLine>
                                         <h3 className='font-bold pl-4 pb-2 mt-4 border-b w-full'>Filials</h3>
                                         {pageData.filials.map((filial, index) => {

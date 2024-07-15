@@ -8,7 +8,7 @@ export default reducers => {
       storage,
       whitelist: [
         "auth",
-        "user",
+        "user"
       ]
     },
     reducers

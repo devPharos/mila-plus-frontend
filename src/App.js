@@ -93,6 +93,12 @@ function App() {
             path: '/Administrative/Groups',
             title: 'Groups',
             icon: 'Users'
+          },
+          {
+            alias: 'users',
+            path: '/Administrative/Users',
+            title: 'Users',
+            icon: 'User'
           }
         ]
       }

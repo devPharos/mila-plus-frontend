@@ -34,6 +34,10 @@ import Page404 from './pages/Errors/Page404';
 import Errors from './pages/Errors';
 import LanguageMode from './pages/Academic/Language Mode';
 import Workloads from './pages/Academic/Workloads';
+import { injectStore } from './services/api';
+import AdministrativeUsers from './pages/Administrative/Users';
+
+injectStore(store)
 
 const router = createBrowserRouter([
   {
@@ -81,6 +85,10 @@ const router = createBrowserRouter([
           {
             path: "/Administrative/Groups",
             element: <AdministrativeGroups />
+          },
+          {
+            path: "/Administrative/Users",
+            element: <AdministrativeUsers />
           },
           {
             path: "/Administrative/*",

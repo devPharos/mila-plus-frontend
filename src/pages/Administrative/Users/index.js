@@ -10,7 +10,7 @@ import PagePreview from './Preview';
 import { useSelector } from 'react-redux';
 import PageHeader from '~/components/PageHeader';
 
-export default function AdministrativeGroups() {
+export default function AdministrativeUsers() {
   const [activeFilters, setActiveFilters] = useState([])
   const [opened, setOpened] = useState(false)
   const [orderBy, setOrderBy] = useState({ column: 'Name', asc: true })
@@ -24,7 +24,17 @@ export default function AdministrativeGroups() {
       filter: false,
     },
     {
-      title: 'Type',
+      title: 'E-mail',
+      type: 'text',
+      filter: true,
+    },
+    {
+      title: 'Filial',
+      type: 'text',
+      filter: true,
+    },
+    {
+      title: 'Group',
       type: 'text',
       filter: true,
     },
@@ -41,15 +51,16 @@ export default function AdministrativeGroups() {
   }
 
   useEffect(() => {
-    async function getGroups() {
-      const { data } = await api.get(`/groups?filialId=${filial.id}`)
-      const gridDataValues = data.map(({ id, name, Filialtype, canceled_at }) => {
-        const filialTypeName = Filialtype.name;
-        return { show: true, id, fields: [name, filialTypeName], canceled: canceled_at }
+    async function getData() {
+      const { data } = await api.get(`/users`)
+      const gridDataValues = data.map(({ id, name, email, filials, groups, canceled_at }) => {
+        const filialNames = filials.map((reFilial) => reFilial.filial.name + ', ');
+        const groupNames = groups[0].group.name;
+        return { show: true, id, fields: [name, email, filialNames, groupNames], canceled: canceled_at }
       })
       setGridData(gridDataValues)
     }
-    getGroups()
+    getData()
   }, [opened, filial])
 
   function handleOpened(id) {

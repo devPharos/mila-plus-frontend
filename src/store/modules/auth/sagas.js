@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import history from "~/services/history";
 import api from "~/services/api";
 
-import { loginSuccess, loginFailure, registerFailure, department_change, filial_change } from "./actions";
+import { loginSuccess, loginFailure, registerFailure } from "./actions";
 
 export function* login({ payload }) {
   try {
@@ -61,6 +61,8 @@ export function* register({ payload }) {
 export function setToken({ payload }) {
   if (!payload) return;
 
+  console.log(api.defaults.headers.authorization)
+
   const { token } = payload.auth;
 
   if (token) {
@@ -70,10 +72,6 @@ export function setToken({ payload }) {
 
 export function setFilial({ payload }) {
   if (!payload) return;
-
-  if (payload) {
-    api.defaults.headers.Filial = payload.filial.id;
-  }
 
 }
 

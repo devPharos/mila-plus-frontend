@@ -24,6 +24,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         alias: '',
         name: '',
         Filialtype: { id: null, label: '' },
+        administrator: null,
         ein: '',
         address: '',
         zipcode: '',
@@ -246,6 +247,14 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                         <InputLine title='Observations'>
                                             <Textarea type='text' name='observations' rows={3} defaultValue={pageData.observations} InputContext={InputContext} />
                                         </InputLine>
+
+                                        <Scope path={`administrator`}>
+                                            <InputLine title='Filial Administrator'>
+                                                <Input type='hidden' name='id' required title='ID' defaultValue={pageData.administrator ? pageData.administrator.id : null} InputContext={InputContext} />
+                                                <Input type='text' name='name' required title='Name' defaultValue={pageData.administrator ? pageData.administrator.name : ''} InputContext={InputContext} />
+                                                <Input type='text' name='email' required title='E-mail' grow defaultValue={pageData.administrator ? pageData.administrator.email : ''} InputContext={InputContext} />
+                                            </InputLine>
+                                        </Scope>
 
                                     </InputLineGroup>
 

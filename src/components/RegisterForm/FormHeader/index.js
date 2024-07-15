@@ -4,7 +4,7 @@ import React, { useContext } from 'react';
 
 // import { Container } from './styles';
 
-export default function FormHeader({ access = { view: false, edit: false, create: false, inactivate: false }, title = '', registry, InputContext = null }) {
+export default function FormHeader({ access = { view: false, edit: false, create: false, inactivate: false }, title = '', registry = { registryBy: null, registryAt: null, registryStatus: null }, InputContext = null }) {
     const { registryBy, registryAt, registryStatus } = registry;
     const { id, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm, handleInactivate, canceled } = useContext(InputContext)
 

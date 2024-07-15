@@ -11,7 +11,7 @@ export function hasAccessTo(accesses = null, menu_alias = null) {
 
   const current = accesses.hierarchy.filter(access => access.alias === menu_alias)[0];
 
-  if (!current.MenuHierarchyXGroup) {
+  if (!current || !current.MenuHierarchyXGroup) {
     return defaultFalse;
   }
 

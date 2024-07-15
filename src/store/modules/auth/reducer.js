@@ -28,6 +28,7 @@ export default function auth(state = INITIAL_STATE, action) {
         break;
       }
       case "@auth/FILIAL_CHANGE": {
+        draft.token = action.payload.token;
         draft.filial = action.payload.filial;
         break;
       }
@@ -40,11 +41,11 @@ export default function auth(state = INITIAL_STATE, action) {
         break;
       }
       case "@auth/LOGOUT": {
-        console.log(action.type)
         draft.token = null;
         draft.signed = false;
         draft.loading = false;
         draft.department = null;
+        draft.filial = null;
         break;
       }
       default:

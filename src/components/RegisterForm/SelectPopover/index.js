@@ -4,10 +4,10 @@ import { Asterisk } from 'lucide-react'
 import AsyncSelect from 'react-select/async';
 import { createFilter } from 'react-select';
 
-export default function SelectPopover({ name, title, grow, shrink, type, options = [], isSearchable = false, InputContext, ...rest }) {
+export default function SelectPopover({ name, title, grow, hidden = false, shrink, type, options = [], isSearchable = false, InputContext, ...rest }) {
   const inputRef = useRef()
   const { fieldName, registerField, error } = useField(name)
-  const { defaultValue, required } = { ...rest }
+  const { defaultValue, required, disabled } = { ...rest }
 
   const { setSuccessfullyUpdated } = useContext(InputContext)
 
@@ -64,7 +64,7 @@ export default function SelectPopover({ name, title, grow, shrink, type, options
           isClearable={false}
           loadOptions={loadOptions}
           isSearchable={isSearchable}
-          // isLoading={true}
+          isDisabled={disabled}
           ref={inputRef}
           onChange={handleChanged}
           classNamePrefix="react-select"

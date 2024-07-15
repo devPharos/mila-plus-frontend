@@ -15,7 +15,8 @@ import HeaderLink from './components/HeaderLink';
 export default function Header() {
   const [activePopover, setActivePopover] = useState('');
   const { profile } = useSelector(state => state.user);
-  const { accesses } = useSelector(state => state.auth);
+  const auth = useSelector(state => state.auth);
+  // console.log(auth.filial)
   const modules = [{
     title: 'Academic',
     alias: 'academic'
@@ -38,12 +39,12 @@ export default function Header() {
               <MapPin size={16} />
             </Secondary>
           </Popover>
-          <div className='leading-none text-xs'>Location<br /><strong className='text-mila_orange'>{profile.filials[0].filial.name}</strong></div>
+          <div className='leading-none text-xs'>Location<br /><strong className='text-mila_orange'>{auth.filial.name}</strong></div>
         </div>
 
         <div className='flex flex-row justify-between items-center gap-x-8 text-xl'>
           {modules.map((module, index) => {
-            if (hasAccessTo(accesses, module.alias)) {
+            if (hasAccessTo(auth.access, module.alias)) {
               return <NavLink key={index} to={`/${module.alias}`} className={`relative text-gray-400 text-sm`}>
                 {({ isActive }) => {
 

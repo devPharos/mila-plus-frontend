@@ -1,17 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-// import { Container } from './styles';
-
-export default function Popover({ children, Content = null, name = 'default', position = 'bottom-left', opened = '', setOppened = () => null }) {
+export default function Popover({ children, Content = null, name = 'default', opened = '', setOppened = () => null }) {
   return (
     <div className='relative z-40'>
-        <button type='button' className='cursor-pointer' onClick={() => setOppened(opened === name ? '' : name)}>
-            {children}
-        </button>
+      <button type='button' className='cursor-pointer' onClick={() => setOppened(opened === name ? '' : name)}>
+        {children}
+      </button>
 
-        {opened === name && <Content />
-        
-        }
+      {opened === name && <Content />}
     </div>
   );
 }

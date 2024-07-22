@@ -80,7 +80,7 @@ const Input = ({ name, title, grow, shrink, hasDDI = false, defaultValueDDI = nu
     <div className={`${type === 'hidden' ? 'hidden' : 'flex'} flex-col justify-center items-start relative ${shrink ? 'w-34' : ''} ${grow ? 'grow' : ''}`}>
       <div className='px-2 text-xs flex flex-row justify-between items-center'>{title} {required && <Asterisk color='#e00' size={12} />}</div>
       <div className='w-full flex flex-row justify-center items-center'>
-        {hasDDI && (id === 'new' || defaultValueDDI) ? <SelectCountry name={`${name}_ddi`} required={required} defaultValue={defaultValueDDI} InputContext={InputContext} /> : null}
+        {hasDDI && <SelectCountry name={`${name}_ddi`} required={required} defaultValue={defaultValueDDI} InputContext={InputContext} />}
         <div htmlFor={name} className={`flex-1 border rounded-sm p-2 px-4 text-sm flex flex-row justify-between items-center gap-2 ${(disabled || readOnly) && 'bg-gray-100'} ${error && 'border-red-300'}`}>
           <input
             id={name}

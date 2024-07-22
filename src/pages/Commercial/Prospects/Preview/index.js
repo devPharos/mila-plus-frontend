@@ -172,12 +172,12 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                             <Input type='text' name='middle_name' grow title='Middle Name' defaultValue={pageData.middle_name} InputContext={InputContext} />
                                             <Input type='text' name='last_name' required grow title='Last Name' defaultValue={pageData.last_name} InputContext={InputContext} />
                                             {id === 'new' || pageData.gender ? <SelectPopover name='gender' required title='Gender' isSearchable defaultValue={genderOptions.find(gender => gender.value === pageData.gender)} options={genderOptions} InputContext={InputContext} /> : null}
-                                            {id === 'new' || pageData.date_of_birth ? <DatePicker name='date_of_birth' grow title='Birthday ' defaultValue={parseISO(pageData.date_of_birth)} placeholderText='MM/DD/YYYY' InputContext={InputContext} /> : null}
+                                            {id === 'new' || pageData.date_of_birth ? <DatePicker name='date_of_birth' grow title='Birthday ' defaultValue={pageData.date_of_birth ? parseISO(pageData.date_of_birth) : null} placeholderText='MM/DD/YYYY' InputContext={InputContext} /> : null}
                                         </InputLine>
                                         <InputLine>
                                             <Input type='text' name='passport_number' grow title='Passport Number' placeholder='-----' defaultValue={pageData.passport_number} InputContext={InputContext} />
                                             <Input type='text' name='visa_number' grow title='Visa Number' placeholder='-----' defaultValue={pageData.visa_number} InputContext={InputContext} />
-                                            {id === 'new' || pageData.visa_expiration ? <DatePicker name='visa_expiration' required title='Visa Expiration' defaultValue={parseISO(pageData.visa_expiration)} placeholderText='MM/DD/YYYY' InputContext={InputContext} /> : null}
+                                            {id === 'new' || pageData.visa_expiration ? <DatePicker name='visa_expiration' required title='Visa Expiration' defaultValue={pageData.visa_expiration ? parseISO(pageData.visa_expiration) : null} placeholderText='MM/DD/YYYY' InputContext={InputContext} /> : null}
                                             <Input type='text' name='nsevis' title='NSEVIS' grow defaultValue={pageData.nsevis} placeholder='-----' InputContext={InputContext} />
                                         </InputLine>
                                         <InputLine title='Contact'>

@@ -101,6 +101,23 @@ function App() {
             icon: 'User'
           }
         ]
+      },
+      {
+        name: 'Commercial',
+        children: [
+          {
+            alias: 'commercial-dashboard',
+            path: '/Commercial/Dashboard',
+            title: 'Dashboard',
+            icon: 'LayoutDashboard',
+          },
+          {
+            alias: 'prospects',
+            path: '/Commercial/Prospects',
+            title: 'Prospects',
+            icon: 'Users'
+          },
+        ]
       }
     ]
   return (

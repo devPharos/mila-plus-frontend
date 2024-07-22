@@ -23,6 +23,9 @@ export default function Header() {
   }, {
     title: 'Administrative',
     alias: 'administrative'
+  }, {
+    title: 'Commercial',
+    alias: 'commercial'
   }]
 
   return <header className="z-50 sticky top-0 bg-white min-h-16 h-16 border-b flex">

@@ -1,7 +1,6 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { NavLink } from 'react-router-dom';
-import { PageContext } from '~/App';
 import Icon from '~/components/Icon';
 import { hasAccessTo } from '~/functions';
 

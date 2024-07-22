@@ -1,8 +1,10 @@
 import React, { useContext, useEffect, useRef } from 'react'
 import { useField } from '@unform/core'
 import { Asterisk } from 'lucide-react'
+import { countries_list } from '~/functions'
+import SelectCountry from '../SelectCountry'
 
-const Input = ({ name, title, grow, shrink, workloadUpdateName = false, readOnly = false, type, isZipCode = false, onlyUpperCase = false, onlyLowerCase = false, onlyInt = false, onlyFloat = false, isPhoneNumber = false, InputContext = null, ...rest }) => {
+const Input = ({ name, title, grow, shrink, hasDDI = false, defaultValueDDI = null, workloadUpdateName = false, readOnly = false, type, isZipCode = false, onlyUpperCase = false, onlyLowerCase = false, onlyInt = false, onlyFloat = false, isPhoneNumber = false, InputContext = null, ...rest }) => {
   const inputRef = useRef()
   const { fieldName, defaultValue, registerField, error } = useField(name)
   const { disabled, required } = { ...rest }
@@ -15,29 +17,6 @@ const Input = ({ name, title, grow, shrink, workloadUpdateName = false, readOnly
       }
     })
 
-    return output;
-  }
-
-  function maskPhone(input) {
-    let output = "(";
-    input.replace(/^\D*(\d{0,3})\D*(\d{0,3})\D*(\d{0,4})/, function (match, g1, g2, g3) {
-      if (g1.length) {
-        output += g1;
-        if (g1.length == 3) {
-          output += ")";
-          if (g2.length) {
-            output += " " + g2;
-            if (g2.length == 3) {
-              output += "-";
-              if (g3.length) {
-                output += g3;
-              }
-            }
-          }
-        }
-      }
-    }
-    );
     return output;
   }
 
@@ -57,7 +36,11 @@ const Input = ({ name, title, grow, shrink, workloadUpdateName = false, readOnly
     })
   }, [fieldName, registerField])
 
-  const { generalForm, setSuccessfullyUpdated } = useContext(InputContext)
+  const { id, generalForm, setSuccessfullyUpdated } = useContext(InputContext)
+
+  const countriesOptions = countries_list.map(country => {
+    return { value: country, label: country }
+  })
 
   function handleChanged() {
     if (onlyUpperCase) {
@@ -77,8 +60,8 @@ const Input = ({ name, title, grow, shrink, workloadUpdateName = false, readOnly
       generalForm.current.setFieldValue(name, value.match(/^[0-9]*\.?[0-9]*$/))
     }
     if (isPhoneNumber) {
-      const value = generalForm.current.getFieldValue(name);
-      generalForm.current.setFieldValue(name, maskPhone(value))
+      // const value = generalForm.current.getFieldValue(name);
+      // generalForm.current.setFieldValue(name, maskPhone(value))
     }
     if (isZipCode) {
       const value = generalForm.current.getFieldValue(name);
@@ -96,21 +79,24 @@ const Input = ({ name, title, grow, shrink, workloadUpdateName = false, readOnly
   return (
     <div className={`${type === 'hidden' ? 'hidden' : 'flex'} flex-col justify-center items-start relative ${shrink ? 'w-34' : ''} ${grow ? 'grow' : ''}`}>
       <div className='px-2 text-xs flex flex-row justify-between items-center'>{title} {required && <Asterisk color='#e00' size={12} />}</div>
-      <div htmlFor={name} className={`w-full border rounded-sm p-2 px-4 text-sm flex flex-row justify-between items-center gap-2 ${(disabled || readOnly) && 'bg-gray-100'} ${error && 'border-red-300'}`}>
-        <input
-          id={name}
-          name={name}
-          onChange={handleChanged}
-          ref={inputRef}
-          type={type}
-          readOnly={readOnly}
-          {...rest}
-          className='text-sm focus:outline-none flex-1 bg-transparent w-full'
-        />
+      <div className='w-full flex flex-row justify-center items-center'>
+        {hasDDI && (id === 'new' || defaultValueDDI) ? <SelectCountry name={`${name}_ddi`} required={required} defaultValue={defaultValueDDI} InputContext={InputContext} /> : null}
+        <div htmlFor={name} className={`flex-1 border rounded-sm p-2 px-4 text-sm flex flex-row justify-between items-center gap-2 ${(disabled || readOnly) && 'bg-gray-100'} ${error && 'border-red-300'}`}>
+          <input
+            id={name}
+            name={name}
+            onChange={handleChanged}
+            ref={inputRef}
+            type={type}
+            readOnly={readOnly}
+            {...rest}
+            className='text-sm focus:outline-none flex-1 bg-transparent w-full'
+          />
+        </div>
 
       </div>
       {error && <span className={`text-xs text-red-500 absolute top-7 bg-white px-2 rounded-full right-4`}>{error}</span>}
-    </div>
+    </div >
   )
 }
 

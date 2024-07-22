@@ -3,7 +3,7 @@ import { useField } from '@unform/core'
 
 const CheckboxInput = ({ name, title, InputContext, ...rest }) => {
   const inputRef = useRef()
-  const { fieldName, defaultValue, registerField, error } = useField(name)
+  const { fieldName, registerField, error } = useField(name)
   const { disabled, required } = { ...rest }
 
   useEffect(() => {

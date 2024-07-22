@@ -36,6 +36,9 @@ import LanguageMode from './pages/Academic/Language Mode';
 import Workloads from './pages/Academic/Workloads';
 import { injectStore } from './services/api';
 import AdministrativeUsers from './pages/Administrative/Users';
+import Commercial from './pages/Commercial';
+import CommercialDashboard from './pages/Commercial/Dashboard';
+import CommercialProspects from './pages/Commercial/Prospects';
 
 injectStore(store)
 
@@ -127,6 +130,20 @@ const router = createBrowserRouter([
           {
             path: "/Academic/*",
             element: <Page404 />
+          },
+        ]
+      },
+      {
+        path: "/Commercial",
+        element: <ProtectedRoute><Commercial /></ProtectedRoute>,
+        children: [
+          {
+            path: "/Commercial/Dashboard",
+            element: <CommercialDashboard />
+          },
+          {
+            path: "/Commercial/Prospects",
+            element: <CommercialProspects />
           },
         ]
       },

@@ -207,18 +207,22 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                     <FormHeader access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
 
                                     <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
+
+                                        <Scope path={`administrator`}>
+                                            <InputLine title='Filial Administrator'>
+                                                <Input type='hidden' name='id' required title='ID' defaultValue={pageData.administrator ? pageData.administrator.id : null} InputContext={InputContext} />
+                                                <Input type='text' name='name' required title='Name' defaultValue={pageData.administrator ? pageData.administrator.name : ''} InputContext={InputContext} />
+                                                <Input type='text' name='email' required title='E-mail' grow defaultValue={pageData.administrator ? pageData.administrator.email : ''} InputContext={InputContext} />
+                                            </InputLine>
+                                        </Scope>
+
                                         <InputLine title='General Data'>
                                             <Input type='text' name='ein' required title='EIN' defaultValue={pageData.ein} InputContext={InputContext} />
                                             <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
                                             <Input type='text' name='alias' onlyUpperCase required title='Alias' defaultValue={pageData.alias} InputContext={InputContext} />
-                                            {/* {console.log(pageData.active)} */}
                                             {id === 'new' || pageData.Filialtype ? <SelectPopover name='filialtype_id' title='Filial Type' options={filialTypesOptions} defaultValue={{ value: pageData.filialtype_id, label: pageData.Filialtype.name }} InputContext={InputContext} /> : null}
                                             <SelectPopover name='active' title='Active' options={[{ value: 'Yes', label: 'Yes' }, { value: 'No', label: 'No' }]} defaultValue={{ value: pageData.active, label: pageData.active ? 'Yes' : 'No' }} InputContext={InputContext} />
                                         </InputLine>
-
-                                        {/* <InputLine>
-                                        <Select name='type' title='Type' options={[{ value: 'Own', label: 'Own' }, { value: 'Participation', label: 'Participation' }]} defaultValue={pageData.types.name} InputContext={InputContext} />
-                                    </InputLine> */}
 
                                         <InputLine title='Localization'>
                                             <SelectPopover name='country' title='Country' required options={countriesOptions} isSearchable defaultValue={{ value: pageData.country, label: pageData.country }} InputContext={InputContext} />
@@ -247,14 +251,6 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                         <InputLine title='Observations'>
                                             <Textarea type='text' name='observations' rows={3} defaultValue={pageData.observations} InputContext={InputContext} />
                                         </InputLine>
-
-                                        <Scope path={`administrator`}>
-                                            <InputLine title='Filial Administrator'>
-                                                <Input type='hidden' name='id' required title='ID' defaultValue={pageData.administrator ? pageData.administrator.id : null} InputContext={InputContext} />
-                                                <Input type='text' name='name' required title='Name' defaultValue={pageData.administrator ? pageData.administrator.name : ''} InputContext={InputContext} />
-                                                <Input type='text' name='email' required title='E-mail' grow defaultValue={pageData.administrator ? pageData.administrator.email : ''} InputContext={InputContext} />
-                                            </InputLine>
-                                        </Scope>
 
                                     </InputLineGroup>
 

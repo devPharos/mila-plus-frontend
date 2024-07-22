@@ -1,8 +1,7 @@
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef } from 'react'
 import { useField } from '@unform/core'
 import { Asterisk } from 'lucide-react'
 import AsyncSelect from 'react-select/async';
-import { createFilter } from 'react-select';
 
 export default function SelectPopover({ name, title, grow, hidden = false, shrink, type, options = [], isSearchable = false, InputContext, ...rest }) {
   const inputRef = useRef()
@@ -21,9 +20,7 @@ export default function SelectPopover({ name, title, grow, hidden = false, shrin
     inputValue,
     callback
   ) => {
-    setTimeout(() => {
-      callback(filterColors(inputValue));
-    }, 500);
+    callback(filterColors(inputValue));
   };
 
   useEffect(() => {

@@ -13,6 +13,7 @@ import Preview from '~/components/Preview';
 import { getRegistries, handleUpdatedFields } from '~/functions';
 import SelectPopover from '~/components/RegisterForm/SelectPopover';
 import { Scope } from '@unform/core';
+import FormLoading from '~/components/RegisterForm/FormLoading';
 
 export const InputContext = createContext({})
 
@@ -20,7 +21,8 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     const [pageData, setPageData] = useState({
         name: '',
         filialtype_id: null,
-        Filialtype: null
+        Filialtype: null,
+        loaded: false
     })
     const [formType, setFormType] = useState(defaultFormType)
     const [fullscreen, setFullscreen] = useState(false)
@@ -36,7 +38,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                 const { data } = await api.get(`groups/${id}`)
                 const { data: groupAccess } = await api.get(`MenuHierarchy/group/${id}`)
                 console.log(groupAccess)
-                setPageData({ ...data, groupAccess })
+                setPageData({ ...data, groupAccess, loaded: true })
                 const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at } = data;
                 const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
                 setRegistry(registries)
@@ -155,45 +157,48 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                         <div className='flex flex-col items-start justify-start text-sm overflow-y-scroll'>
                             <Form ref={generalForm} onSubmit={handleGeneralFormSubmit} className='w-full'>
                                 <InputContext.Provider value={{ id, setSuccessfullyUpdated, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm, handleInactivate, canceled: pageData.canceled_at }}>
+                                    {id === 'new' || pageData.loaded ?
+                                        <>
+                                            <FormHeader access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
 
-                                    <FormHeader access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
+                                            <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
+                                                <InputLine title='General Data'>
+                                                    <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
+                                                    <SelectPopover name='filialtype_id' title='Filial Type' options={filialTypesOptions} defaultValue={{ value: pageData.filialtype_id, label: pageData.Filialtype ? pageData.Filialtype.name : '' }} InputContext={InputContext} />
+                                                </InputLine>
 
-                                    <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
-                                        <InputLine title='General Data'>
-                                            <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
-                                            {id === 'new' || pageData.Filialtype ? <SelectPopover name='filialtype_id' title='Filial Type' options={filialTypesOptions} defaultValue={{ value: pageData.filialtype_id, label: pageData.Filialtype ? pageData.Filialtype.name : '' }} InputContext={InputContext} /> : null}
-                                        </InputLine>
+                                            </InputLineGroup>
 
-                                    </InputLineGroup>
+                                            <InputLineGroup title='Group Access' activeMenu={activeMenu === 'group-access'}>
 
-                                    <InputLineGroup title='Group Access' activeMenu={activeMenu === 'group-access'}>
+                                                {pageData.groupAccess && pageData.groupAccess.map((access, index) => {
 
-                                        {pageData.groupAccess && pageData.groupAccess.map((access, index) => {
+                                                    return <Scope key={index} path={`modules[${index}]`}><h1 className='w-full border-b p-4 pb-0 pt-2 pb-2 font-bold'>{access.name}</h1>
 
-                                            return <Scope key={index} path={`modules[${index}]`}><h1 className='w-full border-b p-4 pb-0 pt-2 pb-2 font-bold'>{access.name}</h1>
+                                                        {access.MenuHierarchies.map((menu, indexMenu) => {
+                                                            return <Scope key={indexMenu} path={`menus[${indexMenu}]`}>
+                                                                <InputLine>
+                                                                    <Input type='text' name='name' required title='Name' grow defaultValue={menu.name} InputContext={InputContext} />
+                                                                    <Input type='hidden' name='id' required defaultValue={menu.MenuHierarchyXGroup ? menu.MenuHierarchyXGroup.id : null} InputContext={InputContext} />
+                                                                    <Input type='hidden' name='menuId' required defaultValue={menu.id} InputContext={InputContext} />
 
-                                                {access.MenuHierarchies.map((menu, indexMenu) => {
-                                                    return <Scope key={indexMenu} path={`menus[${indexMenu}]`}>
-                                                        <InputLine>
-                                                            <Input type='text' name='name' required title='Name' grow defaultValue={menu.name} InputContext={InputContext} />
-                                                            <Input type='hidden' name='id' required defaultValue={menu.MenuHierarchyXGroup ? menu.MenuHierarchyXGroup.id : null} InputContext={InputContext} />
-                                                            <Input type='hidden' name='menuId' required defaultValue={menu.id} InputContext={InputContext} />
-
-                                                            <SelectPopover name='view' shrink title='View' options={[{ value: 'Yes', label: 'Allowed' }, { value: 'No', label: 'Blocked' }]} defaultValue={menu.MenuHierarchyXGroup && menu.MenuHierarchyXGroup.view ? { value: 'Yes', label: 'Allowed' } : { value: 'No', label: 'Blocked' }} InputContext={InputContext} />
-                                                            <SelectPopover name='edit' shrink title='Edit' options={[{ value: 'Yes', label: 'Allowed' }, { value: 'No', label: 'Blocked' }]} defaultValue={menu.MenuHierarchyXGroup && menu.MenuHierarchyXGroup.edit ? { value: 'Yes', label: 'Allowed' } : { value: 'No', label: 'Blocked' }} InputContext={InputContext} />
-                                                            <SelectPopover name='create' shrink title='Create' options={[{ value: 'Yes', label: 'Allowed' }, { value: 'No', label: 'Blocked' }]} defaultValue={menu.MenuHierarchyXGroup && menu.MenuHierarchyXGroup.create ? { value: 'Yes', label: 'Allowed' } : { value: 'No', label: 'Blocked' }} InputContext={InputContext} />
-                                                            <SelectPopover name='inactivate' shrink title='Inactivate' options={[{ value: 'Yes', label: 'Allowed' }, { value: 'No', label: 'Blocked' }]} defaultValue={menu.MenuHierarchyXGroup && menu.MenuHierarchyXGroup.inactivate ? { value: 'Yes', label: 'Allowed' } : { value: 'No', label: 'Blocked' }} InputContext={InputContext} />
-                                                        </InputLine>
+                                                                    <SelectPopover name='view' shrink title='View' options={[{ value: 'Yes', label: 'Allowed' }, { value: 'No', label: 'Blocked' }]} defaultValue={menu.MenuHierarchyXGroup && menu.MenuHierarchyXGroup.view ? { value: 'Yes', label: 'Allowed' } : { value: 'No', label: 'Blocked' }} InputContext={InputContext} />
+                                                                    <SelectPopover name='edit' shrink title='Edit' options={[{ value: 'Yes', label: 'Allowed' }, { value: 'No', label: 'Blocked' }]} defaultValue={menu.MenuHierarchyXGroup && menu.MenuHierarchyXGroup.edit ? { value: 'Yes', label: 'Allowed' } : { value: 'No', label: 'Blocked' }} InputContext={InputContext} />
+                                                                    <SelectPopover name='create' shrink title='Create' options={[{ value: 'Yes', label: 'Allowed' }, { value: 'No', label: 'Blocked' }]} defaultValue={menu.MenuHierarchyXGroup && menu.MenuHierarchyXGroup.create ? { value: 'Yes', label: 'Allowed' } : { value: 'No', label: 'Blocked' }} InputContext={InputContext} />
+                                                                    <SelectPopover name='inactivate' shrink title='Inactivate' options={[{ value: 'Yes', label: 'Allowed' }, { value: 'No', label: 'Blocked' }]} defaultValue={menu.MenuHierarchyXGroup && menu.MenuHierarchyXGroup.inactivate ? { value: 'Yes', label: 'Allowed' } : { value: 'No', label: 'Blocked' }} InputContext={InputContext} />
+                                                                </InputLine>
+                                                            </Scope>
+                                                        })}
                                                     </Scope>
-                                                })}
-                                            </Scope>
 
-                                        })}
-                                        {/* <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
+                                                })}
+                                                {/* <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
                                             {id === 'new' || pageData.Filialtype ? <SelectPopover name='filialtype_id' title='Filial Type' options={filialTypesOptions} defaultValue={{ value: pageData.filialtype_id, label: pageData.Filialtype ? pageData.Filialtype.name : '' }} InputContext={InputContext} /> : null} */}
 
 
-                                    </InputLineGroup>
+                                            </InputLineGroup>
+
+                                        </> : <FormLoading />}
 
                                 </InputContext.Provider>
                             </Form>

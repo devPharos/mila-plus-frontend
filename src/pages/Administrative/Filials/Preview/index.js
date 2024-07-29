@@ -15,6 +15,7 @@ import { Scope } from '@unform/core';
 import CheckboxInput from '~/components/RegisterForm/CheckboxInput';
 import Preview from '~/components/Preview';
 import SelectPopover from '~/components/RegisterForm/SelectPopover';
+import FormLoading from '~/components/RegisterForm/FormLoading';
 
 export const InputContext = createContext({})
 
@@ -31,7 +32,8 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         city: '',
         state: '',
         country: '',
-        observations: ''
+        observations: '',
+        loaded: false
     })
     const [formType, setFormType] = useState(defaultFormType)
     const [fullscreen, setFullscreen] = useState(false)
@@ -49,7 +51,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         async function getPageData() {
             try {
                 const { data } = await api.get(`filials/${id}`)
-                setPageData(data)
+                setPageData({ ...data, loaded: true })
                 const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at } = data;
                 const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
                 setRegistry(registries)
@@ -203,110 +205,113 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                         <div className='flex flex-col items-start justify-start text-sm overflow-y-scroll'>
                             <Form ref={generalForm} onSubmit={handleGeneralFormSubmit} className='w-full'>
                                 <InputContext.Provider value={{ id, generalForm, setSuccessfullyUpdated, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm }}>
+                                    {id === 'new' || pageData.loaded ?
+                                        <>
+                                            <FormHeader access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
 
-                                    <FormHeader access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
+                                            <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
 
-                                    <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
+                                                <Scope path={`administrator`}>
+                                                    <InputLine title='Filial Administrator'>
+                                                        <Input type='hidden' name='id' required title='ID' defaultValue={pageData.administrator ? pageData.administrator.id : null} InputContext={InputContext} />
+                                                        <Input type='text' name='name' required title='Name' defaultValue={pageData.administrator ? pageData.administrator.name : ''} InputContext={InputContext} />
+                                                        <Input type='text' name='email' required title='E-mail' grow defaultValue={pageData.administrator ? pageData.administrator.email : ''} InputContext={InputContext} />
+                                                    </InputLine>
+                                                </Scope>
 
-                                        <Scope path={`administrator`}>
-                                            <InputLine title='Filial Administrator'>
-                                                <Input type='hidden' name='id' required title='ID' defaultValue={pageData.administrator ? pageData.administrator.id : null} InputContext={InputContext} />
-                                                <Input type='text' name='name' required title='Name' defaultValue={pageData.administrator ? pageData.administrator.name : ''} InputContext={InputContext} />
-                                                <Input type='text' name='email' required title='E-mail' grow defaultValue={pageData.administrator ? pageData.administrator.email : ''} InputContext={InputContext} />
-                                            </InputLine>
-                                        </Scope>
-
-                                        <InputLine title='General Data'>
-                                            <Input type='text' name='ein' required title='EIN' defaultValue={pageData.ein} InputContext={InputContext} />
-                                            <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
-                                            <Input type='text' name='alias' onlyUpperCase required title='Alias' defaultValue={pageData.alias} InputContext={InputContext} />
-                                            {id === 'new' || pageData.Filialtype ? <SelectPopover name='filialtype_id' title='Filial Type' options={filialTypesOptions} defaultValue={{ value: pageData.filialtype_id, label: pageData.Filialtype.name }} InputContext={InputContext} /> : null}
-                                            <SelectPopover name='active' title='Active' options={[{ value: 'Yes', label: 'Yes' }, { value: 'No', label: 'No' }]} defaultValue={{ value: pageData.active, label: pageData.active ? 'Yes' : 'No' }} InputContext={InputContext} />
-                                        </InputLine>
-
-                                        <InputLine title='Localization'>
-                                            <SelectPopover name='country' title='Country' required options={countriesOptions} isSearchable defaultValue={{ value: pageData.country, label: pageData.country }} InputContext={InputContext} />
-                                            <Input type='text' name='state' required title='State' defaultValue={pageData.state} InputContext={InputContext} />
-                                            <Input type='text' name='city' required title='City' defaultValue={pageData.city} InputContext={InputContext} />
-                                            <Input type='text' name='zipcode' isZipCode grow required title='Zip Code' defaultValue={pageData.zipcode} placeholder='-----' InputContext={InputContext} />
-                                        </InputLine>
-
-                                        <InputLine>
-                                            <Textarea type='text' required name='address' title='Address' rows={5} defaultValue={pageData.address} InputContext={InputContext} />
-                                        </InputLine>
-
-                                        <InputLine title='Contact / On the web'>
-                                            <Input type='text' name='phone' isPhoneNumber title='Phone' defaultValue={pageData.phone} InputContext={InputContext} />
-                                            <Input type='text' name='phone2' isPhoneNumber title='Phone 2' defaultValue={pageData.phone2} placeholder='(---) -------' InputContext={InputContext} />
-                                            <Input type='text' name='email' onlyLowerCase grow title='Email' defaultValue={pageData.email} placeholder='email@mila.usa' InputContext={InputContext} />
-                                        </InputLine>
-
-                                        <InputLine>
-                                            <Input type='text' name='whatsapp' isPhoneNumber title='Whatsapp' defaultValue={pageData.whatsapp} placeholder='(---) -------' InputContext={InputContext} />
-                                            <Input type='text' name='facebook' onlyLowerCase title='Facebook' defaultValue={pageData.facebook} InputContext={InputContext} />
-                                            <Input type='text' name='instagram' onlyLowerCase title='Instagram' defaultValue={pageData.instagram} InputContext={InputContext} />
-                                            <Input type='text' name='website' onlyLowerCase grow title='Website' defaultValue={pageData.website} InputContext={InputContext} />
-                                        </InputLine>
-
-                                        <InputLine title='Observations'>
-                                            <Textarea type='text' name='observations' rows={3} defaultValue={pageData.observations} InputContext={InputContext} />
-                                        </InputLine>
-
-                                    </InputLineGroup>
-
-                                    <InputLineGroup title='PRICE LIST' activeMenu={activeMenu === 'price-list'}>
-                                        <h1 className='w-full border-b p-4 pb-0 pt-2 pb-2 font-bold'>Price List</h1>
-                                        {pageData.pricelists && pageData.pricelists.map((price, index) =>
-                                            <Scope key={index} path={`pricelists[${index}]`}>
-                                                <InputLine>
-                                                    {!price.id && <button type='button' className='mt-3 bg-none border-none' onClick={() => handleRemovePrice(index)}><Trash size={14} /></button>}
-                                                    <Input type='hidden' name={`id`} defaultValue={price.id} InputContext={InputContext} />
-                                                    <Input type='text' grow name={`name`} title='Name' defaultValue={price.name} InputContext={InputContext} />
-                                                    <Input type='text' shrink name={`installment`} title='Installment' defaultValue={price.installment} InputContext={InputContext} />
-                                                    <Input type='text' shrink name={`installment_f1`} title='Installment F1' defaultValue={price.installment_f1} InputContext={InputContext} />
-                                                    <Input type='text' shrink name={`mailling`} grow title='Mailling' defaultValue={price.mailling} InputContext={InputContext} />
-                                                    <Input type='text' shrink name={`private`} grow title='Private' defaultValue={price.private} InputContext={InputContext} />
-                                                    <Input type='text' shrink name={`book`} grow title='Book' defaultValue={price.book} InputContext={InputContext} />
-                                                    <Input type='text' shrink name={`registration_fee`} grow title='Registration Fee' defaultValue={price.registration_fee} InputContext={InputContext} />
-                                                    <Select name='active' shrink title='Active' options={[{ value: 'Yes', label: 'Yes' }, { value: 'No', label: 'No' }]} defaultValue={price.active ? 'Yes' : 'No'} InputContext={InputContext} />
-
+                                                <InputLine title='General Data'>
+                                                    <Input type='text' name='ein' required title='EIN' defaultValue={pageData.ein} InputContext={InputContext} />
+                                                    <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
+                                                    <Input type='text' name='alias' onlyUpperCase required title='Alias' defaultValue={pageData.alias} InputContext={InputContext} />
+                                                    <SelectPopover name='filialtype_id' title='Filial Type' options={filialTypesOptions} defaultValue={{ value: pageData.filialtype_id, label: pageData.Filialtype.name }} InputContext={InputContext} />
+                                                    <SelectPopover name='active' title='Active' options={[{ value: 'Yes', label: 'Yes' }, { value: 'No', label: 'No' }]} defaultValue={{ value: pageData.active, label: pageData.active ? 'Yes' : 'No' }} InputContext={InputContext} />
                                                 </InputLine>
-                                                <div className='w-full border-b p-4 pt-2'></div>
-                                            </Scope>
-                                        )}
-                                        <button type="button" onClick={handleAddPrice} className={`m-2 mt-4 text-md font-bold border border-mila_orange text-mila_orange rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1`}>
-                                            + Add Price
-                                        </button>
-                                    </InputLineGroup>
 
-                                    <InputLineGroup title='DISCOUNT LIST' activeMenu={activeMenu === 'discount-list'}>
-                                        <h1 className='w-full border-b p-4 pb-0 pt-2 pb-2 font-bold'>Discount List</h1>
-                                        {pageData.discountlists && pageData.discountlists.map((discount, index) =>
-                                            <Scope key={index} path={`discountlists[${index}]`}>
-                                                <InputLine>
-
-                                                    {!discount.id && <button type='button' className='mt-3 bg-none border-none' onClick={() => handleRemoveDiscount(index)}><Trash size={14} /></button>}
-                                                    <Input type='hidden' name={`id`} defaultValue={discount.id} InputContext={InputContext} />
-                                                    <Select name='active' shrink title='Active' options={[{ value: 'Yes', label: 'Yes' }, { value: 'No', label: 'No' }]} defaultValue={discount.active ? 'Yes' : 'No'} InputContext={InputContext} />
-                                                    <Input type='text' grow name={`name`} title='Name' defaultValue={discount.name} InputContext={InputContext} />
-                                                    <Input type='text' shrink name={`value`} title='Value' defaultValue={discount.value} InputContext={InputContext} />
-                                                    <CheckboxInput name='percent' title='Percent' InputContext={InputContext} />
-                                                    {/* <Input type='text' shrink name={`punctuality_discount`} grow title='Mailling' defaultValue={discount.percent} /> */}
+                                                <InputLine title='Localization'>
+                                                    <SelectPopover name='country' title='Country' required options={countriesOptions} isSearchable defaultValue={{ value: pageData.country, label: pageData.country }} InputContext={InputContext} />
+                                                    <Input type='text' name='state' required title='State' defaultValue={pageData.state} InputContext={InputContext} />
+                                                    <Input type='text' name='city' required title='City' defaultValue={pageData.city} InputContext={InputContext} />
+                                                    <Input type='text' name='zipcode' isZipCode grow required title='Zip Code' defaultValue={pageData.zipcode} placeholder='-----' InputContext={InputContext} />
                                                 </InputLine>
-                                                <InputLine>
-                                                    <CheckboxInput name='ponctuality_discount' title='Ponctuality Discount' InputContext={InputContext} />
-                                                    <CheckboxInput name='all_installments' title='All Installments' InputContext={InputContext} />
-                                                    <CheckboxInput name='free_vacation' title='Free Vacation' InputContext={InputContext} />
-                                                    <CheckboxInput name='special_discount' title='Special Discount' InputContext={InputContext} />
-                                                </InputLine>
-                                                <div className='w-full border-b p-4 pt-2'></div>
-                                            </Scope>
 
-                                        )}
-                                        <button type="button" onClick={handleAddDiscount} className={`m-2 mt-4 text-md font-bold border border-mila_orange text-mila_orange rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1`}>
-                                            + Add Discount
-                                        </button>
-                                    </InputLineGroup>
+                                                <InputLine>
+                                                    <Textarea type='text' required name='address' title='Address' rows={5} defaultValue={pageData.address} InputContext={InputContext} />
+                                                </InputLine>
+
+                                                <InputLine title='Contact / On the web'>
+                                                    <Input type='text' name='phone' isPhoneNumber title='Phone' defaultValue={pageData.phone} InputContext={InputContext} />
+                                                    <Input type='text' name='phone2' isPhoneNumber title='Phone 2' defaultValue={pageData.phone2} placeholder='(---) -------' InputContext={InputContext} />
+                                                    <Input type='text' name='email' onlyLowerCase grow title='Email' defaultValue={pageData.email} placeholder='email@mila.usa' InputContext={InputContext} />
+                                                </InputLine>
+
+                                                <InputLine>
+                                                    <Input type='text' name='whatsapp' isPhoneNumber title='Whatsapp' defaultValue={pageData.whatsapp} placeholder='(---) -------' InputContext={InputContext} />
+                                                    <Input type='text' name='facebook' onlyLowerCase title='Facebook' defaultValue={pageData.facebook} InputContext={InputContext} />
+                                                    <Input type='text' name='instagram' onlyLowerCase title='Instagram' defaultValue={pageData.instagram} InputContext={InputContext} />
+                                                    <Input type='text' name='website' onlyLowerCase grow title='Website' defaultValue={pageData.website} InputContext={InputContext} />
+                                                </InputLine>
+
+                                                <InputLine title='Observations'>
+                                                    <Textarea type='text' name='observations' rows={3} defaultValue={pageData.observations} InputContext={InputContext} />
+                                                </InputLine>
+
+                                            </InputLineGroup>
+
+                                            <InputLineGroup title='PRICE LIST' activeMenu={activeMenu === 'price-list'}>
+                                                <h1 className='w-full border-b p-4 pb-0 pt-2 pb-2 font-bold'>Price List</h1>
+                                                {pageData.pricelists && pageData.pricelists.map((price, index) =>
+                                                    <Scope key={index} path={`pricelists[${index}]`}>
+                                                        <InputLine>
+                                                            {!price.id && <button type='button' className='mt-3 bg-none border-none' onClick={() => handleRemovePrice(index)}><Trash size={14} /></button>}
+                                                            <Input type='hidden' name={`id`} defaultValue={price.id} InputContext={InputContext} />
+                                                            <Input type='text' grow name={`name`} title='Name' defaultValue={price.name} InputContext={InputContext} />
+                                                            <Input type='text' shrink name={`installment`} title='Installment' defaultValue={price.installment} InputContext={InputContext} />
+                                                            <Input type='text' shrink name={`installment_f1`} title='Installment F1' defaultValue={price.installment_f1} InputContext={InputContext} />
+                                                            <Input type='text' shrink name={`mailling`} grow title='Mailling' defaultValue={price.mailling} InputContext={InputContext} />
+                                                            <Input type='text' shrink name={`private`} grow title='Private' defaultValue={price.private} InputContext={InputContext} />
+                                                            <Input type='text' shrink name={`book`} grow title='Book' defaultValue={price.book} InputContext={InputContext} />
+                                                            <Input type='text' shrink name={`registration_fee`} grow title='Registration Fee' defaultValue={price.registration_fee} InputContext={InputContext} />
+                                                            <Select name='active' shrink title='Active' options={[{ value: 'Yes', label: 'Yes' }, { value: 'No', label: 'No' }]} defaultValue={price.active ? 'Yes' : 'No'} InputContext={InputContext} />
+
+                                                        </InputLine>
+                                                        <div className='w-full border-b p-4 pt-2'></div>
+                                                    </Scope>
+                                                )}
+                                                <button type="button" onClick={handleAddPrice} className={`m-2 mt-4 text-md font-bold border border-mila_orange text-mila_orange rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1`}>
+                                                    + Add Price
+                                                </button>
+                                            </InputLineGroup>
+
+                                            <InputLineGroup title='DISCOUNT LIST' activeMenu={activeMenu === 'discount-list'}>
+                                                <h1 className='w-full border-b p-4 pb-0 pt-2 pb-2 font-bold'>Discount List</h1>
+                                                {pageData.discountlists && pageData.discountlists.map((discount, index) =>
+                                                    <Scope key={index} path={`discountlists[${index}]`}>
+                                                        <InputLine>
+
+                                                            {!discount.id && <button type='button' className='mt-3 bg-none border-none' onClick={() => handleRemoveDiscount(index)}><Trash size={14} /></button>}
+                                                            <Input type='hidden' name={`id`} defaultValue={discount.id} InputContext={InputContext} />
+                                                            <Select name='active' shrink title='Active' options={[{ value: 'Yes', label: 'Yes' }, { value: 'No', label: 'No' }]} defaultValue={discount.active ? 'Yes' : 'No'} InputContext={InputContext} />
+                                                            <Input type='text' grow name={`name`} title='Name' defaultValue={discount.name} InputContext={InputContext} />
+                                                            <Input type='text' shrink name={`value`} title='Value' defaultValue={discount.value} InputContext={InputContext} />
+                                                            <CheckboxInput name='percent' title='Percent' InputContext={InputContext} />
+                                                            {/* <Input type='text' shrink name={`punctuality_discount`} grow title='Mailling' defaultValue={discount.percent} /> */}
+                                                        </InputLine>
+                                                        <InputLine>
+                                                            <CheckboxInput name='ponctuality_discount' title='Ponctuality Discount' InputContext={InputContext} />
+                                                            <CheckboxInput name='all_installments' title='All Installments' InputContext={InputContext} />
+                                                            <CheckboxInput name='free_vacation' title='Free Vacation' InputContext={InputContext} />
+                                                            <CheckboxInput name='special_discount' title='Special Discount' InputContext={InputContext} />
+                                                        </InputLine>
+                                                        <div className='w-full border-b p-4 pt-2'></div>
+                                                    </Scope>
+
+                                                )}
+                                                <button type="button" onClick={handleAddDiscount} className={`m-2 mt-4 text-md font-bold border border-mila_orange text-mila_orange rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1`}>
+                                                    + Add Discount
+                                                </button>
+                                            </InputLineGroup>
+
+                                        </> : <FormLoading />}
 
                                 </InputContext.Provider>
                             </Form>

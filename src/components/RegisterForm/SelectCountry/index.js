@@ -1,21 +1,17 @@
-import React, { useContext, useEffect, useRef } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { useField } from '@unform/core'
 import { Asterisk } from 'lucide-react'
 import AsyncSelect from 'react-select/async';
-import CountryList from 'country-list-with-dial-code-and-flag';
 
-export default function SelectPopover({ name, title, grow, hidden = false, shrink, type, options = [], isSearchable = false, InputContext, ...rest }) {
+export default function SelectCountry({ name, title, grow, hidden = false, shrink, type, options = [], isSearchable = false, InputContext, ...rest }) {
   const inputRef = useRef()
   const { fieldName, registerField, error } = useField(name)
-  const { defaultValue, required, disabled } = { ...rest }
+  const { defaultValue, required, readOnly, disabled } = { ...rest }
 
   const { setSuccessfullyUpdated } = useContext(InputContext)
-  const countriesList = CountryList.getAll().map(country => {
-    return { value: country.dial_code, label: country.flag + " " + country.dial_code + " " + country.name, code: country.dial_code, name: country.name }
-  })
 
   const filterColors = (inputValue) => {
-    const filtered = countriesList.filter((i) => i.label.toLowerCase().includes(inputValue.toLowerCase()));
+    const filtered = options.filter((i) => i.label.toLowerCase().includes(inputValue.toLowerCase()));
 
     return filtered.sort((a, b) => inputValue.substring(0, 1) === '+' ? a.code > b.code : a.name > b.name)
   };
@@ -41,7 +37,7 @@ export default function SelectPopover({ name, title, grow, hidden = false, shrin
         if (!ref.state.selectValue) {
           return '';
         }
-        return ref.state.selectValue[0].value;
+        return ref.state.selectValue.length > 0 ? ref.state.selectValue[0].value : null;
       },
     });
 
@@ -52,22 +48,28 @@ export default function SelectPopover({ name, title, grow, hidden = false, shrin
   }
 
   return (
-    <AsyncSelect
-      type='hidden'
-      id={name}
-      name={name}
-      cacheOptions={false}
-      defaultOptions={countriesList}
-      isClearable={false}
-      loadOptions={loadOptions}
-      isSearchable={true}
-      isDisabled={disabled}
-      ref={inputRef}
-      onChange={handleChanged}
-      classNamePrefix="react-select"
-      defaultValue={countriesList.find((i) => i.label.toLowerCase().includes('united states'))}
-      {...rest}
-      className={`w-40 rounded-lg text-sm focus:outline-none bg-transparent text-left relative`}
-    />
+    <div className={`${type === 'hidden' ? 'hidden' : 'flex'} flex-col justify-center items-start relative w-42 ${grow ? 'grow' : ''}`}>
+      <div className='px-2 text-xs flex flex-row justify-between items-center'>{title} {required && <Asterisk color='#e00' size={12} />}</div>
+      <div
+        className={`text-sm focus:outline-none flex-1 w-full bg-transparent w-full`}>
+        <AsyncSelect
+          type='hidden'
+          id={name}
+          name={name}
+          cacheOptions
+          defaultOptions={options}
+          isClearable={false}
+          loadOptions={loadOptions}
+          isSearchable={true}
+          isDisabled={disabled}
+          ref={inputRef}
+          onChange={handleChanged}
+          classNamePrefix="react-select"
+          defaultValue={defaultValue}
+          {...rest}
+          className={`w-40 rounded-lg text-sm w-full focus:outline-none bg-transparent text-left relative`}
+        />
+      </div>
+    </div>
   )
 }

@@ -99,6 +99,12 @@ function App() {
             path: '/Administrative/Users',
             title: 'Users',
             icon: 'User'
+          },
+          {
+            alias: 'students',
+            path: '/Administrative/Students',
+            title: 'Students',
+            icon: 'GraduationCap'
           }
         ]
       },
@@ -116,6 +122,39 @@ function App() {
             path: '/Commercial/Prospects',
             title: 'Prospects',
             icon: 'Users'
+          },
+        ]
+      },
+      {
+        name: 'Financial',
+        children: [
+          {
+            alias: 'financial-dashboard',
+            path: '/Financial/Dashboard',
+            title: 'Dashboard',
+            icon: 'LayoutDashboard',
+          },
+        ]
+      },
+      {
+        name: 'Operational',
+        children: [
+          {
+            alias: 'operational-dashboard',
+            path: '/Operational/Dashboard',
+            title: 'Dashboard',
+            icon: 'LayoutDashboard',
+          },
+        ]
+      },
+      {
+        name: 'Settings',
+        children: [
+          {
+            alias: 'settings-dashboard',
+            path: '/Settings/Dashboard',
+            title: 'Dashboard',
+            icon: 'LayoutDashboard',
           },
         ]
       }

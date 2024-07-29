@@ -11,12 +11,14 @@ import Preview from '~/components/Preview';
 import { Zoom, toast } from 'react-toastify';
 import api from '~/services/api';
 import { getRegistries, handleUpdatedFields } from '~/functions';
+import FormLoading from '~/components/RegisterForm/FormLoading';
 
 export const InputContext = createContext({})
 
 export default function PagePreview({ access, id, handleOpened, setOpened, defaultFormType = 'preview' }) {
     const [pageData, setPageData] = useState({
-        name: ''
+        name: '',
+        loaded: false
     })
     const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
     const [registry, setRegistry] = useState({ created_by: null, created_at: null, updated_by: null, updated_at: null, canceled_by: null, canceled_at: null })
@@ -73,7 +75,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         async function getPageData() {
             try {
                 const { data } = await api.get(`levels/${id}`)
-                setPageData(data)
+                setPageData({ ...data, loaded: true })
                 const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at } = data;
                 const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
                 setRegistry(registries)
@@ -130,19 +132,19 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                         <div className='flex flex-col items-start justify-start text-sm overflow-y-scroll'>
                             <Form ref={generalForm} onSubmit={handleGeneralFormSubmit} className='w-full'>
                                 <InputContext.Provider value={{ id, generalForm, setSuccessfullyUpdated, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm }}>
+                                    {id === 'new' || pageData.loaded ?
+                                        <>
+                                            <FormHeader access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
 
-                                    <FormHeader access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
+                                            <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
+                                                <InputLine title='General Data'>
+                                                    <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
+                                                    <Input type='text' name='total_hours' onlyInt required title='Total Hours' grow defaultValue={pageData.total_hours} InputContext={InputContext} />
+                                                    <SelectPopover name='programcategory_id' title='Type' generalForm={generalForm} options={programCategoriesOptions} defaultValue={{ value: pageData.programcategory_id, label: pageData.Programcategory.name }} InputContext={InputContext} />
+                                                </InputLine>
 
-                                    <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
-                                        <InputLine title='General Data'>
-                                            <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
-                                            <Input type='text' name='total_hours' onlyInt required title='Total Hours' grow defaultValue={pageData.total_hours} InputContext={InputContext} />
-                                            {pageData && pageData.Programcategory &&
-                                                <SelectPopover name='programcategory_id' title='Type' generalForm={generalForm} options={programCategoriesOptions} defaultValue={{ value: pageData.programcategory_id, label: pageData.Programcategory.name }} InputContext={InputContext} />
-                                            }
-                                        </InputLine>
-
-                                    </InputLineGroup>
+                                            </InputLineGroup>
+                                        </> : <FormLoading />}
 
                                 </InputContext.Provider>
                             </Form>

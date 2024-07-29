@@ -37,7 +37,7 @@ export default function SelectPopover({ name, title, grow, hidden = false, shrin
         if (!ref.state.selectValue) {
           return '';
         }
-        return ref.state.selectValue[0].value;
+        return ref.state.selectValue.length > 0 ? ref.state.selectValue[0].value : null;
       },
     });
 

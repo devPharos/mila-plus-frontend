@@ -8,11 +8,11 @@ import { Zoom, toast } from 'react-toastify';
 import InputLine from '~/components/RegisterForm/InputLine';
 import InputLineGroup from '~/components/RegisterForm/InputLineGroup';
 import FormHeader from '~/components/RegisterForm/FormHeader';
-import Select from '~/components/RegisterForm/Select';
 import Preview from '~/components/Preview';
 import { getRegistries, handleUpdatedFields } from '~/functions';
 import SelectPopover from '~/components/RegisterForm/SelectPopover';
 import { Scope } from '@unform/core';
+import FormLoading from '~/components/RegisterForm/FormLoading';
 
 export const InputContext = createContext({})
 
@@ -21,7 +21,8 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         name: '',
         email: '',
         group_id: null,
-        filials: [{ id: null }]
+        filials: [{ id: null }],
+        loaded: false
     })
     const [formType, setFormType] = useState(defaultFormType)
     const [fullscreen, setFullscreen] = useState(false)
@@ -38,7 +39,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
             await getDefaultFilialOptions()
             try {
                 const { data } = await api.get(`users/${id}`)
-                setPageData({ ...data, group_id: data.groups[0].group.id })
+                setPageData({ ...data, group_id: data.groups[0].group.id, loaded: true })
                 const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at } = data;
                 const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
                 setRegistry(registries)
@@ -180,34 +181,35 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                         <div className='flex flex-col items-start justify-start text-sm overflow-y-scroll'>
                             <Form ref={generalForm} onSubmit={handleGeneralFormSubmit} className='w-full'>
                                 <InputContext.Provider value={{ id, setSuccessfullyUpdated, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm, handleInactivate, canceled: pageData.canceled_at }}>
+                                    {id === 'new' || pageData.loaded ?
+                                        <>
+                                            <FormHeader access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
 
-                                    <FormHeader access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
+                                            <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
+                                                <InputLine title='General Data'>
+                                                    <Input type='text' name='name' required title='Name' defaultValue={pageData.name} InputContext={InputContext} />
+                                                    <Input type='text' name='email' required title='E-mail' grow defaultValue={pageData.email} InputContext={InputContext} />
+                                                    <SelectPopover disabled={pageData.group_id === 1} name='group_id' title='Group' required grow options={pageData.group_id === 1 ? groupOptions.filter((group) => group.value === 1) : groupOptions.filter((group) => group.value > 2)} defaultValue={pageData.group_id ? groupOptions.filter((group) => group.value === pageData.group_id) : groupOptions.filter((group) => group.value === 1)} InputContext={InputContext} />
+                                                </InputLine>
+                                                <h3 className='font-bold pl-4 pb-2 mt-4 border-b w-full'>Filials</h3>
+                                                {pageData.filials.map((filial, index) => {
+                                                    if (filial.id !== 1) {
+                                                        return <Scope key={index} path={`filials[${index}]`}>
+                                                            <InputLine>
+                                                                {id === 'new' || (filial && filial.filial) ?
+                                                                    <>
+                                                                        {index ? <button type='button' onClick={() => handleRemoveFilial(index)}><Trash size={14} className='mt-4' /></button> : null}
+                                                                        <SelectPopover name='filial_id' title='Filial' required grow options={filialOptions} defaultValue={filialOptions.filter((filOpt) => filOpt.value === filial.filial_id)} InputContext={InputContext} />
+                                                                    </>
+                                                                    : null}
+                                                            </InputLine>
+                                                        </Scope>
+                                                    }
+                                                })}
+                                                <button type='button' onClick={() => handleAddFilial()} className='bg-slate-100 border ml-6 py-1 px-2 text-xs flex flex-row justify-center items-center gap-2 rounded-md transition-all hover:border-primary hover:text-primary'><PlusCircle size={16} /> Filial</button>
 
-                                    <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
-                                        <InputLine title='General Data'>
-                                            <Input type='text' name='name' required title='Name' defaultValue={pageData.name} InputContext={InputContext} />
-                                            <Input type='text' name='email' required title='E-mail' grow defaultValue={pageData.email} InputContext={InputContext} />
-                                            {id === 'new' || pageData.group_id ? <SelectPopover disabled={pageData.group_id === 1} name='group_id' title='Group' required grow options={pageData.group_id === 1 ? groupOptions.filter((group) => group.value === 1) : groupOptions.filter((group) => group.value > 2)} defaultValue={pageData.group_id ? groupOptions.filter((group) => group.value === pageData.group_id) : groupOptions.filter((group) => group.value === 1)} InputContext={InputContext} /> : null}
-                                        </InputLine>
-                                        <h3 className='font-bold pl-4 pb-2 mt-4 border-b w-full'>Filials</h3>
-                                        {pageData.filials.map((filial, index) => {
-                                            if (filial.id !== 1) {
-                                                return <Scope key={index} path={`filials[${index}]`}>
-                                                    <InputLine>
-                                                        {id === 'new' || (filial && filial.filial) ?
-                                                            <>
-                                                                {index ? <button type='button' onClick={() => handleRemoveFilial(index)}><Trash size={14} className='mt-4' /></button> : null}
-                                                                <SelectPopover name='filial_id' title='Filial' required grow options={filialOptions} defaultValue={filialOptions.filter((filOpt) => filOpt.value === filial.filial_id)} InputContext={InputContext} />
-                                                            </>
-                                                            : null}
-                                                    </InputLine>
-                                                </Scope>
-                                            }
-                                        })}
-                                        <button type='button' onClick={() => handleAddFilial()} className='bg-slate-100 border ml-6 py-1 px-2 text-xs flex flex-row justify-center items-center gap-2 rounded-md transition-all hover:border-primary hover:text-primary'><PlusCircle size={16} /> Filial</button>
-
-                                    </InputLineGroup>
-
+                                            </InputLineGroup>
+                                        </> : <FormLoading />}
 
                                 </InputContext.Provider>
                             </Form>

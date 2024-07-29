@@ -48,14 +48,10 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     const [activeMenu, setActiveMenu] = useState('general')
     const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
     const [registry, setRegistry] = useState({ created_by: null, created_at: null, updated_by: null, updated_at: null, canceled_by: null, canceled_at: null })
-    const [countriesList, setCountriesList] = useState([])
     const [filialOptions, setFilialOptions] = useState([])
     const generalForm = useRef()
     const auth = useSelector(state => state.auth);
 
-    // const optionsCategories = [{ value: 'prospect', label: 'Prospect' }]
-    // const optionsTypes = [{ value: 'initial', label: 'Initial' }]
-    // const optionsStatus = [{ value: 'sales', label: 'Sales' }]
     const genderOptions = [{ value: 'male', label: 'Male' }, { value: 'female', label: 'Female' }, { value: 'not specified', label: 'Not Specified' }]
 
     const countriesOptions = countries_list.map(country => {
@@ -64,10 +60,11 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
 
     useEffect(() => {
         async function getCountriesList() {
-            const getList = CountryList.getAll().map(country => {
+            const countriesList = CountryList.getAll().map(country => {
                 return { value: country.dial_code, label: country.flag + " " + country.dial_code + " " + country.name, code: country.dial_code, name: country.name }
             })
-            setCountriesList(getList)
+
+            return countriesList
         }
         async function getDefaultFilialOptions() {
             const { data } = await api.get('/filials')
@@ -131,7 +128,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                     toast(err.response.data.error, { type: 'error', autoClose: 3000 })
                 }
             } else {
-                console.log(updated)
+                // console.log(updated)
             }
         }
     }
@@ -186,7 +183,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                         <div className='flex flex-col items-start justify-start text-sm overflow-y-scroll'>
                             <Form ref={generalForm} onSubmit={handleGeneralFormSubmit} className='w-full'>
                                 <InputContext.Provider value={{ id, generalForm, setSuccessfullyUpdated, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm, handleInactivate, canceled: pageData.canceled_at }}>
-                                    {id === 'new' || pageData.loaded ?
+                                    {pageData.loaded ?
                                         <>
                                             <FormHeader access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
                                             <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
@@ -194,7 +191,6 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                     <SelectPopover name='filial_id' required title='Filial' isSearchable defaultValue={filialOptions.filter(filial => filial.value === pageData.filial_id)} options={filialOptions} InputContext={InputContext} />
                                                 </InputLine>}
                                                 <InputLine title='General Data'>
-                                                    <Input type='hidden' name='category' required grow title='Category' defaultValue='prospect' InputContext={InputContext} />
                                                     <Input type='text' name='name' required grow title='Name' defaultValue={pageData.name} InputContext={InputContext} />
                                                     <Input type='text' name='middle_name' grow title='Middle Name' defaultValue={pageData.middle_name} InputContext={InputContext} />
                                                     <Input type='text' name='last_name' required grow title='Last Name' defaultValue={pageData.last_name} InputContext={InputContext} />
@@ -209,7 +205,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                 </InputLine>
                                                 <InputLine title='Contact'>
                                                     <Input type='text' name='email' required title='E-mail' grow defaultValue={pageData.email} InputContext={InputContext} />
-                                                    <SelectCountry name='whatsapp_ddi' title='DDI' options={countriesList} defaultValue={countriesList.find(ddi => ddi.value === pageData.whatsapp_ddi)} InputContext={InputContext} />
+                                                    <SelectCountry name='whatsapp_ddi' title='DDI' options={pageData.ddiOptions} defaultValue={pageData.ddiOptions.find(ddi => ddi.value === pageData.whatsapp_ddi)} InputContext={InputContext} />
                                                     <Input type='text' grow name='whatsapp' title='Whatsapp' isPhoneNumber defaultValue={pageData.whatsapp} defaultValueDDI={pageData.whatsapp_ddi} InputContext={InputContext} />
                                                     <Input type='text' grow name='home_country_phone' hasDDI title='Home Country Phone' isPhoneNumber defaultValue={pageData.home_country_phone} InputContext={InputContext} />
                                                 </InputLine>

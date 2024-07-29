@@ -3,15 +3,15 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from '../Sidebar';
 import { PageContext } from '~/App';
 
-export default function Operational() {
+export default function Settings() {
   const { pathname } = useLocation()
   const navigate = useNavigate();
 
   const { pages } = useContext(PageContext)
 
   useEffect(() => {
-    if (pathname.toUpperCase() === '/Operational'.toUpperCase() || pathname.toUpperCase() === '/Operational/'.toUpperCase()) {
-      navigate("/Operational/Dashboard")
+    if (pathname.toUpperCase() === '/Settings'.toUpperCase() || pathname.toUpperCase() === '/Settings/'.toUpperCase()) {
+      navigate("/Settings/Dashboard")
     }
   }, [pathname])
 

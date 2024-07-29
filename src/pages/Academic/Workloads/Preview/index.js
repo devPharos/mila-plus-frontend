@@ -13,13 +13,15 @@ import api from '~/services/api';
 import { getRegistries, handleUpdatedFields } from '~/functions';
 import { Scope } from '@unform/core';
 import { AlertContext } from '~/App';
+import FormLoading from '~/components/RegisterForm/FormLoading';
 
 export const InputContext = createContext({})
 
 export default function PagePreview({ access, id, handleOpened, setOpened, defaultFormType = 'preview' }) {
     const [pageData, setPageData] = useState({
         name: '',
-        paceGuides: []
+        paceGuides: [],
+        loaded: false
     })
     const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
     const [registry, setRegistry] = useState({ created_by: null, created_at: null, updated_by: null, updated_at: null, canceled_by: null, canceled_at: null })
@@ -169,7 +171,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                 paceGuidesData.length > 0 && paceGuidesData.map((paceGuide) => {
                     return defaultPaceGuides[paceGuide.day - 1].data.push(paceGuide);
                 })
-                setPageData({ ...data, paceGuides: defaultPaceGuides, name: `${data.days_per_week.toString()} day(s) per week, ${data.hours_per_day.toString()} hour(s) per day.` })
+                setPageData({ ...data, loaded: true, paceGuides: defaultPaceGuides, name: `${data.days_per_week.toString()} day(s) per week, ${data.hours_per_day.toString()} hour(s) per day.` })
             } catch (err) {
                 toast(err.response.data.error, { type: 'error', autoClose: 3000 })
             }
@@ -225,7 +227,6 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         const removedPace = pageData.paceGuides.map((paceGuide) => {
             if (paceGuide.day === day) {
                 const newData = paceGuide.data.filter((_, indexGuide) => index !== indexGuide);
-                // console.log(newData)
                 paceGuide.data = newData;
                 return paceGuide;
             } else {
@@ -278,41 +279,44 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                 <div className='flex flex-col items-start justify-start text-sm overflow-y-scroll'>
                                     <Form ref={generalForm} onSubmit={handleGeneralFormSubmit} className='w-full'>
                                         <InputContext.Provider value={{ id, generalForm, setSuccessfullyUpdated, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm }}>
+                                            {id === 'new' || pageData.loaded ?
+                                                <>
+                                                    <FormHeader access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
 
-                                            <FormHeader access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
+                                                    <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
+                                                        <InputLine title='General Data'>
+                                                            <Input type='text' name='name' readOnly required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
+                                                            <SelectPopover type='text' name='level_id' required title='Level' options={levelOptions} grow defaultValue={pageData.Level && { value: pageData.level_id, label: pageData.Level.Programcategory.name + ' - ' + pageData.Level.name + ' (' + pageData.Level.total_hours.toString() + 'h)' }} InputContext={InputContext} />
+                                                            <SelectPopover type='text' name='languagemode_id' required title='Language Mode' options={languageModeOptions} grow defaultValue={pageData.Languagemode ? { value: pageData.languagemode_id, label: pageData.Languagemode.name } : null} InputContext={InputContext} />
+                                                        </InputLine>
+                                                        <InputLine title='Configurations'>
+                                                            <Input type='text' name='days_per_week' workloadUpdateName onlyInt required title='Days per Week' grow defaultValue={pageData.days_per_week} InputContext={InputContext} />
+                                                            <Input type='text' name='hours_per_day' workloadUpdateName onlyFloat required title='Hours per Day' grow defaultValue={pageData.hours_per_day} InputContext={InputContext} />
+                                                        </InputLine>
 
-                                            <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
-                                                <InputLine title='General Data'>
-                                                    <Input type='text' name='name' readOnly required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
-                                                    <SelectPopover type='text' name='level_id' required title='Level' options={levelOptions} grow defaultValue={pageData.Level && { value: pageData.level_id, label: pageData.Level.Programcategory.name + ' - ' + pageData.Level.name + ' (' + pageData.Level.total_hours.toString() + 'h)' }} InputContext={InputContext} />
-                                                    <SelectPopover type='text' name='languagemode_id' required title='Language Mode' options={languageModeOptions} grow defaultValue={pageData.Languagemode ? { value: pageData.languagemode_id, label: pageData.Languagemode.name } : null} InputContext={InputContext} />
-                                                </InputLine>
-                                                <InputLine title='Configurations'>
-                                                    <Input type='text' name='days_per_week' workloadUpdateName onlyInt required title='Days per Week' grow defaultValue={pageData.days_per_week} InputContext={InputContext} />
-                                                    <Input type='text' name='hours_per_day' workloadUpdateName onlyFloat required title='Hours per Day' grow defaultValue={pageData.hours_per_day} InputContext={InputContext} />
-                                                </InputLine>
+                                                    </InputLineGroup>
 
-                                            </InputLineGroup>
-
-                                            <InputLineGroup title='Pace Guide' activeMenu={activeMenu === 'Pace Guide'}>
-                                                {pageData.paceGuides.map((paceGuide, indexGuide) => {
-                                                    return <Scope key={indexGuide} path={`paceGuides[${indexGuide}]`}>
-                                                        <h3 className='font-bold pl-4 pb-2 mt-4 border-b w-full'>Class {paceGuide.day} - Details</h3>
-                                                        {paceGuide.data.map((classes, index) => {
-                                                            return <Scope key={index} path={`data[${index}]`}>
-                                                                <InputLine>
-                                                                    <button type='button' onClick={() => handleRemoveContent(paceGuide.day, index)}><Trash size={14} className='mt-4' /></button>
-                                                                    <SelectPopover type='text' name='type' required title='Type' options={typesOptions} grow defaultValue={{ value: classes.type, label: classes.type }} InputContext={InputContext} />
-                                                                    <Input type='text' name='description' required title='Description' grow defaultValue={classes.description} InputContext={InputContext} />
-                                                                </InputLine>
+                                                    <InputLineGroup title='Pace Guide' activeMenu={activeMenu === 'Pace Guide'}>
+                                                        {pageData.paceGuides.map((paceGuide, indexGuide) => {
+                                                            return <Scope key={indexGuide} path={`paceGuides[${indexGuide}]`}>
+                                                                <h3 className='font-bold pl-4 pb-2 mt-4 border-b w-full'>Class {paceGuide.day} - Details</h3>
+                                                                {paceGuide.data.map((classes, index) => {
+                                                                    return <Scope key={index} path={`data[${index}]`}>
+                                                                        <InputLine>
+                                                                            <button type='button' onClick={() => handleRemoveContent(paceGuide.day, index)}><Trash size={14} className='mt-4' /></button>
+                                                                            <SelectPopover type='text' name='type' required title='Type' options={typesOptions} grow defaultValue={{ value: classes.type, label: classes.type }} InputContext={InputContext} />
+                                                                            <Input type='text' name='description' required title='Description' grow defaultValue={classes.description} InputContext={InputContext} />
+                                                                        </InputLine>
+                                                                    </Scope>
+                                                                })}
+                                                                <Input type='hidden' name='day' required title='Day' defaultValue={paceGuide.day} InputContext={InputContext} />
+                                                                <button type='button' onClick={() => handleAddContent(paceGuide.day)} className='bg-slate-100 border ml-6 py-1 px-2 text-xs flex flex-row justify-center items-center gap-2 rounded-md transition-all hover:border-primary hover:text-primary'><PlusCircle size={16} /> detail to class {paceGuide.day}</button>
                                                             </Scope>
                                                         })}
-                                                        <Input type='hidden' name='day' required title='Day' defaultValue={paceGuide.day} InputContext={InputContext} />
-                                                        <button type='button' onClick={() => handleAddContent(paceGuide.day)} className='bg-slate-100 border ml-6 py-1 px-2 text-xs flex flex-row justify-center items-center gap-2 rounded-md transition-all hover:border-primary hover:text-primary'><PlusCircle size={16} /> detail to class {paceGuide.day}</button>
-                                                    </Scope>
-                                                })}
 
-                                            </InputLineGroup>
+                                                    </InputLineGroup>
+
+                                                </> : <FormLoading />}
 
                                         </InputContext.Provider>
                                     </Form>

@@ -10,7 +10,7 @@ import PagePreview from './Preview';
 import { useSelector } from 'react-redux';
 import PageHeader from '~/components/PageHeader';
 
-export default function CommercialProspects() {
+export default function AdministrativeStudent() {
   const [activeFilters, setActiveFilters] = useState([])
   const [opened, setOpened] = useState(false)
   const [orderBy, setOrderBy] = useState({ column: 'Name', asc: true })

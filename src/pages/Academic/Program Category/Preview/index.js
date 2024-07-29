@@ -10,8 +10,8 @@ import Preview from '~/components/Preview';
 import { Zoom, toast } from 'react-toastify';
 import api from '~/services/api';
 import { getRegistries, handleUpdatedFields } from '~/functions';
-import Select from '~/components/RegisterForm/Select';
 import SelectPopover from '~/components/RegisterForm/SelectPopover';
+import FormLoading from '~/components/RegisterForm/FormLoading';
 
 export const InputContext = createContext({})
 
@@ -20,6 +20,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         name: '',
         language_id: null,
         Language: null,
+        loaded: false
     })
     const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
     const [registry, setRegistry] = useState({ created_by: null, created_at: null, updated_by: null, updated_at: null, canceled_by: null, canceled_at: null })
@@ -78,7 +79,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         async function getPageData() {
             try {
                 const { data } = await api.get(`programcategories/${id}`)
-                setPageData(data)
+                setPageData({ ...data, loaded: true })
                 const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at } = data;
                 const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
                 setRegistry(registries)
@@ -135,19 +136,18 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                         <div className='flex flex-col items-start justify-start text-sm overflow-y-scroll'>
                             <Form ref={generalForm} onSubmit={handleGeneralFormSubmit} className='w-full'>
                                 <InputContext.Provider value={{ id, generalForm, setSuccessfullyUpdated, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm }}>
+                                    {id === 'new' || pageData.loaded ?
+                                        <>
+                                            <FormHeader access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
 
-                                    <FormHeader access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
+                                            <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
+                                                <InputLine title='General Data'>
+                                                    <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
+                                                    <SelectPopover type='text' name='language_id' required title='Language' options={languageOptions} grow defaultValue={{ value: pageData.language_id, label: pageData.Language ? pageData.Language.name : '' }} InputContext={InputContext} />
+                                                </InputLine>
 
-                                    <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
-                                        <InputLine title='General Data'>
-                                            <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
-                                            {id === 'new' || pageData.Language ?
-                                                <SelectPopover type='text' name='language_id' required title='Language' options={languageOptions} grow defaultValue={{ value: pageData.language_id, label: pageData.Language ? pageData.Language.name : '' }} InputContext={InputContext} />
-                                                : null
-                                            }
-                                        </InputLine>
-
-                                    </InputLineGroup>
+                                            </InputLineGroup>
+                                        </> : <FormLoading />}
 
                                 </InputContext.Provider>
                             </Form>

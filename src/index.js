@@ -39,6 +39,13 @@ import AdministrativeUsers from './pages/Administrative/Users';
 import Commercial from './pages/Commercial';
 import CommercialDashboard from './pages/Commercial/Dashboard';
 import CommercialProspects from './pages/Commercial/Prospects';
+import AdministrativeStudent from './pages/Administrative/Student';
+import Financial from './pages/Financial';
+import Operational from './pages/Operational';
+import Settings from './pages/Settings';
+import FinancialDashboard from './pages/Financial/Dashboard';
+import OperationalDashboard from './pages/Operational/Dashboard';
+import SettingsDashboard from './pages/Settings/Dashboard';
 
 injectStore(store)
 
@@ -94,6 +101,10 @@ const router = createBrowserRouter([
             element: <AdministrativeUsers />
           },
           {
+            path: "/Administrative/Students",
+            element: <AdministrativeStudent />
+          },
+          {
             path: "/Administrative/*",
             element: <Page404 />
           },
@@ -144,6 +155,36 @@ const router = createBrowserRouter([
           {
             path: "/Commercial/Prospects",
             element: <CommercialProspects />
+          },
+        ]
+      },
+      {
+        path: "/Financial",
+        element: <ProtectedRoute><Financial /></ProtectedRoute>,
+        children: [
+          {
+            path: "/Financial/Dashboard",
+            element: <FinancialDashboard />
+          },
+        ]
+      },
+      {
+        path: "/Operational",
+        element: <ProtectedRoute><Operational /></ProtectedRoute>,
+        children: [
+          {
+            path: "/Operational/Dashboard",
+            element: <OperationalDashboard />
+          },
+        ]
+      },
+      {
+        path: "/Settings",
+        element: <ProtectedRoute><Settings /></ProtectedRoute>,
+        children: [
+          {
+            path: "/Settings/Dashboard",
+            element: <SettingsDashboard />
           },
         ]
       },

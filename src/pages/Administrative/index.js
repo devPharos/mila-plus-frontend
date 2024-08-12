@@ -11,12 +11,12 @@ export default function Administrative() {
 
   useEffect(() => {
     if (pathname.toUpperCase() === '/Administrative'.toUpperCase() || pathname.toUpperCase() === '/Administrative/'.toUpperCase()) {
-      navigate("/Administrative/Dashboard")
+      navigate("/Administrative/Calendar")
     }
   }, [pathname])
 
   return <div className='w-full bg-gradient-to-br from-gray-300 via-indigo-300 to-mila_orange flex flex-1 flex-row justify-between items-center px-4 pt-8 shadow-lg'>
-    <Sidebar pages={pages[1].children} />
+    <Sidebar pages={pages.find(page => page.name === 'Administrative').children} />
     <Outlet />
   </div>
 }

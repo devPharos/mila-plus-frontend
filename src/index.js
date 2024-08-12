@@ -1,6 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import reportWebVitals from './reportWebVitals';
+// import 'rsuite/dist/rsuite-no-reset.min.css';
 import "react-datepicker/dist/react-datepicker.css";
 import './index.css'
 import {
@@ -46,6 +47,10 @@ import Settings from './pages/Settings';
 import FinancialDashboard from './pages/Financial/Dashboard';
 import OperationalDashboard from './pages/Operational/Dashboard';
 import SettingsDashboard from './pages/Settings/Dashboard';
+import AdministrativeStaffs from './pages/Administrative/Staffs';
+import AdministrativeAgents from './pages/Administrative/Agents';
+import AdministrativeCalendar from './pages/Administrative/Calendar';
+import AcademicCalendar from './pages/Academic/Calendar';
 
 injectStore(store)
 
@@ -77,32 +82,20 @@ const router = createBrowserRouter([
             element: <AdministrativeDashboard />
           },
           {
-            path: "/Administrative/FilialTypes",
-            element: <AdministrativeFilialTypes />
-          },
-          {
-            path: "/Administrative/Filials",
-            element: <AdministrativeFilials />
-          },
-          {
-            path: "/Administrative/Parameters",
-            element: <AdministrativeParameters />
-          },
-          {
-            path: "/Administrative/ChartOfAccounts",
-            element: <AdministrativeChartOfAccounts />
-          },
-          {
-            path: "/Administrative/Groups",
-            element: <AdministrativeGroups />
-          },
-          {
-            path: "/Administrative/Users",
-            element: <AdministrativeUsers />
+            path: "/Administrative/Calendar",
+            element: <AdministrativeCalendar />
           },
           {
             path: "/Administrative/Students",
             element: <AdministrativeStudent />
+          },
+          {
+            path: "/Administrative/Staffs",
+            element: <AdministrativeStaffs />
+          },
+          {
+            path: "/Administrative/Agents",
+            element: <AdministrativeAgents />
           },
           {
             path: "/Administrative/*",
@@ -119,24 +112,8 @@ const router = createBrowserRouter([
             element: <AcademicDashboard />
           },
           {
-            path: "/Academic/Languages",
-            element: <Languages />
-          },
-          {
-            path: "/Academic/ProgramCategory",
-            element: <ProgramCategory />
-          },
-          {
-            path: "/Academic/Levels",
-            element: <Levels />
-          },
-          {
-            path: "/Academic/LanguageModes",
-            element: <LanguageMode />
-          },
-          {
-            path: "/Academic/Workloads",
-            element: <Workloads />
+            path: "/Academic/Calendar",
+            element: <AcademicCalendar />
           },
           {
             path: "/Academic/*",
@@ -166,6 +143,10 @@ const router = createBrowserRouter([
             path: "/Financial/Dashboard",
             element: <FinancialDashboard />
           },
+          {
+            path: "/Financial/ChartOfAccounts",
+            element: <AdministrativeChartOfAccounts />
+          },
         ]
       },
       {
@@ -183,8 +164,44 @@ const router = createBrowserRouter([
         element: <ProtectedRoute><Settings /></ProtectedRoute>,
         children: [
           {
-            path: "/Settings/Dashboard",
-            element: <SettingsDashboard />
+            path: "/Settings/Parameters",
+            element: <AdministrativeParameters />
+          },
+          {
+            path: "/Settings/Languages",
+            element: <Languages />
+          },
+          {
+            path: "/Settings/ProgramCategory",
+            element: <ProgramCategory />
+          },
+          {
+            path: "/Settings/Levels",
+            element: <Levels />
+          },
+          {
+            path: "/Settings/LanguageModes",
+            element: <LanguageMode />
+          },
+          {
+            path: "/Settings/Workloads",
+            element: <Workloads />
+          },
+          {
+            path: "/Settings/FilialTypes",
+            element: <AdministrativeFilialTypes />
+          },
+          {
+            path: "/Settings/Filials",
+            element: <AdministrativeFilials />
+          },
+          {
+            path: "/Settings/Groups",
+            element: <AdministrativeGroups />
+          },
+          {
+            path: "/Settings/Users",
+            element: <AdministrativeUsers />
           },
         ]
       },

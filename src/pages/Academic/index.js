@@ -11,12 +11,12 @@ export default function Academic() {
 
   useEffect(() => {
     if (pathname.toUpperCase() === '/Academic'.toUpperCase() || pathname.toUpperCase() === '/Academic/'.toUpperCase()) {
-      navigate("/Academic/Dashboard")
+      navigate("/Academic/Calendar")
     }
   }, [pathname])
 
   return <div className='w-full bg-gradient-to-br from-gray-300 via-indigo-300 to-mila_orange flex flex-1 flex-row justify-between items-center px-4 pt-8 shadow-lg'>
-    <Sidebar pages={pages[0].children} />
+    <Sidebar pages={pages.find(page => page.name === 'Academic').children} />
     <Outlet />
   </div>
 }

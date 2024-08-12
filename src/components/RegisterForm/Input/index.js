@@ -1,11 +1,10 @@
 import React, { useContext, useEffect, useRef } from 'react'
 import { useField } from '@unform/core'
 import { Asterisk } from 'lucide-react'
-import { countries_list } from '~/functions'
 
 const Input = ({ name, title, grow, shrink, defaultValueDDI = null, workloadUpdateName = false, readOnly = false, type, isZipCode = false, onlyUpperCase = false, onlyLowerCase = false, onlyInt = false, onlyFloat = false, isPhoneNumber = false, InputContext = null, ...rest }) => {
   const inputRef = useRef()
-  const { fieldName, defaultValue, registerField, error } = useField(name)
+  const { fieldName, registerField, error } = useField(name)
   const { disabled, required } = { ...rest }
 
   function maskZipCode(input) {
@@ -35,11 +34,7 @@ const Input = ({ name, title, grow, shrink, defaultValueDDI = null, workloadUpda
     })
   }, [fieldName, registerField])
 
-  const { id, generalForm, setSuccessfullyUpdated } = useContext(InputContext)
-
-  const countriesOptions = countries_list.map(country => {
-    return { value: country, label: country }
-  })
+  const { generalForm, setSuccessfullyUpdated } = useContext(InputContext)
 
   function handleChanged() {
     if (onlyUpperCase) {

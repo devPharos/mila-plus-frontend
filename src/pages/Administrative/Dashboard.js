@@ -5,6 +5,8 @@ import Filters from '~/components/Filters';
 import FiltersBar from '~/components/FiltersBar';
 import Grid from '~/components/Grid';
 import PageHeader from '~/components/PageHeader';
+import 'rsuite/Calendar/styles/index.css';
+import Calendar from 'rsuite/Calendar';
 
 import { BarChart, Bar, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { getCurrentPage } from '~/functions';
@@ -375,8 +377,9 @@ export default function AdministrativeDashboard() {
 
     <Grid gridData={gridData} gridHeader={gridHeader} orderBy={orderBy} setOrderBy={setOrderBy} />
 
-    <div style={{ flex: 1, width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'start', paddingTop: 24 }}>
-      <ResponsiveContainer width="50%" height="55%">
+    <div style={{ flex: 1, width: '50%', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'start', paddingTop: 24 }}>
+      {/* <Calendar compact bordered cellClassName={date => (date.getDay() % 2 ? 'bg-zinc-100' : undefined)} /> */}
+      {/* <ResponsiveContainer width="50%" height="55%">
         <BarChart
           width={500}
           height={300}
@@ -404,7 +407,7 @@ export default function AdministrativeDashboard() {
           <Pie data={data01} dataKey="value" cx="50%" cy="50%" outerRadius={60} fill="#8884d8" />
           <Pie data={data02} dataKey="value" cx="50%" cy="50%" innerRadius={70} outerRadius={90} fill="#82ca9d" label />
         </PieChart>
-      </ResponsiveContainer>
+      </ResponsiveContainer> */}
     </div>
   </div>;
 }

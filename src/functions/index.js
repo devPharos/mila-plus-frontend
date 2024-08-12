@@ -300,10 +300,15 @@ export function handleUpdatedFields(data, pageData) {
   const pageDataInArray = Object.keys(pageData).map((key) => [key, pageData[key]]);
 
   return dataInArray.filter((field) => {
-    const x = field[1] === 'Yes' ? true : field[1] === 'No' ? false : field[1];
-    const y = pageDataInArray.filter(filialField => filialField[0] === field[0])[1];
+    let x = field[1] === 'Yes' || field[1] === 'true' ? true : field[1] === 'No' || field[1] === 'false' ? false : field[1];
+    const y = pageDataInArray.find(pageField => pageField[0] === field[0])[1];
 
-    if (x != y && (x || y)) {
+    if (typeof y === 'number') {
+      x = parseFloat(field[1]);
+    }
+
+    if ((x != y && (x || y)) || typeof y === 'boolean') {
+      field[1] = x;
       return field;
     }
   })

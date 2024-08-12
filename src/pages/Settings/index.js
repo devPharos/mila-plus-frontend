@@ -11,12 +11,12 @@ export default function Settings() {
 
   useEffect(() => {
     if (pathname.toUpperCase() === '/Settings'.toUpperCase() || pathname.toUpperCase() === '/Settings/'.toUpperCase()) {
-      navigate("/Settings/Dashboard")
+      navigate("/Settings/Parameters")
     }
   }, [pathname])
 
   return <div className='w-full bg-gradient-to-br from-gray-300 via-indigo-300 to-mila_orange flex flex-1 flex-row justify-between items-center px-4 pt-8 shadow-lg'>
-    <Sidebar pages={pages[2].children} />
+    <Sidebar pages={pages.find(page => page.name === 'Settings').children} />
     <Outlet />
   </div>
 }

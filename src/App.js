@@ -1,7 +1,8 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import AlertBoxContainer from "./components/AlertBox/AlertBoxContainer";
+import { useSelector } from "react-redux";
 
 export const AlertContext = createContext()
 
@@ -9,6 +10,7 @@ export const PageContext = createContext()
 
 function App() {
   const [alertData, setAlertData] = useState({ open: false, title: false })
+  const auth = useSelector(state => state.auth);
   function alertBox(content) {
     setAlertData({ open: true, ...content })
   }
@@ -24,34 +26,10 @@ function App() {
             icon: 'LayoutDashboard',
           },
           {
-            alias: 'languages',
-            path: '/Academic/Languages',
-            title: 'Languages',
-            icon: 'Languages'
-          },
-          {
-            alias: 'program-categories',
-            path: '/Academic/ProgramCategory',
-            title: 'Program Categories',
-            icon: 'BookMarked'
-          },
-          {
-            alias: 'levels',
-            path: '/Academic/Levels',
-            title: 'Levels',
-            icon: 'School'
-          },
-          {
-            alias: 'language-modes',
-            path: '/Academic/LanguageModes',
-            title: 'Language Modes',
-            icon: 'BookType'
-          },
-          {
-            alias: 'workloads',
-            path: '/Academic/Workloads',
-            title: 'Workloads',
-            icon: 'CalendarClock'
+            alias: 'calendar',
+            path: '/Academic/Calendar',
+            title: 'Calendar',
+            icon: 'CalendarDays',
           },
         ],
       },
@@ -65,46 +43,28 @@ function App() {
             icon: 'LayoutDashboard',
           },
           {
-            alias: 'filial-types',
-            path: '/Administrative/FilialTypes',
-            title: 'Filial Types',
-            icon: 'Building2'
-          },
-          {
-            alias: 'filials',
-            path: '/Administrative/Filials',
-            title: 'Filials',
-            icon: 'Building'
-          },
-          {
-            alias: 'parameters',
-            path: '/Administrative/Parameters',
-            title: 'Parameters',
-            icon: 'SlidersHorizontal'
-          },
-          {
-            alias: 'chart-of-accounts',
-            path: '/Administrative/ChartOfAccounts',
-            title: 'Chart of Accounts',
-            icon: 'GanttChart'
-          },
-          {
-            alias: 'groups',
-            path: '/Administrative/Groups',
-            title: 'Groups',
-            icon: 'Users'
-          },
-          {
-            alias: 'users',
-            path: '/Administrative/Users',
-            title: 'Users',
-            icon: 'User'
+            alias: 'calendar',
+            path: '/Administrative/Calendar',
+            title: 'Calendar',
+            icon: 'CalendarDays',
           },
           {
             alias: 'students',
             path: '/Administrative/Students',
             title: 'Students',
             icon: 'GraduationCap'
+          },
+          {
+            alias: 'staffs',
+            path: '/Administrative/Staffs',
+            title: 'Staff',
+            icon: 'Users'
+          },
+          {
+            alias: 'agents',
+            path: '/Administrative/Agents',
+            title: 'Agents',
+            icon: 'CircleUserRound'
           }
         ]
       },
@@ -134,6 +94,12 @@ function App() {
             title: 'Dashboard',
             icon: 'LayoutDashboard',
           },
+          {
+            alias: 'chart-of-accounts',
+            path: '/Financial/ChartOfAccounts',
+            title: 'Chart of Accounts',
+            icon: 'GanttChart'
+          },
         ]
       },
       {
@@ -151,10 +117,64 @@ function App() {
         name: 'Settings',
         children: [
           {
-            alias: 'settings-dashboard',
-            path: '/Settings/Dashboard',
-            title: 'Dashboard',
-            icon: 'LayoutDashboard',
+            alias: 'parameters',
+            path: '/Settings/Parameters',
+            title: 'Parameters',
+            icon: 'SlidersHorizontal'
+          },
+          {
+            alias: 'filials',
+            path: '/Settings/Filials',
+            title: 'Filials',
+            icon: 'Building'
+          },
+          {
+            alias: 'filial-types',
+            path: '/Settings/FilialTypes',
+            title: 'Filial Types',
+            icon: 'Building2'
+          },
+          {
+            alias: 'groups',
+            path: '/Settings/Groups',
+            title: 'User Groups',
+            icon: 'Users'
+          },
+          {
+            alias: 'users',
+            path: '/Settings/Users',
+            title: 'Users',
+            icon: 'User'
+          },
+          {
+            alias: 'languages',
+            path: '/Settings/Languages',
+            title: 'Languages',
+            icon: 'Languages'
+          },
+          {
+            alias: 'program-categories',
+            path: '/Settings/ProgramCategory',
+            title: 'Program Categories',
+            icon: 'BookMarked'
+          },
+          {
+            alias: 'levels',
+            path: '/Settings/Levels',
+            title: 'Levels',
+            icon: 'School'
+          },
+          {
+            alias: 'language-modes',
+            path: '/Settings/LanguageModes',
+            title: 'Language Modes',
+            icon: 'BookType'
+          },
+          {
+            alias: 'workloads',
+            path: '/Settings/Workloads',
+            title: 'Workloads',
+            icon: 'CalendarClock'
           },
         ]
       }

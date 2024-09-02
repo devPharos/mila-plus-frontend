@@ -18,7 +18,10 @@ export const InputContext = createContext({})
 export default function PagePreview({ access, id, handleOpened, setOpened, defaultFormType = 'preview' }) {
     const [pageData, setPageData] = useState({
         name: '',
-        loaded: false
+        loaded: false,
+        Programcategory: {
+            name: ''
+        }
     })
     const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
     const [registry, setRegistry] = useState({ created_by: null, created_at: null, updated_by: null, updated_at: null, canceled_by: null, canceled_at: null })
@@ -95,11 +98,11 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                 toast(err.response.data.error, { type: 'error', autoClose: 3000 })
             }
         }
+        getDefaultOptions()
         if (id === 'new') {
             setFormType('full')
         } else if (id) {
             getPageData()
-            getDefaultOptions()
         }
     }, [])
 

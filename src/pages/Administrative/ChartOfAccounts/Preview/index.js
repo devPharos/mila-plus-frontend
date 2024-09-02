@@ -32,6 +32,11 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     const [activeMenu, setActiveMenu] = useState('general')
     const [chartOfAccountsOptions, setChartOfAccountsOptions] = useState([])
     const generalForm = useRef()
+    const visibilityOptions = [
+        { value: 'All', label: 'All' },
+        { value: 'Filial Only', label: 'Filial Only' },
+        { value: 'Holding Only', label: 'Holding Only' },
+    ]
 
     function handleCloseForm() {
         if (!successfullyUpdated) {
@@ -154,6 +159,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                 <InputLine title='General Data'>
                                                     <SelectPopover type='text' isSearchable name='father_id' required title='Father Account' options={chartOfAccountsOptions} grow defaultValue={pageData.father_id ? { value: pageData.father_id, label: pageData.Father.code.length === 2 ? pageData.Father.name : pageData.code.substring(0, 2) === '01' ? 'Receipts > ' + pageData.Father.name : 'Expenses > ' + pageData.Father.name + pageData.Father.Father.name } : null} InputContext={InputContext} />
                                                     <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
+                                                    <SelectPopover type='text' isSearchable name='visibility' required title='Visibility' options={visibilityOptions} grow defaultValue={pageData.visibility ? visibilityOptions.find(f => f.value === pageData.visibility) : null} InputContext={InputContext} />
                                                 </InputLine>
 
                                             </InputLineGroup>

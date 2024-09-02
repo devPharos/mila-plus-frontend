@@ -6,43 +6,44 @@ import FiltersBar from '~/components/FiltersBar';
 import Grid from '~/components/Grid';
 import api from '~/services/api';
 import { applyFilters, getCurrentPage, hasAccessTo } from '~/functions';
-import PageHeader from '~/components/PageHeader';
 import PagePreview from './Preview';
 import { useSelector } from 'react-redux';
+import PageHeader from '~/components/PageHeader';
 
-export default function AdministrativeChartOfAccounts() {
+export default function Documents() {
   const [activeFilters, setActiveFilters] = useState([])
   const [opened, setOpened] = useState(false)
-  const [orderBy, setOrderBy] = useState({ column: 'Code', asc: true })
-  const { accesses } = useSelector(state => state.auth);
+  const [orderBy, setOrderBy] = useState({ column: 'Name', asc: true })
+  const accesses = useSelector(state => state.auth.accesses);
+  const filial = useSelector(state => state.auth.filial);
   const currentPage = getCurrentPage();
   const [gridHeader, setGridHeader] = useState([
     {
-      title: 'Code',
-      type: 'text',
-      filter: false,
-    },
-    {
-      title: 'Name',
+      title: 'Origin',
       type: 'text',
       filter: false,
     },
     {
       title: 'Type',
       type: 'text',
-      filter: true,
+      filter: false,
     },
     {
-      title: 'Visibility',
+      title: 'Subtype',
       type: 'text',
-      filter: true,
+      filter: false,
+    },
+    {
+      title: 'Title',
+      type: 'text',
+      filter: false,
     },
   ])
 
   const [gridData, setGridData] = useState()
 
   function handleFilters({ title = '', value = '' }) {
-    if (value || (title === 'Active' && value !== '')) {
+    if (value) {
       setActiveFilters([...activeFilters.filter(el => el.title != title), { title, value }])
     } else {
       setActiveFilters([...activeFilters.filter(el => el.title != title)])
@@ -50,15 +51,17 @@ export default function AdministrativeChartOfAccounts() {
   }
 
   useEffect(() => {
-    async function getFilials() {
-      const { data } = await api.get('/chartofaccounts')
-      const gridDataValues = data.map(({ id, code, name, visibility }) => {
-        return { show: true, id, fields: [code, name, code.substring(0, 2) === '01' ? 'Receipts' : 'Expenses', visibility] }
+
+    async function getData() {
+      const { data } = await api.get(`/documents`)
+      const gridDataValues = data.map(({ id, origin, type, subtype, title, canceled_at }) => {
+        const ret = { show: true, id, fields: [origin, type, subtype, title], canceled: canceled_at }
+        return ret
       })
       setGridData(gridDataValues)
     }
-    getFilials()
-  }, [opened])
+    getData()
+  }, [opened, filial])
 
   function handleOpened(id) {
     setOpened(id)

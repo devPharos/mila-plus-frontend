@@ -15,6 +15,7 @@ import { Provider } from 'react-redux';
 import { persistor, store } from './store';
 import ProtectedRoute from './routes/ProtectedRoute';
 import UnprotectedRoute from './routes/UnprotectedRoute';
+import LoginRoute from './routes/LoginRoute';
 import { ToastContainer } from 'react-toastify';
 import Login from './pages/Login';
 import AcademicDashboard from './pages/Academic/Dashboard';
@@ -51,6 +52,10 @@ import AdministrativeStaffs from './pages/Administrative/Staffs';
 import AdministrativeAgents from './pages/Administrative/Agents';
 import AdministrativeCalendar from './pages/Administrative/Calendar';
 import AcademicCalendar from './pages/Academic/Calendar';
+import Documents from './pages/Settings/Documents';
+import Outside from './pages/Outside';
+import PagePreview from './pages/Administrative/Staffs/Preview';
+import PagePreviewOutside from './pages/Administrative/Staffs/Preview/outside';
 
 injectStore(store)
 
@@ -65,9 +70,21 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/login",
-        element: <UnprotectedRoute>
+        element: <LoginRoute>
           <Login />
+        </LoginRoute>,
+      },
+      {
+        path: "/fill-form",
+        element: <UnprotectedRoute>
+          <Outside />
         </UnprotectedRoute>,
+        children: [
+          {
+            path: "/fill-form/Staff",
+            element: <PagePreviewOutside />
+          },
+        ]
       },
       {
         path: "/",
@@ -202,6 +219,10 @@ const router = createBrowserRouter([
           {
             path: "/Settings/Users",
             element: <AdministrativeUsers />
+          },
+          {
+            path: "/Settings/Documents",
+            element: <Documents />
           },
         ]
       },

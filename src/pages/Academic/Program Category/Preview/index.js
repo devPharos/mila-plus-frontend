@@ -143,6 +143,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                             <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
                                                 <InputLine title='General Data'>
                                                     <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
+                                                    <Input type='text' name='description' title='Description' grow defaultValue={pageData.description} InputContext={InputContext} />
                                                     <SelectPopover type='text' name='language_id' required title='Language' options={languageOptions} grow defaultValue={{ value: pageData.language_id, label: pageData.Language ? pageData.Language.name : '' }} InputContext={InputContext} />
                                                 </InputLine>
 

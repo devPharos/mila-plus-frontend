@@ -15,6 +15,7 @@ import HeaderLink from './components/HeaderLink';
 export const HeaderContext = createContext({})
 
 export default function Header() {
+  const { signed } = useSelector(state => state.auth)
   const [activePopover, setActivePopover] = useState('');
   const { profile } = useSelector(state => state.user);
   const auth = useSelector(state => state.auth);
@@ -47,7 +48,7 @@ export default function Header() {
             <img alt='Mila' src={logo} style={{ height: 32 }} />
           </Link>
         </div>
-        <div className='px-4 h-12 flex flex-1 flex-row justify-between items-center'>
+        {signed && <div className='px-4 h-12 flex flex-1 flex-row justify-between items-center'>
           <div className='flex flex-row justify-between items-center gap-x-2'>
             <Popover Content={PopoverLocation} name='location' active={activePopover} opened={activePopover} setOppened={setActivePopover}>
               <Secondary>
@@ -77,8 +78,8 @@ export default function Header() {
             <br />
             <strong className='text-gray-700'>{profile.name}</strong>
           </div>
-        </div>
-        <div className='px-4 h-12 border-l flex flex-row justify-between items-center gap-x-4'>
+        </div>}
+        {signed && <div className='px-4 h-12 border-l flex flex-row justify-between items-center gap-x-4'>
           <Popover Content={PopoverNotifications} name='notifications' active={activePopover} opened={activePopover} setOppened={setActivePopover}>
             <Secondary>
               <BellRing size={16} />
@@ -94,7 +95,7 @@ export default function Header() {
               <User size={16} />
             </Secondary>
           </Popover>
-        </div>
+        </div>}
       </div>
     </header>
   </HeaderContext.Provider>;

@@ -23,6 +23,11 @@ export default function ProgramCategory() {
       filter: false,
     },
     {
+      title: 'Description',
+      type: 'text',
+      filter: true,
+    },
+    {
       title: 'Language',
       type: 'text',
       filter: true,
@@ -42,9 +47,9 @@ export default function ProgramCategory() {
   useEffect(() => {
     async function getFilials() {
       const { data } = await api.get('/programcategories')
-      const gridDataValues = data.map(({ id, name, Language }) => {
+      const gridDataValues = data.map(({ id, name, description, Language }) => {
         const languageName = Language.name;
-        return { show: true, id, fields: [name, languageName] }
+        return { show: true, id, fields: [name, description, languageName] }
       })
       setGridData(gridDataValues)
     }

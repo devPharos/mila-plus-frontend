@@ -1,4 +1,5 @@
 import { useContext } from "react";
+import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { PageContext } from "~/App";
 import api from "~/services/api";
@@ -307,6 +308,10 @@ export function handleUpdatedFields(data, pageData) {
       x = parseFloat(field[1]);
     }
 
+    if (field[0] === 'file_id') {
+      return field;
+    }
+
     if ((x != y && (x || y)) || typeof y === 'boolean') {
       field[1] = x;
       return field;
@@ -316,10 +321,16 @@ export function handleUpdatedFields(data, pageData) {
 }
 
 export function getCurrentPage() {
+  const { signed } = useSelector(state => state.auth)
   const { pages } = useContext(PageContext)
   const { pathname } = useLocation();
   const paths = pathname.substring(1).split('/');
-  const currentModule = pages.filter(module => module.name === paths[0])[0];
+  let currentModule = null;
+  if (signed) {
+    currentModule = pages.filter(module => module.name === paths[0])[0];
+  } else {
+    currentModule = pages[pages.length - 1];
+  }
   const currentPage = currentModule.children.filter(page => page.path === pathname)[0];
   return currentPage
 }

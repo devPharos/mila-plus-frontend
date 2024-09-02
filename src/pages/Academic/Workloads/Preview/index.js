@@ -1,5 +1,5 @@
 import { Form } from '@unform/web';
-import { Building, Pencil, PlusCircle, Route, Trash, X } from 'lucide-react';
+import { Archive, Building, FileText, Pencil, PlusCircle, Route, Trash, X } from 'lucide-react';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import Input from '~/components/RegisterForm/Input';
 import SelectPopover from '~/components/RegisterForm/SelectPopover';
@@ -14,6 +14,10 @@ import { getRegistries, handleUpdatedFields } from '~/functions';
 import { Scope } from '@unform/core';
 import { AlertContext } from '~/App';
 import FormLoading from '~/components/RegisterForm/FormLoading';
+import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+import { app } from '../../../../services/firebase';
+import FileInput from '~/components/RegisterForm/FileInput';
+import { v4 as uuidv4 } from 'uuid';
 
 export const InputContext = createContext({})
 
@@ -78,6 +82,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         },
     ].sort((a, b) => a.label > b.label)
     const { alertBox } = useContext(AlertContext)
+    const [loading, setLoading] = useState(false)
 
     function handleCloseForm() {
         if (!successfullyUpdated) {
@@ -87,8 +92,11 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     }
 
     async function handleGeneralFormSubmit(data) {
+        setLoading(true)
+        const fileUuid = uuidv4();
         if (successfullyUpdated) {
             toast("No need to be saved!", { autoClose: 1000, type: 'info', transition: Zoom })
+            setLoading(false)
             return
         }
         const { data: levelData } = await api.get(`levels/${data.level_id}`)
@@ -97,6 +105,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
             toast("The number of hours per day must be evenly divisible by the total hours of the level!", { autoClose: 3000, type: 'info', transition: Zoom })
             const inputRef = generalForm.current.getFieldRef('hours_per_day').current;
             inputRef.select()
+            setLoading(false)
             return
         }
         if (id === 'new') {
@@ -107,37 +116,56 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                 setSuccessfullyUpdated(true)
                 toast("Saved!", { autoClose: 1000 })
                 handleOpened(null)
+                setLoading(false)
             } catch (err) {
                 toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+                setLoading(false)
             }
         } else if (id !== 'new') {
-            const updated = handleUpdatedFields(data, pageData)
+            if (data.file_id) {
+                const file = data.file_id;
+                const nameSplit = file.name.split('.');
+                const type = nameSplit[nameSplit.length - 1];
 
-            if (updated.length > 0) {
-                const objUpdated = Object.fromEntries(updated);
-                if (objUpdated.hours_per_day || objUpdated.days_per_week) {
-                    alertBox({
-                        title: 'Attention!',
-                        descriptionHTML: '<p>You`re going to loose this workload <strong>Pace Guide</strong>.<br/>Are you sure about this action?</p>',
-                        buttons: [
+                const storage = getStorage(app);
+                const imageRef = ref(storage, `Scope and Sequence/${fileUuid}.${type}`);
 
-                            {
-                                title: 'Cancel',
-                                class: 'cancel'
-                            },
-                            {
-                                onPress: async () => {
-                                    send(objUpdated);
-                                },
-                                title: 'Ok'
+                await uploadBytes(imageRef, file).then(async (snapshot) => {
+                    console.log('snapshot')
+                    await getDownloadURL(snapshot.ref).then((downloadURL) => {
+                        data.file_id = { url: downloadURL, name: fileUuid + "." + type, size: file.size };
+                        console.log('data', data)
+
+                        const updated = handleUpdatedFields(data, pageData)
+
+                        if (updated.length > 0) {
+                            const objUpdated = Object.fromEntries(updated);
+                            if (objUpdated.hours_per_day || objUpdated.days_per_week) {
+                                alertBox({
+                                    title: 'Attention!',
+                                    descriptionHTML: '<p>You`re going to loose this workload <strong>Pace Guide</strong>.<br/>Are you sure about this action?</p>',
+                                    buttons: [
+
+                                        {
+                                            title: 'Cancel',
+                                            class: 'cancel'
+                                        },
+                                        {
+                                            onPress: async () => {
+                                                send(objUpdated);
+                                            },
+                                            title: 'Ok'
+                                        }
+                                    ]
+                                })
+                            } else {
+                                send(objUpdated);
                             }
-                        ]
-                    })
-                } else {
-                    send(objUpdated);
-                }
-            } else {
-                console.log(updated)
+                        } else {
+                            console.log(updated)
+                        }
+                    });
+                });
             }
         }
     }
@@ -149,8 +177,10 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
             setSuccessfullyUpdated(true)
             toast("Saved!", { autoClose: 1000 })
             handleOpened(null)
+            setLoading(false)
         } catch (err) {
             toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+            setLoading(false)
         }
     }
 
@@ -281,7 +311,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                         <InputContext.Provider value={{ id, generalForm, setSuccessfullyUpdated, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm }}>
                                             {id === 'new' || pageData.loaded ?
                                                 <>
-                                                    <FormHeader access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
+                                                    <FormHeader loading={loading} access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
 
                                                     <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
                                                         <InputLine title='General Data'>
@@ -293,7 +323,16 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                             <Input type='text' name='days_per_week' workloadUpdateName onlyInt required title='Days per Week' grow defaultValue={pageData.days_per_week} InputContext={InputContext} />
                                                             <Input type='text' name='hours_per_day' workloadUpdateName onlyFloat required title='Hours per Day' grow defaultValue={pageData.hours_per_day} InputContext={InputContext} />
                                                         </InputLine>
-
+                                                        <InputLine title='Scope and Sequence'>
+                                                            {pageData.File ?
+                                                                <div className='flex flex-row justify-center items-center gap-2 mt-2'>File Attached:
+                                                                    <a href={pageData.File.url} target='_blank' rel='noreferrer' className='flex flex-row justify-center items-center gap-2 border p-2 rounded-md bg-gray-100 hover:bg-gray-200 transition-all hover:border-primary'><FileText size={16} color='#000' /> Scope and Sequence</a>
+                                                                    <button type='button' onClick={() => setPageData({ ...pageData, File: null })} className='flex flex-row justify-center items-center gap-2 border p-2 rounded-md bg-red-500 text-white hover:bg-red-600 transition-all hover:border-primary'><Trash size={16} color='#fff' /> Delete</button>
+                                                                </div>
+                                                                :
+                                                                <FileInput type='file' required name='file_id' title='File' grow InputContext={InputContext} />
+                                                            }
+                                                        </InputLine>
                                                     </InputLineGroup>
 
                                                     <InputLineGroup title='Pace Guide' activeMenu={activeMenu === 'Pace Guide'}>

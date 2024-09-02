@@ -176,8 +176,25 @@ function App() {
             title: 'Workloads',
             icon: 'CalendarClock'
           },
+          {
+            alias: 'documents',
+            path: '/Settings/Documents',
+            title: 'Documents',
+            icon: 'Files'
+          },
         ]
-      }
+      },
+      {
+        name: 'FillForm',
+        children: [
+          {
+            alias: 'staffs',
+            path: '/fill-form/Staff',
+            title: 'Staff',
+            icon: 'Users'
+          },
+        ]
+      },
     ]
   return (
     <AlertContext.Provider value={{ alertData, setAlertData, alertBox }}>

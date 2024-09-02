@@ -1,7 +1,8 @@
 import { Form } from '@unform/web';
-import { Building, Loader2, Pencil, X } from 'lucide-react';
-import React, { createContext, useEffect, useRef, useState } from 'react';
+import { Building, Files, Loader2, Pencil, X } from 'lucide-react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import Input from '~/components/RegisterForm/Input';
+import FileInput from '~/components/RegisterForm/FileInput';
 import RegisterFormMenu from '~/components/RegisterForm/Menu';
 import api from '~/services/api';
 import { Zoom, toast } from 'react-toastify';
@@ -14,16 +15,20 @@ import SelectPopover from '~/components/RegisterForm/SelectPopover';
 import Textarea from '~/components/RegisterForm/Textarea';
 import DatePicker from '~/components/RegisterForm/DatePicker';
 import SelectCountry from '~/components/RegisterForm/SelectCountry';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, set } from 'date-fns';
 import CountryList from 'country-list-with-dial-code-and-flag';
 import FormLoading from '~/components/RegisterForm/FormLoading';
 import { useSelector } from 'react-redux';
 import CheckboxInput from '~/components/RegisterForm/CheckboxInput';
+import AlertBox from '~/components/AlertBox/AlertBoxContainer';
+import { AlertContext } from '~/App';
+import { Scope } from '@unform/core';
 
 export const InputContext = createContext({})
 
 export default function PagePreview({ access, id, handleOpened, setOpened, defaultFormType = 'preview' }) {
     const [pageData, setPageData] = useState({
+        documents: [],
         name: '',
         last_name: '',
         email: '',
@@ -62,6 +67,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         saturday_afternoon: false,
         saturday_evening: false,
         comments: '',
+        wage_amount: 0,
         loaded: false
     })
     const [formType, setFormType] = useState(defaultFormType)
@@ -72,8 +78,11 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     const [filialOptions, setFilialOptions] = useState([])
     const generalForm = useRef()
     const auth = useSelector(state => state.auth);
+    const { alertBox } = useContext(AlertContext)
+    const [loading, setLoading] = useState(false)
 
-    const employeeTypeOptions = [{ value: 'administrative', label: 'Administrative' }, { value: 'commercial', label: 'Commercial' }, { value: 'faculty', label: 'Faculty' }, { value: 'headquarter', label: 'Headquarter' }]
+    const employeeTypeOptions = [{ value: 'Staff', label: 'Staff' }, { value: 'faculty', label: 'Faculty' }]
+    const employeeSubtypeOptions = [{ value: 'Hired', label: 'Hired' }, { value: 'Contract', label: 'Contract' }, { value: 'Temporary', label: 'Temporary' }, { value: 'Intern', label: 'Intern' }]
     const wageTypeOptions = [{ value: 'hourly', label: 'Hourly' }, { value: 'salary', label: 'Salary' }]
 
     const countriesOptions = countries_list.map(country => {
@@ -116,9 +125,22 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         getPageData()
     }, [])
 
+    useEffect(() => {
+        if (pageData.employee_type && pageData.employee_subtype) {
+            getDocuments()
+            // setPageData({ ...pageData, documents: data })
+        }
+        async function getDocuments() {
+            const documents = await api.get(`/documents?origin=employee&type=${pageData.employee_type}&subtype=${pageData.employee_subtype}`)
+            setPageData({ ...pageData, documents: documents.data })
+        }
+    }, [pageData.employee_type, pageData.employee_subtype])
+
     async function handleGeneralFormSubmit(data) {
+        setLoading(true)
         if (successfullyUpdated) {
             toast("No need to be saved!", { autoClose: 1000, type: 'info', transition: Zoom })
+            setLoading(false)
             return
         }
         if (id === 'new') {
@@ -129,13 +151,14 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                 setPageData({ ...pageData, ...data })
                 setSuccessfullyUpdated(true)
                 toast("Saved!", { autoClose: 1000 })
-                handleOpened(null)
+                setLoading(false)
+                // handleOpened(null)
             } catch (err) {
                 toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+                setLoading(false)
             }
         } else if (id !== 'new') {
             const updated = handleUpdatedFields(data, pageData)
-            console.log(updated)
 
             if (updated.length > 0) {
                 const objUpdated = Object.fromEntries(updated);
@@ -146,12 +169,14 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                     setSuccessfullyUpdated(true)
                     toast("Saved!", { autoClose: 1000 })
                     handleOpened(null)
+                    setLoading(false)
                 } catch (err) {
                     console.log(err)
                     toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+                    setLoading(false)
                 }
             } else {
-                // console.log(updated)
+                setLoading(false)
             }
         }
     }
@@ -171,6 +196,31 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         } catch (err) {
             toast(err.response.data.error, { type: 'error', autoClose: 3000 })
         }
+    }
+
+    function handleOutsideMail() {
+        alertBox({
+            title: 'Attention!',
+            descriptionHTML: '<p>Would you like to send the staff a link to continue the registration process?</p>',
+            buttons: [
+                {
+                    title: 'No',
+                    class: 'cancel'
+                },
+                {
+                    title: 'Yes',
+                    onPress: async () => {
+                        try {
+                            await api.post(`/staffs/formMail`, { crypt: btoa(btoa(id) + '-' + btoa(auth.filial.id)) })
+                            toast("Link sent!", { autoClose: 1000 })
+                        } catch (err) {
+                            toast("Error!", { autoClose: 1000 })
+                            console.log(err)
+                        }
+                    }
+                }
+            ]
+        })
     }
 
     function handleAvailability(day) {
@@ -246,15 +296,17 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                         <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='general' >
                             <Building size={16} /> General
                         </RegisterFormMenu>
-
+                        <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='documents' disabled={id === 'new'} messageOnDisabled='Create the staff registry to have access to documents.' >
+                            <Files size={16} /> Documents
+                        </RegisterFormMenu>
                     </div>
                     <div className='border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start'>
                         <div className='flex flex-col items-start justify-start text-sm overflow-y-scroll'>
                             <Form ref={generalForm} onSubmit={handleGeneralFormSubmit} className='w-full'>
-                                <InputContext.Provider value={{ id, generalForm, setSuccessfullyUpdated, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm, handleInactivate, canceled: pageData.canceled_at }}>
+                                <InputContext.Provider value={{ id, generalForm, setSuccessfullyUpdated, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm, handleInactivate, handleOutsideMail, canceled: pageData.canceled_at }}>
                                     {pageData.loaded ?
                                         <>
-                                            <FormHeader access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
+                                            <FormHeader loading={loading} access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
                                             <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
                                                 {auth.filial.id === 1 && <InputLine title='Filial'>
                                                     <SelectPopover name='filial_id' required title='Filial' isSearchable defaultValue={filialOptions.filter(filial => filial.value === pageData.filial_id)} options={filialOptions} InputContext={InputContext} />
@@ -267,9 +319,9 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                     <DatePicker name='date_of_birth' grow title='Birthday ' defaultValue={pageData.date_of_birth ? parseISO(pageData.date_of_birth) : null} placeholderText='MM/DD/YYYY' InputContext={InputContext} />
                                                 </InputLine>
                                                 <InputLine title='Contact'>
-                                                    <Input type='text' name='email' title='E-mail' grow defaultValue={pageData.email} InputContext={InputContext} />
+                                                    <Input type='text' name='email' required title='E-mail' grow defaultValue={pageData.email} InputContext={InputContext} />
                                                     <Input type='text' grow name='whatsapp' title='Whatsapp' isPhoneNumber defaultValue={pageData.whatsapp} defaultValueDDI={pageData.whatsapp_ddi} InputContext={InputContext} />
-                                                    <Input type='text' grow name='phone' hasDDI title='Phone Number' isPhoneNumber defaultValue={pageData.phone} InputContext={InputContext} />
+                                                    <Input type='text' grow name='phone' title='Phone Number' isPhoneNumber defaultValue={pageData.phone} InputContext={InputContext} />
                                                 </InputLine>
                                                 <InputLine title='Location'>
                                                     <Textarea type='text' name='address' title='Address' rows={5} defaultValue={pageData.address} InputContext={InputContext} />
@@ -280,16 +332,17 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                     <Input type='text' name='zip' grow title='Zip Code' defaultValue={pageData.zip} InputContext={InputContext} />
                                                 </InputLine>
                                                 <InputLine title='Academic'>
-                                                    <Input type='text' name='academic_formation' required grow title='Academic Formation' defaultValue={pageData.academic_formation} InputContext={InputContext} />
+                                                    <Input type='text' name='academic_formation' grow title='Academic Formation' defaultValue={pageData.academic_formation} InputContext={InputContext} />
                                                 </InputLine>
                                                 <InputLine>
                                                     <SelectPopover name='employee_type' grow title='Employee Type' options={employeeTypeOptions} isSearchable defaultValue={employeeTypeOptions.find(data => data.value === pageData.employee_type)} InputContext={InputContext} />
+                                                    <SelectPopover name='employee_subtype' grow title='Employee Subtype' options={employeeSubtypeOptions} isSearchable defaultValue={employeeSubtypeOptions.find(data => data.value === pageData.employee_subtype)} InputContext={InputContext} />
                                                     <DatePicker name='admission_date' grow title='Admission Date' defaultValue={pageData.admission_date ? parseISO(pageData.admission_date) : null} placeholderText='MM/DD/YYYY' InputContext={InputContext} />
                                                     <DatePicker name='resignation_date' grow title='Resignation Date' defaultValue={pageData.resignation_date ? parseISO(pageData.resignation_date) : null} placeholderText='MM/DD/YYYY' InputContext={InputContext} />
                                                 </InputLine>
                                                 <InputLine>
                                                     <SelectPopover name='wage_type' grow title='Wage Type' options={wageTypeOptions} isSearchable defaultValue={wageTypeOptions.find(data => data.value === pageData.wage_type)} InputContext={InputContext} />
-                                                    <Input type='text' onlyFloat name='wage_amount' required grow title='Wage Amount' defaultValue={pageData.wage_amount} InputContext={InputContext} />
+                                                    <Input type='text' onlyFloat name='wage_amount' grow title='Wage Amount' defaultValue={pageData.wage_amount} InputContext={InputContext} />
                                                 </InputLine>
                                                 <InputLine title='Notes'>
                                                     <Textarea type='text' name='comments' title='Comments' rows={5} defaultValue={pageData.comments} InputContext={InputContext} />
@@ -365,6 +418,15 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                     }
                                                 </InputLine>
 
+                                            </InputLineGroup>
+                                            <InputLineGroup title='DOCUMENTS' activeMenu={activeMenu === 'documents'}>
+                                                {pageData.documents && pageData.documents.length > 0 && pageData.documents.map((document, index) => {
+                                                    return <Scope key={index} path={`documents[${index}]`}>
+                                                        <InputLine title={document.title}>
+                                                            <FileInput type='file' required multiple={document.multiple} name='file_id' title={document.multiple ? 'Multiple Files' : 'File'} grow InputContext={InputContext} />
+                                                        </InputLine>
+                                                    </Scope>
+                                                })}
                                             </InputLineGroup>
                                         </>
                                         :

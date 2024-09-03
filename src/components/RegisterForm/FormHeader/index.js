@@ -40,7 +40,7 @@ export default function FormHeader({ loading = false, outside = false, access = 
                     {(outside || access.edit) && id !== 'new' && <button type="submit" className={`text-md font-bold ${!successfullyUpdated ? 'bg-red-500' : 'bg-primary'} text-white rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1`}>
                         {!successfullyUpdated ? <><Save size={16} /> Save changes</> : <><CheckCheck size={16} /> Saved</>}
                     </button>}
-                    {handleOutsideMail && id !== 'new' &&
+                    {!outside && handleOutsideMail && id !== 'new' &&
                         <button type="button" onClick={() => handleOutsideMail()} className='text-md font-bold bg-secondary border hover:border-primary hover:text-primary rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1'>
                             <Mail size={16} /> Send Form Fill Link
                         </button>}

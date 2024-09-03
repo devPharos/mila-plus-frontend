@@ -2,42 +2,27 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from 'rea
 import { useField } from '@unform/core'
 import { Loader, Asterisk } from 'lucide-react'
 
-const FileInput = ({ name, title, multiple = false, grow, shrink, defaultValueDDI = null, workloadUpdateName = false, readOnly = false, type, isZipCode = false, onlyUpperCase = false, onlyLowerCase = false, onlyInt = false, onlyFloat = false, isPhoneNumber = false, InputContext = null, ...rest }) => {
+const FileInputMultiple = ({ name, title, grow, shrink, defaultValueDDI = null, workloadUpdateName = false, readOnly = false, type, isZipCode = false, onlyUpperCase = false, onlyLowerCase = false, onlyInt = false, onlyFloat = false, isPhoneNumber = false, InputContext = null, ...rest }) => {
   const inputRef = useRef()
   const { fieldName, registerField, error } = useField(name)
   const { disabled, required } = { ...rest }
-  const [preview, setPreview] = useState(null)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     registerField({
       name: fieldName,
       ref: inputRef.current,
-      path: 'files[0]',
+      path: 'files',
       setValue: (ref, value) => {
-        setPreview(value);
+        return ref.files && Array.from(ref.files);
       },
       clearValue: ref => {
         ref.value = ''
-        setPreview(null);
       },
     })
   }, [fieldName, registerField])
 
   const { generalForm, setSuccessfullyUpdated } = useContext(InputContext)
-
-  const handlePreview = useCallback(async (e) => {
-    setLoading(true)
-    const file = e.target.files?.[0];
-    if (!file) {
-      setPreview(null);
-    }
-
-    const previewURL = URL.createObjectURL(file);
-    setPreview({ url: previewURL, file });
-    setLoading(false)
-    setSuccessfullyUpdated(false)
-  }, []);
 
   const width = shrink ? 'w-34' : 'w-full md:w-auto'
   return (
@@ -49,10 +34,10 @@ const FileInput = ({ name, title, multiple = false, grow, shrink, defaultValueDD
           <input
             id={name}
             name={name}
-            onChange={handlePreview}
             ref={inputRef}
+            onChange={() => setSuccessfullyUpdated(false)}
             type='file'
-            multiple={multiple}
+            multiple
             readOnly={readOnly}
             {...rest}
             className='text-sm focus:outline-none flex-1 bg-transparent w-full'
@@ -71,4 +56,4 @@ const FileInput = ({ name, title, multiple = false, grow, shrink, defaultValueDD
   )
 }
 
-export default FileInput
+export default FileInputMultiple

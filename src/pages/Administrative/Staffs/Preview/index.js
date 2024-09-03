@@ -1,5 +1,5 @@
 import { Form } from '@unform/web';
-import { Building, Files, Loader2, Pencil, X } from 'lucide-react';
+import { Building, Files, Pencil, X } from 'lucide-react';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import Input from '~/components/RegisterForm/Input';
 import FileInput from '~/components/RegisterForm/FileInput';
@@ -14,15 +14,15 @@ import { countries_list, getRegistries, handleUpdatedFields } from '~/functions'
 import SelectPopover from '~/components/RegisterForm/SelectPopover';
 import Textarea from '~/components/RegisterForm/Textarea';
 import DatePicker from '~/components/RegisterForm/DatePicker';
-import SelectCountry from '~/components/RegisterForm/SelectCountry';
 import { format, parseISO, set } from 'date-fns';
 import CountryList from 'country-list-with-dial-code-and-flag';
 import FormLoading from '~/components/RegisterForm/FormLoading';
 import { useSelector } from 'react-redux';
 import CheckboxInput from '~/components/RegisterForm/CheckboxInput';
-import AlertBox from '~/components/AlertBox/AlertBoxContainer';
 import { AlertContext } from '~/App';
 import { Scope } from '@unform/core';
+import FileInputMultiple from '~/components/RegisterForm/FileInputMultiple';
+import { organizeMultiAndSingleFiles } from '~/functions/uploadFile';
 
 export const InputContext = createContext({})
 
@@ -81,9 +81,9 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     const { alertBox } = useContext(AlertContext)
     const [loading, setLoading] = useState(false)
 
-    const employeeTypeOptions = [{ value: 'Staff', label: 'Staff' }, { value: 'faculty', label: 'Faculty' }]
+    const employeeTypeOptions = [{ value: 'Staff', label: 'Staff' }, { value: 'Faculty', label: 'Faculty' }]
     const employeeSubtypeOptions = [{ value: 'Hired', label: 'Hired' }, { value: 'Contract', label: 'Contract' }, { value: 'Temporary', label: 'Temporary' }, { value: 'Intern', label: 'Intern' }]
-    const wageTypeOptions = [{ value: 'hourly', label: 'Hourly' }, { value: 'salary', label: 'Salary' }]
+    const wageTypeOptions = [{ value: 'Hourly', label: 'Hourly' }, { value: 'Salary', label: 'Salary' }]
 
     const countriesOptions = countries_list.map(country => {
         return { value: country, label: country }
@@ -114,6 +114,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                     const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at } = data;
                     const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
                     setRegistry(registries)
+
                 } catch (err) {
                     toast(err.response.data.error, { type: 'error', autoClose: 3000 })
                 }
@@ -128,10 +129,9 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     useEffect(() => {
         if (pageData.employee_type && pageData.employee_subtype) {
             getDocuments()
-            // setPageData({ ...pageData, documents: data })
         }
         async function getDocuments() {
-            const documents = await api.get(`/documents?origin=employee&type=${pageData.employee_type}&subtype=${pageData.employee_subtype}`)
+            const documents = await api.get(`/documentsByOrigin?origin=Employees&type=${pageData.employee_type}&subtype=${pageData.employee_subtype}`)
             setPageData({ ...pageData, documents: documents.data })
         }
     }, [pageData.employee_type, pageData.employee_subtype])
@@ -163,17 +163,59 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
             if (updated.length > 0) {
                 const objUpdated = Object.fromEntries(updated);
                 const { date_of_birth } = objUpdated;
-                try {
-                    await api.put(`/staffs/${id}`, { ...objUpdated, date_of_birth: date_of_birth ? format(date_of_birth, 'yyyy-MM-dd') : null })
-                    setPageData({ ...pageData, ...objUpdated })
-                    setSuccessfullyUpdated(true)
-                    toast("Saved!", { autoClose: 1000 })
-                    handleOpened(null)
-                    setLoading(false)
-                } catch (err) {
-                    console.log(err)
-                    toast(err.response.data.error, { type: 'error', autoClose: 3000 })
-                    setLoading(false)
+                if (data.documents && data.documents.length > 0) {
+                    let toastId = null;
+                    if (data.documents.find(document => (typeof document.file_id === 'undefined' && document.file_id) || (typeof document.file_id === 'object' && Array.from(document.file_id).length > 0))) {
+                        toastId = toast.loading("Files are being uploaded...");
+                    }
+                    const allPromises = organizeMultiAndSingleFiles(data.documents, 'Staffs');
+                    Promise.all(allPromises).then(async (files) => {
+                        try {
+                            files.map(async (file) => {
+                                if (!file) {
+                                    return
+                                }
+                                if (file.name) {
+                                    api.post(`/staffdocuments`, { staff_id: id, files: file })
+                                    toastId && toast.update(toastId, { render: 'All files have been uploaded!', type: 'success', autoClose: 3000, isLoading: false });
+                                } else {
+                                    file.sort((a, b) => a.size > b.size).map(async (promise, index) => {
+                                        await Promise.all([promise]).then(async (singleFile) => {
+                                            console.log(singleFile[0])
+                                            if (index + 1 === file.length) {
+                                                toastId && toast.update(toastId, { render: 'All files have been uploaded!', type: 'success', autoClose: 3000, isLoading: false });
+                                            }
+                                            await api.post(`/staffdocuments`, { staff_id: id, files: singleFile[0] })
+                                        })
+                                    })
+                                }
+                            })
+                        } catch (err) {
+                            console.log(err)
+                            // toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+                        }
+                        delete objUpdated.documents;
+                        await api.put(`/staffs/${id}`, { ...objUpdated, date_of_birth: date_of_birth ? format(date_of_birth, 'yyyy-MM-dd') : null })
+                        setPageData({ ...pageData, ...objUpdated })
+                        setSuccessfullyUpdated(true)
+                        toast("Saved!", { autoClose: 1000 })
+                        handleOpened(null)
+                        setLoading(false)
+                    })
+                } else {
+                    try {
+                        delete objUpdated.documents;
+                        await api.put(`/staffs/${id}`, { ...objUpdated, date_of_birth: date_of_birth ? format(date_of_birth, 'yyyy-MM-dd') : null })
+                        setPageData({ ...pageData, ...objUpdated })
+                        setSuccessfullyUpdated(true)
+                        toast("Saved!", { autoClose: 1000 })
+                        handleOpened(null)
+                        setLoading(false)
+                    } catch (err) {
+                        console.log(err)
+                        toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+                        setLoading(false)
+                    }
                 }
             } else {
                 setLoading(false)
@@ -269,6 +311,33 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         }
     }
 
+    function handleDeleteDocument(id) {
+        const { file } = pageData.staffdocuments.find(staffdocument => staffdocument.id === id);
+        console.log(file)
+        alertBox({
+            title: 'Attention!',
+            descriptionHTML: `<p>Are you sure you want to delete this file?</p>`,
+            buttons: [
+                {
+                    title: 'No',
+                    class: 'cancel'
+                },
+                {
+                    title: 'Yes',
+                    onPress: async () => {
+                        try {
+                            await api.delete(`/staffdocuments/${id}`)
+                            toast("File deleted!", { autoClose: 1000 })
+                            setPageData({ ...pageData, staffdocuments: pageData.staffdocuments.filter(staffdocument => staffdocument.id !== id) })
+                        } catch (err) {
+                            toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+                        }
+                    }
+                },
+            ]
+        })
+    }
+
     return <Preview formType={formType} fullscreen={fullscreen}>
         {pageData ?
             formType === 'preview' ? <div className='border h-full rounded-xl overflow-hidden flex flex-col justify-start gap-1 overflow-y-scroll'>
@@ -348,85 +417,127 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                     <Textarea type='text' name='comments' title='Comments' rows={5} defaultValue={pageData.comments} InputContext={InputContext} />
                                                 </InputLine>
                                                 <InputLine title='Availability'>
-                                                    <CheckboxInput name='sunday_availability' grow title='Sunday' onClick={() => handleAvailability('sunday')} defaultValue={pageData.sunday_availability} InputContext={InputContext} />
-                                                    {pageData.sunday_availability &&
-                                                        <>
-                                                            <CheckboxInput name='sunday_morning' grow title='Morning' onClick={() => setPageData({ ...pageData, sunday_morning: !pageData.sunday_morning })} defaultValue={pageData.sunday_morning} InputContext={InputContext} />
-                                                            <CheckboxInput name='sunday_afternoon' grow title='Afternoon' onClick={() => setPageData({ ...pageData, sunday_afternoon: !pageData.sunday_afternoon })} defaultValue={pageData.sunday_afternoon} InputContext={InputContext} />
-                                                            <CheckboxInput name='sunday_evening' grow title='Evening' onClick={() => setPageData({ ...pageData, sunday_evening: !pageData.sunday_evening })} defaultValue={pageData.sunday_evening} InputContext={InputContext} />
-                                                        </>
-                                                    }
+                                                    <div className='flex flex-col md:flex-row items-center justify-start gap-4'>
+                                                        <CheckboxInput name='sunday_availability' grow title='Sunday' onClick={() => handleAvailability('sunday')} defaultValue={pageData.sunday_availability} InputContext={InputContext} />
+                                                        {pageData.sunday_availability &&
+                                                            <div className='flex flex-row items-start justify-start gap-1'>
+                                                                <CheckboxInput name='sunday_morning' grow title='Morning' onClick={() => setPageData({ ...pageData, sunday_morning: !pageData.sunday_morning })} defaultValue={pageData.sunday_morning} InputContext={InputContext} />
+                                                                <CheckboxInput name='sunday_afternoon' grow title='Afternoon' onClick={() => setPageData({ ...pageData, sunday_afternoon: !pageData.sunday_afternoon })} defaultValue={pageData.sunday_afternoon} InputContext={InputContext} />
+                                                                <CheckboxInput name='sunday_evening' grow title='Evening' onClick={() => setPageData({ ...pageData, sunday_evening: !pageData.sunday_evening })} defaultValue={pageData.sunday_evening} InputContext={InputContext} />
+                                                            </div>
+                                                        }
+                                                    </div>
                                                 </InputLine>
                                                 <InputLine>
-                                                    <CheckboxInput name='monday_availability' grow title='Monday' onClick={() => handleAvailability('monday')} defaultValue={pageData.monday_availability} InputContext={InputContext} />
-                                                    {pageData.monday_availability &&
-                                                        <>
-                                                            <CheckboxInput name='monday_morning' grow title='Morning' onClick={() => setPageData({ ...pageData, monday_morning: !pageData.monday_morning })} defaultValue={pageData.monday_morning} InputContext={InputContext} />
-                                                            <CheckboxInput name='monday_afternoon' grow title='Afternoon' onClick={() => setPageData({ ...pageData, monday_afternoon: !pageData.monday_afternoon })} defaultValue={pageData.monday_afternoon} InputContext={InputContext} />
-                                                            <CheckboxInput name='monday_evening' grow title='Evening' onClick={() => setPageData({ ...pageData, monday_evening: !pageData.monday_evening })} defaultValue={pageData.monday_evening} InputContext={InputContext} />
-                                                        </>
-                                                    }
+                                                    <div className='flex flex-col items-center justify-start gap-4'>
+                                                        <CheckboxInput name='monday_availability' grow title='Monday' onClick={() => handleAvailability('monday')} defaultValue={pageData.monday_availability} InputContext={InputContext} />
+                                                        {pageData.monday_availability &&
+                                                            <div className='flex flex-row items-start justify-start gap-1'>
+                                                                <CheckboxInput name='monday_morning' grow title='Morning' onClick={() => setPageData({ ...pageData, monday_morning: !pageData.monday_morning })} defaultValue={pageData.monday_morning} InputContext={InputContext} />
+                                                                <CheckboxInput name='monday_afternoon' grow title='Afternoon' onClick={() => setPageData({ ...pageData, monday_afternoon: !pageData.monday_afternoon })} defaultValue={pageData.monday_afternoon} InputContext={InputContext} />
+                                                                <CheckboxInput name='monday_evening' grow title='Evening' onClick={() => setPageData({ ...pageData, monday_evening: !pageData.monday_evening })} defaultValue={pageData.monday_evening} InputContext={InputContext} />
+                                                            </div>
+                                                        }
+                                                    </div>
                                                 </InputLine>
                                                 <InputLine>
-                                                    <CheckboxInput name='tuesday_availability' grow title='Tuesday' onClick={() => handleAvailability('tuesday')} defaultValue={pageData.tuesday_availability} InputContext={InputContext} />
-                                                    {pageData.tuesday_availability &&
-                                                        <>
-                                                            <CheckboxInput name='tuesday_morning' grow title='Morning' onClick={() => setPageData({ ...pageData, tuesday_morning: !pageData.tuesday_morning })} defaultValue={pageData.tuesday_morning} InputContext={InputContext} />
-                                                            <CheckboxInput name='tuesday_afternoon' grow title='Afternoon' onClick={() => setPageData({ ...pageData, tuesday_afternoon: !pageData.tuesday_afternoon })} defaultValue={pageData.tuesday_afternoon} InputContext={InputContext} />
-                                                            <CheckboxInput name='tuesday_evening' grow title='Evening' onClick={() => setPageData({ ...pageData, tuesday_evening: !pageData.tuesday_evening })} defaultValue={pageData.tuesday_evening} InputContext={InputContext} />
-                                                        </>
-                                                    }
+                                                    <div className='flex flex-col items-center justify-start gap-4'>
+                                                        <CheckboxInput name='tuesday_availability' grow title='Tuesday' onClick={() => handleAvailability('tuesday')} defaultValue={pageData.tuesday_availability} InputContext={InputContext} />
+                                                        {pageData.tuesday_availability &&
+                                                            <div className='flex flex-row items-start justify-start gap-1'>
+                                                                <CheckboxInput name='tuesday_morning' grow title='Morning' onClick={() => setPageData({ ...pageData, tuesday_morning: !pageData.tuesday_morning })} defaultValue={pageData.tuesday_morning} InputContext={InputContext} />
+                                                                <CheckboxInput name='tuesday_afternoon' grow title='Afternoon' onClick={() => setPageData({ ...pageData, tuesday_afternoon: !pageData.tuesday_afternoon })} defaultValue={pageData.tuesday_afternoon} InputContext={InputContext} />
+                                                                <CheckboxInput name='tuesday_evening' grow title='Evening' onClick={() => setPageData({ ...pageData, tuesday_evening: !pageData.tuesday_evening })} defaultValue={pageData.tuesday_evening} InputContext={InputContext} />
+                                                            </div>
+                                                        }
+                                                    </div>
                                                 </InputLine>
                                                 <InputLine>
-                                                    <CheckboxInput name='wednesday_availability' grow title='Wednesday' onClick={() => handleAvailability('wednesday')} defaultValue={pageData.wednesday_availability} InputContext={InputContext} />
-                                                    {pageData.wednesday_availability &&
-                                                        <>
-                                                            <CheckboxInput name='wednesday_morning' grow title='Morning' onClick={() => setPageData({ ...pageData, wednesday_morning: !pageData.wednesday_morning })} defaultValue={pageData.wednesday_morning} InputContext={InputContext} />
-                                                            <CheckboxInput name='wednesday_afternoon' grow title='Afternoon' onClick={() => setPageData({ ...pageData, wednesday_afternoon: !pageData.wednesday_afternoon })} defaultValue={pageData.wednesday_afternoon} InputContext={InputContext} />
-                                                            <CheckboxInput name='wednesday_evening' grow title='Evening' onClick={() => setPageData({ ...pageData, wednesday_evening: !pageData.wednesday_evening })} defaultValue={pageData.wednesday_evening} InputContext={InputContext} />
-                                                        </>
-                                                    }
+                                                    <div className='flex flex-col items-center justify-start gap-4'>
+                                                        <CheckboxInput name='wednesday_availability' grow title='Wednesday' onClick={() => handleAvailability('wednesday')} defaultValue={pageData.wednesday_availability} InputContext={InputContext} />
+                                                        {pageData.wednesday_availability &&
+                                                            <div className='flex flex-row items-start justify-start gap-1'>
+                                                                <CheckboxInput name='wednesday_morning' grow title='Morning' onClick={() => setPageData({ ...pageData, wednesday_morning: !pageData.wednesday_morning })} defaultValue={pageData.wednesday_morning} InputContext={InputContext} />
+                                                                <CheckboxInput name='wednesday_afternoon' grow title='Afternoon' onClick={() => setPageData({ ...pageData, wednesday_afternoon: !pageData.wednesday_afternoon })} defaultValue={pageData.wednesday_afternoon} InputContext={InputContext} />
+                                                                <CheckboxInput name='wednesday_evening' grow title='Evening' onClick={() => setPageData({ ...pageData, wednesday_evening: !pageData.wednesday_evening })} defaultValue={pageData.wednesday_evening} InputContext={InputContext} />
+                                                            </div>
+                                                        }
+                                                    </div>
                                                 </InputLine>
                                                 <InputLine>
-                                                    <CheckboxInput name='thursday_availability' grow title='Thursday' onClick={() => handleAvailability('thursday')} defaultValue={pageData.thursday_availability} InputContext={InputContext} />
-                                                    {pageData.thursday_availability &&
-                                                        <>
-                                                            <CheckboxInput name='thursday_morning' grow title='Morning' onClick={() => setPageData({ ...pageData, thursday_morning: !pageData.thursday_morning })} defaultValue={pageData.thursday_morning} InputContext={InputContext} />
-                                                            <CheckboxInput name='thursday_afternoon' grow title='Afternoon' onClick={() => setPageData({ ...pageData, thursday_afternoon: !pageData.thursday_afternoon })} defaultValue={pageData.thursday_afternoon} InputContext={InputContext} />
-                                                            <CheckboxInput name='thursday_evening' grow title='Evening' onClick={() => setPageData({ ...pageData, thursday_evening: !pageData.thursday_evening })} defaultValue={pageData.thursday_evening} InputContext={InputContext} />
-                                                        </>
-                                                    }
+                                                    <div className='flex flex-col items-center justify-start gap-4'>
+                                                        <CheckboxInput name='thursday_availability' grow title='Thursday' onClick={() => handleAvailability('thursday')} defaultValue={pageData.thursday_availability} InputContext={InputContext} />
+                                                        {pageData.thursday_availability &&
+                                                            <div className='flex flex-row items-start justify-start gap-1'>
+                                                                <CheckboxInput name='thursday_morning' grow title='Morning' onClick={() => setPageData({ ...pageData, thursday_morning: !pageData.thursday_morning })} defaultValue={pageData.thursday_morning} InputContext={InputContext} />
+                                                                <CheckboxInput name='thursday_afternoon' grow title='Afternoon' onClick={() => setPageData({ ...pageData, thursday_afternoon: !pageData.thursday_afternoon })} defaultValue={pageData.thursday_afternoon} InputContext={InputContext} />
+                                                                <CheckboxInput name='thursday_evening' grow title='Evening' onClick={() => setPageData({ ...pageData, thursday_evening: !pageData.thursday_evening })} defaultValue={pageData.thursday_evening} InputContext={InputContext} />
+                                                            </div>
+                                                        }
+                                                    </div>
                                                 </InputLine>
                                                 <InputLine>
-                                                    <CheckboxInput name='friday_availability' grow title='Friday' onClick={() => handleAvailability('friday')} defaultValue={pageData.friday_availability} InputContext={InputContext} />
-                                                    {pageData.friday_availability &&
-                                                        <>
-                                                            <CheckboxInput name='friday_morning' grow title='Morning' onClick={() => setPageData({ ...pageData, friday_morning: !pageData.friday_morning })} defaultValue={pageData.friday_morning} InputContext={InputContext} />
-                                                            <CheckboxInput name='friday_afternoon' grow title='Afternoon' onClick={() => setPageData({ ...pageData, friday_afternoon: !pageData.friday_afternoon })} defaultValue={pageData.friday_afternoon} InputContext={InputContext} />
-                                                            <CheckboxInput name='friday_evening' grow title='Evening' onClick={() => setPageData({ ...pageData, friday_evening: !pageData.friday_evening })} defaultValue={pageData.friday_evening} InputContext={InputContext} />
-                                                        </>
-                                                    }
+                                                    <div className='flex flex-col items-center justify-start gap-4'>
+                                                        <CheckboxInput name='friday_availability' grow title='Friday' onClick={() => handleAvailability('friday')} defaultValue={pageData.friday_availability} InputContext={InputContext} />
+                                                        {pageData.friday_availability &&
+                                                            <div className='flex flex-row items-start justify-start gap-1'>
+                                                                <CheckboxInput name='friday_morning' grow title='Morning' onClick={() => setPageData({ ...pageData, friday_morning: !pageData.friday_morning })} defaultValue={pageData.friday_morning} InputContext={InputContext} />
+                                                                <CheckboxInput name='friday_afternoon' grow title='Afternoon' onClick={() => setPageData({ ...pageData, friday_afternoon: !pageData.friday_afternoon })} defaultValue={pageData.friday_afternoon} InputContext={InputContext} />
+                                                                <CheckboxInput name='friday_evening' grow title='Evening' onClick={() => setPageData({ ...pageData, friday_evening: !pageData.friday_evening })} defaultValue={pageData.friday_evening} InputContext={InputContext} />
+                                                            </div>
+                                                        }
+                                                    </div>
                                                 </InputLine>
                                                 <InputLine>
-                                                    <CheckboxInput name='saturday_availability' grow title='Saturday' onClick={() => handleAvailability('saturday')} defaultValue={pageData.saturday_availability} InputContext={InputContext} />
-                                                    {pageData.saturday_availability &&
-                                                        <>
-                                                            <CheckboxInput name='saturday_morning' grow title='Morning' onClick={() => setPageData({ ...pageData, saturday_morning: !pageData.saturday_morning })} defaultValue={pageData.saturday_morning} InputContext={InputContext} />
-                                                            <CheckboxInput name='saturday_afternoon' grow title='Afternoon' onClick={() => setPageData({ ...pageData, saturday_afternoon: !pageData.saturday_afternoon })} defaultValue={pageData.saturday_afternoon} InputContext={InputContext} />
-                                                            <CheckboxInput name='saturday_evening' grow title='Evening' onClick={() => setPageData({ ...pageData, saturday_evening: !pageData.saturday_evening })} defaultValue={pageData.saturday_evening} InputContext={InputContext} />
-                                                        </>
-                                                    }
+                                                    <div className='flex flex-col items-center justify-start gap-4'>
+                                                        <CheckboxInput name='saturday_availability' grow title='Saturday' onClick={() => handleAvailability('saturday')} defaultValue={pageData.saturday_availability} InputContext={InputContext} />
+                                                        {pageData.saturday_availability &&
+                                                            <div className='flex flex-row items-start justify-start gap-1'>
+                                                                <CheckboxInput name='saturday_morning' grow title='Morning' onClick={() => setPageData({ ...pageData, saturday_morning: !pageData.saturday_morning })} defaultValue={pageData.saturday_morning} InputContext={InputContext} />
+                                                                <CheckboxInput name='saturday_afternoon' grow title='Afternoon' onClick={() => setPageData({ ...pageData, saturday_afternoon: !pageData.saturday_afternoon })} defaultValue={pageData.saturday_afternoon} InputContext={InputContext} />
+                                                                <CheckboxInput name='saturday_evening' grow title='Evening' onClick={() => setPageData({ ...pageData, saturday_evening: !pageData.saturday_evening })} defaultValue={pageData.saturday_evening} InputContext={InputContext} />
+                                                            </div>
+                                                        }
+                                                    </div>
                                                 </InputLine>
 
                                             </InputLineGroup>
                                             <InputLineGroup title='DOCUMENTS' activeMenu={activeMenu === 'documents'}>
+
                                                 {pageData.documents && pageData.documents.length > 0 && pageData.documents.map((document, index) => {
-                                                    return <Scope key={index} path={`documents[${index}]`}>
+                                                    return <Scope key={index} path={`documents[${index}]`} >
+                                                        <Input type='hidden' name='document_id' defaultValue={document.id} InputContext={InputContext} />
                                                         <InputLine title={document.title}>
-                                                            <FileInput type='file' required multiple={document.multiple} name='file_id' title={document.multiple ? 'Multiple Files' : 'File'} grow InputContext={InputContext} />
+                                                            {!document.multiple && pageData.staffdocuments && pageData.staffdocuments.filter(staffdocument => staffdocument.document_id === document.id).length === 0 &&
+                                                                <FileInput type='file' name='file_id' title={'File'} grow InputContext={InputContext} />
+                                                            }
+                                                            {document.multiple &&
+                                                                <FileInputMultiple type='file' name='file_id' title={'Multiple Files'} grow InputContext={InputContext} />
+                                                            }
+                                                        </InputLine>
+                                                        <InputLine subtitle='Attached Files'>
+                                                            <div className='flex flex-col justify-center items-start gap-4'>
+                                                                {
+                                                                    pageData.staffdocuments && pageData.staffdocuments.map((staffdocument, index) => {
+                                                                        if (staffdocument.document_id === document.id) {
+                                                                            return <>
+                                                                                <div className='flex flex-row justify-center items-center gap-2'>
+                                                                                    <a href={staffdocument.file.url} target="_blank" className='text-xs'>
+                                                                                        <div className='flex flex-row items-center border px-4 py-2 gap-1 rounded-md bg-gray-100 hover:border-gray-300' key={index}>
+                                                                                            <Files size={16} />
+                                                                                            {staffdocument.file.name}
+                                                                                        </div>
+                                                                                    </a>
+                                                                                    <button type='button' onClick={() => handleDeleteDocument(staffdocument.id)} className='text-xs text-red-700 cursor-pointer flex flex-row items-center justify-start gap-1 mt-1 px-2 py-1 rounded hover:bg-red-100'><X size={12} /> Delete</button>
+                                                                                </div>
+                                                                            </>
+                                                                        }
+                                                                    })}
+                                                            </div>
                                                         </InputLine>
                                                     </Scope>
                                                 })}
+
                                             </InputLineGroup>
                                         </>
                                         :
@@ -439,7 +550,8 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
 
                     </div>
                 </div>
-            : null}
+            : null
+        }
 
-    </Preview>;
+    </Preview >;
 }

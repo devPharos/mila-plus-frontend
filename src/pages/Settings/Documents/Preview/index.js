@@ -1,5 +1,5 @@
 import { Form } from '@unform/web';
-import { Building, Loader2, Pencil, X } from 'lucide-react';
+import { Building, Pencil, X } from 'lucide-react';
 import React, { createContext, useEffect, useRef, useState } from 'react';
 import Input from '~/components/RegisterForm/Input';
 import RegisterFormMenu from '~/components/RegisterForm/Menu';
@@ -9,16 +9,9 @@ import InputLine from '~/components/RegisterForm/InputLine';
 import InputLineGroup from '~/components/RegisterForm/InputLineGroup';
 import FormHeader from '~/components/RegisterForm/FormHeader';
 import Preview from '~/components/Preview';
-import { countries_list, getRegistries, handleUpdatedFields } from '~/functions';
+import { getRegistries, handleUpdatedFields } from '~/functions';
 import SelectPopover from '~/components/RegisterForm/SelectPopover';
-import Textarea from '~/components/RegisterForm/Textarea';
-import DatePicker from '~/components/RegisterForm/DatePicker';
-import SelectCountry from '~/components/RegisterForm/SelectCountry';
-import { format, parseISO } from 'date-fns';
-import CountryList from 'country-list-with-dial-code-and-flag';
 import FormLoading from '~/components/RegisterForm/FormLoading';
-import { useSelector } from 'react-redux';
-import CheckboxInput from '~/components/RegisterForm/CheckboxInput';
 
 export const InputContext = createContext({})
 

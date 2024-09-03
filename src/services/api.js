@@ -30,7 +30,7 @@ api.interceptors.response.use(response => {
     // window.location.href = "/401";
   }
   if (error.response.status === 404) {
-    window.location.href = "/404";
+    // window.location.href = "/404";
   }
   return Promise.reject(error)
 })

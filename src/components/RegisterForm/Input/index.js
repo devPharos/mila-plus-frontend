@@ -69,9 +69,9 @@ const Input = ({ name, title, grow, shrink, defaultValueDDI = null, workloadUpda
 
     setSuccessfullyUpdated(false)
   }
-
+  const width = shrink ? 'w-34' : 'w-full md:w-auto'
   return (
-    <div className={`${type === 'hidden' ? 'hidden' : 'flex'} flex-col justify-center items-start relative ${shrink ? 'w-34' : ''} ${grow ? 'grow' : ''}`}>
+    <div className={`${type === 'hidden' ? 'hidden' : 'flex'} flex-col justify-center items-start relative ${width} ${grow ? 'grow' : ''}`}>
       <div className='px-2 text-xs flex flex-row justify-between items-center'>{title} {required && <Asterisk color='#e00' size={12} />}</div>
       <div className='w-full flex flex-row justify-center items-center'>
         <div htmlFor={name} className={`flex-1 border rounded-sm p-2 px-4 text-sm flex flex-row justify-between items-center gap-2 ${(disabled || readOnly) && 'bg-gray-100'} ${error && 'border-red-300'}`}>

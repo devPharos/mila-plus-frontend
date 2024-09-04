@@ -26,21 +26,12 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         name: '',
         last_name: '',
         email: '',
-        preferred_contact_form: '',
         visa_expiration: null,
-        birth_country: '',
-        birth_state: '',
-        birth_city: '',
         gender: null,
+        type: null,
+        status: 'Waiting',
+        sub_status: null,
         date_of_birth: null,
-        passport_number: '',
-        visa_number: '',
-        nsevis: '',
-        whatsapp: '',
-        whatsapp_ddi: '',
-        home_country_phone_ddi: '',
-        home_country_phone: '',
-        address: '',
         loaded: false
     })
     const [formType, setFormType] = useState(defaultFormType)
@@ -61,6 +52,10 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     const countriesOptions = countries_list.map(country => {
         return { value: country, label: country }
     })
+
+    const typesOptions = [{ value: 'F1', label: 'F1' }, { value: 'Non-F1', label: 'Non-F1' }, { value: 'Private', label: 'Private' }]
+    const statusesOptions = [{ value: 'In Class', label: 'In Class' }, { value: 'School Waiting List', label: 'School Waiting List' }, { value: 'Waiting', label: 'Waiting' }, { value: 'Inactive', label: 'Inactive' }]
+    const substatusOptions = [{ value: 'Initial', label: 'Initial' }, { value: 'Non-F1', label: 'Non-F1' }, { value: 'Change of Status', label: 'Change of Status' }, { value: 'Reinstatement', label: 'Reinstatement' }, { value: 'Transfer In', label: 'Transfer In' }, { 'value': 'Transfer Out', label: 'Transfer Out' }]
 
     useEffect(() => {
         async function getCountriesList() {
@@ -102,10 +97,11 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
             toast("No need to be saved!", { autoClose: 1000, type: 'info', transition: Zoom })
             return
         }
+        delete data.status;
         if (id === 'new') {
             try {
                 const { date_of_birth, visa_expiration } = data;
-                const response = await api.post(`/students`, { ...data, date_of_birth: date_of_birth ? format(date_of_birth, 'yyyy-MM-dd') : null, visa_expiration: visa_expiration ? format(visa_expiration, 'yyyy-MM-dd') : null })
+                const response = await api.post(`/prospects`, { ...data, date_of_birth: date_of_birth ? format(date_of_birth, 'yyyy-MM-dd') : null, visa_expiration: visa_expiration ? format(visa_expiration, 'yyyy-MM-dd') : null })
                 setOpened(response.data.id)
                 setPageData({ ...pageData, ...data })
                 setSuccessfullyUpdated(true)
@@ -115,6 +111,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                 toast(err.response.data.error, { type: 'error', autoClose: 3000 })
             }
         } else if (id !== 'new') {
+            console.log(data, pageData)
             const updated = handleUpdatedFields(data, pageData)
 
             if (updated.length > 0) {
@@ -206,6 +203,11 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                     <Input type='text' name='visa_number' grow title='Visa Number' placeholder='-----' defaultValue={pageData.visa_number} InputContext={InputContext} />
                                                     <DatePicker name='visa_expiration' title='Visa Expiration' defaultValue={pageData.visa_expiration ? parseISO(pageData.visa_expiration) : null} placeholderText='MM/DD/YYYY' InputContext={InputContext} />
                                                     <Input type='text' name='nsevis' title='NSEVIS' grow defaultValue={pageData.nsevis} placeholder='-----' InputContext={InputContext} />
+                                                </InputLine>
+                                                <InputLine title='Enrollment'>
+                                                    <SelectPopover name='type' grow required title='Type' isSearchable defaultValue={typesOptions.find(type => type.value === pageData.type)} options={typesOptions} InputContext={InputContext} />
+                                                    <SelectPopover name='status' grow disabled title='Status' isSearchable defaultValue={statusesOptions.find(status => status.value === 'Waiting')} options={statusesOptions} InputContext={InputContext} />
+                                                    <SelectPopover name='sub_status' grow required title='Sub Status' isSearchable defaultValue={substatusOptions.find(substatus => substatus.value === pageData.substatus)} options={substatusOptions} InputContext={InputContext} />
                                                 </InputLine>
                                                 <InputLine title='Contact'>
                                                     <Input type='text' name='email' required title='E-mail' grow defaultValue={pageData.email} InputContext={InputContext} />

@@ -143,7 +143,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                 <InputLine title='General Data'>
                                                     <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
                                                     <Input type='text' name='total_hours' onlyInt required title='Total Hours' grow defaultValue={pageData.total_hours} InputContext={InputContext} />
-                                                    <SelectPopover name='programcategory_id' title='Type' generalForm={generalForm} options={programCategoriesOptions} defaultValue={{ value: pageData.programcategory_id, label: pageData.Programcategory.name }} InputContext={InputContext} />
+                                                    <SelectPopover name='programcategory_id' title='Type' grow generalForm={generalForm} options={programCategoriesOptions} defaultValue={{ value: pageData.programcategory_id, label: pageData.Programcategory.name }} InputContext={InputContext} />
                                                 </InputLine>
 
                                             </InputLineGroup>

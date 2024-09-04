@@ -83,6 +83,12 @@ function App() {
             title: 'Prospects',
             icon: 'Users'
           },
+          {
+            alias: 'enrollments',
+            path: '/Commercial/Enrollments',
+            title: 'Enrollments',
+            icon: 'History'
+          },
         ]
       },
       {

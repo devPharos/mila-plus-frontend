@@ -228,9 +228,9 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                 </InputLine>
 
                                                 <InputLine title='Localization'>
-                                                    <SelectPopover name='country' title='Country' required options={countriesOptions} isSearchable defaultValue={{ value: pageData.country, label: pageData.country }} InputContext={InputContext} />
-                                                    <Input type='text' name='state' required title='State' defaultValue={pageData.state} InputContext={InputContext} />
-                                                    <Input type='text' name='city' required title='City' defaultValue={pageData.city} InputContext={InputContext} />
+                                                    <SelectPopover name='country' title='Country' required grow options={countriesOptions} isSearchable defaultValue={{ value: pageData.country, label: pageData.country }} InputContext={InputContext} />
+                                                    <Input type='text' name='state' required title='State' grow defaultValue={pageData.state} InputContext={InputContext} />
+                                                    <Input type='text' name='city' required title='City' grow defaultValue={pageData.city} InputContext={InputContext} />
                                                     <Input type='text' name='zipcode' isZipCode grow required title='Zip Code' defaultValue={pageData.zipcode} placeholder='-----' InputContext={InputContext} />
                                                 </InputLine>
 

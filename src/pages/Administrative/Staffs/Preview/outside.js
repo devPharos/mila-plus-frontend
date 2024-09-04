@@ -86,10 +86,8 @@ export default function PagePreviewOutside({ access = null, id = null, handleOpe
     })
 
     useEffect(() => {
-        const params = atob(searchparams.get('crypt')).split('-');
-        id = atob(params[0]);
-        const filial_id = atob(params[1]);
-        setPageData({ ...pageData, filial_id })
+        const id = atob(searchparams.get('crypt'));
+        setPageData({ ...pageData })
         setFullscreen(true);
         setFormType('full');
         async function getCountriesList() {
@@ -131,8 +129,7 @@ export default function PagePreviewOutside({ access = null, id = null, handleOpe
 
     async function handleGeneralFormSubmit(data) {
         setLoading(true)
-        const params = atob(searchparams.get('crypt')).split('-');
-        id = atob(params[0]);
+        const id = atob(searchparams.get('crypt'));
         if (successfullyUpdated) {
             toast("No need to be saved!", { autoClose: 1000, type: 'info', transition: Zoom })
             setLoading(false)
@@ -144,7 +141,7 @@ export default function PagePreviewOutside({ access = null, id = null, handleOpe
             if (updated.length > 0) {
                 const objUpdated = Object.fromEntries(updated);
                 const { date_of_birth } = objUpdated;
-                if (data.documents.length > 0) {
+                if (data.documents && data.documents.length > 0) {
                     let toastId = null;
                     if (data.documents.find(document => (typeof document.file_id === 'undefined' && document.file_id) || (typeof document.file_id === 'object' && Array.from(document.file_id).length > 0))) {
                         toastId = toast.loading("Files are being uploaded...");
@@ -302,7 +299,7 @@ export default function PagePreviewOutside({ access = null, id = null, handleOpe
                                                 <Input type='text' name='city' required grow title='City' defaultValue={pageData.city} InputContext={InputContext} />
                                                 <Input type='text' name='zip' required grow title='Zip Code' defaultValue={pageData.zip} InputContext={InputContext} />
                                             </InputLine>
-                                            <InputLine title='Availability'>
+                                            {/* <InputLine title='Availability'>
                                                 <div className='flex flex-col md:flex-row items-center justify-start gap-4'>
                                                     <CheckboxInput name='sunday_availability' grow title='Sunday' onClick={() => handleAvailability('sunday')} defaultValue={pageData.sunday_availability} InputContext={InputContext} />
                                                     {pageData.sunday_availability &&
@@ -385,7 +382,7 @@ export default function PagePreviewOutside({ access = null, id = null, handleOpe
                                                         </div>
                                                     }
                                                 </div>
-                                            </InputLine>
+                                            </InputLine> */}
                                             <Input type='hidden' name='employee_type' defaultValue={pageData.employee_type} InputContext={InputContext} />
                                             <Input type='hidden' name='employee_subtype' defaultValue={pageData.employee_subtype} InputContext={InputContext} />
 

@@ -82,7 +82,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     const [loading, setLoading] = useState(false)
 
     const employeeTypeOptions = [{ value: 'Staff', label: 'Staff' }, { value: 'Faculty', label: 'Faculty' }]
-    const employeeSubtypeOptions = [{ value: 'Hired', label: 'Hired' }, { value: 'Contract', label: 'Contract' }, { value: 'Temporary', label: 'Temporary' }, { value: 'Intern', label: 'Intern' }]
+    const employeeSubtypeOptions = [{ value: 'Pay Roll', label: 'Pay Roll' }, { value: 'Contract', label: 'Contract' }]
     const wageTypeOptions = [{ value: 'Hourly', label: 'Hourly' }, { value: 'Salary', label: 'Salary' }]
 
     const countriesOptions = countries_list.map(country => {
@@ -253,7 +253,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                     title: 'Yes',
                     onPress: async () => {
                         try {
-                            await api.post(`/staffs/formMail`, { crypt: btoa(btoa(id) + '-' + btoa(auth.filial.id)) })
+                            await api.post(`/staffs/formMail`, { crypt: btoa(id) })
                             toast("Link sent!", { autoClose: 1000 })
                         } catch (err) {
                             toast("Error!", { autoClose: 1000 })

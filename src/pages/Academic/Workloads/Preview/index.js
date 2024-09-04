@@ -109,13 +109,18 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         }
         if (id === 'new') {
             try {
-                const response = await api.post(`/workloads`, data)
-                setOpened(response.data.id)
-                setPageData({ ...pageData, ...data })
-                setSuccessfullyUpdated(true)
-                toast("Saved!", { autoClose: 1000 })
-                handleOpened(null)
-                setLoading(false)
+                if (data.file_id) {
+                    const file = data.file_id;
+                    let myPromise = await uploadFile(file, 'Scope and Sequence');
+                    Promise.all([myPromise]).then((files) => {
+                        data.file_id = files[0];
+                        create(data)
+                    })
+                    return
+                } else {
+                    create(data)
+                }
+
             } catch (err) {
                 toast(err.response.data.error, { type: 'error', autoClose: 3000 })
                 setLoading(false)
@@ -186,6 +191,16 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                 }
             }
         }
+    }
+
+    async function create(data) {
+        const response = await api.post(`/workloads`, data)
+        setOpened(response.data.id)
+        setPageData({ ...pageData, ...data })
+        setSuccessfullyUpdated(true)
+        toast("Saved!", { autoClose: 1000 })
+        handleOpened(null)
+        setLoading(false)
     }
 
     async function send(objUpdated) {

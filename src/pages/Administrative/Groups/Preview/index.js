@@ -164,7 +164,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                             <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
                                                 <InputLine title='General Data'>
                                                     <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
-                                                    <SelectPopover name='filialtype_id' title='Filial Type' options={filialTypesOptions} defaultValue={{ value: pageData.filialtype_id, label: pageData.Filialtype ? pageData.Filialtype.name : '' }} InputContext={InputContext} />
+                                                    <SelectPopover name='filialtype_id' title='Filial Type' grow options={filialTypesOptions} defaultValue={{ value: pageData.filialtype_id, label: pageData.Filialtype ? pageData.Filialtype.name : '' }} InputContext={InputContext} />
                                                 </InputLine>
 
                                             </InputLineGroup>
@@ -173,7 +173,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
 
                                                 {pageData.groupAccess && pageData.groupAccess.map((access, index) => {
 
-                                                    return <Scope key={index} path={`modules[${index}]`}><h1 className='w-full border-b p-4 pb-0 pt-2 pb-2 font-bold'>{access.name}</h1>
+                                                    return <Scope key={index} path={`groupAccess[${index}]`}><h1 className='w-full border-b p-4 pb-0 pt-2 pb-2 font-bold'>{access.name}</h1>
 
                                                         {access.MenuHierarchies.map((menu, indexMenu) => {
                                                             return <Scope key={indexMenu} path={`menus[${indexMenu}]`}>

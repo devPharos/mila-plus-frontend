@@ -56,6 +56,8 @@ import Documents from './pages/Settings/Documents';
 import Outside from './pages/Outside';
 import PagePreview from './pages/Administrative/Staffs/Preview';
 import PagePreviewOutside from './pages/Administrative/Staffs/Preview/outside';
+import Enrollments from './pages/Commercial/Enrollments';
+import EnrollmentOutside from './pages/Commercial/Enrollments/Preview/enrollment';
 
 injectStore(store)
 
@@ -83,6 +85,10 @@ const router = createBrowserRouter([
           {
             path: "/fill-form/Staff",
             element: <PagePreviewOutside />
+          },
+          {
+            path: "/fill-form/Enrollment",
+            element: <EnrollmentOutside />
           },
         ]
       },
@@ -149,6 +155,10 @@ const router = createBrowserRouter([
           {
             path: "/Commercial/Prospects",
             element: <CommercialProspects />
+          },
+          {
+            path: "/Commercial/Enrollments",
+            element: <Enrollments />
           },
         ]
       },

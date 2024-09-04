@@ -300,7 +300,7 @@ export function handleUpdatedFields(data, pageData) {
   const dataInArray = Object.keys(data).map((key) => [key, data[key]])
   const pageDataInArray = Object.keys(pageData).map((key) => [key, pageData[key]]);
 
-  return dataInArray.filter((field) => {
+  return dataInArray && dataInArray.filter((field) => {
     let x = field[1] === 'Yes' || field[1] === 'true' ? true : field[1] === 'No' || field[1] === 'false' ? false : field[1];
     const y = pageDataInArray.find(pageField => pageField[0] === field[0])[1];
 

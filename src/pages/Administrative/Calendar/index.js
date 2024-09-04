@@ -106,7 +106,7 @@ export default function AdministrativeCalendar() {
     <div className='relative flex flex-1 flex-row justify-between items-start rounded-tr-2xl px-4'>
       <Calendar value={date} onSelect={handleSelect} onChange={setDate} renderCell={renderCell} bordered cellClassName={date => (date.getDay() % 2 ? 'bg-zinc-50' : undefined)} />
 
-      <div className='flex w-full flex-col items-center justify-center pt-2 pb-2'>
+      <div className='flex w-full min-w-44 flex-col items-center justify-center pt-2 pb-2'>
         <Form className='w-full'>
           <InputContext.Provider value={{ setSuccessfullyUpdated, successfullyUpdated }}>
             <SelectPopover onChange={(year) => setYear(year.value)} name='year' options={yearsOptions} defaultValue={yearsOptions[1]} InputContext={InputContext} />

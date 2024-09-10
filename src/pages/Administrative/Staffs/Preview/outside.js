@@ -75,7 +75,7 @@ export default function PagePreviewOutside({ access = null, id = null, handleOpe
     const [formType, setFormType] = useState(defaultFormType)
     const [fullscreen, setFullscreen] = useState(false)
     const [activeMenu, setActiveMenu] = useState('general')
-    const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
+
     const [registry, setRegistry] = useState({ created_by: null, created_at: null, updated_by: null, updated_at: null, canceled_by: null, canceled_at: null })
     const generalForm = useRef()
     const [loading, setLoading] = useState(false)

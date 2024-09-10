@@ -11,27 +11,26 @@ import FormHeader from '~/components/RegisterForm/FormHeader';
 import Preview from '~/components/Preview';
 import { getRegistries, handleUpdatedFields } from '~/functions';
 import SelectPopover from '~/components/RegisterForm/SelectPopover';
-import { format } from 'date-fns';
 import CountryList from 'country-list-with-dial-code-and-flag';
 import FormLoading from '~/components/RegisterForm/FormLoading';
 import { useSelector } from 'react-redux';
 
 export const InputContext = createContext({})
 
-export default function PagePreview({ access, id, handleOpened, setOpened, defaultFormType = 'preview' }) {
+export default function PagePreview({ access, id, handleOpened, setOpened, defaultFormType = 'preview', successfullyUpdated, setSuccessfullyUpdated }) {
     const [pageData, setPageData] = useState({
         name: '',
+        email: '',
+        user_id: null,
         loaded: false
     })
     const [formType, setFormType] = useState(defaultFormType)
     const [fullscreen, setFullscreen] = useState(false)
     const [activeMenu, setActiveMenu] = useState('general')
-    const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
     const [registry, setRegistry] = useState({ created_by: null, created_at: null, updated_by: null, updated_at: null, canceled_by: null, canceled_at: null })
     const [filialOptions, setFilialOptions] = useState([])
     const generalForm = useRef()
     const auth = useSelector(state => state.auth);
-
 
     useEffect(() => {
         async function getCountriesList() {
@@ -73,6 +72,9 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         if (successfullyUpdated) {
             toast("No need to be saved!", { autoClose: 1000, type: 'info', transition: Zoom })
             return
+        }
+        if (!data.user_id) {
+            delete data.user_id;
         }
         if (id === 'new') {
             try {
@@ -166,6 +168,10 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                 </InputLine>}
                                                 <InputLine title='General Data'>
                                                     <Input type='text' name='name' required grow title='Name' defaultValue={pageData.name} InputContext={InputContext} />
+                                                    <Input type='text' name='email' grow title='E-mail' defaultValue={pageData.email} InputContext={InputContext} />
+                                                </InputLine>
+                                                <InputLine>
+                                                    <Input type='text' name='user_id' disabled grow title='User' defaultValue={pageData.user_id} InputContext={InputContext} />
                                                 </InputLine>
 
                                             </InputLineGroup>
@@ -180,7 +186,8 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
 
                     </div>
                 </div>
-            : null}
+            : null
+        }
 
-    </Preview>;
+    </Preview >;
 }

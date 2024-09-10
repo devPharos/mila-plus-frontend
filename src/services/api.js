@@ -1,4 +1,6 @@
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { logout } from '~/store/modules/auth/actions';
 // import { redirect } from "react-router-dom";
 
 const api = axios.create({
@@ -27,10 +29,10 @@ api.interceptors.response.use(response => {
     console.log(error)
   }
   if (error.response.status === 401) {
-    // window.location.href = "/401";
+    window.location.href = "/401";
   }
   if (error.response.status === 404) {
-    // window.location.href = "/404";
+    window.location.href = "/404";
   }
   return Promise.reject(error)
 })

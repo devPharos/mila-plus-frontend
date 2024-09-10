@@ -9,6 +9,8 @@ import { applyFilters, getCurrentPage, hasAccessTo } from '~/functions';
 import PagePreview from './Preview';
 import { useSelector } from 'react-redux';
 import PageHeader from '~/components/PageHeader';
+import PreviewController from '~/components/PreviewController';
+import { PreviewContext } from '../Enrollments';
 
 export default function CommercialProspects() {
   const [activeFilters, setActiveFilters] = useState([])
@@ -49,6 +51,7 @@ export default function CommercialProspects() {
       filter: false,
     },
   ])
+  const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
 
   const [gridData, setGridData] = useState()
 
@@ -63,21 +66,9 @@ export default function CommercialProspects() {
   useEffect(() => {
 
     async function getData() {
-      // if (filial.id === 1 && gridHeader && gridHeader.filter(el => el.title === 'Filial').length === 0) {
-      //   setGridHeader([...gridHeader, {
-      //     title: 'Filial',
-      //     type: 'text',
-      //     filter: false,
-      //   },])
-      // } else {
-      //   setGridHeader(gridHeader.filter(el => el.title !== 'Filial'))
-      // }
       const { data } = await api.get(`/students`)
       const gridDataValues = data.map(({ id, name, last_name, email, phone, salesagent_id, preferred_contact_form, canceled_at, filial: studentFilial }) => {
         const ret = { show: true, id, fields: [name, last_name, email, phone, salesagent_id, preferred_contact_form], canceled: canceled_at }
-        // if (filial.id === 1) {
-        //   ret.fields.push(studentFilial.name)
-        // }
         return ret
       })
       setGridData(gridDataValues)
@@ -86,6 +77,9 @@ export default function CommercialProspects() {
   }, [opened, filial])
 
   function handleOpened(id) {
+    if (!id) {
+      setSuccessfullyUpdated(true)
+    }
     setOpened(id)
   }
 
@@ -106,7 +100,11 @@ export default function CommercialProspects() {
 
     <Grid gridData={gridData} gridHeader={gridHeader} orderBy={orderBy} setOrderBy={setOrderBy} handleOpened={handleOpened} opened={opened}>
       {opened && <div className='fixed left-0 top-0 z-40 w-full h-full' style={{ background: 'rgba(0,0,0,.2)' }}></div>}
-      {opened && <PagePreview access={hasAccessTo(accesses, currentPage.alias)} id={opened} handleOpened={handleOpened} setOpened={setOpened} defaultFormType='full' />}
+      {opened && <PreviewContext.Provider value={{ successfullyUpdated, handleOpened }}>
+        <PreviewController>
+          <PagePreview access={hasAccessTo(accesses, currentPage.alias)} id={opened} handleOpened={handleOpened} setOpened={setOpened} defaultFormType='full' successfullyUpdated={successfullyUpdated} setSuccessfullyUpdated={setSuccessfullyUpdated} />
+        </PreviewController>
+      </PreviewContext.Provider>}
     </Grid>
   </div>;
 }

@@ -59,12 +59,6 @@ function App() {
             path: '/Administrative/Staffs',
             title: 'Staff',
             icon: 'Users'
-          },
-          {
-            alias: 'agents',
-            path: '/Administrative/Agents',
-            title: 'Agents',
-            icon: 'CircleUserRound'
           }
         ]
       },
@@ -88,6 +82,12 @@ function App() {
             path: '/Commercial/Enrollments',
             title: 'Enrollments',
             icon: 'History'
+          },
+          {
+            alias: 'agents',
+            path: '/Commercial/Agents',
+            title: 'Agents',
+            icon: 'CircleUserRound'
           },
         ]
       },

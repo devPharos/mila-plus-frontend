@@ -21,13 +21,13 @@ import uploadFile from '~/functions/uploadFile';
 
 export const InputContext = createContext({})
 
-export default function PagePreview({ access, id, handleOpened, setOpened, defaultFormType = 'preview' }) {
+export default function PagePreview({ access, id, handleOpened, setOpened, defaultFormType = 'preview', successfullyUpdated, setSuccessfullyUpdated }) {
     const [pageData, setPageData] = useState({
         name: '',
         paceGuides: [],
         loaded: false
     })
-    const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
+
     const [registry, setRegistry] = useState({ created_by: null, created_at: null, updated_by: null, updated_at: null, canceled_by: null, canceled_at: null })
     const [formType, setFormType] = useState(defaultFormType)
     const [fullscreen, setFullscreen] = useState(false)

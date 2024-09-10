@@ -1,5 +1,5 @@
-import { Filter } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { Filter, History } from 'lucide-react';
+import React, { createContext, useEffect, useState } from 'react';
 import Breadcrumbs from '~/components/Breadcrumbs';
 import Filters from '~/components/Filters';
 import FiltersBar from '~/components/FiltersBar';
@@ -9,7 +9,10 @@ import { applyFilters, getCurrentPage, hasAccessTo } from '~/functions';
 import PagePreview from './Preview';
 import { useSelector } from 'react-redux';
 import PageHeader from '~/components/PageHeader';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
+import PreviewController from '~/components/PreviewController';
+
+export const PreviewContext = createContext({})
 
 export default function Enrollments() {
   const [activeFilters, setActiveFilters] = useState([])
@@ -60,6 +63,7 @@ export default function Enrollments() {
       filter: true,
     },
   ])
+  const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
 
   const [gridData, setGridData] = useState()
 
@@ -78,7 +82,8 @@ export default function Enrollments() {
       const gridDataValues = data.map(({ id, students, enrollmenttimelines, canceled_at }) => {
         const { name, type, sub_status } = students;
         const { phase, phase_step, created_at: stepCreatedAt, step_status, expected_date } = enrollmenttimelines[enrollmenttimelines.length - 1];
-        const ret = { show: true, id, fields: [name, type, sub_status, phase, phase_step, format(stepCreatedAt, 'MM/dd/yyyy @ HH:mm'), step_status, expected_date], canceled: canceled_at }
+        const exptected = expected_date ? format(parseISO(expected_date), 'MM/dd/yyyy') : '-'
+        const ret = { show: true, id, fields: [name, type, sub_status, phase, phase_step, format(stepCreatedAt, 'MM/dd/yyyy @ HH:mm'), step_status, expected_date && expected_date <= format(new Date(), 'yyyyMMdd') ? <div className='flex flex-row gap-2 items-center text-red-500'>{exptected} <History size={12} color='#f00' /></div> : exptected], canceled: canceled_at }
         return ret
       })
       setGridData(gridDataValues)
@@ -87,6 +92,9 @@ export default function Enrollments() {
   }, [opened, filial])
 
   function handleOpened(id) {
+    if (!id) {
+      setSuccessfullyUpdated(true)
+    }
     setOpened(id)
   }
 
@@ -107,7 +115,11 @@ export default function Enrollments() {
 
     <Grid gridData={gridData} gridHeader={gridHeader} orderBy={orderBy} setOrderBy={setOrderBy} handleOpened={handleOpened} opened={opened}>
       {opened && <div className='fixed left-0 top-0 z-40 w-full h-full' style={{ background: 'rgba(0,0,0,.2)' }}></div>}
-      {opened && <PagePreview access={hasAccessTo(accesses, currentPage.alias)} id={opened} handleOpened={handleOpened} setOpened={setOpened} defaultFormType='full' />}
+      {opened && <PreviewContext.Provider value={{ successfullyUpdated, handleOpened }}>
+        <PreviewController>
+          <PagePreview access={hasAccessTo(accesses, currentPage.alias)} id={opened} handleOpened={handleOpened} setOpened={setOpened} defaultFormType='full' successfullyUpdated={successfullyUpdated} setSuccessfullyUpdated={setSuccessfullyUpdated} />
+        </PreviewController>
+      </PreviewContext.Provider>}
     </Grid>
   </div>;
 }

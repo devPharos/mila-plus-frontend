@@ -15,6 +15,8 @@ import DatePicker from '~/components/RegisterForm/DatePicker';
 import PagePreview from './Preview';
 import Icon from '~/components/Icon';
 import Grid from '~/components/Grid';
+import { PreviewContext } from '~/pages/Commercial/Enrollments';
+import PreviewController from '~/components/PreviewController';
 
 export const InputContext = createContext({})
 
@@ -38,82 +40,6 @@ export default function AcademicCalendar() {
   }, [filial, year, opened])
 
   const yearsOptions = [{ label: '2025', value: '2025' }, { label: '2024', value: '2024' }, { label: '2023', value: '2023' }]
-
-  // const freeDays = [
-  //   {
-  //     day: '2025-01-15',
-  //     type: 'Administrative',
-  //     title: 'Martin Luther King Day'
-  //   },
-  //   {
-  //     day: '2024-01-15',
-  //     type: 'Administrative',
-  //     title: 'Martin Luther King Day'
-  //   },
-  //   {
-  //     day: '2024-01-01',
-  //     dayto: '2024-01-07',
-  //     type: 'Academic',
-  //     title: 'Winter Break'
-  //   },
-  //   {
-  //     day: '2024-02-19',
-  //     type: 'Administrative',
-  //     title: 'President\'s Day'
-  //   },
-  //   {
-  //     day: '2024-03-18',
-  //     dayto: '2024-03-23',
-  //     type: 'Academic',
-  //     title: 'Spring Break'
-  //   },
-  //   {
-  //     day: '2024-05-27',
-  //     type: 'Administrative',
-  //     title: 'Memorial Day'
-  //   },
-  //   {
-  //     day: '2024-06-19',
-  //     type: 'Administrative',
-  //     title: 'Juneteenth'
-  //   },
-  //   {
-  //     day: '2024-07-04',
-  //     type: 'Administrative',
-  //     title: 'Independence Day'
-  //   },
-  //   {
-  //     day: '2024-07-08',
-  //     dayto: '2024-07-27',
-  //     type: 'Academic',
-  //     title: 'Summer Break'
-  //   },
-  //   {
-  //     day: '2024-09-02',
-  //     type: 'Administrative',
-  //     title: 'Labor Day'
-  //   },
-  //   {
-  //     day: '2024-10-10',
-  //     type: 'Administrative',
-  //     title: 'Columbus Day'
-  //   },
-  //   {
-  //     day: '2024-11-11',
-  //     type: 'Administrative',
-  //     title: 'Veterans Day'
-  //   },
-  //   {
-  //     day: '2024-11-27',
-  //     type: 'Administrative',
-  //     title: 'Thanksgiving'
-  //   },
-  //   {
-  //     day: '2024-12-25',
-  //     type: 'Administrative',
-  //     title: 'Christmas'
-  //   }
-  // ].filter(freeDay => freeDay.date.substring(0, 4) == year)
 
   function getTodoList(date) {
     const day = date.getDate().toString().padStart(2, '0');
@@ -144,6 +70,9 @@ export default function AcademicCalendar() {
   }
 
   function handleOpened(id) {
+    if (!id) {
+      setSuccessfullyUpdated(true)
+    }
     setOpened(id)
   }
 
@@ -204,7 +133,11 @@ export default function AcademicCalendar() {
       </div>
 
       {opened && <div className='fixed left-0 top-0 z-40 w-full h-full' style={{ background: 'rgba(0,0,0,.2)' }}></div>}
-      {opened && <PagePreview access={hasAccessTo(accesses, currentPage.alias)} id={opened} handleOpened={handleOpened} setOpened={setOpened} defaultFormType='preview' />}
+      {opened && <PreviewContext.Provider value={{ successfullyUpdated, handleOpened }}>
+        <PreviewController>
+          <PagePreview access={hasAccessTo(accesses, currentPage.alias)} id={opened} handleOpened={handleOpened} setOpened={setOpened} defaultFormType='full' successfullyUpdated={successfullyUpdated} setSuccessfullyUpdated={setSuccessfullyUpdated} />
+        </PreviewController>
+      </PreviewContext.Provider>}
     </div>
 
   </div>;

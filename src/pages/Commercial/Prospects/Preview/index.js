@@ -1,6 +1,6 @@
 import { Form } from '@unform/web';
 import { Building, Loader2, Pencil, X } from 'lucide-react';
-import React, { createContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import Input from '~/components/RegisterForm/Input';
 import RegisterFormMenu from '~/components/RegisterForm/Menu';
 import api from '~/services/api';
@@ -18,10 +18,13 @@ import { format, parseISO } from 'date-fns';
 import CountryList from 'country-list-with-dial-code-and-flag';
 import FormLoading from '~/components/RegisterForm/FormLoading';
 import { useSelector } from 'react-redux';
+import { AlertContext } from '~/App';
 
 export const InputContext = createContext({})
 
-export default function PagePreview({ access, id, handleOpened, setOpened, defaultFormType = 'preview' }) {
+export default function PagePreview({ access, id, handleOpened, setOpened, defaultFormType = 'preview', successfullyUpdated, setSuccessfullyUpdated }) {
+
+    const { alertBox } = useContext(AlertContext)
     const [pageData, setPageData] = useState({
         name: '',
         last_name: '',
@@ -37,16 +40,13 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     const [formType, setFormType] = useState(defaultFormType)
     const [fullscreen, setFullscreen] = useState(false)
     const [activeMenu, setActiveMenu] = useState('general')
-    const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
     const [registry, setRegistry] = useState({ created_by: null, created_at: null, updated_by: null, updated_at: null, canceled_by: null, canceled_at: null })
     const [countriesList, setCountriesList] = useState([])
     const [filialOptions, setFilialOptions] = useState([])
+    const [agentOptions, setAgentOptions] = useState([])
     const generalForm = useRef()
     const auth = useSelector(state => state.auth);
 
-    // const optionsCategories = [{ value: 'prospect', label: 'Prospect' }]
-    // const optionsTypes = [{ value: 'initial', label: 'Initial' }]
-    // const optionsStatus = [{ value: 'sales', label: 'Sales' }]
     const genderOptions = [{ value: 'male', label: 'Male' }, { value: 'female', label: 'Female' }, { value: 'not specified', label: 'Not Specified' }]
 
     const countriesOptions = countries_list.map(country => {
@@ -55,7 +55,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
 
     const typesOptions = [{ value: 'F1', label: 'F1' }, { value: 'Non-F1', label: 'Non-F1' }, { value: 'Private', label: 'Private' }]
     const statusesOptions = [{ value: 'In Class', label: 'In Class' }, { value: 'School Waiting List', label: 'School Waiting List' }, { value: 'Waiting', label: 'Waiting' }, { value: 'Inactive', label: 'Inactive' }]
-    const substatusOptions = [{ value: 'Initial', label: 'Initial' }, { value: 'Non-F1', label: 'Non-F1' }, { value: 'Change of Status', label: 'Change of Status' }, { value: 'Reinstatement', label: 'Reinstatement' }, { value: 'Transfer In', label: 'Transfer In' }, { 'value': 'Transfer Out', label: 'Transfer Out' }]
+    const substatusOptions = [{ value: 'Initial', label: 'Initial' }, { value: 'Non-F1', label: 'Non-F1' }, { value: 'Change of Visa Status', label: 'Change of Visa Status' }, { value: 'Reinstatement', label: 'Reinstatement' }, { value: 'Transfer In', label: 'Transfer In' }, { 'value': 'Transfer Out', label: 'Transfer Out' }]
 
     useEffect(() => {
         async function getCountriesList() {
@@ -71,13 +71,21 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
             })
             setFilialOptions(retGroupOptions)
         }
+        async function getDefaultAgentOptions() {
+            const { data } = await api.get('/agents')
+            const retAgentOptions = data.filter(agent => agent.filial_id === auth.filial.id).map((agent) => {
+                return { value: agent.id, label: agent.name }
+            })
+            setAgentOptions(retAgentOptions)
+        }
         async function getPageData() {
             const filialOptions = await getDefaultFilialOptions()
+            const agentOptions = await getDefaultAgentOptions();
             const ddiOptions = await getCountriesList()
             if (id !== 'new') {
                 try {
                     const { data } = await api.get(`/students/${id}`)
-                    setPageData({ ...data, loaded: true, ddiOptions, filialOptions })
+                    setPageData({ ...data, loaded: true, ddiOptions, filialOptions, agentOptions })
                     const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at } = data;
                     const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
                     setRegistry(registries)
@@ -150,6 +158,31 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         }
     }
 
+    function handleOutsideMail() {
+        alertBox({
+            title: 'Attention!',
+            descriptionHTML: '<p>Would you like to send the prospect a link to continue the registration process?</p>',
+            buttons: [
+                {
+                    title: 'No',
+                    class: 'cancel'
+                },
+                {
+                    title: 'Yes',
+                    onPress: async () => {
+                        try {
+                            await api.post(`/prospects/formMail`, { crypt: id })
+                            toast("Link sent!", { autoClose: 1000 })
+                        } catch (err) {
+                            toast("Error!", { autoClose: 1000 })
+                            console.log(err)
+                        }
+                    }
+                }
+            ]
+        })
+    }
+
     return <Preview formType={formType} fullscreen={fullscreen}>
         {pageData ?
             formType === 'preview' ? <div className='border h-full rounded-xl overflow-hidden flex flex-col justify-start gap-1 overflow-y-scroll'>
@@ -182,7 +215,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                     <div className='border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start'>
                         <div className='flex flex-col items-start justify-start text-sm overflow-y-scroll'>
                             <Form ref={generalForm} onSubmit={handleGeneralFormSubmit} className='w-full'>
-                                <InputContext.Provider value={{ id, generalForm, setSuccessfullyUpdated, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm, handleInactivate, canceled: pageData.canceled_at }}>
+                                <InputContext.Provider value={{ id, generalForm, setSuccessfullyUpdated, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm, handleInactivate, handleOutsideMail, canceled: pageData.canceled_at }}>
                                     {id === 'new' || pageData.loaded ?
                                         <>
                                             <FormHeader access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
@@ -190,6 +223,9 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                 {auth.filial.id === 1 && <InputLine title='Filial'>
                                                     <SelectPopover name='filial_id' required title='Filial' isSearchable defaultValue={filialOptions.filter(filial => filial.value === pageData.filial_id)} options={filialOptions} InputContext={InputContext} />
                                                 </InputLine>}
+                                                <InputLine title='Agent'>
+                                                    <SelectPopover name='agent_id' required title='Responsible Agent' isSearchable defaultValue={agentOptions.filter(agent => agent.value === pageData.agent_id)} options={agentOptions} InputContext={InputContext} />
+                                                </InputLine>
                                                 <InputLine title='General Data'>
                                                     <Input type='hidden' name='category' required grow title='Category' defaultValue='prospect' InputContext={InputContext} />
                                                     <Input type='text' name='name' required grow title='Name' defaultValue={pageData.name} InputContext={InputContext} />
@@ -207,7 +243,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                 <InputLine title='Enrollment'>
                                                     <SelectPopover name='type' grow required title='Type' isSearchable defaultValue={typesOptions.find(type => type.value === pageData.type)} options={typesOptions} InputContext={InputContext} />
                                                     <SelectPopover name='status' grow disabled title='Status' isSearchable defaultValue={statusesOptions.find(status => status.value === 'Waiting')} options={statusesOptions} InputContext={InputContext} />
-                                                    <SelectPopover name='sub_status' grow required title='Sub Status' isSearchable defaultValue={substatusOptions.find(substatus => substatus.value === pageData.substatus)} options={substatusOptions} InputContext={InputContext} />
+                                                    <SelectPopover name='sub_status' grow required title='Sub Status' isSearchable defaultValue={substatusOptions.find(substatus => substatus.value === pageData.sub_status)} options={substatusOptions} InputContext={InputContext} />
                                                 </InputLine>
                                                 <InputLine title='Contact'>
                                                     <Input type='text' name='email' required title='E-mail' grow defaultValue={pageData.email} InputContext={InputContext} />

@@ -11,6 +11,8 @@ import SelectPopover from '~/components/RegisterForm/SelectPopover';
 import { Form } from '@unform/web';
 import PagePreview from './Preview';
 import Icon from '~/components/Icon';
+import { PreviewContext } from '~/pages/Commercial/Enrollments';
+import PreviewController from '~/components/PreviewController';
 
 export const InputContext = createContext({})
 
@@ -64,6 +66,9 @@ export default function AdministrativeCalendar() {
   }
 
   function handleOpened(id) {
+    if (!id) {
+      setSuccessfullyUpdated(true)
+    }
     setOpened(id)
   }
 
@@ -124,7 +129,11 @@ export default function AdministrativeCalendar() {
       </div>
 
       {opened && <div className='fixed left-0 top-0 z-40 w-full h-full' style={{ background: 'rgba(0,0,0,.2)' }}></div>}
-      {opened && <PagePreview access={hasAccessTo(accesses, currentPage.alias)} id={opened} handleOpened={handleOpened} setOpened={setOpened} defaultFormType='preview' />}
+      {opened && <PreviewContext.Provider value={{ successfullyUpdated, handleOpened }}>
+        <PreviewController>
+          <PagePreview access={hasAccessTo(accesses, currentPage.alias)} id={opened} handleOpened={handleOpened} setOpened={setOpened} defaultFormType='full' successfullyUpdated={successfullyUpdated} setSuccessfullyUpdated={setSuccessfullyUpdated} />
+        </PreviewController>
+      </PreviewContext.Provider>}
     </div>
 
   </div>;

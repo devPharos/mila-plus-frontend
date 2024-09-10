@@ -4,7 +4,7 @@ import React, { useContext } from 'react';
 
 // import { Container } from './styles';
 
-export default function FormHeader({ loading = false, outside = false, access = { view: false, edit: false, create: false, inactivate: false }, title = '', registry = { registryBy: null, registryAt: null, registryStatus: null }, InputContext = null }) {
+export default function FormHeader({ loading = false, saveText = 'Save changes', outside = false, access = { view: false, edit: false, create: false, inactivate: false }, title = '', registry = { registryBy: null, registryAt: null, registryStatus: null }, InputContext = null }) {
     const { registryBy, registryAt, registryStatus } = registry;
     const { id, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm, handleInactivate, canceled, handleOutsideMail } = useContext(InputContext)
 
@@ -38,7 +38,7 @@ export default function FormHeader({ loading = false, outside = false, access = 
                         <><Save size={16} /> Create</>
                     </button>}
                     {(outside || access.edit) && id !== 'new' && <button type="submit" className={`text-md font-bold ${!successfullyUpdated ? 'bg-red-500' : 'bg-primary'} text-white rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1`}>
-                        {!successfullyUpdated ? <><Save size={16} /> Save changes</> : <><CheckCheck size={16} /> Saved</>}
+                        {!successfullyUpdated ? <><Save size={16} /> {saveText}</> : <><CheckCheck size={16} /> Saved</>}
                     </button>}
                     {!outside && handleOutsideMail && id !== 'new' &&
                         <button type="button" onClick={() => handleOutsideMail()} className='text-md font-bold bg-secondary border hover:border-primary hover:text-primary rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1'>

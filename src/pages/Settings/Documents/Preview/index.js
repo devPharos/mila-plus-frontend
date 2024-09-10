@@ -15,7 +15,7 @@ import FormLoading from '~/components/RegisterForm/FormLoading';
 
 export const InputContext = createContext({})
 
-export default function PagePreview({ access, id, handleOpened, setOpened, defaultFormType = 'preview' }) {
+export default function PagePreview({ access, id, handleOpened, setOpened, defaultFormType = 'preview', successfullyUpdated, setSuccessfullyUpdated }) {
     const [pageData, setPageData] = useState({
         origin: '',
         type: '',
@@ -26,14 +26,133 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     const [formType, setFormType] = useState(defaultFormType)
     const [fullscreen, setFullscreen] = useState(false)
     const [activeMenu, setActiveMenu] = useState('general')
-    const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
+
     const [registry, setRegistry] = useState({ created_by: null, created_at: null, updated_by: null, updated_at: null, canceled_by: null, canceled_at: null })
     const generalForm = useRef()
 
-    const originOptions = [{ value: 'Employees', label: 'Employees' }]
-    const typesOptions = [{ value: 'Faculty', label: 'Faculty' }]
-    const subTypesOptions = [{ value: 'Hired', label: 'Hired' }]
-    const requiredOptions = [{ value: true, label: 'Yes' }, { value: false, label: 'No' }]
+    const options = [{
+        origin: 'Employees',
+        label: 'Employees',
+        value: 'Employees',
+        types: [
+            {
+                type: 'Faculty',
+                label: 'Faculty',
+                value: 'Faculty',
+                subtypes: [
+                    {
+                        subtype: 'Pay Roll',
+                        label: 'Pay Roll',
+                        value: 'Pay Roll',
+                        multiple: false,
+                        required: false
+                    },
+                    {
+                        subtype: 'Contract',
+                        label: 'Contract',
+                        value: 'Contract',
+                        multiple: false,
+                        required: false
+                    }
+                ]
+            }
+        ]
+    }, {
+        origin: 'Enrollment',
+        label: 'Enrollment',
+        value: 'Enrollment',
+        types: [
+            {
+                type: 'F1',
+                label: 'F1',
+                value: 'F1',
+                subtypes: [
+                    {
+                        subtype: 'Student',
+                        label: 'Student',
+                        value: 'Student',
+                    },
+                    {
+                        subtype: 'Depdendent',
+                        label: 'Depdendent',
+                        value: 'Depdendent',
+                    },
+                    {
+                        subtype: 'Sponsor',
+                        label: 'Sponsor',
+                        value: 'Sponsor',
+                    }
+                ]
+            },
+            {
+                type: 'Non-F1',
+                label: 'Non-F1',
+                value: 'Non-F1',
+                subtypes: [
+                    {
+                        subtype: 'Student',
+                        label: 'Student',
+                        value: 'Student',
+                    },
+                    {
+                        subtype: 'Depdendent',
+                        label: 'Depdendent',
+                        value: 'Depdendent',
+                    },
+                    {
+                        subtype: 'Sponsor',
+                        label: 'Sponsor',
+                        value: 'Sponsor',
+                    }
+                ]
+            },
+            {
+                type: 'Private',
+                label: 'Private',
+                value: 'Private',
+                subtypes: [
+                    {
+                        subtype: 'Student',
+                        label: 'Student',
+                        value: 'Student',
+                    },
+                    {
+                        subtype: 'Depdendent',
+                        label: 'Depdendent',
+                        value: 'Depdendent',
+                    },
+                    {
+                        subtype: 'Sponsor',
+                        label: 'Sponsor',
+                        value: 'Sponsor',
+                    }
+                ]
+            },
+            {
+                type: 'Public',
+                label: 'Public',
+                value: 'Public',
+                subtypes: [
+                    {
+                        subtype: 'Student',
+                        label: 'Student',
+                        value: 'Student',
+                    },
+                    {
+                        subtype: 'Depdendent',
+                        label: 'Depdendent',
+                        value: 'Depdendent',
+                    },
+                    {
+                        subtype: 'Sponsor',
+                        label: 'Sponsor',
+                        value: 'Sponsor',
+                    }
+                ]
+            }
+        ]
+    }]
+
     const multipleOptions = [{ value: true, label: 'Yes' }, { value: false, label: 'No' }]
 
     useEffect(() => {
@@ -148,9 +267,9 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                             <FormHeader access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
                                             <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
                                                 <InputLine title='General Data'>
-                                                    <SelectPopover name='origin' grow required title='Origin' isSearchable defaultValue={originOptions.filter(origin => origin.value === pageData.origin)} options={originOptions} InputContext={InputContext} />
-                                                    <SelectPopover name='type' grow required title='Type' isSearchable defaultValue={typesOptions.filter(type => type.value === pageData.type)} options={typesOptions} InputContext={InputContext} />
-                                                    <SelectPopover name='subtype' grow required title='Subtype' isSearchable defaultValue={subTypesOptions.filter(subType => subType.value === pageData.subtype)} options={subTypesOptions} InputContext={InputContext} />
+                                                    <SelectPopover name='origin' grow required title='Origin' isSearchable onChange={(el) => setPageData({ ...pageData, origin: el.value, type: null, subtype: null })} defaultValue={pageData.origin ? options.find(origin => origin.value === pageData.origin) : null} options={options} InputContext={InputContext} />
+                                                    <SelectPopover name='type' grow required title='Type' isSearchable onChange={(el) => setPageData({ ...pageData, type: el.value, subtype: null })} defaultValue={pageData.origin ? options.find(origin => origin.value === pageData.origin).types.filter(type => type.value === pageData.type) : []} options={pageData.origin ? options.find(origin => origin.value === pageData.origin).types : []} InputContext={InputContext} />
+                                                    <SelectPopover name='subtype' grow required title='Subtype' isSearchable defaultValue={pageData.origin && pageData.type ? options.find(origin => origin.value === pageData.origin).types.find(type => type.value === pageData.type).subtypes.filter(subtype => subtype.value === pageData.subtype) : []} options={pageData.origin && pageData.type ? options.find(origin => origin.value === pageData.origin).types.find(type => type.value === pageData.type).subtypes : []} InputContext={InputContext} />
                                                 </InputLine>
                                                 <InputLine>
                                                     <Input type='text' name='title' required grow title='Document Title' defaultValue={pageData.title} InputContext={InputContext} />

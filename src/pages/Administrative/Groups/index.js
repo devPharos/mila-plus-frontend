@@ -9,6 +9,8 @@ import { applyFilters, getCurrentPage, hasAccessTo } from '~/functions';
 import PagePreview from './Preview';
 import { useSelector } from 'react-redux';
 import PageHeader from '~/components/PageHeader';
+import { PreviewContext } from '~/pages/Commercial/Enrollments';
+import PreviewController from '~/components/PreviewController';
 
 export default function AdministrativeGroups() {
   const [activeFilters, setActiveFilters] = useState([])
@@ -29,6 +31,7 @@ export default function AdministrativeGroups() {
       filter: true,
     },
   ])
+  const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
 
   const [gridData, setGridData] = useState()
 
@@ -53,6 +56,9 @@ export default function AdministrativeGroups() {
   }, [opened, filial])
 
   function handleOpened(id) {
+    if (!id) {
+      setSuccessfullyUpdated(true)
+    }
     setOpened(id)
   }
 
@@ -73,7 +79,11 @@ export default function AdministrativeGroups() {
 
     <Grid gridData={gridData} gridHeader={gridHeader} orderBy={orderBy} setOrderBy={setOrderBy} handleOpened={handleOpened} opened={opened}>
       {opened && <div className='fixed left-0 top-0 z-40 w-full h-full' style={{ background: 'rgba(0,0,0,.2)' }}></div>}
-      {opened && <PagePreview access={hasAccessTo(accesses, currentPage.alias)} id={opened} handleOpened={handleOpened} setOpened={setOpened} defaultFormType='full' />}
+      {opened && <PreviewContext.Provider value={{ successfullyUpdated, handleOpened }}>
+        <PreviewController>
+          <PagePreview access={hasAccessTo(accesses, currentPage.alias)} id={opened} handleOpened={handleOpened} setOpened={setOpened} defaultFormType='full' successfullyUpdated={successfullyUpdated} setSuccessfullyUpdated={setSuccessfullyUpdated} />
+        </PreviewController>
+      </PreviewContext.Provider>}
     </Grid>
   </div>;
 }

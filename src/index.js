@@ -58,6 +58,7 @@ import PagePreview from './pages/Administrative/Staffs/Preview';
 import PagePreviewOutside from './pages/Administrative/Staffs/Preview/outside';
 import Enrollments from './pages/Commercial/Enrollments';
 import EnrollmentOutside from './pages/Commercial/Enrollments/Preview/enrollment';
+import Error401 from './pages/Errors/Page401';
 
 injectStore(store)
 
@@ -117,10 +118,6 @@ const router = createBrowserRouter([
             element: <AdministrativeStaffs />
           },
           {
-            path: "/Administrative/Agents",
-            element: <AdministrativeAgents />
-          },
-          {
             path: "/Administrative/*",
             element: <Page404 />
           },
@@ -159,6 +156,10 @@ const router = createBrowserRouter([
           {
             path: "/Commercial/Enrollments",
             element: <Enrollments />
+          },
+          {
+            path: "/Commercial/Agents",
+            element: <AdministrativeAgents />
           },
         ]
       },
@@ -239,7 +240,7 @@ const router = createBrowserRouter([
       {
         path: "/401",
         element: <UnprotectedRoute>
-          <div>401</div>
+          <Error401 />
         </UnprotectedRoute>,
       },
       {

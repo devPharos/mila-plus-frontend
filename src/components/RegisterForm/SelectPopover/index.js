@@ -69,11 +69,11 @@ export default function SelectPopover({ name, title, grow, hidden = false, shrin
           // filterOption={filterOptions}
           defaultValue={defaultValue}
           {...rest}
-          className={`rounded-lg text-sm focus:outline-none flex-1 w-full bg-transparent text-left relative`}
+          className={`rounded-lg text-sm focus:outline-none flex-1 w-full bg-transparent text-left relative ${error && '[.react-select__control]:border-red-300'}`}
         />
       </div>
 
-      {error && <span className="text-xs text-red-500 absolute top-7 bg-white px-2 rounded-full right-4">{error}</span>}
+      {/* {error && <span className="text-xs text-red-500 absolute top-7 bg-white px-2 rounded-full right-4">{error}</span>} */}
     </div>
   )
 }

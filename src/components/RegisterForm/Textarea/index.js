@@ -42,7 +42,7 @@ const Textarea = ({ name, title, rows = 1, InputContext, ...rest }) => {
         />
 
       </div>
-      {error && <span className="text-xs text-red-500 absolute top-7 bg-white px-2 rounded-full right-4">{error}</span>}
+      {/* {error && <span className="text-xs text-red-500 absolute top-7 bg-white px-2 rounded-full right-4">{error}</span>} */}
     </div>
   )
 }

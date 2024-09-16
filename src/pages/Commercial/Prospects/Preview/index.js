@@ -73,7 +73,8 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         }
         async function getDefaultAgentOptions() {
             const { data } = await api.get('/agents')
-            const retAgentOptions = data.filter(agent => agent.filial_id === auth.filial.id).map((agent) => {
+            console.log(data)
+            const retAgentOptions = data.map((agent) => {
                 return { value: agent.id, label: agent.name }
             })
             setAgentOptions(retAgentOptions)

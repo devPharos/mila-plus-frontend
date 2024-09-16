@@ -17,6 +17,7 @@ import CountryList from 'country-list-with-dial-code-and-flag';
 import FormLoading from '~/components/RegisterForm/FormLoading';
 import { useSearchParams } from 'react-router-dom';
 import { Scope } from '@unform/core';
+import * as Yup from 'yup';
 
 export const InputContext = createContext({})
 
@@ -34,6 +35,7 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
     const [searchparams, setSearchParams] = useSearchParams();
     const [formType, setFormType] = useState('full')
     const [fullscreen, setFullscreen] = useState(true)
+    const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
 
     const [registry, setRegistry] = useState({ created_by: null, created_at: null, updated_by: null, updated_at: null, canceled_by: null, canceled_at: null })
     const generalForm = useRef()
@@ -47,6 +49,47 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
     const dept1TypeOptions = [{ value: 'Wholly Dependent', label: 'Wholly Dependent' }, { value: 'Partially Dependent', label: 'Partially Dependent' }]
     const addressOptions = [{ value: 'Address in USA', label: 'Address in USA' }, { value: 'Address in Home Country', label: 'Address in Home Country' }]
     const id = searchparams.get('crypt');
+
+    const studentInfoSchema = Yup.object().shape({
+        legal_name: Yup.string().required('Required field.'),
+        gender: Yup.string().required('Required field.'),
+        birth_country: Yup.string().required('Required field.'),
+        birth_state: Yup.string().required('Required field.'),
+        birth_city: Yup.string().required('Required field.'),
+        state: Yup.string().required('Required field.'),
+        city: Yup.string().required('Required field.'),
+        zip: Yup.string().required('Required field.'),
+        address: Yup.string().required('Required field.'),
+        foreign_address: Yup.string().required('Required field.'),
+        phone: Yup.string().required('Required field.'),
+        home_country_phone: Yup.string().required('Required field.'),
+        whatsapp: Yup.string().required('Required field.'),
+        date_of_birth: Yup.string().required('Required field.'),
+        preferred_contact_form: Yup.string().required('Required field.'),
+        passport_number: Yup.string().required('Required field.'),
+        visa_number: Yup.string().required('Required field.'),
+        visa_expiration: Yup.string().required('Required field.'),
+        nsevis: Yup.string().required('Required field.'),
+        how_did_you_hear_about_us: Yup.string().required('Required field.'),
+        native_language: Yup.string().required('Required field.'),
+        citizen_country: Yup.string().required('Required field.'),
+    });
+
+    const emergencySchema = Yup.object().shape({
+        enrollmentemergencies: Yup.array()
+            .of(
+                Yup.object().shape({
+                    name: Yup.string().matches(
+                        /^([A-Za-z\u00C0-\u00D6\u00D8-\u00f6\u00f8-\u00ff\s]*)$/gi,
+                        'Name can only contain Latin letters.'
+                    )
+                        .matches(/^\s*[\S]+(\s[\S]+)+\s*$/gms, 'Please enter your full name.'),
+                    relationship_type: Yup.string().required('Relationship Type is required.'),
+                    email: Yup.string().email('Email is invalid.'),
+                    phone: Yup.string().matches(/^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/, 'Phone number is invalid.')
+                })
+            )
+    });
 
     const countriesOptions = countries_list.map(country => {
         return { value: country, label: country }
@@ -81,7 +124,32 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
     }, [pageData.loaded])
 
     async function handleGeneralFormSubmit(data) {
-        // setLoading(true)
+        try {
+            generalForm.current.setErrors({});
+            if (pageData.activeMenu === 'student-information') {
+                const result = await studentInfoSchema.validate(data, {
+                    abortEarly: false,
+                });
+            } else if (pageData.activeMenu === 'emergency-contact') {
+                const result = await emergencySchema.validate(data, {
+                    abortEarly: false,
+                });
+            }
+        } catch (err) {
+            const validationErrors = {};
+
+            if (err instanceof Yup.ValidationError) {
+
+                err.inner.forEach(error => {
+
+                    validationErrors[error.path] = error.message;
+
+                });
+                console.log(validationErrors)
+                generalForm.current.setErrors(validationErrors);
+            }
+        }
+        return
         if (successfullyUpdated) {
             toast("No need to be saved!", { autoClose: 1000, type: 'info', transition: Zoom })
             setLoading(false)
@@ -221,48 +289,48 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                                                 <Input type='text' name='previous_school' grow title='Name' defaultValue={pageData.previous_school} InputContext={InputContext} />
                                             </InputLine>}
                                             <InputLine title='Birth Details'>
-                                                <Input type='text' name='birth_city' grow title='Birth City' defaultValue={pageData.birth_city} InputContext={InputContext} />
-                                                <Input type='text' name='birth_state' grow title='Birth State' defaultValue={pageData.birth_state} InputContext={InputContext} />
-                                                <SelectPopover name='birth_country' grow title='Birth Country' isSearchable defaultValue={countriesOptions.find(country => country.value === pageData.birth_country)} options={countriesOptions} InputContext={InputContext} />
-                                                <Input type='text' name='native_language' grow title='Native Language' defaultValue={pageData.native_language} InputContext={InputContext} />
+                                                <Input type='text' name='birth_city' required grow title='Birth City' defaultValue={pageData.birth_city} InputContext={InputContext} />
+                                                <Input type='text' name='birth_state' required grow title='Birth State' defaultValue={pageData.birth_state} InputContext={InputContext} />
+                                                <SelectPopover name='birth_country' required grow title='Birth Country' isSearchable defaultValue={countriesOptions.find(country => country.value === pageData.birth_country)} options={countriesOptions} InputContext={InputContext} />
+                                                <Input type='text' name='native_language' required grow title='Native Language' defaultValue={pageData.native_language} InputContext={InputContext} />
                                                 {console.log(countriesOptions)}
-                                                <SelectPopover name='citizen_country' grow title='Citizen Country' isSearchable defaultValue={countriesOptions.find(country => country.value === pageData.citizen_country)} options={countriesOptions} InputContext={InputContext} />
+                                                <SelectPopover name='citizen_country' required grow title='Citizen Country' isSearchable defaultValue={countriesOptions.find(country => country.value === pageData.citizen_country)} options={countriesOptions} InputContext={InputContext} />
                                             </InputLine>
                                             <InputLine title='Documentation'>
-                                                <Input type='text' name='passport_number' grow title='Passport Number' placeholder='-----' defaultValue={pageData.passport_number} InputContext={InputContext} />
-                                                <DatePicker name='passport_expiration_date' grow title='Passport Expiration Date' defaultValue={pageData.passport_expiration_date ? parseISO(pageData.passport_expiration_date) : null} placeholderText='MM/DD/YYYY' InputContext={InputContext} />
-                                                {pageData.students.sub_status === 'Change of Visa Status' && <DatePicker name='i94_expiration_date' grow title='I94 Expiration Date' defaultValue={pageData.i94_expiration_date ? parseISO(pageData.i94_expiration_date) : null} placeholderText='MM/DD/YYYY' InputContext={InputContext} />}
+                                                <Input type='text' name='passport_number' required grow title='Passport Number' placeholder='-----' defaultValue={pageData.passport_number} InputContext={InputContext} />
+                                                <DatePicker name='passport_expiration_date' required grow title='Passport Expiration Date' defaultValue={pageData.passport_expiration_date ? parseISO(pageData.passport_expiration_date) : null} placeholderText='MM/DD/YYYY' InputContext={InputContext} />
+                                                {pageData.students.sub_status === 'Change of Visa Status' && <DatePicker name='i94_expiration_date' required grow title='I94 Expiration Date' defaultValue={pageData.i94_expiration_date ? parseISO(pageData.i94_expiration_date) : null} placeholderText='MM/DD/YYYY' InputContext={InputContext} />}
                                             </InputLine>
 
                                             {pageData.students.sub_status !== 'Initial' && <InputLine title='Admission Correspondence'>
-                                                <SelectPopover name='admission_correspondence_address' grow title='Please check the box where you wish your admission correspondence to be mailed' options={addressOptions} defaultValue={addressOptions.find(address => address.value === pageData.admission_correspondence_address)} InputContext={InputContext} />
+                                                <SelectPopover name='admission_correspondence_address' required grow title='Please check the box where you wish your admission correspondence to be mailed' options={addressOptions} defaultValue={addressOptions.find(address => address.value === pageData.admission_correspondence_address)} InputContext={InputContext} />
                                             </InputLine>}
 
                                             {pageData.students.sub_status !== 'Transfer In' && <InputLine title='Address in Home Country'>
-                                                <Input type='text' name='home_phone_number' grow title='Phone Number' isPhoneNumber defaultValue={pageData.home_phone_number} InputContext={InputContext} />
-                                                <Input type='text' name='usa_address' grow title='Address' defaultValue={pageData.usa_address} InputContext={InputContext} />
-                                                <Input type='text' name='home_zip_code' grow title='Zip Code' defaultValue={pageData.home_zip_code} InputContext={InputContext} />
+                                                <Input type='text' name='home_phone_number' required grow title='Phone Number' isPhoneNumber defaultValue={pageData.home_phone_number} InputContext={InputContext} />
+                                                <Input type='text' name='usa_address' required grow title='Address' defaultValue={pageData.usa_address} InputContext={InputContext} />
+                                                <Input type='text' name='home_zip_code' required grow title='Zip Code' defaultValue={pageData.home_zip_code} InputContext={InputContext} />
                                             </InputLine>}
                                             {pageData.students.sub_status !== 'Transfer In' && <InputLine>
-                                                <Input type='text' name='home_city' grow title='City' defaultValue={pageData.home_city} InputContext={InputContext} />
-                                                <Input type='text' name='home_state' grow title='State' defaultValue={pageData.home_state} InputContext={InputContext} />
-                                                <SelectPopover name='home_country' grow title='Country' isSearchable defaultValue={countriesOptions.find(country => country.value === pageData.home_country)} options={countriesOptions} InputContext={InputContext} />
+                                                <Input type='text' name='home_city' required grow title='City' defaultValue={pageData.home_city} InputContext={InputContext} />
+                                                <Input type='text' name='home_state' required grow title='State' defaultValue={pageData.home_state} InputContext={InputContext} />
+                                                <SelectPopover name='home_country' required grow title='Country' isSearchable defaultValue={countriesOptions.find(country => country.value === pageData.home_country)} options={countriesOptions} InputContext={InputContext} />
                                             </InputLine>}
                                             {pageData.students.sub_status !== 'Initial' && <InputLine title='Address in United States'>
-                                                <Input type='text' name='usa_phone_number' grow title='USA Phone Number' isPhoneNumber defaultValue={pageData.usa_phone_number} InputContext={InputContext} />
-                                                <Input type='text' name='usa_address' grow title='USA Address' defaultValue={pageData.usa_address} InputContext={InputContext} />
-                                                <Input type='text' name='usa_zip_code' grow title='USA Zip Code' isZipCode defaultValue={pageData.usa_zip_code} InputContext={InputContext} />
+                                                <Input type='text' name='usa_phone_number' required grow title='USA Phone Number' isPhoneNumber defaultValue={pageData.usa_phone_number} InputContext={InputContext} />
+                                                <Input type='text' name='usa_address' required grow title='USA Address' defaultValue={pageData.usa_address} InputContext={InputContext} />
+                                                <Input type='text' name='usa_zip_code' required grow title='USA Zip Code' isZipCode defaultValue={pageData.usa_zip_code} InputContext={InputContext} />
                                             </InputLine>}
                                             {pageData.students.sub_status !== 'Initial' && <InputLine>
-                                                <Input type='text' name='usa_city' grow title='USA City' defaultValue={pageData.usa_city} InputContext={InputContext} />
-                                                <Input type='text' name='usa_state' grow title='USA State' defaultValue={pageData.usa_state} InputContext={InputContext} />
+                                                <Input type='text' name='usa_city' required grow title='USA City' defaultValue={pageData.usa_city} InputContext={InputContext} />
+                                                <Input type='text' name='usa_state' required grow title='USA State' defaultValue={pageData.usa_state} InputContext={InputContext} />
                                             </InputLine>}
                                         </InputLineGroup>}
                                         {pageData.activeMenu === 'emergency-contact' && <InputLineGroup title='Emergency Contact' activeMenu={pageData.activeMenu === 'emergency-contact'}>
                                             <Scope path={`enrollmentemergencies[0]`}>
                                                 <InputLine title='Emergency Contact'>
                                                     <Input type='text' name='name' required grow title='Full Name' defaultValue={pageData.enrollmentemergencies.length > 0 ? pageData.enrollmentemergencies[0].name : ''} InputContext={InputContext} />
-                                                    <SelectPopover name='relationship_type' required grow title='Relationship Type' options={relationshipTypeOptions} isSearchable defaultValue={relationshipTypeOptions.find(relationshipType => relationshipType.value === pageData.enrollmentemergencies[0].relationship_type)} InputContext={InputContext} />
+                                                    <SelectPopover name='relationship_type' required grow title='Relationship Type' options={relationshipTypeOptions} isSearchable defaultValue={relationshipTypeOptions.find(relationshipType => relationshipType.value === pageData.enrollmentemergencies.length > 0 ? pageData.enrollmentemergencies[0].relationship_type : '')} InputContext={InputContext} />
                                                 </InputLine>
                                                 <InputLine>
                                                     <Input type='text' name='email' required grow title='E-mail' defaultValue={pageData.enrollmentemergencies.length > 0 ? pageData.enrollmentemergencies[0].email : ''} InputContext={InputContext} />
@@ -279,7 +347,7 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                                         </InputLineGroup>}
                                         {pageData.activeMenu === 'dependent-information' && <InputLineGroup title='Dependent Information' activeMenu={pageData.activeMenu === 'dependent-information'}>
                                             <InputLine title='Dependent Information'>
-                                                <SelectPopover name='has_dependents' onChange={(el) => handleHasDependents(el)} required grow title='Do you have dependents?' options={[{ value: 'Yes', label: 'Yes' }, { value: 'No', label: 'No' }]} InputContext={InputContext} />
+                                                <SelectPopover name='has_dependents' required onChange={(el) => handleHasDependents(el)} grow title='Do you have dependents?' options={[{ value: 'Yes', label: 'Yes' }, { value: 'No', label: 'No' }]} InputContext={InputContext} />
                                             </InputLine>
                                             {pageData.has_dependents === 'Yes' && <>
                                                 {pageData.enrollmentdependents.map((dependent, index) => {

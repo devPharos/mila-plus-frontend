@@ -181,7 +181,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                 } else {
                                     file.sort((a, b) => a.size > b.size).map(async (promise, index) => {
                                         await Promise.all([promise]).then(async (singleFile) => {
-                                            console.log(singleFile[0])
+                                            // console.log(singleFile[0])
                                             if (index + 1 === file.length) {
                                                 toastId && toast.update(toastId, { render: 'All files have been uploaded!', type: 'success', autoClose: 3000, isLoading: false });
                                             }

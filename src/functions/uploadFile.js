@@ -28,7 +28,7 @@ export function organizeMultiAndSingleFiles(documents, path = '') {
                 let myPromise = await uploadFile(document.file_id, path);
                 return Promise.all([myPromise]).then((files) => {
                     const { name: key } = files;
-                    return { ...files[0], key, name: name.normalize('NFD').replace(/[\u0300-\u036f]/g, ""), type, document_id: parseInt(document.document_id) };
+                    return { ...files[0], key, name: name.normalize('NFD').replace(/[\u0300-\u036f]/g, ""), type, document_id: document.document_id };
                 })
             } else {
                 return Array.from(document.file_id).sort((a, b) => a.size > b.size).map(async (file) => {
@@ -36,7 +36,7 @@ export function organizeMultiAndSingleFiles(documents, path = '') {
                     let myPromise = await uploadFile(file, path);
                     return Promise.all([myPromise]).then((files) => {
                         const { name: key } = files[0];
-                        return { ...files[0], key, name: name.normalize('NFD').replace(/[\u0300-\u036f]/g, ""), type, document_id: parseInt(document.document_id) };
+                        return { ...files[0], key, name: name.normalize('NFD').replace(/[\u0300-\u036f]/g, ""), type, document_id: document.document_id };
                     })
                 })
             }

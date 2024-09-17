@@ -25,6 +25,7 @@
     "react-router-dom": "^6.23.1",
     "react-scripts": "^5.0.1",
     "react-select": "^5.8.0",
+    "react-signature-pad-wrapper": "^4.0.3",
     "react-toastify": "^10.0.5",
     "recharts": "^2.12.7",
     "redux": "^5.0.1",

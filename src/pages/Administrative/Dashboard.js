@@ -5,8 +5,8 @@ import Filters from '~/components/Filters';
 import FiltersBar from '~/components/FiltersBar';
 import Grid from '~/components/Grid';
 import PageHeader from '~/components/PageHeader';
-import 'rsuite/Calendar/styles/index.css';
-import Calendar from 'rsuite/Calendar';
+// import 'rsuite/Calendar/styles/index.css';
+// import Calendar from 'rsuite/Calendar';
 
 import { BarChart, Bar, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { getCurrentPage } from '~/functions';

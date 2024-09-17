@@ -6,7 +6,7 @@ const INITIAL_STATE = {
   loading: false,
   profile: null,
   filial: null,
-  department: null
+  department: null,
 };
 
 export default function auth(state = INITIAL_STATE, action) {
@@ -23,8 +23,6 @@ export default function auth(state = INITIAL_STATE, action) {
         draft.filial = action.payload.firstFilial;
         draft.signed = true;
         draft.loading = false;
-
-        draft.department = 'Administrative';
         break;
       }
       case "@auth/FILIAL_CHANGE": {

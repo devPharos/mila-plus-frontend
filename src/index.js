@@ -59,6 +59,8 @@ import PagePreviewOutside from './pages/Administrative/Staffs/Preview/outside';
 import Enrollments from './pages/Commercial/Enrollments';
 import EnrollmentOutside from './pages/Commercial/Enrollments/Preview/enrollment';
 import Error401 from './pages/Errors/Page401';
+import ProcessTypes from './pages/Settings/ProcessTypes';
+import ProcessSubstatuses from './pages/Settings/ProcessSubstatuses';
 
 injectStore(store)
 
@@ -235,6 +237,14 @@ const router = createBrowserRouter([
             path: "/Settings/Documents",
             element: <Documents />
           },
+          {
+            path: "/Settings/ProcessTypes",
+            element: <ProcessTypes />
+          },
+          {
+            path: "/Settings/ProcessSubstatuses",
+            element: <ProcessSubstatuses />
+          }
         ]
       },
       {

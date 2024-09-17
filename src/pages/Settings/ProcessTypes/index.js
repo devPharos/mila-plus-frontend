@@ -1,66 +1,28 @@
-import { Filter, History } from 'lucide-react';
-import React, { createContext, useEffect, useState } from 'react';
+import { Filter } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import Breadcrumbs from '~/components/Breadcrumbs';
 import Filters from '~/components/Filters';
 import FiltersBar from '~/components/FiltersBar';
 import Grid from '~/components/Grid';
 import api from '~/services/api';
 import { applyFilters, getCurrentPage, hasAccessTo } from '~/functions';
+import PageHeader from '~/components/PageHeader';
 import PagePreview from './Preview';
 import { useSelector } from 'react-redux';
-import PageHeader from '~/components/PageHeader';
-import { format, parseISO } from 'date-fns';
+import { PreviewContext } from '~/pages/Commercial/Enrollments';
 import PreviewController from '~/components/PreviewController';
 
-export const PreviewContext = createContext({})
-
-export default function Enrollments() {
+export default function ProcessTypes() {
   const [activeFilters, setActiveFilters] = useState([])
   const [opened, setOpened] = useState(false)
   const [orderBy, setOrderBy] = useState({ column: 'Name', asc: true })
-  const accesses = useSelector(state => state.auth.accesses);
-  const filial = useSelector(state => state.auth.filial);
+  const { accesses } = useSelector(state => state.auth);
   const currentPage = getCurrentPage();
   const [gridHeader, setGridHeader] = useState([
     {
-      title: 'Prospect',
+      title: 'Name',
       type: 'text',
       filter: false,
-    },
-    {
-      title: 'Type',
-      type: 'text',
-      filter: false,
-    },
-    {
-      title: 'Sub Status',
-      type: 'text',
-      filter: false,
-    },
-    {
-      title: 'Phase',
-      type: 'text',
-      filter: false,
-    },
-    {
-      title: 'Phase Step',
-      type: 'text',
-      filter: true,
-    },
-    {
-      title: 'Step Date',
-      type: 'text',
-      filter: true,
-    },
-    {
-      title: 'Step Status',
-      type: 'text',
-      filter: false,
-    },
-    {
-      title: 'Expected Date',
-      type: 'text',
-      filter: true,
     },
   ])
   const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
@@ -68,7 +30,7 @@ export default function Enrollments() {
   const [gridData, setGridData] = useState()
 
   function handleFilters({ title = '', value = '' }) {
-    if (value) {
+    if (value || (title === 'Active' && value !== '')) {
       setActiveFilters([...activeFilters.filter(el => el.title != title), { title, value }])
     } else {
       setActiveFilters([...activeFilters.filter(el => el.title != title)])
@@ -76,23 +38,15 @@ export default function Enrollments() {
   }
 
   useEffect(() => {
-
     async function getData() {
-      const { data } = await api.get(`/enrollments`)
-      const gridDataValues = data.map(({ id, students, enrollmenttimelines, canceled_at }) => {
-        const { name, processtypes, processsubstatuses } = students;
-        console.log(students)
-        const type = processtypes ? processtypes.name : '';
-        const sub_status = processsubstatuses ? processsubstatuses.name : '';
-        const { phase, phase_step, created_at: stepCreatedAt, step_status, expected_date } = enrollmenttimelines[enrollmenttimelines.length - 1];
-        const exptected = expected_date ? format(parseISO(expected_date), 'MM/dd/yyyy') : '-'
-        const ret = { show: true, id, fields: [name, type, sub_status, phase, phase_step, format(stepCreatedAt, 'MM/dd/yyyy @ HH:mm'), step_status, expected_date && expected_date <= format(new Date(), 'yyyyMMdd') ? <div className='flex flex-row gap-2 items-center text-red-500'>{exptected} <History size={12} color='#f00' /></div> : exptected], canceled: canceled_at }
-        return ret
+      const { data } = await api.get('/processtypes')
+      const gridDataValues = data.map(({ id, name, }) => {
+        return { show: true, id, fields: [name] }
       })
       setGridData(gridDataValues)
     }
     getData()
-  }, [opened, filial])
+  }, [opened])
 
   function handleOpened(id) {
     if (!id) {
@@ -114,7 +68,7 @@ export default function Enrollments() {
         <Filter size={14} /> Custom Filters
       </FiltersBar>
     </PageHeader>
-    <Filters access={hasAccessTo(accesses, currentPage.alias)} handleNew={null} search handleFilters={handleFilters} gridHeader={gridHeader} gridData={gridData} setGridHeader={setGridHeader} activeFilters={activeFilters} />
+    <Filters access={hasAccessTo(accesses, currentPage.alias)} handleNew={() => setOpened('new')} search handleFilters={handleFilters} gridHeader={gridHeader} gridData={gridData} setGridHeader={setGridHeader} activeFilters={activeFilters} />
 
     <Grid gridData={gridData} gridHeader={gridHeader} orderBy={orderBy} setOrderBy={setOrderBy} handleOpened={handleOpened} opened={opened}>
       {opened && <div className='fixed left-0 top-0 z-40 w-full h-full' style={{ background: 'rgba(0,0,0,.2)' }}></div>}

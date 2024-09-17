@@ -514,7 +514,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                                 <FileInputMultiple type='file' name='file_id' title={'Multiple Files'} grow InputContext={InputContext} />
                                                             }
                                                         </InputLine>
-                                                        <InputLine subtitle='Attached Files'>
+                                                        {pageData.staffdocuments && pageData.staffdocuments.length > 0 && <InputLine subtitle='Attached Files'>
                                                             <div className='flex flex-col justify-center items-start gap-4'>
                                                                 {
                                                                     pageData.staffdocuments && pageData.staffdocuments.map((staffdocument, index) => {
@@ -533,7 +533,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                                         }
                                                                     })}
                                                             </div>
-                                                        </InputLine>
+                                                        </InputLine>}
                                                     </Scope>
                                                 })}
 

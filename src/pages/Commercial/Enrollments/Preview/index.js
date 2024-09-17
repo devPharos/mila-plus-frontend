@@ -137,12 +137,14 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                 <InputContext.Provider value={{ id, generalForm, setSuccessfullyUpdated, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm, handleInactivate, canceled: pageData.canceled_at }}>
                                     {id === 'new' || pageData.loaded ?
                                         <>
-                                            <FormHeader access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
+                                            <FormHeader access={access} title={pageData.id} registry={registry} InputContext={InputContext} />
                                             <InputLineGroup title='TIMELINE' activeMenu={activeMenu === 'timeline'}>
                                                 {pageData.enrollmenttimelines && pageData.enrollmenttimelines.length > 0 && pageData.enrollmenttimelines.map((timeline, index) => {
                                                     return <Scope key={index} path={`enrollmenttimelines[${index}]`}>
                                                         <InputLine title={format(timeline.created_at, 'MM/dd/yyyy @ HH:mm')}>
-                                                            <Input type='text' name='substatus' grow title='Sub Status' defaultValue={timeline.substatus} InputContext={InputContext} />
+                                                            <Scope path={`students.processsubstatuses`}>
+                                                                <Input type='text' name='name' grow title='Sub Status' defaultValue={pageData.students.processsubstatuses.name} InputContext={InputContext} />
+                                                            </Scope>
                                                             <Input type='text' name='phase' grow title='Phase' defaultValue={timeline.phase} InputContext={InputContext} />
                                                             <Input type='text' name='phase_step' grow title='Phase Step' defaultValue={timeline.phase_step} InputContext={InputContext} />
                                                             <Input type='text' name='step_status' grow title='Step Status' defaultValue={timeline.step_status} InputContext={InputContext} />

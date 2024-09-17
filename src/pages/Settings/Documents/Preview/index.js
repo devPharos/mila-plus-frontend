@@ -63,9 +63,31 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         value: 'Enrollment',
         types: [
             {
-                type: 'F1',
-                label: 'F1',
-                value: 'F1',
+                type: 'Initial Visa',
+                label: 'Initial Visa',
+                value: 'Initial Visa',
+                subtypes: [
+                    {
+                        subtype: 'Student',
+                        label: 'Student',
+                        value: 'Student',
+                    },
+                    {
+                        subtype: 'Dependent',
+                        label: 'Dependent',
+                        value: 'Dependent',
+                    },
+                    {
+                        subtype: 'Sponsor',
+                        label: 'Sponsor',
+                        value: 'Sponsor',
+                    }
+                ]
+            },
+            {
+                type: 'Change of Status',
+                label: 'Change of Status',
+                value: 'Change of Status',
                 subtypes: [
                     {
                         subtype: 'Student',
@@ -85,9 +107,31 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                 ]
             },
             {
-                type: 'Non-F1',
-                label: 'Non-F1',
-                value: 'Non-F1',
+                type: 'Transfer',
+                label: 'Transfer',
+                value: 'Transfer',
+                subtypes: [
+                    {
+                        subtype: 'Student',
+                        label: 'Student',
+                        value: 'Student',
+                    },
+                    {
+                        subtype: 'Depdendent',
+                        label: 'Depdendent',
+                        value: 'Depdendent',
+                    },
+                    {
+                        subtype: 'Sponsor',
+                        label: 'Sponsor',
+                        value: 'Sponsor',
+                    }
+                ]
+            },
+            {
+                type: 'Reinstatement',
+                label: 'Reinstatement',
+                value: 'Reinstatement',
                 subtypes: [
                     {
                         subtype: 'Student',
@@ -127,11 +171,17 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                         value: 'Sponsor',
                     }
                 ]
-            },
+            }
+        ]
+    }, {
+        origin: 'Transfer Eligibility',
+        label: 'Transfer Eligibility',
+        value: 'Transfer Eligibility',
+        types: [
             {
-                type: 'Public',
-                label: 'Public',
-                value: 'Public',
+                type: 'Transfer',
+                label: 'Transfer',
+                value: 'Transfer',
                 subtypes: [
                     {
                         subtype: 'Student',
@@ -139,9 +189,9 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                         value: 'Student',
                     },
                     {
-                        subtype: 'Depdendent',
-                        label: 'Depdendent',
-                        value: 'Depdendent',
+                        subtype: 'Dependent',
+                        label: 'Dependent',
+                        value: 'Dependent',
                     },
                     {
                         subtype: 'Sponsor',
@@ -149,7 +199,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                         value: 'Sponsor',
                     }
                 ]
-            }
+            },
         ]
     }]
 

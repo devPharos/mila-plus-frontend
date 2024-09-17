@@ -22,6 +22,8 @@ import { AlertContext } from '~/App';
 
 export const InputContext = createContext({})
 
+export const statusesOptions = [{ value: 'In Class', label: 'In Class' }, { value: 'School Waiting List', label: 'School Waiting List' }, { value: 'Waiting', label: 'Waiting' }, { value: 'Inactive', label: 'Inactive' }]
+
 export default function PagePreview({ access, id, handleOpened, setOpened, defaultFormType = 'preview', successfullyUpdated, setSuccessfullyUpdated }) {
 
     const { alertBox } = useContext(AlertContext)
@@ -31,9 +33,9 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         email: '',
         visa_expiration: null,
         gender: null,
-        type: null,
+        processtype_id: null,
+        processsubstatus_id: null,
         status: 'Waiting',
-        sub_status: null,
         date_of_birth: null,
         loaded: false
     })
@@ -52,10 +54,6 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     const countriesOptions = countries_list.map(country => {
         return { value: country, label: country }
     })
-
-    const typesOptions = [{ value: 'F1', label: 'F1' }, { value: 'Non-F1', label: 'Non-F1' }, { value: 'Private', label: 'Private' }]
-    const statusesOptions = [{ value: 'In Class', label: 'In Class' }, { value: 'School Waiting List', label: 'School Waiting List' }, { value: 'Waiting', label: 'Waiting' }, { value: 'Inactive', label: 'Inactive' }]
-    const substatusOptions = [{ value: 'Initial', label: 'Initial' }, { value: 'Non-F1', label: 'Non-F1' }, { value: 'Change of Visa Status', label: 'Change of Visa Status' }, { value: 'Reinstatement', label: 'Reinstatement' }, { value: 'Transfer In', label: 'Transfer In' }, { 'value': 'Transfer Out', label: 'Transfer Out' }]
 
     useEffect(() => {
         async function getCountriesList() {
@@ -79,14 +77,30 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
             })
             setAgentOptions(retAgentOptions)
         }
+        async function getTypesOptions() {
+            const { data } = await api.get('/processtypes')
+            const retTypesOptions = data.map((type) => {
+                return { value: type.id, label: type.name }
+            })
+            return retTypesOptions
+        }
+        async function getSubStatusOptions() {
+            const { data } = await api.get('/processsubstatuses')
+            const retSubStatusOptions = data.map((subStatus) => {
+                return { value: subStatus.id, label: subStatus.name, father_id: subStatus.processtype_id }
+            })
+            return retSubStatusOptions
+        }
         async function getPageData() {
             const filialOptions = await getDefaultFilialOptions()
             const agentOptions = await getDefaultAgentOptions();
             const ddiOptions = await getCountriesList()
+            const typesOptions = await getTypesOptions()
+            const subStatusOptions = await getSubStatusOptions()
             if (id !== 'new') {
                 try {
                     const { data } = await api.get(`/students/${id}`)
-                    setPageData({ ...data, loaded: true, ddiOptions, filialOptions, agentOptions })
+                    setPageData({ ...data, find_processtype_id: data.processtype_id, loaded: true, ddiOptions, filialOptions, agentOptions, typesOptions, subStatusOptions })
                     const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at } = data;
                     const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
                     setRegistry(registries)
@@ -94,7 +108,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                     toast(err.response.data.error, { type: 'error', autoClose: 3000 })
                 }
             } else {
-                setPageData({ ...pageData, loaded: true, ddiOptions, filialOptions })
+                setPageData({ ...pageData, loaded: true, ddiOptions, filialOptions, typesOptions, subStatusOptions })
                 setFormType('full')
             }
         }
@@ -102,6 +116,10 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     }, [])
 
     async function handleGeneralFormSubmit(data) {
+        if (data.processsubstatus_id && pageData.subStatusOptions.find(subStatus => subStatus.value === data.processsubstatus_id).father_id !== data.processtype_id) {
+            toast("Sub Status is not valid for this Type!", { autoClose: 1000, type: 'error', transition: Zoom })
+            return
+        }
         if (successfullyUpdated) {
             toast("No need to be saved!", { autoClose: 1000, type: 'info', transition: Zoom })
             return
@@ -120,7 +138,6 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                 toast(err.response.data.error, { type: 'error', autoClose: 3000 })
             }
         } else if (id !== 'new') {
-            console.log(data, pageData)
             const updated = handleUpdatedFields(data, pageData)
 
             if (updated.length > 0) {
@@ -137,7 +154,9 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                     toast(err.response.data.error, { type: 'error', autoClose: 3000 })
                 }
             } else {
-                console.log(updated)
+                toast("No need to be saved!", { autoClose: 1000, type: 'info', transition: Zoom })
+                setSuccessfullyUpdated(true)
+                handleOpened(null)
             }
         }
     }
@@ -219,7 +238,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                 <InputContext.Provider value={{ id, generalForm, setSuccessfullyUpdated, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm, handleInactivate, handleOutsideMail, canceled: pageData.canceled_at }}>
                                     {id === 'new' || pageData.loaded ?
                                         <>
-                                            <FormHeader access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
+                                            <FormHeader access={access} title={pageData.name + ' ' + pageData.last_name} registry={registry} InputContext={InputContext} disabled={!pageData.processtype_id} />
                                             <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
                                                 {auth.filial.id === 1 && <InputLine title='Filial'>
                                                     <SelectPopover name='filial_id' required title='Filial' isSearchable defaultValue={filialOptions.filter(filial => filial.value === pageData.filial_id)} options={filialOptions} InputContext={InputContext} />
@@ -242,9 +261,9 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                     <Input type='text' name='nsevis' title='NSEVIS' grow defaultValue={pageData.nsevis} placeholder='-----' InputContext={InputContext} />
                                                 </InputLine>
                                                 <InputLine title='Enrollment'>
-                                                    <SelectPopover name='type' grow required title='Type' isSearchable defaultValue={typesOptions.find(type => type.value === pageData.type)} options={typesOptions} InputContext={InputContext} />
-                                                    <SelectPopover name='status' grow disabled title='Status' isSearchable defaultValue={statusesOptions.find(status => status.value === 'Waiting')} options={statusesOptions} InputContext={InputContext} />
-                                                    <SelectPopover name='sub_status' grow required title='Sub Status' isSearchable defaultValue={substatusOptions.find(substatus => substatus.value === pageData.sub_status)} options={substatusOptions} InputContext={InputContext} />
+                                                    <SelectPopover name='processtype_id' grow required title='Type' onChange={(el) => { setPageData({ ...pageData, find_processtype_id: el.value }); generalForm.current.setFieldValue('processsubstatus_id', null); setSuccessfullyUpdated(false) }} defaultValue={pageData.processtype_id ? pageData.typesOptions.find(type => type.value === pageData.processtype_id) : null} options={pageData.typesOptions} InputContext={InputContext} />
+                                                    {/* <SelectPopover name='status' grow disabled title='Status' isSearchable defaultValue={statusesOptions.find(status => status.value === 'Waiting')} options={statusesOptions} InputContext={InputContext} /> */}
+                                                    <SelectPopover name='processsubstatus_id' grow required title='Sub Status' isSearchable defaultValue={pageData.processsubstatus_id ? pageData.subStatusOptions.find(substatus => substatus.value === pageData.processsubstatus_id) : null} options={pageData.find_processtype_id ? pageData.subStatusOptions.filter(type => type.father_id === pageData.find_processtype_id) : []} InputContext={InputContext} />
                                                 </InputLine>
                                                 <InputLine title='Contact'>
                                                     <Input type='text' name='email' required title='E-mail' grow defaultValue={pageData.email} InputContext={InputContext} />

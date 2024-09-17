@@ -1,6 +1,6 @@
 import { Form } from '@unform/web';
-import { Ambulance, BadgeDollarSign, BookText, Building, CheckCircle, Contact, Files, FileSignature, PlusCircle, Trash, User } from 'lucide-react';
-import React, { createContext, useEffect, useRef, useState } from 'react';
+import { Ambulance, BadgeDollarSign, BookText, Building, CheckCircle, Contact, Files, FileSignature, PlusCircle, Trash, User, X } from 'lucide-react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import Input from '~/components/RegisterForm/Input';
 import RegisterFormMenu from '~/components/RegisterForm/Menu';
 import api from '~/services/api';
@@ -18,6 +18,14 @@ import FormLoading from '~/components/RegisterForm/FormLoading';
 import { useSearchParams } from 'react-router-dom';
 import { Scope } from '@unform/core';
 import * as Yup from 'yup';
+import FileInputMultiple from '~/components/RegisterForm/FileInputMultiple';
+import FileInput from '~/components/RegisterForm/FileInput';
+import { organizeMultiAndSingleFiles } from '~/functions/uploadFile';
+import { AlertContext } from '~/App';
+import SignaturePad from 'react-signature-pad-wrapper';
+import { getDownloadURL, getStorage, ref, uploadBytes, uploadString } from 'firebase/storage';
+import { v4 as uuidv4 } from 'uuid';
+import { app } from '~/services/firebase';
 
 export const InputContext = createContext({})
 
@@ -36,7 +44,6 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
     const [formType, setFormType] = useState('full')
     const [fullscreen, setFullscreen] = useState(true)
     const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
-
     const [registry, setRegistry] = useState({ created_by: null, created_at: null, updated_by: null, updated_at: null, canceled_by: null, canceled_at: null })
     const generalForm = useRef()
     const [loading, setLoading] = useState(false)
@@ -49,30 +56,34 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
     const dept1TypeOptions = [{ value: 'Wholly Dependent', label: 'Wholly Dependent' }, { value: 'Partially Dependent', label: 'Partially Dependent' }]
     const addressOptions = [{ value: 'Address in USA', label: 'Address in USA' }, { value: 'Address in Home Country', label: 'Address in Home Country' }]
     const id = searchparams.get('crypt');
+    const { alertBox } = useContext(AlertContext)
+    const signatureRef = useRef()
+
+    const countriesOptions = countries_list.map(country => {
+        return { value: country, label: country }
+    })
 
     const studentInfoSchema = Yup.object().shape({
-        legal_name: Yup.string().required('Required field.'),
-        gender: Yup.string().required('Required field.'),
-        birth_country: Yup.string().required('Required field.'),
-        birth_state: Yup.string().required('Required field.'),
-        birth_city: Yup.string().required('Required field.'),
-        state: Yup.string().required('Required field.'),
-        city: Yup.string().required('Required field.'),
-        zip: Yup.string().required('Required field.'),
-        address: Yup.string().required('Required field.'),
-        foreign_address: Yup.string().required('Required field.'),
-        phone: Yup.string().required('Required field.'),
-        home_country_phone: Yup.string().required('Required field.'),
-        whatsapp: Yup.string().required('Required field.'),
-        date_of_birth: Yup.string().required('Required field.'),
-        preferred_contact_form: Yup.string().required('Required field.'),
-        passport_number: Yup.string().required('Required field.'),
-        visa_number: Yup.string().required('Required field.'),
-        visa_expiration: Yup.string().required('Required field.'),
-        nsevis: Yup.string().required('Required field.'),
-        how_did_you_hear_about_us: Yup.string().required('Required field.'),
-        native_language: Yup.string().required('Required field.'),
-        citizen_country: Yup.string().required('Required field.'),
+        // birth_country: Yup.string().required('Required field.'),
+        // birth_state: Yup.string().required('Required field.'),
+        // birth_city: Yup.string().required('Required field.'),
+        // state: Yup.string().required('Required field.'),
+        // city: Yup.string().required('Required field.'),
+        // zip: Yup.string().required('Required field.'),
+        // address: Yup.string().required('Required field.'),
+        // foreign_address: Yup.string().required('Required field.'),
+        // phone: Yup.string().required('Required field.'),
+        // home_country_phone: Yup.string().required('Required field.'),
+        // whatsapp: Yup.string().required('Required field.'),
+        // date_of_birth: Yup.string().required('Required field.'),
+        // preferred_contact_form: Yup.string().required('Required field.'),
+        // passport_number: Yup.string().required('Required field.'),
+        // visa_number: Yup.string().required('Required field.'),
+        // visa_expiration: Yup.string().required('Required field.'),
+        // nsevis: Yup.string().required('Required field.'),
+        // how_did_you_hear_about_us: Yup.string().required('Required field.'),
+        // native_language: Yup.string().required('Required field.'),
+        // citizen_country: Yup.string().required('Required field.'),
     });
 
     const emergencySchema = Yup.object().shape({
@@ -86,14 +97,46 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                         .matches(/^\s*[\S]+(\s[\S]+)+\s*$/gms, 'Please enter your full name.'),
                     relationship_type: Yup.string().required('Relationship Type is required.'),
                     email: Yup.string().email('Email is invalid.'),
-                    phone: Yup.string().matches(/^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/, 'Phone number is invalid.')
+                    // phone: Yup.string().matches(/^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/, 'Phone number is invalid.')
                 })
             )
     });
 
-    const countriesOptions = countries_list.map(country => {
-        return { value: country, label: country }
-    })
+    const dependentInfoSchema = Yup.object().shape({
+        has_dependents: Yup.string().required('Required field.'),
+        enrollmentdependents: Yup.array()
+            .of(
+                Yup.object().shape({
+                    name: Yup.string().matches(
+                        /^([A-Za-z\u00C0-\u00D6\u00D8-\u00f6\u00f8-\u00ff\s]*)$/gi,
+                        'Name can only contain Latin letters.'
+                    )
+                        .matches(/^\s*[\S]+(\s[\S]+)+\s*$/gms, 'Please enter your full name.'),
+                    relationship_type: Yup.string().required('Relationship Type is required.'),
+                    gender: Yup.string().required('Required field.'),
+                    dept1_type: Yup.string().required('Required field.'),
+                    email: Yup.string().email('Email is invalid.'),
+                    // phone: Yup.string().matches(/^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/, 'Phone number is invalid.')
+                })
+            )
+    });
+
+    const affidavitOfSupportSchema = Yup.object().shape({
+        need_sponsorship: Yup.string().required('Required field.'),
+        enrollmentsponsors: Yup.array()
+            .of(
+                Yup.object().shape({
+                    name: Yup.string().matches(
+                        /^([A-Za-z\u00C0-\u00D6\u00D8-\u00f6\u00f8-\u00ff\s]*)$/gi,
+                        'Name can only contain Latin letters.'
+                    )
+                        .matches(/^\s*[\S]+(\s[\S]+)+\s*$/gms, 'Please enter your full name.'),
+                    relationship_type: Yup.string().required('Relationship Type is required.'),
+                    email: Yup.string().email('Email is invalid.'),
+                    // phone: Yup.string().matches(/^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/, 'Phone number is invalid.')
+                })
+            )
+    });
 
     useEffect(() => {
         async function getCountriesList() {
@@ -103,18 +146,35 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
 
             return countriesList
         }
+        async function getDocuments(type = '') {
+            const { data } = await api.get(`/documentsByOrigin?origin=Enrollment&type=${type}&subtype=Student`)
+            console.log(data, type)
+            return data;
+        }
         async function getPageData() {
             if (id !== 'new') {
                 try {
+                    let documents = [];
                     const ddiOptions = await getCountriesList()
                     const { data } = await api.get(`/outside/enrollments/${id}`)
+
+                    if (data.form_step === 'documents-upload') {
+                        documents = await getDocuments(data.students.processsubstatuses.name)
+                    }
+
                     const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at } = data;
                     const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
                     setRegistry(registries)
-                    setPageData({ ...data, loaded: true, ddiOptions, activeMenu: data.form_step })
+                    setPageData({ ...data, documents, loaded: true, ddiOptions, activeMenu: data.form_step })
+                    // if (data.form_step === 'student-signature') {
+                    //     setSuccessfullyUpdated(false)
+                    // }
 
                 } catch (err) {
-                    toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+                    if (err.response && err.response.data && err.response.data.error) {
+                        toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+                    }
+                    console.log(err)
                 }
             }
         }
@@ -124,6 +184,7 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
     }, [pageData.loaded])
 
     async function handleGeneralFormSubmit(data) {
+        // return
         try {
             generalForm.current.setErrors({});
             if (pageData.activeMenu === 'student-information') {
@@ -132,6 +193,14 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                 });
             } else if (pageData.activeMenu === 'emergency-contact') {
                 const result = await emergencySchema.validate(data, {
+                    abortEarly: false,
+                });
+            } else if (pageData.activeMenu === 'dependent-information') {
+                const result = await dependentInfoSchema.validate(data, {
+                    abortEarly: false,
+                });
+            } else if (pageData.activeMenu === 'affidavit-of-support') {
+                const result = await affidavitOfSupportSchema.validate(data, {
                     abortEarly: false,
                 });
             }
@@ -148,30 +217,103 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                 console.log(validationErrors)
                 generalForm.current.setErrors(validationErrors);
             }
+            return;
         }
-        return
         if (successfullyUpdated) {
             toast("No need to be saved!", { autoClose: 1000, type: 'info', transition: Zoom })
             setLoading(false)
             return
         }
+
+        if (pageData.activeMenu === 'student-signature') {
+            const signature = signatureRef.current.toDataURL()
+
+            const fileUuid = uuidv4();
+            const storage = getStorage(app);
+            const local = 'Enrollments/Signatures/' + fileUuid + '.png';
+            const imageRef = ref(storage, local);
+            await uploadString(imageRef, signature.substring(22), 'base64')
+                .then(async (snapshot) => {
+                    await getDownloadURL(snapshot.ref).then(async (downloadURL) => {
+                        await api.post(`/enrollmentstudentsignature`, {
+                            enrollment_id: id, files: {
+                                url: downloadURL,
+                                name: fileUuid + ".png",
+                                size: signature.length,
+                                key: fileUuid + ".png"
+                            }
+                        })
+                        await api.put(`/outside/enrollments/${id}`, {})
+                        setPageData({ ...pageData, loaded: false })
+                        setSuccessfullyUpdated(true)
+                        toast("Saved!", { autoClose: 1000 })
+                        setLoading(false)
+                    })
+                })
+        }
+
         if (id !== 'new') {
             const updated = handleUpdatedFields(data, pageData)
 
             if (updated.length > 0) {
                 const objUpdated = Object.fromEntries(updated);
-                const { birth_date, passport_expiration_date, i94_expiration_date } = objUpdated;
-                try {
-                    await api.put(`/outside/enrollments/${id}`, { ...objUpdated, birth_date: birth_date ? format(birth_date, 'yyyyMMdd') : null, passport_expiration_date: passport_expiration_date ? format(passport_expiration_date, 'yyyyMMdd') : null, i94_expiration_date: i94_expiration_date ? format(i94_expiration_date, 'yyyyMMdd') : null })
-                    setSuccessfullyUpdated(true)
-                    toast("Saved!", { autoClose: 1000 })
-                    setPageData({ ...pageData, loaded: false })
-                    setLoading(false)
-                } catch (err) {
-                    console.log(err)
-                    toast(err.response.data.error, { type: 'error', autoClose: 3000 })
-                    setLoading(false)
+                const { date_of_birth, passport_expiration_date, i94_expiration_date } = objUpdated;
+
+
+                if (data.documents && data.documents.length > 0) {
+                    let toastId = null;
+                    if (data.documents.find(document => (typeof document.file_id === 'undefined' && document.file_id) || (typeof document.file_id === 'object' && Array.from(document.file_id).length > 0))) {
+                        toastId = toast.loading("Files are being uploaded...");
+                    }
+                    const allPromises = organizeMultiAndSingleFiles(data.documents, 'Enrollments');
+                    Promise.all(allPromises).then(async (files) => {
+                        try {
+                            files.map(async (file) => {
+                                if (!file) {
+                                    return
+                                }
+                                if (file.name) {
+                                    api.post(`/enrollmentdocuments`, { enrollment_id: id, files: file })
+                                    toastId && toast.update(toastId, { render: 'All files have been uploaded!', type: 'success', autoClose: 3000, isLoading: false });
+                                } else {
+                                    file.sort((a, b) => a.size > b.size).map(async (promise, index) => {
+                                        await Promise.all([promise]).then(async (singleFile) => {
+                                            console.log(singleFile[0])
+                                            if (index + 1 === file.length) {
+                                                toastId && toast.update(toastId, { render: 'All files have been uploaded!', type: 'success', autoClose: 3000, isLoading: false });
+                                            }
+                                            await api.post(`/enrollmentdocuments`, { enrollment_id: id, files: singleFile[0] })
+                                        })
+                                    })
+                                }
+                            })
+                        } catch (err) {
+                            console.log(err)
+                            // toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+                        }
+                        // return
+                        delete objUpdated.documents;
+                        await api.put(`/outside/enrollments/${id}`, { ...objUpdated, date_of_birth: date_of_birth ? format(date_of_birth, 'yyyyMMdd') : null, passport_expiration_date: passport_expiration_date ? format(passport_expiration_date, 'yyyyMMdd') : null, i94_expiration_date: i94_expiration_date ? format(i94_expiration_date, 'yyyyMMdd') : null })
+                        setPageData({ ...pageData, loaded: false })
+                        setSuccessfullyUpdated(true)
+                        toast("Saved!", { autoClose: 1000 })
+                        setLoading(false)
+                    })
+                } else {
+                    try {
+                        await api.put(`/outside/enrollments/${id}`, { ...objUpdated, date_of_birth: date_of_birth ? format(date_of_birth, 'yyyyMMdd') : null, passport_expiration_date: passport_expiration_date ? format(passport_expiration_date, 'yyyyMMdd') : null, i94_expiration_date: i94_expiration_date ? format(i94_expiration_date, 'yyyyMMdd') : null })
+                        setPageData({ ...pageData, loaded: false })
+                        setSuccessfullyUpdated(true)
+                        toast("Saved!", { autoClose: 1000 })
+                        // setSent(true);
+                        setLoading(false)
+                    } catch (err) {
+                        console.log(err)
+                        toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+                        setLoading(false)
+                    }
                 }
+
             } else {
                 // console.log(updated)
             }
@@ -241,10 +383,42 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
         setPageData({ ...pageData, enrollmentsponsors: removedSponsors })
     }
 
+    function handleDeleteDocument(id) {
+        // const { file } = pageData.staffdocuments.find(staffdocument => staffdocument.id === id);
+        alertBox({
+            title: 'Attention!',
+            descriptionHTML: `<p>Are you sure you want to delete this file?</p>`,
+            buttons: [
+                {
+                    title: 'No',
+                    class: 'cancel'
+                },
+                {
+                    title: 'Yes',
+                    onPress: async () => {
+                        try {
+                            await api.delete(`/enrollmentdocuments/${id}`)
+                            toast("File deleted!", { autoClose: 1000 })
+                            setPageData({ ...pageData, enrollmentdocuments: pageData.enrollmentdocuments.filter(enrollmentdocument => enrollmentdocument.id !== id) })
+                        } catch (err) {
+                            toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+                        }
+                    }
+                },
+            ]
+        })
+    }
+
+    function handleClearSignature() {
+        const signaturePad = signatureRef.current;
+
+        if (signaturePad) {
+            signaturePad.instance.clear();
+            setSuccessfullyUpdated(true)
+        }
+    }
+
     return <Preview formType={formType} fullscreen={fullscreen}>
-        {/* {sent && <div className='flex h-full flex-row items-center justify-center text-center gap-4'>
-            <CheckCircle size={32} color='#00b361' />
-            Thank you!</div>} */}
         {!sent && pageData.loaded ?
             <div className='flex h-full flex-col items-start justify-between gap-4 md:flex-row'>
 
@@ -279,52 +453,55 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                                     <>
                                         <FormHeader saveText='Save & Continue' outside loading={loading} access={access} title={pageData.students.name + ' ' + pageData.students.last_name + ' - Enrollment Process'} registry={registry} InputContext={InputContext} />
                                         {pageData.activeMenu === 'student-information' && <InputLineGroup title='Student Information' activeMenu={pageData.activeMenu === 'student-information'}>
-                                            <InputLine title='General Data'>
-                                                <Input type='text' required name='legal_name' grow title='Legal Name' defaultValue={pageData.legal_name} InputContext={InputContext} />
-                                                <SelectPopover name='gender' required grow title='Gender' isSearchable defaultValue={genderOptions.find(gender => gender.value === pageData.gender)} options={genderOptions} InputContext={InputContext} />
-                                                <DatePicker name='birth_date' required grow title='Birth Date' defaultValue={pageData.birth_date ? parseISO(pageData.birth_date) : null} placeholderText='MM/DD/YYYY' InputContext={InputContext} />
-                                                <SelectPopover name='marital_status' required grow title='Marital Status' isSearchable defaultValue={maritalStatusOptions.find(maritalStatus => maritalStatus.value === pageData.marital_status)} options={maritalStatusOptions} InputContext={InputContext} />
-                                            </InputLine>
+                                            <Scope path={`students`}>
+                                                <InputLine title='General Data'>
+                                                    <DatePicker name='date_of_birth' required grow title='Birth Date' defaultValue={pageData.students.date_of_birth ? parseISO(pageData.students.date_of_birth) : null} placeholderText='MM/DD/YYYY' InputContext={InputContext} />
+                                                    <SelectPopover name='marital_status' required grow title='Marital Status' isSearchable defaultValue={maritalStatusOptions.find(maritalStatus => maritalStatus.value === pageData.students.marital_status)} options={maritalStatusOptions} InputContext={InputContext} />
+                                                </InputLine>
+                                            </Scope>
                                             {pageData.students.sub_status === 'Transfer In' && <InputLine title='Previous School'>
                                                 <Input type='text' name='previous_school' grow title='Name' defaultValue={pageData.previous_school} InputContext={InputContext} />
                                             </InputLine>}
-                                            <InputLine title='Birth Details'>
-                                                <Input type='text' name='birth_city' required grow title='Birth City' defaultValue={pageData.birth_city} InputContext={InputContext} />
-                                                <Input type='text' name='birth_state' required grow title='Birth State' defaultValue={pageData.birth_state} InputContext={InputContext} />
-                                                <SelectPopover name='birth_country' required grow title='Birth Country' isSearchable defaultValue={countriesOptions.find(country => country.value === pageData.birth_country)} options={countriesOptions} InputContext={InputContext} />
-                                                <Input type='text' name='native_language' required grow title='Native Language' defaultValue={pageData.native_language} InputContext={InputContext} />
-                                                {console.log(countriesOptions)}
-                                                <SelectPopover name='citizen_country' required grow title='Citizen Country' isSearchable defaultValue={countriesOptions.find(country => country.value === pageData.citizen_country)} options={countriesOptions} InputContext={InputContext} />
-                                            </InputLine>
-                                            <InputLine title='Documentation'>
-                                                <Input type='text' name='passport_number' required grow title='Passport Number' placeholder='-----' defaultValue={pageData.passport_number} InputContext={InputContext} />
-                                                <DatePicker name='passport_expiration_date' required grow title='Passport Expiration Date' defaultValue={pageData.passport_expiration_date ? parseISO(pageData.passport_expiration_date) : null} placeholderText='MM/DD/YYYY' InputContext={InputContext} />
-                                                {pageData.students.sub_status === 'Change of Visa Status' && <DatePicker name='i94_expiration_date' required grow title='I94 Expiration Date' defaultValue={pageData.i94_expiration_date ? parseISO(pageData.i94_expiration_date) : null} placeholderText='MM/DD/YYYY' InputContext={InputContext} />}
-                                            </InputLine>
+                                            <Scope path={`students`}>
+                                                <InputLine title='Birth Details'>
+                                                    <Input type='text' name='birth_city' required grow title='Birth City' defaultValue={pageData.students.birth_city} InputContext={InputContext} />
+                                                    <Input type='text' name='birth_state' required grow title='Birth State' defaultValue={pageData.students.birth_state} InputContext={InputContext} />
+                                                    <SelectPopover name='birth_country' required grow title='Birth Country' isSearchable defaultValue={countriesOptions.find(country => country.value === pageData.students.birth_country)} options={countriesOptions} InputContext={InputContext} />
+                                                    <Input type='text' name='native_language' required grow title='Native Language' defaultValue={pageData.students.native_language} InputContext={InputContext} />
+                                                    {console.log(countriesOptions)}
+                                                    <SelectPopover name='citizen_country' required grow title='Citizen Country' isSearchable defaultValue={countriesOptions.find(country => country.value === pageData.students.citizen_country)} options={countriesOptions} InputContext={InputContext} />
+                                                </InputLine>
+                                                <InputLine title='Documentation'>
+                                                    <Input type='text' name='passport_number' required grow title='Passport Number' placeholder='-----' defaultValue={pageData.students.passport_number} InputContext={InputContext} />
+                                                    <DatePicker name='passport_expiration_date' required grow title='Passport Expiration Date' defaultValue={pageData.students.passport_expiration_date ? parseISO(pageData.students.passport_expiration_date) : null} placeholderText='MM/DD/YYYY' InputContext={InputContext} />
+                                                    {pageData.students.sub_status === 'Change of Visa Status' && <DatePicker name='i94_expiration_date' required grow title='I94 Expiration Date' defaultValue={pageData.students.i94_expiration_date ? parseISO(pageData.students.i94_expiration_date) : null} placeholderText='MM/DD/YYYY' InputContext={InputContext} />}
+                                                </InputLine>
+                                            </Scope>
 
                                             {pageData.students.sub_status !== 'Initial' && <InputLine title='Admission Correspondence'>
                                                 <SelectPopover name='admission_correspondence_address' required grow title='Please check the box where you wish your admission correspondence to be mailed' options={addressOptions} defaultValue={addressOptions.find(address => address.value === pageData.admission_correspondence_address)} InputContext={InputContext} />
                                             </InputLine>}
-
-                                            {pageData.students.sub_status !== 'Transfer In' && <InputLine title='Address in Home Country'>
-                                                <Input type='text' name='home_phone_number' required grow title='Phone Number' isPhoneNumber defaultValue={pageData.home_phone_number} InputContext={InputContext} />
-                                                <Input type='text' name='usa_address' required grow title='Address' defaultValue={pageData.usa_address} InputContext={InputContext} />
-                                                <Input type='text' name='home_zip_code' required grow title='Zip Code' defaultValue={pageData.home_zip_code} InputContext={InputContext} />
-                                            </InputLine>}
-                                            {pageData.students.sub_status !== 'Transfer In' && <InputLine>
-                                                <Input type='text' name='home_city' required grow title='City' defaultValue={pageData.home_city} InputContext={InputContext} />
-                                                <Input type='text' name='home_state' required grow title='State' defaultValue={pageData.home_state} InputContext={InputContext} />
-                                                <SelectPopover name='home_country' required grow title='Country' isSearchable defaultValue={countriesOptions.find(country => country.value === pageData.home_country)} options={countriesOptions} InputContext={InputContext} />
-                                            </InputLine>}
-                                            {pageData.students.sub_status !== 'Initial' && <InputLine title='Address in United States'>
-                                                <Input type='text' name='usa_phone_number' required grow title='USA Phone Number' isPhoneNumber defaultValue={pageData.usa_phone_number} InputContext={InputContext} />
-                                                <Input type='text' name='usa_address' required grow title='USA Address' defaultValue={pageData.usa_address} InputContext={InputContext} />
-                                                <Input type='text' name='usa_zip_code' required grow title='USA Zip Code' isZipCode defaultValue={pageData.usa_zip_code} InputContext={InputContext} />
-                                            </InputLine>}
-                                            {pageData.students.sub_status !== 'Initial' && <InputLine>
-                                                <Input type='text' name='usa_city' required grow title='USA City' defaultValue={pageData.usa_city} InputContext={InputContext} />
-                                                <Input type='text' name='usa_state' required grow title='USA State' defaultValue={pageData.usa_state} InputContext={InputContext} />
-                                            </InputLine>}
+                                            <Scope path={`students`}>
+                                                {pageData.students.sub_status !== 'Transfer In' && <InputLine title='Address in Home Country'>
+                                                    <Input type='text' name='home_phone_number' grow title='Phone Number' isPhoneNumber defaultValue={pageData.students.home_phone_number} InputContext={InputContext} />
+                                                    <Input type='text' name='home_country_address' grow title='Address' defaultValue={pageData.students.home_country_address} InputContext={InputContext} />
+                                                    <Input type='text' name='home_country_zip_code' grow title='Zip Code' defaultValue={pageData.students.home_country_zip_code} InputContext={InputContext} />
+                                                </InputLine>}
+                                                {pageData.students.sub_status !== 'Transfer In' && <InputLine>
+                                                    <Input type='text' name='home_country_city' grow title='City' defaultValue={pageData.students.home_country_city} InputContext={InputContext} />
+                                                    <Input type='text' name='home_country_state' grow title='State' defaultValue={pageData.students.home_country_state} InputContext={InputContext} />
+                                                    <SelectPopover name='home_country_country' grow title='Country' isSearchable defaultValue={countriesOptions.find(country => country.value === pageData.students.home_country_country)} options={countriesOptions} InputContext={InputContext} />
+                                                </InputLine>}
+                                                {pageData.students.sub_status !== 'Initial' && <InputLine title='Address in United States'>
+                                                    <Input type='text' name='usa_phone_number' grow title='USA Phone Number' isPhoneNumber defaultValue={pageData.students.usa_phone_number} InputContext={InputContext} />
+                                                    <Input type='text' name='usa_address' grow title='USA Address' defaultValue={pageData.students.usa_address} InputContext={InputContext} />
+                                                    <Input type='text' name='usa_zip_code' grow title='USA Zip Code' isZipCode defaultValue={pageData.students.usa_zip_code} InputContext={InputContext} />
+                                                </InputLine>}
+                                                {pageData.students.sub_status !== 'Initial' && <InputLine>
+                                                    <Input type='text' name='usa_city' grow title='USA City' defaultValue={pageData.students.usa_city} InputContext={InputContext} />
+                                                    <Input type='text' name='usa_state' grow title='USA State' defaultValue={pageData.students.usa_state} InputContext={InputContext} />
+                                                </InputLine>}
+                                            </Scope>
                                         </InputLineGroup>}
                                         {pageData.activeMenu === 'emergency-contact' && <InputLineGroup title='Emergency Contact' activeMenu={pageData.activeMenu === 'emergency-contact'}>
                                             <Scope path={`enrollmentemergencies[0]`}>
@@ -390,15 +567,55 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                                             </>}
                                         </InputLineGroup>}
                                         {pageData.activeMenu === 'documents-upload' && <InputLineGroup title='Documents Upload' activeMenu={pageData.activeMenu === 'documents-upload'}>
-                                            <InputLine title='Documents Upload'>
-                                                <Input type='text' name='documents' required grow title='Documents' defaultValue={pageData.documents} InputContext={InputContext} />
-                                            </InputLine>
+                                            {pageData.documents && pageData.documents.length > 0 && pageData.documents.map((document, index) => {
+                                                return <Scope key={index} path={`documents[${index}]`} >
+                                                    <Input type='hidden' name='document_id' defaultValue={document.id} InputContext={InputContext} />
+                                                    <InputLine title={document.title}>
+                                                        {!document.multiple && pageData.enrollmentdocuments && pageData.enrollmentdocuments.filter(enrollmentdocument => enrollmentdocument.document_id === document.id).length === 0 &&
+                                                            <FileInput type='file' name='file_id' title={'File'} grow InputContext={InputContext} />
+                                                        }
+                                                        {document.multiple &&
+                                                            <FileInputMultiple type='file' name='file_id' title={'Multiple Files'} grow InputContext={InputContext} />
+                                                        }
+                                                    </InputLine>
+                                                    {pageData.enrollmentdocuments && pageData.enrollmentdocuments.length > 0 && <InputLine subtitle='Attached Files'>
+                                                        <div className='flex flex-col justify-center items-start gap-4'>
+                                                            {
+                                                                pageData.enrollmentdocuments && pageData.enrollmentdocuments.map((enrollmentdocument, index) => {
+                                                                    if (enrollmentdocument.document_id === document.id) {
+                                                                        return <>
+                                                                            <div className='flex flex-row justify-center items-center gap-2'>
+                                                                                <a href={enrollmentdocument.file.url} target="_blank" className='text-xs'>
+                                                                                    <div className='flex flex-row items-center border px-4 py-2 gap-1 rounded-md bg-gray-100 hover:border-gray-300' key={index}>
+                                                                                        <Files size={16} />
+                                                                                        {enrollmentdocument.file.name}
+                                                                                    </div>
+                                                                                </a>
+                                                                                <button type='button' onClick={() => handleDeleteDocument(enrollmentdocument.id)} className='text-xs text-red-700 cursor-pointer flex flex-row items-center justify-start gap-1 mt-1 px-2 py-1 rounded hover:bg-red-100'><X size={12} /> Delete</button>
+                                                                            </div>
+                                                                        </>
+                                                                    }
+                                                                })}
+                                                        </div>
+                                                    </InputLine>}
+                                                </Scope>
+                                            })}
                                         </InputLineGroup>}
                                         {pageData.activeMenu === 'student-signature' && <InputLineGroup title='Student Signature' activeMenu={pageData.activeMenu === 'student-signature'}>
                                             <InputLine title='Student Signature'>
-                                                <Input type='text' name='student_signature' required grow title='Student Signature' defaultValue={pageData.student_signature} InputContext={InputContext} />
+                                                <div onClick={() => setSuccessfullyUpdated(false)} className='h-52 w-96 gap-2 border rounded'>
+                                                    <SignaturePad redrawOnResize ref={signatureRef} options={{ backgroundColor: '#FFF', penColor: '#111' }} />
+                                                </div>
+                                                <div className='flex flex-1 flex-row items-center justify-start gap-2'>
+                                                    <button type='button' onClick={handleClearSignature} className='bg-primary text-white rounded-md py-4 px-8 my-2 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1'>Clear</button>
+                                                </div>
+
                                             </InputLine>
                                         </InputLineGroup>}
+                                        {pageData.activeMenu === 'sponsor-signature' &&
+                                            <div className='flex h-full flex-row items-center justify-center text-center gap-4'>
+                                                <CheckCircle size={32} color='#00b361' />
+                                                Thank you!</div>}
                                     </>
                                     :
                                     <FormLoading />}

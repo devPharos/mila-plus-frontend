@@ -58,8 +58,8 @@ const Input = ({ name, title, grow, shrink, defaultValueDDI = null, workloadUpda
       // generalForm.current.setFieldValue(name, maskPhone(value))
     }
     if (isZipCode) {
-      const value = generalForm.current.getFieldValue(name);
-      generalForm.current.setFieldValue(name, maskZipCode(value))
+      // const value = generalForm.current.getFieldValue(name);
+      // generalForm.current.setFieldValue(name, maskZipCode(value))
     }
     if (workloadUpdateName) {
       const days_per_week = generalForm.current.getFieldValue('days_per_week');

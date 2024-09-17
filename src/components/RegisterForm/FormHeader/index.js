@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { Blocks, CheckCheck, Eye, EyeOff, Loader2, Mail, Save, Scaling, Trash, Trash2, X } from 'lucide-react';
+import { CheckCheck, Loader2, Mail, Save, Scaling, X } from 'lucide-react';
 import React, { useContext } from 'react';
 
 // import { Container } from './styles';
@@ -24,9 +24,6 @@ export default function FormHeader({ loading = false, saveText = 'Save changes',
                             <button type='button' onClick={() => setFullscreen(!fullscreen)} className='text-md font-bold bg-secondary border hover:border-primary hover:text-primary rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1'>
                                 <Scaling size={16} /> {fullscreen ? 'Minimize' : 'Full Screen'}
                             </button>
-                            {/* <button type='button' onClick={() => handleInactivate()} className='text-md font-bold bg-secondary border hover:border-primary hover:text-primary rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1'>
-                {canceled ? <><Eye size={16} /> Reactivate</> : <><EyeOff size={16} /> Inactivate</>}
-            </button> */}
                             {(access.edit && id !== 'new' || access.create && id === 'new') ? <button type='button' onClick={() => handleCloseForm()} className='text-md font-bold bg-secondary border hover:border-primary hover:text-primary rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1'>
                                 <X size={16} /> {successfullyUpdated ? 'Close' : 'Discard changes not saved'}
                             </button>
@@ -38,7 +35,7 @@ export default function FormHeader({ loading = false, saveText = 'Save changes',
                         <><Save size={16} /> Create</>
                     </button>}
                     {(outside || access.edit) && id !== 'new' && <button type="submit" className={`text-md font-bold ${!successfullyUpdated ? 'bg-red-500' : 'bg-primary'} text-white rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1`}>
-                        {!successfullyUpdated ? <><Save size={16} /> {saveText}</> : <><CheckCheck size={16} /> Saved</>}
+                        {!successfullyUpdated ? <><Save size={16} /> {saveText}</> : <><CheckCheck size={16} /> {'Saved'}</>}
                     </button>}
                     {!outside && handleOutsideMail && id !== 'new' &&
                         <button type="button" onClick={() => handleOutsideMail()} className='text-md font-bold bg-secondary border hover:border-primary hover:text-primary rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1'>

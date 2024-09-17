@@ -188,6 +188,18 @@ function App() {
             title: 'Documents',
             icon: 'Files'
           },
+          {
+            alias: 'processtypes',
+            path: '/Settings/ProcessTypes',
+            title: 'Process Types',
+            icon: 'BookType'
+          },
+          {
+            alias: 'processsubstatuses',
+            path: '/Settings/ProcessSubstatuses',
+            title: 'Process Substatuses',
+            icon: 'BookType'
+          },
         ]
       },
       {

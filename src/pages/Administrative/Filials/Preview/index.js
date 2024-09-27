@@ -322,8 +322,8 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                             <InputLineGroup title='FINANCIAL SUPPORT' activeMenu={activeMenu === 'financial-support'}>
                                                 <h1 className='w-full border-b p-4 pb-0 pt-2 pb-2 font-bold'>Financial Support</h1>
                                                 <InputLine>
-                                                    <Input type='text' onlyFloat grow name={`financial_support_student_amount`} required title='Amount ($) per month required for students' defaultValue={pageData.financial_support_student_amount} InputContext={InputContext} />
-                                                    <Input type='text' onlyFloat grow name={`financial_support_dependent_amount`} required title='Amount ($) per month required for dependents' defaultValue={pageData.financial_support_dependent_amount} InputContext={InputContext} />
+                                                    <Input type='text' onlyFloat grow name={`financial_support_student_amount`} title='Amount ($) per month required for students' defaultValue={pageData.financial_support_student_amount} InputContext={InputContext} />
+                                                    <Input type='text' onlyFloat grow name={`financial_support_dependent_amount`} title='Amount ($) per month required for dependents' defaultValue={pageData.financial_support_dependent_amount} InputContext={InputContext} />
                                                 </InputLine>
                                             </InputLineGroup>
 

@@ -302,7 +302,7 @@ export function handleUpdatedFields(data, pageData) {
 
   return dataInArray && dataInArray.filter((field) => {
     let x = field[1] === 'Yes' || field[1] === 'true' ? true : field[1] === 'No' || field[1] === 'false' ? false : field[1];
-    const y = pageDataInArray.find(pageField => pageField[0] === field[0])[1];
+    const y = pageDataInArray.length > 0 ? pageDataInArray.find(pageField => pageField[0] === field[0])[1] : null;
 
     if (typeof y === 'number') {
       x = parseFloat(field[1]);
@@ -334,3 +334,20 @@ export function getCurrentPage() {
   const currentPage = currentModule.children.filter(page => page.path === pathname)[0];
   return currentPage
 }
+
+export const formatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+
+  // These options can be used to round to whole numbers.
+  // trailingZeroDisplay: 'stripIfInteger' // This is probably what most people
+  // want. It will only stop printing
+  // the fraction when the input
+  // amount is a round number (int)
+  // already. If that's not what you
+  // need, have a look at the options
+  // below.
+  minimumFractionDigits: 0, // This suffices for whole numbers, but will
+  // print 2500.10 as $2,500.1
+  maximumFractionDigits: 2, // Causes 2500.99 to be printed as $2,501
+});

@@ -203,7 +203,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         ]
     }]
 
-    const multipleOptions = [{ value: true, label: 'Yes' }, { value: false, label: 'No' }]
+    const yesOrNoOptions = [{ value: true, label: 'Yes' }, { value: false, label: 'No' }]
 
     useEffect(() => {
         async function getPageData() {
@@ -323,8 +323,8 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                 </InputLine>
                                                 <InputLine>
                                                     <Input type='text' name='title' required grow title='Document Title' defaultValue={pageData.title} InputContext={InputContext} />
-                                                    {/* <SelectPopover name='required' required title='Required' isSearchable defaultValue={requiredOptions.filter(required => required.value === pageData.required)} options={requiredOptions} InputContext={InputContext} /> */}
-                                                    <SelectPopover name='multiple' required title='Multiple' isSearchable defaultValue={multipleOptions.filter(multiple => multiple.value === pageData.multiple)} options={multipleOptions} InputContext={InputContext} />
+                                                    <SelectPopover name='required' required title='Required' isSearchable defaultValue={yesOrNoOptions.filter(required => required.value === pageData.required)} options={yesOrNoOptions} InputContext={InputContext} />
+                                                    <SelectPopover name='multiple' required title='Multiple' isSearchable defaultValue={yesOrNoOptions.filter(multiple => multiple.value === pageData.multiple)} options={yesOrNoOptions} InputContext={InputContext} />
                                                 </InputLine>
 
                                             </InputLineGroup>

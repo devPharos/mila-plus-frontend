@@ -1,5 +1,5 @@
 import { Form } from '@unform/web';
-import { Ambulance, BadgeDollarSign, BookText, Building, CheckCircle, Contact, Files, FileSignature, PlusCircle, Trash, User, X } from 'lucide-react';
+import { Ambulance, BadgeDollarSign, BookText, Building, CheckCircle, Contact, Files, FileSignature, PlusCircle, SkipForward, Trash, User, X } from 'lucide-react';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import Input from '~/components/RegisterForm/Input';
 import RegisterFormMenu from '~/components/RegisterForm/Menu';
@@ -9,7 +9,7 @@ import InputLine from '~/components/RegisterForm/InputLine';
 import InputLineGroup from '~/components/RegisterForm/InputLineGroup';
 import FormHeader from '~/components/RegisterForm/FormHeader';
 import Preview from '~/components/Preview';
-import { countries_list, getRegistries, handleUpdatedFields } from '~/functions';
+import { countries_list, formatter, getRegistries, handleUpdatedFields } from '~/functions';
 import SelectPopover from '~/components/RegisterForm/SelectPopover';
 import DatePicker from '~/components/RegisterForm/DatePicker';
 import { add, format, parseISO, set } from 'date-fns';
@@ -26,6 +26,14 @@ import SignaturePad from 'react-signature-pad-wrapper';
 import { getDownloadURL, getStorage, ref, uploadBytes, uploadString } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
 import { app } from '~/services/firebase';
+import { Document, Page, pdfjs } from 'react-pdf';
+
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
+import Icon from '~/components/Icon';
+import PDFViewer from '~/components/PDFViewer';
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export const InputContext = createContext({})
 
@@ -50,7 +58,7 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
     const [sent, setSent] = useState(false)
     const genderOptions = [{ value: 'Male', label: 'Male' }, { value: 'Female', label: 'Female' }, { value: 'Not Specified', label: 'Not Specified' }]
     const maritalStatusOptions = [{ value: 'Single', label: 'Single' }, { value: 'Married', label: 'Married' }, { value: 'Widowed', label: 'Widowed' }, { value: 'Divorced', label: 'Divorced' }, { value: 'Separated', label: 'Separated' }]
-    const relationshipTypeOptions = [{ value: 'Parents', label: 'Parents' }, { value: 'Grand Parents', label: 'Grand Parents' }, { value: 'Brother/Sister', label: 'Brother/Sister' }, { value: 'Friend', label: 'Friend' }, { value: 'Husband/Wife', label: 'Husband/Wife' }, { value: 'Other', label: 'Other' }]
+    const relationshipTypeOptions = [{ value: 'Parents', label: 'Parents' }, { value: 'Grand Parents', label: 'Grand Parents' }, { value: 'Brother or Sister', label: 'Brother/Sister' }, { value: 'Friend', label: 'Friend' }, { value: 'Husband or Wife', label: 'Husband/Wife' }, { value: 'Other', label: 'Other' }]
     const sponsorRelationshipTypeOptions = [{ value: 'Parents', label: 'Parents' }, { value: 'Family', label: 'Family' }, { value: 'Student Loan', label: 'Student Loan' }, { value: 'Government Scholarship or Loan', label: 'Government Scholarship or Loan' }, { value: 'Other', label: 'Other' }]
     const scheduleOptions = [{ value: '4 days - Morning - 08:30 to 01:00', label: '4 days - Morning - 08:30 to 01:00' }, { value: '4 days - Evening - 06:00 to 10:30', label: '4 days - Evening - 06:00 to 10:30' }, { value: '2 days - Full Time (Wed - Thu) - 08:30 to 18:00', label: '2 days - Full Time (Wed - Thu) - 08:30 to 18:00' }]
     const dept1TypeOptions = [{ value: 'Wholly Dependent', label: 'Wholly Dependent' }, { value: 'Partially Dependent', label: 'Partially Dependent' }]
@@ -58,6 +66,10 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
     const id = searchparams.get('crypt');
     const { alertBox } = useContext(AlertContext)
     const signatureRef = useRef()
+    const yesOrNoOptions = [{ value: true, label: 'Yes' }, { value: false, label: 'No' }]
+    const sponsorshipOptions = [{ value: true, label: 'Yes' }, { value: false, label: 'No (Self Financial Resource)' }]
+
+    const menus = [{ order: 1, name: 'student-information' }, { order: 2, name: 'emergency-contact' }, { order: 3, name: 'enrollment-information' }, { order: 4, name: 'dependent-information' }, { order: 5, name: 'affidavit-of-support' }, { order: 6, name: 'documents-upload' }, { order: 7, name: 'student-signature' }, { order: 8, name: 'sponsor-signature' }]
 
     const countriesOptions = countries_list.map(country => {
         return { value: country, label: country }
@@ -139,13 +151,6 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
     });
 
     useEffect(() => {
-        async function getCountriesList() {
-            const countriesList = CountryList.getAll().map(country => {
-                return { value: country.dial_code, label: country.flag + " " + country.dial_code + " " + country.name, code: country.dial_code, name: country.name }
-            })
-
-            return countriesList
-        }
         async function getDocuments(type = '') {
             const { data } = await api.get(`/documentsByOrigin?origin=Enrollment&type=${type}&subtype=Student`)
             console.log(data, type)
@@ -155,20 +160,14 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
             if (id !== 'new') {
                 try {
                     let documents = [];
-                    const ddiOptions = await getCountriesList()
                     const { data } = await api.get(`/outside/enrollments/${id}`)
 
-                    if (data.form_step === 'documents-upload') {
-                        documents = await getDocuments(data.students.processsubstatuses.name)
-                    }
+                    documents = await getDocuments(data.students.processsubstatuses.name)
 
                     const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at } = data;
                     const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
                     setRegistry(registries)
-                    setPageData({ ...data, documents, loaded: true, ddiOptions, activeMenu: data.form_step })
-                    // if (data.form_step === 'student-signature') {
-                    //     setSuccessfullyUpdated(false)
-                    // }
+                    setPageData({ ...data, documents, loaded: true, activeMenu: data.form_step, lastActiveMenu: menus.find(menu => menu.name === data.form_step) })
 
                 } catch (err) {
                     if (err.response && err.response.data && err.response.data.error) {
@@ -243,7 +242,7 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                                 key: fileUuid + ".png"
                             }
                         })
-                        await api.put(`/outside/enrollments/${id}`, {})
+                        await api.put(`/outside/enrollments/${id}`, { activeMenu: pageData.activeMenu, lastActiveMenu: pageData.lastActiveMenu })
                         setPageData({ ...pageData, loaded: false })
                         setSuccessfullyUpdated(true)
                         toast("Saved!", { autoClose: 1000 })
@@ -293,7 +292,7 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                         }
                         // return
                         delete objUpdated.documents;
-                        await api.put(`/outside/enrollments/${id}`, { ...objUpdated, date_of_birth: date_of_birth ? format(date_of_birth, 'yyyyMMdd') : null, passport_expiration_date: passport_expiration_date ? format(passport_expiration_date, 'yyyyMMdd') : null, i94_expiration_date: i94_expiration_date ? format(i94_expiration_date, 'yyyyMMdd') : null })
+                        await api.put(`/outside/enrollments/${id}`, { ...objUpdated, activeMenu: pageData.activeMenu, lastActiveMenu: pageData.lastActiveMenu, date_of_birth: date_of_birth ? format(date_of_birth, 'yyyyMMdd') : null, passport_expiration_date: passport_expiration_date ? format(passport_expiration_date, 'yyyyMMdd') : null, i94_expiration_date: i94_expiration_date ? format(i94_expiration_date, 'yyyyMMdd') : null })
                         setPageData({ ...pageData, loaded: false })
                         setSuccessfullyUpdated(true)
                         toast("Saved!", { autoClose: 1000 })
@@ -301,11 +300,10 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                     })
                 } else {
                     try {
-                        await api.put(`/outside/enrollments/${id}`, { ...objUpdated, date_of_birth: date_of_birth ? format(date_of_birth, 'yyyyMMdd') : null, passport_expiration_date: passport_expiration_date ? format(passport_expiration_date, 'yyyyMMdd') : null, i94_expiration_date: i94_expiration_date ? format(i94_expiration_date, 'yyyyMMdd') : null })
+                        await api.put(`/outside/enrollments/${id}`, { ...objUpdated, activeMenu: pageData.activeMenu, lastActiveMenu: pageData.lastActiveMenu, date_of_birth: date_of_birth ? format(date_of_birth, 'yyyyMMdd') : null, passport_expiration_date: passport_expiration_date ? format(passport_expiration_date, 'yyyyMMdd') : null, i94_expiration_date: i94_expiration_date ? format(i94_expiration_date, 'yyyyMMdd') : null })
                         setPageData({ ...pageData, loaded: false })
                         setSuccessfullyUpdated(true)
                         toast("Saved!", { autoClose: 1000 })
-                        // setSent(true);
                         setLoading(false)
                     } catch (err) {
                         console.log(err)
@@ -335,12 +333,12 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
 
     function handleHasDependents(el) {
         setSuccessfullyUpdated(false)
-        setPageData({ ...pageData, has_dependents: el.value, enrollmentdependents: el.value === 'Yes' ? [{ name: null, relationship_type: null, gender: null, dept1_type: null, email: null, phone: null }] : [] })
+        setPageData({ ...pageData, has_dependents: el.value, enrollmentdependents: el.value ? [{ name: null, relationship_type: null, gender: null, dept1_type: null, email: null, phone: null }] : [] })
     }
 
     function handleHasSponsors(el) {
         setSuccessfullyUpdated(false)
-        setPageData({ ...pageData, need_sponsorship: el.value, enrollmentsponsors: el.value === 'Yes' ? [{ name: null, relationship_type: null, email: null, phone: null }] : [] })
+        setPageData({ ...pageData, need_sponsorship: el.value, enrollmentsponsors: el.value ? [{ name: null, relationship_type: null, email: null, phone: null }] : [] })
     }
 
     function handleAddDependent() {
@@ -423,25 +421,26 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
             <div className='flex h-full flex-col items-start justify-between gap-4 md:flex-row'>
 
                 <div className='flex flex-row items-center justify-between text-xs w-32 gap-4 md:flex-col'>
-                    <RegisterFormMenu disabled={pageData.activeMenu !== 'student-information'} activeMenu={pageData.activeMenu} name='student-information' >
+                    <RegisterFormMenu disabled={false} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[0].name })} activeMenu={pageData.activeMenu} name='student-information' >
                         <User size={22} /> Student Information
                     </RegisterFormMenu>
-                    <RegisterFormMenu disabled={pageData.activeMenu !== 'emergency-contact'} activeMenu={pageData.activeMenu} name='emergency-contact' >
+                    {console.log(pageData.lastActiveMenu)}
+                    <RegisterFormMenu disabled={pageData.lastActiveMenu.order < 2} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[1].name })} activeMenu={pageData.activeMenu} name='emergency-contact' >
                         <Ambulance size={22} /> Emergency Contact
                     </RegisterFormMenu>
-                    <RegisterFormMenu disabled={pageData.activeMenu !== 'enrollment-information'} activeMenu={pageData.activeMenu} name='enrollment-information' >
+                    <RegisterFormMenu disabled={pageData.lastActiveMenu.order < 3} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[2].name })} activeMenu={pageData.activeMenu} name='enrollment-information' >
                         <BookText size={22} /> Enrollment Information
                     </RegisterFormMenu>
-                    <RegisterFormMenu disabled={pageData.activeMenu !== 'dependent-information'} activeMenu={pageData.activeMenu} name='dependent-information' >
+                    <RegisterFormMenu disabled={pageData.lastActiveMenu.order < 4} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[3].name })} activeMenu={pageData.activeMenu} name='dependent-information' >
                         <Contact size={22} /> Dependent Information
                     </RegisterFormMenu>
-                    <RegisterFormMenu disabled={pageData.activeMenu !== 'affidavit-of-support'} activeMenu={pageData.activeMenu} name='affidavit-of-support' >
+                    <RegisterFormMenu disabled={pageData.lastActiveMenu.order < 5} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[4].name })} activeMenu={pageData.activeMenu} name='affidavit-of-support' >
                         <BadgeDollarSign size={22} /> Affidavit of Support
                     </RegisterFormMenu>
-                    <RegisterFormMenu disabled={pageData.activeMenu !== 'documents-upload'} activeMenu={pageData.activeMenu} name='documents-upload' >
+                    <RegisterFormMenu disabled={pageData.lastActiveMenu.order < 6} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[5].name })} activeMenu={pageData.activeMenu} name='documents-upload' >
                         <Files size={22} /> Documents Upload
                     </RegisterFormMenu>
-                    <RegisterFormMenu disabled={pageData.activeMenu !== 'student-signature'} activeMenu={pageData.activeMenu} name='student-signature' >
+                    <RegisterFormMenu disabled={pageData.lastActiveMenu.order < 7} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[6].name })} activeMenu={pageData.activeMenu} name='student-signature' >
                         <FileSignature size={22} /> Student's Signature
                     </RegisterFormMenu>
                 </div>
@@ -507,7 +506,11 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                                             <Scope path={`enrollmentemergencies[0]`}>
                                                 <InputLine title='Emergency Contact'>
                                                     <Input type='text' name='name' required grow title='Full Name' defaultValue={pageData.enrollmentemergencies.length > 0 ? pageData.enrollmentemergencies[0].name : ''} InputContext={InputContext} />
-                                                    <SelectPopover name='relationship_type' required grow title='Relationship Type' options={relationshipTypeOptions} isSearchable defaultValue={relationshipTypeOptions.find(relationshipType => relationshipType.value === pageData.enrollmentemergencies.length > 0 ? pageData.enrollmentemergencies[0].relationship_type : '')} InputContext={InputContext} />
+                                                    {pageData.enrollmentemergencies.length > 0 ?
+                                                        <SelectPopover name='relationship_type' required grow title='Relationship Type' options={relationshipTypeOptions} isSearchable defaultValue={relationshipTypeOptions.find(relationshipType => relationshipType.value === pageData.enrollmentemergencies[0].relationship_type)} InputContext={InputContext} />
+                                                        :
+                                                        <SelectPopover name='relationship_type' required grow title='Relationship Type' options={relationshipTypeOptions} isSearchable InputContext={InputContext} />
+                                                    }
                                                 </InputLine>
                                                 <InputLine>
                                                     <Input type='text' name='email' required grow title='E-mail' defaultValue={pageData.enrollmentemergencies.length > 0 ? pageData.enrollmentemergencies[0].email : ''} InputContext={InputContext} />
@@ -524,15 +527,15 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                                         </InputLineGroup>}
                                         {pageData.activeMenu === 'dependent-information' && <InputLineGroup title='Dependent Information' activeMenu={pageData.activeMenu === 'dependent-information'}>
                                             <InputLine title='Dependent Information'>
-                                                <SelectPopover name='has_dependents' required onChange={(el) => handleHasDependents(el)} grow title='Do you have dependents?' options={[{ value: 'Yes', label: 'Yes' }, { value: 'No', label: 'No' }]} InputContext={InputContext} />
+                                                <SelectPopover name='has_dependents' required onChange={(el) => handleHasDependents(el)} grow title='Do you have dependents?' options={yesOrNoOptions} defaultValue={yesOrNoOptions.find(type => type.value === pageData.has_dependents)} InputContext={InputContext} />
                                             </InputLine>
-                                            {pageData.has_dependents === 'Yes' && <>
+                                            {pageData.has_dependents && <>
                                                 {pageData.enrollmentdependents.map((dependent, index) => {
                                                     if (dependent.id !== 1) {
                                                         return <Scope key={index} path={`enrollmentdependents[${index}]`}>
                                                             <InputLine title={`Dependent ${index + 1}`}>
                                                                 {index ? <button type='button' onClick={() => handleRemoveDependent(index)}><Trash size={14} className='mt-4' /></button> : null}
-                                                                <Input type='text' name='name' required grow title='Name' defaultValue={dependent.name} InputContext={InputContext} />
+                                                                <Input type='text' name='name' required grow title='Full Name' defaultValue={dependent.name} InputContext={InputContext} />
                                                                 <SelectPopover name='gender' required grow title='Gender' options={genderOptions} isSearchable defaultValue={genderOptions.find(gender => gender.value === dependent.gender)} InputContext={InputContext} />
                                                                 <SelectPopover name='dept1_type' required grow title='Dept1 Type' options={dept1TypeOptions} isSearchable defaultValue={dept1TypeOptions.find(dept1Type => dept1Type.value === dependent.dept1_type)} InputContext={InputContext} />
                                                                 <SelectPopover name='relationship_type' required grow title='Relationship Type' options={relationshipTypeOptions} isSearchable defaultValue={relationshipTypeOptions.find(relationshipType => relationshipType.value === dependent.relationship_type)} InputContext={InputContext} />
@@ -546,18 +549,25 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                                             </>}
                                         </InputLineGroup>}
                                         {pageData.activeMenu === 'affidavit-of-support' && <InputLineGroup title='Affidavit of Support' activeMenu={pageData.activeMenu === 'affidavit-of-support'}>
-                                            <InputLine title='Affidavit of Support'>
-                                                <SelectPopover name='need_sponsorship' onChange={(el) => handleHasSponsors(el)} required grow title='Do you need sponsorship?' options={[{ value: 'Yes', label: 'Yes' }, { value: 'No', label: 'No (Self Financial Resource)' }]} InputContext={InputContext} />
+                                            <InputLine title='Proof of financial support'>
+                                                {pageData.has_dependents ?
+                                                    <div className='text-lg'>{formatter.format((parseFloat(pageData.filial.financial_support_student_amount) + (parseFloat(pageData.filial.financial_support_dependent_amount) * pageData.enrollmentdependents.length)) * pageData.plan_months)} (Estimate)</div>
+                                                    :
+                                                    <div className='text-lg'>$ {formatter.format(parseFloat(pageData.filial.financial_support_student_amount) * pageData.plan_months)} (Estimate)</div>
+                                                }
+                                                {/* </InputLine>
+                                            <InputLine title='Affidavit of Support'> */}
+                                                <SelectPopover name='need_sponsorship' onChange={(el) => handleHasSponsors(el)} required grow title='Do you need sponsorship?' options={sponsorshipOptions} defaultValue={sponsorshipOptions.find(type => type.value === pageData.need_sponsorship)} InputContext={InputContext} />
                                             </InputLine>
-                                            {pageData.need_sponsorship === 'Yes' && <>
+                                            {pageData.need_sponsorship && <>
                                                 {pageData.enrollmentsponsors && pageData.enrollmentsponsors.map((sponsor, index) => {
                                                     return <Scope key={index} path={`enrollmentsponsors[${index}]`}>
                                                         <InputLine title={`Sponsor ${index + 1}`}>
                                                             {index ? <button type='button' onClick={() => handleRemoveSponsor(index)}><Trash size={14} className='mt-4' /></button> : null}
                                                             <Input type='text' name='name' required grow title='Full Name' defaultValue={sponsor.name} InputContext={InputContext} />
                                                             <SelectPopover name='relationship_type' required grow title='Relationship Type' options={sponsorRelationshipTypeOptions} isSearchable defaultValue={sponsorRelationshipTypeOptions.find(relationshipType => relationshipType.value === sponsor.relationship_type)} InputContext={InputContext} />
-                                                        </InputLine>
-                                                        <InputLine>
+                                                            {/* </InputLine>
+                                                        <InputLine> */}
                                                             <Input type='text' name='email' required grow title='E-mail' defaultValue={sponsor.email} InputContext={InputContext} />
                                                             <Input type='text' name='phone' required grow title='Phone Number' isPhoneNumber defaultValue={sponsor.phone} InputContext={InputContext} />
                                                         </InputLine>
@@ -572,10 +582,10 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                                                     <Input type='hidden' name='document_id' defaultValue={document.id} InputContext={InputContext} />
                                                     <InputLine title={document.title}>
                                                         {!document.multiple && pageData.enrollmentdocuments && pageData.enrollmentdocuments.filter(enrollmentdocument => enrollmentdocument.document_id === document.id).length === 0 &&
-                                                            <FileInput type='file' name='file_id' title={'File'} grow InputContext={InputContext} />
+                                                            <FileInput type='file' name='file_id' title={'File'} required={document.required} grow InputContext={InputContext} />
                                                         }
                                                         {document.multiple &&
-                                                            <FileInputMultiple type='file' name='file_id' title={'Multiple Files'} grow InputContext={InputContext} />
+                                                            <FileInputMultiple type='file' name='file_id' required={document.required} title={'Multiple Files'} grow InputContext={InputContext} />
                                                         }
                                                     </InputLine>
                                                     {pageData.enrollmentdocuments && pageData.enrollmentdocuments.length > 0 && <InputLine subtitle='Attached Files'>
@@ -602,17 +612,23 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                                             })}
                                         </InputLineGroup>}
                                         {pageData.activeMenu === 'student-signature' && <InputLineGroup title='Student Signature' activeMenu={pageData.activeMenu === 'student-signature'}>
+                                            {/* <InputLine title='Document Preview'>
+                                                <PDFViewer file='http://localhost:3000/student.pdf' />
+                                            </InputLine> */}
                                             <InputLine title='Student Signature'>
-                                                <div onClick={() => setSuccessfullyUpdated(false)} className='h-52 w-96 gap-2 border rounded'>
-                                                    <SignaturePad redrawOnResize ref={signatureRef} options={{ backgroundColor: '#FFF', penColor: '#111' }} />
-                                                </div>
-                                                <div className='flex flex-1 flex-row items-center justify-start gap-2'>
-                                                    <button type='button' onClick={handleClearSignature} className='bg-primary text-white rounded-md py-4 px-8 my-2 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1'>Clear</button>
+                                                <PDFViewer file='http://localhost:3000/student.pdf' height={450} />
+                                                <div className='flex flex-1 flex-col items-start justify-start'>
+                                                    <div onClick={() => setSuccessfullyUpdated(false)} className='h-[19rem] w-[36rem] gap-2 border rounded'>
+                                                        <SignaturePad redrawOnResize ref={signatureRef} options={{ backgroundColor: '#FFF', penColor: '#111' }} />
+                                                    </div>
+                                                    <div className='flex flex-1 flex-row items-center justify-start gap-2'>
+                                                        <button type='button' onClick={handleClearSignature} className='bg-primary text-white rounded-md py-4 px-8 my-2 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1'>Clear Signature</button>
+                                                    </div>
                                                 </div>
 
                                             </InputLine>
                                         </InputLineGroup>}
-                                        {pageData.activeMenu === 'sponsor-signature' &&
+                                        {pageData.activeMenu === 'sponsor-signature' || pageData.activeMenu === 'finished' &&
                                             <div className='flex h-full flex-row items-center justify-center text-center gap-4'>
                                                 <CheckCircle size={32} color='#00b361' />
                                                 Thank you!</div>}

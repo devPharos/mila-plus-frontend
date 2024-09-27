@@ -25,7 +25,7 @@ const CheckboxInput = ({ name, title, InputContext, grow, shrink, type, ...rest 
   const { setSuccessfullyUpdated } = useContext(InputContext)
 
   return (
-    <div className={`${type === 'hidden' ? 'hidden' : 'flex'} flex-col justify-center items-start relative ${shrink ? 'w-34' : ''} ${grow ? 'grow' : ''} max-w-48`}>
+    <div className={`${type === 'hidden' ? 'hidden' : 'flex'} flex-col justify-center items-start relative ${shrink ? 'w-34' : ''} ${grow ? 'grow' : 'max-w-48'} `}>
 
       <div htmlFor={name} className={`w-full border rounded-lg p-2 px-4 text-sm flex flex-row justify-start items-center gap-2 ${disabled && 'bg-gray-100'} ${error && 'border-red-300'}`}>
 
@@ -37,8 +37,8 @@ const CheckboxInput = ({ name, title, InputContext, grow, shrink, type, ...rest 
           checked={defaultValue}
           onChange={() => setSuccessfullyUpdated(false)}
           {...rest}
-          className='text-sm focus:outline-none flex-1 bg-transparent'
-        /> <label htmlFor={name} className='text-xs flex-1'>{title}</label>
+          className='text-sm focus:outline-none bg-transparent'
+        /> <label htmlFor={name} className='text-md flex-1'>{title}</label>
 
       </div>
       {error && <span className={`text-xs text-red-500 absolute top-7 bg-white px-2 rounded-full right-4`}>{error}</span>}

@@ -61,6 +61,7 @@ import EnrollmentOutside from './pages/Commercial/Enrollments/Preview/enrollment
 import Error401 from './pages/Errors/Page401';
 import ProcessTypes from './pages/Settings/ProcessTypes';
 import ProcessSubstatuses from './pages/Settings/ProcessSubstatuses';
+import SponsorOutside from './pages/Commercial/Enrollments/Preview/sponsor';
 
 injectStore(store)
 
@@ -93,6 +94,10 @@ const router = createBrowserRouter([
             path: "/fill-form/Enrollment",
             element: <EnrollmentOutside />
           },
+          {
+            path: "/fill-form/Sponsor",
+            element: <SponsorOutside />
+          }
         ]
       },
       {

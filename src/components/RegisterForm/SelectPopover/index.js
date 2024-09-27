@@ -47,10 +47,10 @@ export default function SelectPopover({ name, title, grow, hidden = false, shrin
     setSuccessfullyUpdated(false)
   }
 
-  const width = shrink ? 'w-34' : 'w-full md:w-auto'
+  const width = shrink ? 'w-full md:w-auto max-w-32' : 'w-full md:w-auto'
   return (
     <div className={`${type === 'hidden' ? 'hidden' : 'flex'} flex-col justify-center items-start relative ${width} ${grow ? 'grow' : ''}`}>
-      <div className='px-2 text-xs flex flex-row justify-between items-center'>{title} {required && <Asterisk color='#e00' size={12} />}</div>
+      <div className='px-1 text-xs flex flex-row justify-between items-center'>{title} {required && <Asterisk color='#e00' size={12} />}</div>
       <div
         className={`text-sm focus:outline-none flex-1 w-full bg-transparent`}>
         <AsyncSelect

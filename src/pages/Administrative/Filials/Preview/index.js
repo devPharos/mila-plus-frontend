@@ -42,6 +42,9 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     const [registry, setRegistry] = useState({ created_by: null, created_at: null, updated_by: null, updated_at: null, canceled_by: null, canceled_at: null })
     const [filialTypesOptions, setFilialTypesOptions] = useState([])
     const generalForm = useRef()
+    const discountOptions = [{ value: true, label: 'Percent %' }, { value: false, label: 'Value $' }]
+    const discountTypesOptions = [{ value: 'Admission', label: 'Admission' }, { value: 'Financial', label: 'Financial' }]
+    const yesOrNoOptions = [{ value: true, label: 'Yes' }, { value: false, label: 'No' }]
 
     const countriesOptions = countries_list.map(country => {
         return { value: country, label: country }
@@ -50,11 +53,18 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     useEffect(() => {
         async function getPageData() {
             try {
-                const { data } = await api.get(`filials/${id}`)
-                setPageData({ ...data, loaded: true })
-                const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at } = data;
-                const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
-                setRegistry(registries)
+                api.get(`filials/${id}`).then(async ({ data }) => {
+                    api.get(`processsubstatuses`).then(async ({ data: processsubstatuses }) => {
+                        const mappedProcessSubstatuses = processsubstatuses.map(processsubstatus => {
+                            return { id: null, name: processsubstatus.name, processsubstatus_id: processsubstatus.id, registration_fee: 0, book: 0, tuition: 0, active: false }
+                        })
+                        const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at, pricelists } = data;
+                        // console.log(pricelists, mappedProcessSubstatuses)
+                        setPageData({ ...data, loaded: true, pricelists: pricelists.concat(mappedProcessSubstatuses.filter(processsubstatus => !pricelists.find(price => price.processsubstatus_id === processsubstatus.processsubstatus_id))) })
+                        const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
+                        setRegistry(registries)
+                    })
+                })
             } catch (err) {
                 toast(err.response.data.error, { type: 'error', autoClose: 3000 })
             }
@@ -84,6 +94,8 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
             toast("No need to be saved!", { autoClose: 1000, type: 'info', transition: Zoom })
             return
         }
+        // console.log(data)
+        // return;
         if (id === 'new') {
             try {
                 const response = await api.post(`/filials`, data)
@@ -189,7 +201,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
             </div>
                 :
                 <div className='flex h-full flex-row items-start justify-between gap-4'>
-                    <div className='flex flex-col items-center justify-between text-xs w-32 gap-4'>
+                    <div className='flex flex-col items-center justify-between text-xs w-36 gap-4'>
                         <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='general' >
                             <Building size={16} /> General
                         </RegisterFormMenu>
@@ -198,6 +210,9 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                         </RegisterFormMenu>
                         <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='discount-list' disabled={id === 'new'} messageOnDisabled='Create the filial to have access to Discount List.'>
                             <CircleDollarSign size={16} /> Discount List
+                        </RegisterFormMenu>
+                        <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='financial-support' disabled={id === 'new'} messageOnDisabled='Create the filial to have access to Financial Support.'>
+                            <CircleDollarSign size={16} /> Financial Support
                         </RegisterFormMenu>
 
                     </div>
@@ -213,9 +228,9 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
 
                                                 <Scope path={`administrator`}>
                                                     <InputLine title='Filial Administrator'>
-                                                        <Input type='hidden' name='id' required title='ID' defaultValue={pageData.administrator ? pageData.administrator.id : null} InputContext={InputContext} />
-                                                        <Input type='text' name='name' required title='Name' defaultValue={pageData.administrator ? pageData.administrator.name : ''} InputContext={InputContext} />
-                                                        <Input type='text' name='email' required title='E-mail' grow defaultValue={pageData.administrator ? pageData.administrator.email : ''} InputContext={InputContext} />
+                                                        <Input type='hidden' name='id' title='ID' defaultValue={pageData.administrator ? pageData.administrator.id : null} InputContext={InputContext} />
+                                                        <Input type='text' name='name' title='Name' defaultValue={pageData.administrator ? pageData.administrator.name : ''} InputContext={InputContext} />
+                                                        <Input type='text' name='email' title='E-mail' grow defaultValue={pageData.administrator ? pageData.administrator.email : ''} InputContext={InputContext} />
                                                     </InputLine>
                                                 </Scope>
 
@@ -259,48 +274,41 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
 
                                             <InputLineGroup title='PRICE LIST' activeMenu={activeMenu === 'price-list'}>
                                                 <h1 className='w-full border-b p-4 pb-0 pt-2 pb-2 font-bold'>Price List</h1>
-                                                {pageData.pricelists && pageData.pricelists.map((price, index) =>
+                                                {console.log(pageData.pricelists)}
+                                                {pageData.pricelists.sort((a, b) => a.processsubstatuses ? a.processsubstatuses.name : a.name > b.processsubstatuses ? b.processsubstatuses.name : b.name).map((price, index) =>
                                                     <Scope key={index} path={`pricelists[${index}]`}>
                                                         <InputLine>
-                                                            {!price.id && <button type='button' className='mt-3 bg-none border-none' onClick={() => handleRemovePrice(index)}><Trash size={14} /></button>}
+                                                            {/* {!price.id && <button type='button' className='mt-3 bg-none border-none' onClick={() => handleRemovePrice(index)}><Trash size={14} /></button>} */}
                                                             <Input type='hidden' name={`id`} defaultValue={price.id} InputContext={InputContext} />
-                                                            <Input type='text' grow name={`name`} title='Name' defaultValue={price.name} InputContext={InputContext} />
-                                                            <Input type='text' shrink name={`installment`} title='Installment' defaultValue={price.installment} InputContext={InputContext} />
-                                                            <Input type='text' shrink name={`installment_f1`} title='Installment F1' defaultValue={price.installment_f1} InputContext={InputContext} />
-                                                            <Input type='text' shrink name={`mailling`} grow title='Mailling' defaultValue={price.mailling} InputContext={InputContext} />
-                                                            <Input type='text' shrink name={`private`} grow title='Private' defaultValue={price.private} InputContext={InputContext} />
-                                                            <Input type='text' shrink name={`book`} grow title='Book' defaultValue={price.book} InputContext={InputContext} />
-                                                            <Input type='text' shrink name={`registration_fee`} grow title='Registration Fee' defaultValue={price.registration_fee} InputContext={InputContext} />
-                                                            <Select name='active' shrink title='Active' options={[{ value: 'Yes', label: 'Yes' }, { value: 'No', label: 'No' }]} defaultValue={price.active ? 'Yes' : 'No'} InputContext={InputContext} />
-
+                                                            <Input type='hidden' name={`processsubstatus_id`} defaultValue={price.processsubstatus_id || price.id} InputContext={InputContext} />
+                                                            <Input type='text' readOnly grow name={`name`} title='Process' defaultValue={price.processsubstatuses ? price.processsubstatuses.name : price.name} InputContext={InputContext} />
+                                                            <Input type='text' shrink name={`registration_fee`} title='Registration Fee' defaultValue={price.registration_fee || 0} InputContext={InputContext} />
+                                                            <Input type='text' shrink name={`book`} title='Book' defaultValue={price.book || 0} InputContext={InputContext} />
+                                                            <Input type='text' shrink name={`installment`} title='Tuition' defaultValue={price.installment || 0} InputContext={InputContext} />
+                                                            <SelectPopover name='active' title='Active' options={[{ value: 'Yes', label: 'Yes' }, { value: 'No', label: 'No' }]} defaultValue={{ value: price.active ? 'Yes' : 'No', label: price.active ? 'Yes' : 'No' }} InputContext={InputContext} />
                                                         </InputLine>
-                                                        <div className='w-full border-b p-4 pt-2'></div>
+                                                        <div className='w-full border-b'></div>
                                                     </Scope>
                                                 )}
-                                                <button type="button" onClick={handleAddPrice} className={`m-2 mt-4 text-md font-bold border border-mila_orange text-mila_orange rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1`}>
+                                                {/* <button type="button" onClick={handleAddPrice} className={`m-2 mt-4 text-md font-bold border border-mila_orange text-mila_orange rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1`}>
                                                     + Add Price
-                                                </button>
+                                                </button> */}
                                             </InputLineGroup>
 
                                             <InputLineGroup title='DISCOUNT LIST' activeMenu={activeMenu === 'discount-list'}>
                                                 <h1 className='w-full border-b p-4 pb-0 pt-2 pb-2 font-bold'>Discount List</h1>
-                                                {pageData.discountlists && pageData.discountlists.map((discount, index) =>
+                                                {pageData.discountlists && pageData.discountlists.sort((a, b) => a.name > b.name).map((discount, index) =>
                                                     <Scope key={index} path={`discountlists[${index}]`}>
                                                         <InputLine>
-
                                                             {!discount.id && <button type='button' className='mt-3 bg-none border-none' onClick={() => handleRemoveDiscount(index)}><Trash size={14} /></button>}
                                                             <Input type='hidden' name={`id`} defaultValue={discount.id} InputContext={InputContext} />
-                                                            <Select name='active' shrink title='Active' options={[{ value: 'Yes', label: 'Yes' }, { value: 'No', label: 'No' }]} defaultValue={discount.active ? 'Yes' : 'No'} InputContext={InputContext} />
-                                                            <Input type='text' grow name={`name`} title='Name' defaultValue={discount.name} InputContext={InputContext} />
-                                                            <Input type='text' shrink name={`value`} title='Value' defaultValue={discount.value} InputContext={InputContext} />
-                                                            <CheckboxInput name='percent' title='Percent' InputContext={InputContext} />
-                                                            {/* <Input type='text' shrink name={`punctuality_discount`} grow title='Mailling' defaultValue={discount.percent} /> */}
-                                                        </InputLine>
-                                                        <InputLine>
-                                                            <CheckboxInput name='ponctuality_discount' title='Ponctuality Discount' InputContext={InputContext} />
-                                                            <CheckboxInput name='all_installments' title='All Installments' InputContext={InputContext} />
-                                                            <CheckboxInput name='free_vacation' title='Free Vacation' InputContext={InputContext} />
-                                                            <CheckboxInput name='special_discount' title='Special Discount' InputContext={InputContext} />
+                                                            <SelectPopover name='type' grow required title='Type' options={discountTypesOptions} defaultValue={discountTypesOptions.find(type => type.value === discount.type)} InputContext={InputContext} />
+                                                            <Input type='text' grow name={`name`} required title='Name' defaultValue={discount.name} InputContext={InputContext} />
+                                                            <SelectPopover name='percent' grow required title='Discount' options={discountOptions} defaultValue={discountOptions.find(type => type.value === discount.percent)} InputContext={InputContext} />
+                                                            <Input type='text' shrink name={`value`} required title='Amount' defaultValue={discount.value} InputContext={InputContext} />
+                                                            <SelectPopover name='all_installments' required title='All Installments' options={yesOrNoOptions} defaultValue={yesOrNoOptions.find(type => type.value === discount.all_installments)} InputContext={InputContext} />
+                                                            <SelectPopover name='free_vacation' required title='Free Vacation' options={yesOrNoOptions} defaultValue={yesOrNoOptions.find(type => type.value === discount.free_vacation)} InputContext={InputContext} />
+                                                            <SelectPopover name='active' required title='Active' options={yesOrNoOptions} defaultValue={yesOrNoOptions.find(type => type.value === discount.active)} InputContext={InputContext} />
                                                         </InputLine>
                                                         <div className='w-full border-b p-4 pt-2'></div>
                                                     </Scope>
@@ -309,6 +317,14 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                 <button type="button" onClick={handleAddDiscount} className={`m-2 mt-4 text-md font-bold border border-mila_orange text-mila_orange rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1`}>
                                                     + Add Discount
                                                 </button>
+                                            </InputLineGroup>
+
+                                            <InputLineGroup title='FINANCIAL SUPPORT' activeMenu={activeMenu === 'financial-support'}>
+                                                <h1 className='w-full border-b p-4 pb-0 pt-2 pb-2 font-bold'>Financial Support</h1>
+                                                <InputLine>
+                                                    <Input type='text' onlyFloat grow name={`financial_support_student_amount`} required title='Amount ($) per month required for students' defaultValue={pageData.financial_support_student_amount} InputContext={InputContext} />
+                                                    <Input type='text' onlyFloat grow name={`financial_support_dependent_amount`} required title='Amount ($) per month required for dependents' defaultValue={pageData.financial_support_dependent_amount} InputContext={InputContext} />
+                                                </InputLine>
                                             </InputLineGroup>
 
                                         </> : <FormLoading />}

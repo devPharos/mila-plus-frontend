@@ -32,12 +32,13 @@ import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import Icon from '~/components/Icon';
 import PDFViewer from '~/components/PDFViewer';
+import CheckboxInput from '~/components/RegisterForm/CheckboxInput';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export const InputContext = createContext({})
 
-export default function EnrollmentOutside({ access = null, handleOpened, setOpened, defaultFormType = 'preview' }) {
+export default function TransferOutside({ access = null, handleOpened, setOpened, defaultFormType = 'preview' }) {
     const [searchparams, setSearchParams] = useSearchParams();
     const [pageData, setPageData] = useState({
         enrollmentemergencies: [{
@@ -69,7 +70,7 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
     const yesOrNoOptions = [{ value: true, label: 'Yes' }, { value: false, label: 'No' }]
     const sponsorshipOptions = [{ value: true, label: 'Yes' }, { value: false, label: 'No (Self Financial Resource)' }]
 
-    const menus = [{ order: 1, name: 'student-information' }, { order: 2, name: 'emergency-contact' }, { order: 3, name: 'enrollment-information' }, { order: 4, name: 'dependent-information' }, { order: 5, name: 'affidavit-of-support' }, { order: 6, name: 'documents-upload' }, { order: 7, name: 'student-signature' }, { order: 8, name: 'sponsor-signature' }]
+    const menus = [{ order: 1, name: 'transfer-request' }, { order: 2, name: 'transfer-dso' }]
 
     const countriesOptions = countries_list.map(country => {
         return { value: country, label: country }
@@ -153,7 +154,6 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
     useEffect(() => {
         async function getDocuments(type = '') {
             const { data } = await api.get(`/documentsByOrigin?origin=Enrollment&type=${type}&subtype=Student`)
-            console.log(data, type)
             return data;
         }
         async function getPageData() {
@@ -161,16 +161,16 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                 try {
                     let documents = [];
                     const { data } = await api.get(`/outside/enrollments/${id}`)
-
+                    const { data: filialsData } = await api.get(`/filials`)
                     documents = await getDocuments(data.students.processsubstatuses.name)
-
+                    filialsData.push({ id: null, name: 'Other School' })
                     const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at } = data;
                     const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
                     setRegistry(registries)
                     if (searchparams.has('activeMenu')) {
-                        setPageData({ ...data, documents, loaded: true, activeMenu: searchparams.get('activeMenu'), lastActiveMenu: menus.find(menu => menu.name === searchparams.get('activeMenu')) })
+                        setPageData({ ...data, documents, filials: filialsData, loaded: true, activeMenu: searchparams.get('activeMenu'), lastActiveMenu: menus.find(menu => menu.name === searchparams.get('activeMenu')) })
                     } else {
-                        setPageData({ ...data, documents, loaded: true, activeMenu: data.form_step, lastActiveMenu: menus.find(menu => menu.name === data.form_step) })
+                        setPageData({ ...data, documents, filials: filialsData, loaded: true, activeMenu: data.form_step, lastActiveMenu: menus.find(menu => menu.name === data.form_step) })
                     }
 
                 } catch (err) {
@@ -190,23 +190,6 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
         // return
         try {
             generalForm.current.setErrors({});
-            if (pageData.activeMenu === 'student-information') {
-                const result = await studentInfoSchema.validate(data, {
-                    abortEarly: false,
-                });
-            } else if (pageData.activeMenu === 'emergency-contact') {
-                const result = await emergencySchema.validate(data, {
-                    abortEarly: false,
-                });
-            } else if (pageData.activeMenu === 'dependent-information') {
-                const result = await dependentInfoSchema.validate(data, {
-                    abortEarly: false,
-                });
-            } else if (pageData.activeMenu === 'affidavit-of-support') {
-                const result = await affidavitOfSupportSchema.validate(data, {
-                    abortEarly: false,
-                });
-            }
         } catch (err) {
             const validationErrors = {};
 
@@ -217,7 +200,6 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                     validationErrors[error.path] = error.message;
 
                 });
-                console.log(validationErrors)
                 generalForm.current.setErrors(validationErrors);
             }
             return;
@@ -332,56 +314,6 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
     function handleInactivate() {
     }
 
-    function handleHasDependents(el) {
-        setSuccessfullyUpdated(false)
-        setPageData({ ...pageData, has_dependents: el.value, enrollmentdependents: el.value ? [{ name: null, relationship_type: null, gender: null, dept1_type: null, email: null, phone: null }] : [] })
-    }
-
-    function handleHasSponsors(el) {
-        setSuccessfullyUpdated(false)
-        setPageData({ ...pageData, need_sponsorship: el.value, enrollmentsponsors: el.value ? [{ name: null, relationship_type: null, email: null, phone: null }] : [] })
-    }
-
-    function handleAddDependent() {
-        setSuccessfullyUpdated(false)
-        const addedDependents = [...pageData.enrollmentdependents]
-        addedDependents.push({ name: null, relationship_type: null, gender: null, dept1_type: null, email: null, phone: null })
-        setPageData({ ...pageData, enrollmentdependents: addedDependents })
-    }
-
-    function handleAddSponsor() {
-        setSuccessfullyUpdated(false)
-        const addedSponsors = [...pageData.enrollmentsponsors]
-        addedSponsors.push({ name: null, relationship_type: null, email: null, phone: null })
-        setPageData({ ...pageData, enrollmentsponsors: addedSponsors })
-    }
-
-    function handleRemoveDependent(index) {
-        setSuccessfullyUpdated(false)
-
-        const newData = generalForm.current.getData()
-        const removedDependent = { ...newData.enrollmentdependents[index] }
-
-        newData.enrollmentdependents.splice(index, 1);
-        generalForm.current.setData(newData)
-
-        const removedDependents = pageData.enrollmentdependents.filter(dependent => dependent.id !== removedDependent.id)
-        setPageData({ ...pageData, enrollmentdependents: removedDependents })
-    }
-
-    function handleRemoveSponsor(index) {
-        setSuccessfullyUpdated(false)
-
-        const newData = generalForm.current.getData()
-        const removedSponsor = { ...newData.enrollmentsponsors[index] }
-
-        newData.enrollmentsponsors.splice(index, 1);
-        generalForm.current.setData(newData)
-
-        const removedSponsors = pageData.enrollmentsponsors.filter(sponsor => sponsor.id !== removedSponsor.id)
-        setPageData({ ...pageData, enrollmentsponsors: removedSponsors })
-    }
-
     function handleDeleteDocument(id) {
         // const { file } = pageData.staffdocuments.find(staffdocument => staffdocument.id === id);
         alertBox({
@@ -422,31 +354,10 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
             <div className='flex h-full flex-col items-start justify-between gap-4 md:flex-row'>
 
                 <div className='flex flex-row items-center justify-between text-xs w-32 gap-4 md:flex-col'>
-                    <RegisterFormMenu disabled={false} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[0].name })} activeMenu={pageData.activeMenu} name='student-information' >
-                        <User size={22} /> Student Information
+                    <RegisterFormMenu disabled={false} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[0].name })} activeMenu={pageData.activeMenu} name='transfer-request' >
+                        <User size={22} /> Transfer Information
                     </RegisterFormMenu>
-                    {pageData.students.processsubstatuses.name !== 'Transfer' &&
-                        <>
-                            <RegisterFormMenu disabled={pageData.lastActiveMenu.order < 2} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[1].name })} activeMenu={pageData.activeMenu} name='emergency-contact' >
-                                <Ambulance size={22} /> Emergency Contact
-                            </RegisterFormMenu>
-                            <RegisterFormMenu disabled={pageData.lastActiveMenu.order < 3 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[2].name })} activeMenu={pageData.activeMenu} name='enrollment-information' >
-                                <BookText size={22} /> Enrollment Information
-                            </RegisterFormMenu>
-                            <RegisterFormMenu disabled={pageData.lastActiveMenu.order < 4 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[3].name })} activeMenu={pageData.activeMenu} name='dependent-information' >
-                                <Contact size={22} /> Dependent Information
-                            </RegisterFormMenu>
-                            <RegisterFormMenu disabled={pageData.lastActiveMenu.order < 5 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[4].name })} activeMenu={pageData.activeMenu} name='affidavit-of-support' >
-                                <BadgeDollarSign size={22} /> Affidavit of Support
-                            </RegisterFormMenu>
-                            <RegisterFormMenu disabled={pageData.lastActiveMenu.order < 6 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[5].name })} activeMenu={pageData.activeMenu} name='documents-upload' >
-                                <Files size={22} /> Documents Upload
-                            </RegisterFormMenu>
-                            <RegisterFormMenu disabled={pageData.lastActiveMenu.order < 7 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[6].name })} activeMenu={pageData.activeMenu} name='student-signature' >
-                                <FileSignature size={22} /> Student's Signature
-                            </RegisterFormMenu>
-                        </>}
-                    <RegisterFormMenu disabled={pageData.lastActiveMenu.order < 8 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[7].name })} activeMenu={pageData.activeMenu} name='sponsor-signature' >
+                    <RegisterFormMenu disabled={pageData.lastActiveMenu.order < 8 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[7].name })} activeMenu={pageData.activeMenu} name='transfer-dso' >
                         <CheckCheck size={18} /> Finished
                     </RegisterFormMenu>
                 </div>
@@ -457,129 +368,28 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                                 {pageData.loaded ?
                                     <>
                                         <FormHeader saveText='Save & Continue' outside={!searchparams.has('activeMenu')} loading={loading} access={access} title={pageData.students.name + ' ' + pageData.students.last_name + ' - Enrollment Process'} registry={registry} InputContext={InputContext} />
-                                        {pageData.activeMenu === 'student-information' && <InputLineGroup title='Student Information' activeMenu={pageData.activeMenu === 'student-information'}>
+                                        {pageData.activeMenu === 'transfer-request' && <InputLineGroup title='Student Information' activeMenu={pageData.activeMenu === 'transfer-request'}>
                                             <Scope path={`students`}>
-                                                <InputLine title='General Data'>
-                                                    <DatePicker name='date_of_birth' required grow title='Birth Date' defaultValue={pageData.students.date_of_birth ? parseISO(pageData.students.date_of_birth) : null} placeholderText='MM/DD/YYYY' InputContext={InputContext} />
-                                                    <SelectPopover name='marital_status' required grow title='Marital Status' isSearchable defaultValue={maritalStatusOptions.find(maritalStatus => maritalStatus.value === pageData.students.marital_status)} options={maritalStatusOptions} InputContext={InputContext} />
-                                                </InputLine>
-                                            </Scope>
-                                            <Scope path={`students`}>
-                                                <InputLine title='Birth Details'>
-                                                    <Input type='text' name='birth_city' required grow title='Birth City' defaultValue={pageData.students.birth_city} InputContext={InputContext} />
-                                                    <Input type='text' name='birth_state' required grow title='Birth State' defaultValue={pageData.students.birth_state} InputContext={InputContext} />
-                                                    <SelectPopover name='birth_country' required grow title='Birth Country' isSearchable defaultValue={countriesOptions.find(country => country.value === pageData.students.birth_country)} options={countriesOptions} InputContext={InputContext} />
-                                                    <Input type='text' name='native_language' required grow title='Native Language' defaultValue={pageData.students.native_language} InputContext={InputContext} />
-                                                    {console.log(countriesOptions)}
-                                                    <SelectPopover name='citizen_country' required grow title='Citizen Country' isSearchable defaultValue={countriesOptions.find(country => country.value === pageData.students.citizen_country)} options={countriesOptions} InputContext={InputContext} />
-                                                </InputLine>
-                                                <InputLine title='Documentation'>
-                                                    <Input type='text' name='passport_number' required grow title='Passport Number' placeholder='-----' defaultValue={pageData.students.passport_number} InputContext={InputContext} />
-                                                    <DatePicker name='passport_expiration_date' required grow title='Passport Expiration Date' defaultValue={pageData.students.passport_expiration_date ? parseISO(pageData.students.passport_expiration_date) : null} placeholderText='MM/DD/YYYY' InputContext={InputContext} />
-                                                    {pageData.students.sub_status === 'Change of Visa Status' && <DatePicker name='i94_expiration_date' required grow title='I94 Expiration Date' defaultValue={pageData.students.i94_expiration_date ? parseISO(pageData.students.i94_expiration_date) : null} placeholderText='MM/DD/YYYY' InputContext={InputContext} />}
-                                                </InputLine>
-                                            </Scope>
-
-                                            {pageData.students.sub_status !== 'Initial' && <InputLine title='Admission Correspondence'>
-                                                <SelectPopover name='admission_correspondence_address' required grow title='Please check the box where you wish your admission correspondence to be mailed' options={addressOptions} defaultValue={addressOptions.find(address => address.value === pageData.admission_correspondence_address)} InputContext={InputContext} />
-                                            </InputLine>}
-                                            <Scope path={`students`}>
-                                                {pageData.students.sub_status !== 'Transfer In' && <InputLine title='Address in Home Country'>
-                                                    <Input type='text' name='home_country_phone' grow title='Phone Number' isPhoneNumber defaultValue={pageData.students.home_country_phone} InputContext={InputContext} />
-                                                    <Input type='text' name='home_country_address' grow title='Address' defaultValue={pageData.students.home_country_address} InputContext={InputContext} />
-                                                    <Input type='text' name='home_country_zip' grow title='Zip Code' defaultValue={pageData.students.home_country_zip} InputContext={InputContext} />
-                                                </InputLine>}
-                                                {pageData.students.sub_status !== 'Transfer In' && <InputLine>
-                                                    <Input type='text' name='home_country_city' grow title='City' defaultValue={pageData.students.home_country_city} InputContext={InputContext} />
-                                                    <Input type='text' name='home_country_state' grow title='State' defaultValue={pageData.students.home_country_state} InputContext={InputContext} />
-                                                    <SelectPopover name='home_country_country' grow title='Country' isSearchable defaultValue={countriesOptions.find(country => country.value === pageData.students.home_country_country)} options={countriesOptions} InputContext={InputContext} />
-                                                </InputLine>}
-                                                {pageData.students.sub_status !== 'Initial' && <InputLine title='Address in United States'>
-                                                    <Input type='text' name='phone' grow title='USA Phone Number' isPhoneNumber defaultValue={pageData.students.phone} InputContext={InputContext} />
-                                                    <Input type='text' name='address' grow title='USA Address' defaultValue={pageData.students.address} InputContext={InputContext} />
-                                                    <Input type='text' name='zip' grow title='USA Zip Code' isZipCode defaultValue={pageData.students.zip} InputContext={InputContext} />
-                                                </InputLine>}
-                                                {pageData.students.sub_status !== 'Initial' && <InputLine>
-                                                    <Input type='text' name='city' grow title='USA City' defaultValue={pageData.students.city} InputContext={InputContext} />
-                                                    <Input type='text' name='state' grow title='USA State' defaultValue={pageData.students.state} InputContext={InputContext} />
-                                                </InputLine>}
-                                            </Scope>
-                                        </InputLineGroup>}
-                                        {pageData.activeMenu === 'emergency-contact' && <InputLineGroup title='Emergency Contact' activeMenu={pageData.activeMenu === 'emergency-contact'}>
-                                            <Scope path={`enrollmentemergencies[0]`}>
-                                                <InputLine title='Emergency Contact'>
-                                                    <Input type='text' name='name' required grow title='Full Name' defaultValue={pageData.enrollmentemergencies.length > 0 ? pageData.enrollmentemergencies[0].name : ''} InputContext={InputContext} />
-                                                    {pageData.enrollmentemergencies.length > 0 ?
-                                                        <SelectPopover name='relationship_type' required grow title='Relationship Type' options={relationshipTypeOptions} isSearchable defaultValue={relationshipTypeOptions.find(relationshipType => relationshipType.value === pageData.enrollmentemergencies[0].relationship_type)} InputContext={InputContext} />
-                                                        :
-                                                        <SelectPopover name='relationship_type' required grow title='Relationship Type' options={relationshipTypeOptions} isSearchable InputContext={InputContext} />
-                                                    }
+                                                <InputLine title='Student Information'>
+                                                    <Input type='text' readOnly name='name' required grow title='First Name' defaultValue={pageData.students.name} InputContext={InputContext} />
+                                                    <Input type='text' readOnly name='middle_name' grow title='Middle Name' defaultValue={pageData.students.middle_name} InputContext={InputContext} />
+                                                    <Input type='text' readOnly name='last_name' required grow title='Last Name' defaultValue={pageData.students.last_name} InputContext={InputContext} />
                                                 </InputLine>
                                                 <InputLine>
-                                                    <Input type='text' name='email' required grow title='E-mail' defaultValue={pageData.enrollmentemergencies.length > 0 ? pageData.enrollmentemergencies[0].email : ''} InputContext={InputContext} />
-                                                    <Input type='text' name='phone' required grow title='Phone Number' isPhoneNumber defaultValue={pageData.enrollmentemergencies.length > 0 ? pageData.enrollmentemergencies[0].phone : ''} InputContext={InputContext} />
+                                                    <Input type='text' readOnly name='email' required grow title='E-mail' defaultValue={pageData.students.email} InputContext={InputContext} />
+                                                    <Input type='text' name='nsevis' required grow title='NSEVIS' defaultValue={pageData.students.nsevis} InputContext={InputContext} />
                                                 </InputLine>
                                             </Scope>
-                                        </InputLineGroup>}
-                                        {pageData.activeMenu === 'enrollment-information' && <InputLineGroup title='Enrollment Information' activeMenu={pageData.activeMenu === 'enrollment-information'}>
-                                            <InputLine title='Enrollment Information'>
-                                                <Input type='text' name='plan_months' required onlyInt title='How many months do you plan to study?' defaultValue={pageData.plan_months} InputContext={InputContext} />
-                                                <SelectPopover name='plan_schedule' required grow title='What is your plan schedule?' options={scheduleOptions} isSearchable defaultValue={scheduleOptions.find(schedule => schedule.value === pageData.plan_schedule)} InputContext={InputContext} />
-                                                <DatePicker name='plan_date' required grow title='What date do you wish to begin classes (M)?' defaultValue={pageData.plan_date ? parseISO(pageData.plan_date) : null} placeholderText='MM/DD/YYYY' InputContext={InputContext} />
+                                            <InputLine title='Previous School'>
+                                                <Scope path={`enrollmenttransfers`}>
+                                                    {/* <Input type='text' name='previous_school_name' required grow title='School Name' defaultValue={pageData.enrollmenttransfers ? pageData.enrollmenttransfers.previous_school_name : null} InputContext={InputContext} /> */}
+                                                    <SelectPopover name='previous_school_id' required grow title='School Name' options={pageData.filials.filter(filial => filial.id !== pageData.filial_id).map(filial => {
+                                                        return { value: filial.id, label: filial.name }
+                                                    })} defaultValue={pageData.enrollmenttransfers ? pageData.enrollmenttransfers.previous_school_id : null} InputContext={InputContext} />
+                                                    <Input type='text' name='previous_school_dso_name' required grow title='DSO Name' defaultValue={pageData.enrollmenttransfers ? pageData.enrollmenttransfers.previous_school_dso_name : null} InputContext={InputContext} />
+                                                    <Input type='text' name='previous_school_dso_email' required grow title='DSO Email' defaultValue={pageData.enrollmenttransfers ? pageData.enrollmenttransfers.previous_school_dso_email : null} InputContext={InputContext} />
+                                                </Scope>
                                             </InputLine>
-                                        </InputLineGroup>}
-                                        {pageData.activeMenu === 'dependent-information' && <InputLineGroup title='Dependent Information' activeMenu={pageData.activeMenu === 'dependent-information'}>
-                                            <InputLine title='Dependent Information'>
-                                                <SelectPopover name='has_dependents' required onChange={(el) => handleHasDependents(el)} grow title='Do you have dependents?' options={yesOrNoOptions} defaultValue={yesOrNoOptions.find(type => type.value === pageData.has_dependents)} InputContext={InputContext} />
-                                            </InputLine>
-                                            {pageData.has_dependents && <>
-                                                {pageData.enrollmentdependents.map((dependent, index) => {
-                                                    if (dependent.id !== 1) {
-                                                        return <Scope key={index} path={`enrollmentdependents[${index}]`}>
-                                                            <InputLine title={`Dependent ${index + 1}`}>
-                                                                {index ? <button type='button' onClick={() => handleRemoveDependent(index)}><Trash size={14} className='mt-4' /></button> : null}
-                                                                <Input type='text' name='name' required grow title='Full Name' defaultValue={dependent.name} InputContext={InputContext} />
-                                                                <SelectPopover name='gender' required grow title='Gender' options={genderOptions} isSearchable defaultValue={genderOptions.find(gender => gender.value === dependent.gender)} InputContext={InputContext} />
-                                                                <SelectPopover name='dept1_type' required grow title='Dept1 Type' options={dept1TypeOptions} isSearchable defaultValue={dept1TypeOptions.find(dept1Type => dept1Type.value === dependent.dept1_type)} InputContext={InputContext} />
-                                                                <SelectPopover name='relationship_type' required grow title='Relationship Type' options={relationshipTypeOptions} isSearchable defaultValue={relationshipTypeOptions.find(relationshipType => relationshipType.value === dependent.relationship_type)} InputContext={InputContext} />
-                                                                <Input type='text' name='email' required grow title='E-mail' defaultValue={dependent.email} InputContext={InputContext} />
-                                                                <Input type='text' name='phone' required grow title='Phone Number' isPhoneNumber defaultValue={dependent.phone} InputContext={InputContext} />
-                                                            </InputLine>
-                                                        </Scope>
-                                                    }
-                                                })}
-                                                <button type='button' onClick={() => handleAddDependent()} className='bg-slate-100 border ml-6 py-1 px-2 text-xs flex flex-row justify-center items-center gap-2 rounded-md transition-all hover:border-primary hover:text-primary'><PlusCircle size={16} /> Dependent</button>
-                                            </>}
-                                        </InputLineGroup>}
-                                        {pageData.activeMenu === 'affidavit-of-support' && <InputLineGroup title='Affidavit of Support' activeMenu={pageData.activeMenu === 'affidavit-of-support'}>
-                                            <InputLine title='Proof of financial support'>
-                                                {pageData.has_dependents ?
-                                                    <div className='text-lg'>{formatter.format((parseFloat(pageData.filial.financial_support_student_amount) + (parseFloat(pageData.filial.financial_support_dependent_amount) * pageData.enrollmentdependents.length)) * pageData.plan_months)} (Estimate)</div>
-                                                    :
-                                                    <div className='text-lg'>$ {formatter.format(parseFloat(pageData.filial.financial_support_student_amount) * pageData.plan_months)} (Estimate)</div>
-                                                }
-                                                {/* </InputLine>
-                                            <InputLine title='Affidavit of Support'> */}
-                                                <SelectPopover name='need_sponsorship' onChange={(el) => handleHasSponsors(el)} required grow title='Do you need sponsorship?' options={sponsorshipOptions} defaultValue={sponsorshipOptions.find(type => type.value === pageData.need_sponsorship)} InputContext={InputContext} />
-                                            </InputLine>
-                                            {pageData.need_sponsorship && <>
-                                                {pageData.enrollmentsponsors && pageData.enrollmentsponsors.map((sponsor, index) => {
-                                                    return <Scope key={index} path={`enrollmentsponsors[${index}]`}>
-                                                        <InputLine title={`Sponsor ${index + 1}`}>
-                                                            {index ? <button type='button' onClick={() => handleRemoveSponsor(index)}><Trash size={14} className='mt-4' /></button> : null}
-                                                            <Input type='text' name='name' required grow title='Full Name' defaultValue={sponsor.name} InputContext={InputContext} />
-                                                            <SelectPopover name='relationship_type' required grow title='Relationship Type' options={sponsorRelationshipTypeOptions} isSearchable defaultValue={sponsorRelationshipTypeOptions.find(relationshipType => relationshipType.value === sponsor.relationship_type)} InputContext={InputContext} />
-                                                            {/* </InputLine>
-                                                        <InputLine> */}
-                                                            <Input type='text' name='email' required grow title='E-mail' defaultValue={sponsor.email} InputContext={InputContext} />
-                                                            <Input type='text' name='phone' required grow title='Phone Number' isPhoneNumber defaultValue={sponsor.phone} InputContext={InputContext} />
-                                                        </InputLine>
-                                                    </Scope>
-                                                })}
-                                                <button type='button' onClick={() => handleAddSponsor()} className='bg-slate-100 border ml-6 py-1 px-2 text-xs flex flex-row justify-center items-center gap-2 rounded-md transition-all hover:border-primary hover:text-primary'><PlusCircle size={16} /> Sponsor</button>
-                                            </>}
-                                        </InputLineGroup>}
-                                        {pageData.activeMenu === 'documents-upload' && <InputLineGroup title='Documents Upload' activeMenu={pageData.activeMenu === 'documents-upload'}>
                                             {pageData.documents && pageData.documents.length > 0 && pageData.documents.map((document, index) => {
                                                 return <Scope key={index} path={`documents[${index}]`} >
                                                     <Input type='hidden' name='document_id' defaultValue={document.id} InputContext={InputContext} />
@@ -613,13 +423,10 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                                                     </InputLine>}
                                                 </Scope>
                                             })}
-                                        </InputLineGroup>}
-                                        {pageData.activeMenu === 'student-signature' && <InputLineGroup title='Student Signature' activeMenu={pageData.activeMenu === 'student-signature'}>
-                                            {/* <InputLine title='Document Preview'>
-                                                <PDFViewer file='http://localhost:3000/student.pdf' />
-                                            </InputLine> */}
                                             <InputLine title='Student Signature'>
-                                                <PDFViewer file='http://localhost:3000/student.pdf' height={450} />
+                                                <CheckboxInput name='terms_agreement' grow title='Please indicate by checking this box if you are requesting a transfer to another MILA institution and would prefer us to directly send all your personal documentation to the new campus.' defaultValue={pageData.terms_agreement} InputContext={InputContext} />
+                                            </InputLine>
+                                            <InputLine>
                                                 <div className='flex flex-1 flex-col items-start justify-start'>
                                                     <div onClick={() => setSuccessfullyUpdated(false)} className='h-[19rem] w-[36rem] gap-2 border rounded'>
                                                         <SignaturePad redrawOnResize ref={signatureRef} options={{ backgroundColor: '#FFF', penColor: '#111' }} />
@@ -631,7 +438,7 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
 
                                             </InputLine>
                                         </InputLineGroup>}
-                                        {pageData.activeMenu === 'sponsor-signature' && <InputLineGroup title='Finish' activeMenu={pageData.activeMenu === 'sponsor-signature'}>
+                                        <InputLineGroup title='Finish' activeMenu={pageData.activeMenu === 'transfer-dso'}>
 
                                             <div className='flex flex-1 w-full flex-col items-center justify-center text-center gap-4'>
                                                 <div className='flex w-full flex-row items-center justify-center text-center gap-4'>
@@ -641,9 +448,10 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                                                 <div className='flex w-full flex-row items-center justify-center text-center gap-4'>
                                                     <span>Your request has been sent successfully!</span>
                                                 </div>
+
                                             </div>
 
-                                        </InputLineGroup>}
+                                        </InputLineGroup>
                                     </>
                                     :
                                     <FormLoading />}

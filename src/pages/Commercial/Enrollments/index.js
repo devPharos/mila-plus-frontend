@@ -23,6 +23,11 @@ export default function Enrollments() {
   const currentPage = getCurrentPage();
   const [gridHeader, setGridHeader] = useState([
     {
+      title: 'Enroll. Start',
+      type: 'text',
+      filter: false,
+    },
+    {
       title: 'Prospect',
       type: 'text',
       filter: false,
@@ -81,12 +86,11 @@ export default function Enrollments() {
       const { data } = await api.get(`/enrollments`)
       const gridDataValues = data.map(({ id, students, enrollmenttimelines, canceled_at }) => {
         const { name, processtypes, processsubstatuses } = students;
-        console.log(students)
         const type = processtypes ? processtypes.name : '';
         const sub_status = processsubstatuses ? processsubstatuses.name : '';
         const { phase, phase_step, created_at: stepCreatedAt, step_status, expected_date } = enrollmenttimelines[enrollmenttimelines.length - 1];
         const exptected = expected_date ? format(parseISO(expected_date), 'MM/dd/yyyy') : '-'
-        const ret = { show: true, id, fields: [name, type, sub_status, phase, phase_step, format(stepCreatedAt, 'MM/dd/yyyy @ HH:mm'), step_status, expected_date && expected_date <= format(new Date(), 'yyyyMMdd') ? <div className='flex flex-row gap-2 items-center text-red-500'>{exptected} <History size={12} color='#f00' /></div> : exptected], canceled: canceled_at }
+        const ret = { show: true, id, fields: ['10/07/2024', name, type, sub_status, phase, phase_step, format(stepCreatedAt, 'MM/dd/yyyy @ HH:mm'), step_status, expected_date && expected_date <= format(new Date(), 'yyyyMMdd') ? <div className='flex flex-row gap-2 items-center text-red-500'>{exptected} <History size={12} color='#f00' /></div> : exptected], canceled: canceled_at }
         return ret
       })
       setGridData(gridDataValues)

@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useRef } from 'react'
 import { useField } from '@unform/core'
 import { Asterisk } from 'lucide-react';
 
-const Textarea = ({ name, title, rows = 1, InputContext, ...rest }) => {
+const Textarea = ({ grow, shrink, name, title, rows = 1, InputContext, ...rest }) => {
   const inputRef = useRef()
   const { fieldName, defaultValue, registerField, error } = useField(name)
   const { disabled, required } = { ...rest }
@@ -25,8 +25,10 @@ const Textarea = ({ name, title, rows = 1, InputContext, ...rest }) => {
 
   const { setSuccessfullyUpdated } = useContext(InputContext)
 
+  const width = shrink ? 'w-full md:w-auto max-w-32' : 'w-full md:w-auto'
+
   return (
-    <div className='flex flex-col justify-center items-start relative w-full'>
+    <div className={`flex flex-col justify-center items-start relative ${width} ${grow ? 'grow' : ''}`}>
       <div className='px-2 text-xs flex flex-row justify-between items-center'>{title} {required && <Asterisk color='#e00' size={12} />}</div>
       <div htmlFor={name} className={`border rounded-lg p-2 px-4 text-sm flex flex-row justify-between items-center gap-2 bg-white w-full ${error && 'border-red-300'}`}>
         <textarea

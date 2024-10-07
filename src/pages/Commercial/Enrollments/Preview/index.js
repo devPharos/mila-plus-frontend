@@ -1,5 +1,5 @@
 import { Form } from '@unform/web';
-import { Building, Loader2, Pencil, X } from 'lucide-react';
+import { Building, Pencil, X } from 'lucide-react';
 import React, { createContext, useEffect, useRef, useState } from 'react';
 import Input from '~/components/RegisterForm/Input';
 import RegisterFormMenu from '~/components/RegisterForm/Menu';
@@ -9,16 +9,12 @@ import InputLine from '~/components/RegisterForm/InputLine';
 import InputLineGroup from '~/components/RegisterForm/InputLineGroup';
 import FormHeader from '~/components/RegisterForm/FormHeader';
 import Preview from '~/components/Preview';
-import { countries_list, getRegistries, handleUpdatedFields } from '~/functions';
-import SelectPopover from '~/components/RegisterForm/SelectPopover';
-import Textarea from '~/components/RegisterForm/Textarea';
+import { getRegistries, handleUpdatedFields } from '~/functions';
 import DatePicker from '~/components/RegisterForm/DatePicker';
-import SelectCountry from '~/components/RegisterForm/SelectCountry';
 import { format, parseISO } from 'date-fns';
-import CountryList from 'country-list-with-dial-code-and-flag';
 import FormLoading from '~/components/RegisterForm/FormLoading';
-import { useSelector } from 'react-redux';
 import { Scope } from '@unform/core';
+import { Link, NavLink } from 'react-router-dom';
 
 export const InputContext = createContext({})
 
@@ -129,6 +125,11 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                         <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='timeline' >
                             <Building size={16} /> Timeline
                         </RegisterFormMenu>
+                        <NavLink to={`http://localhost:3000/fill-form/Enrollment?crypt=${id}&activeMenu=student-information`} target="_blank" className='w-full'>
+                            <RegisterFormMenu setActiveMenu={() => null} activeMenu={null} name='form'>
+                                <Building size={16} /> Form
+                            </RegisterFormMenu>
+                        </NavLink>
 
                     </div>
                     <div className='border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start'>

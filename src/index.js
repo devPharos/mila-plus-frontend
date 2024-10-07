@@ -62,6 +62,8 @@ import Error401 from './pages/Errors/Page401';
 import ProcessTypes from './pages/Settings/ProcessTypes';
 import ProcessSubstatuses from './pages/Settings/ProcessSubstatuses';
 import SponsorOutside from './pages/Commercial/Enrollments/Preview/sponsor';
+import TransferOutside from './pages/Commercial/Enrollments/Preview/transfer-student';
+import TransferDSOOutside from './pages/Commercial/Enrollments/Preview/transfer-dso';
 
 injectStore(store)
 
@@ -97,6 +99,14 @@ const router = createBrowserRouter([
           {
             path: "/fill-form/Sponsor",
             element: <SponsorOutside />
+          },
+          {
+            path: "/fill-form/Transfer",
+            element: <TransferOutside />
+          },
+          {
+            path: "/fill-form/TransferDSO",
+            element: <TransferDSOOutside />
           }
         ]
       },

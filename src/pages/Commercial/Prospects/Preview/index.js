@@ -181,7 +181,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     function handleOutsideMail() {
         alertBox({
             title: 'Attention!',
-            descriptionHTML: '<p>Would you like to send the prospect a link to continue the registration process?</p>',
+            descriptionHTML: '<p>Would you like to send the prospect a link to continue the process?</p>',
             buttons: [
                 {
                     title: 'No',
@@ -238,7 +238,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                 <InputContext.Provider value={{ id, generalForm, setSuccessfullyUpdated, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm, handleInactivate, handleOutsideMail, canceled: pageData.canceled_at }}>
                                     {id === 'new' || pageData.loaded ?
                                         <>
-                                            <FormHeader access={access} title={pageData.name + ' ' + pageData.last_name} registry={registry} InputContext={InputContext} disabled={!pageData.processtype_id} />
+                                            <FormHeader access={access} title={pageData.name + ' ' + pageData.last_name} registry={registry} InputContext={InputContext} disabled={!pageData.processtype_id} emailButtonText='Send Enrollment Form' />
                                             <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
                                                 {auth.filial.id === 1 && <InputLine title='Filial'>
                                                     <SelectPopover name='filial_id' required title='Filial' isSearchable defaultValue={filialOptions.filter(filial => filial.value === pageData.filial_id)} options={filialOptions} InputContext={InputContext} />

@@ -72,6 +72,7 @@ export default function PagePreviewOutside({ access = null, id = null, handleOpe
         loaded: false
     })
     const [searchparams, setSearchParams] = useSearchParams();
+    const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
     const [formType, setFormType] = useState(defaultFormType)
     const [fullscreen, setFullscreen] = useState(false)
     const [activeMenu, setActiveMenu] = useState('general')
@@ -81,12 +82,14 @@ export default function PagePreviewOutside({ access = null, id = null, handleOpe
     const [loading, setLoading] = useState(false)
     const [sent, setSent] = useState(false)
 
+    const isOrNotOptions = [{ value: true, label: 'Yes' }, { value: false, label: 'No' }]
+
     const countriesOptions = countries_list.map(country => {
         return { value: country, label: country }
     })
 
     useEffect(() => {
-        const id = atob(searchparams.get('crypt'));
+        const id = searchparams.get('crypt');
         setPageData({ ...pageData })
         setFullscreen(true);
         setFormType('full');
@@ -118,6 +121,7 @@ export default function PagePreviewOutside({ access = null, id = null, handleOpe
     }, [])
 
     useEffect(() => {
+        console.log(pageData)
         if (pageData.employee_type && pageData.employee_subtype) {
             getDocuments()
         }
@@ -129,7 +133,7 @@ export default function PagePreviewOutside({ access = null, id = null, handleOpe
 
     async function handleGeneralFormSubmit(data) {
         setLoading(true)
-        const id = atob(searchparams.get('crypt'));
+        const id = searchparams.get('crypt');
         if (successfullyUpdated) {
             toast("No need to be saved!", { autoClose: 1000, type: 'info', transition: Zoom })
             setLoading(false)
@@ -271,9 +275,9 @@ export default function PagePreviewOutside({ access = null, id = null, handleOpe
                     <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='general' >
                         <Building size={16} /> General
                     </RegisterFormMenu>
-                    <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='documents' disabled={id === 'new'} messageOnDisabled='Create the staff registry to have access to documents.' >
+                    {/* <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='documents' disabled={id === 'new'} messageOnDisabled='Create the staff registry to have access to documents.' >
                         <Files size={16} /> Documents
-                    </RegisterFormMenu>
+                    </RegisterFormMenu> */}
                 </div>
                 <div className='border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start'>
                     <div className='flex flex-col items-start justify-start text-sm overflow-y-scroll'>
@@ -287,6 +291,10 @@ export default function PagePreviewOutside({ access = null, id = null, handleOpe
                                                 <SelectPopover name='birth_country' required grow title='Nationality' options={countriesOptions} isSearchable defaultValue={countriesOptions.find(country => country.value === pageData.birth_country)} InputContext={InputContext} />
                                                 <DatePicker name='date_of_birth' required grow title='Birthday ' defaultValue={pageData.date_of_birth ? parseISO(pageData.date_of_birth) : null} placeholderText='MM/DD/YYYY' InputContext={InputContext} />
                                             </InputLine>
+                                            <InputLine>
+                                                <SelectPopover name='is_student' required grow title='Is Student?' options={isOrNotOptions} isSearchable defaultValue={isOrNotOptions.find(type => type.value === pageData.is_student)} InputContext={InputContext} />
+                                                <SelectPopover name='is_us_citizen' required grow title='Is US Citizen?' options={isOrNotOptions} isSearchable defaultValue={isOrNotOptions.find(type => type.value === pageData.is_us_citizen)} InputContext={InputContext} />
+                                            </InputLine>
                                             <InputLine title='Contact'>
                                                 <Input type='text' grow name='whatsapp' title='Whatsapp' isPhoneNumber defaultValue={pageData.whatsapp} defaultValueDDI={pageData.whatsapp_ddi} InputContext={InputContext} />
                                                 <Input type='text' grow name='phone' title='Phone Number' isPhoneNumber defaultValue={pageData.phone} InputContext={InputContext} />
@@ -299,111 +307,24 @@ export default function PagePreviewOutside({ access = null, id = null, handleOpe
                                                 <Input type='text' name='city' required grow title='City' defaultValue={pageData.city} InputContext={InputContext} />
                                                 <Input type='text' name='zip' required grow title='Zip Code' defaultValue={pageData.zip} InputContext={InputContext} />
                                             </InputLine>
-                                            {/* <InputLine title='Availability'>
-                                                <div className='flex flex-col md:flex-row items-center justify-start gap-4'>
-                                                    <CheckboxInput name='sunday_availability' grow title='Sunday' onClick={() => handleAvailability('sunday')} defaultValue={pageData.sunday_availability} InputContext={InputContext} />
-                                                    {pageData.sunday_availability &&
-                                                        <div className='flex flex-row items-start justify-start gap-1'>
-                                                            <CheckboxInput name='sunday_morning' grow title='Morning' onClick={() => setPageData({ ...pageData, sunday_morning: !pageData.sunday_morning })} defaultValue={pageData.sunday_morning} InputContext={InputContext} />
-                                                            <CheckboxInput name='sunday_afternoon' grow title='Afternoon' onClick={() => setPageData({ ...pageData, sunday_afternoon: !pageData.sunday_afternoon })} defaultValue={pageData.sunday_afternoon} InputContext={InputContext} />
-                                                            <CheckboxInput name='sunday_evening' grow title='Evening' onClick={() => setPageData({ ...pageData, sunday_evening: !pageData.sunday_evening })} defaultValue={pageData.sunday_evening} InputContext={InputContext} />
-                                                        </div>
-                                                    }
-                                                </div>
-                                            </InputLine>
-                                            <InputLine>
-                                                <div className='flex flex-col md:flex-row items-center justify-start gap-4'>
-                                                    <CheckboxInput name='monday_availability' grow title='Monday' onClick={() => handleAvailability('monday')} defaultValue={pageData.monday_availability} InputContext={InputContext} />
-                                                    {pageData.monday_availability &&
-                                                        <div className='flex flex-row items-start justify-start gap-1'>
-                                                            <CheckboxInput name='monday_morning' grow title='Morning' onClick={() => setPageData({ ...pageData, monday_morning: !pageData.monday_morning })} defaultValue={pageData.monday_morning} InputContext={InputContext} />
-                                                            <CheckboxInput name='monday_afternoon' grow title='Afternoon' onClick={() => setPageData({ ...pageData, monday_afternoon: !pageData.monday_afternoon })} defaultValue={pageData.monday_afternoon} InputContext={InputContext} />
-                                                            <CheckboxInput name='monday_evening' grow title='Evening' onClick={() => setPageData({ ...pageData, monday_evening: !pageData.monday_evening })} defaultValue={pageData.monday_evening} InputContext={InputContext} />
-                                                        </div>
-                                                    }
-                                                </div>
-                                            </InputLine>
-                                            <InputLine>
-                                                <div className='flex flex-col md:flex-row items-center justify-start gap-4'>
-                                                    <CheckboxInput name='tuesday_availability' grow title='Tuesday' onClick={() => handleAvailability('tuesday')} defaultValue={pageData.tuesday_availability} InputContext={InputContext} />
-                                                    {pageData.tuesday_availability &&
-                                                        <div className='flex flex-row items-start justify-start gap-1'>
-                                                            <CheckboxInput name='tuesday_morning' grow title='Morning' onClick={() => setPageData({ ...pageData, tuesday_morning: !pageData.tuesday_morning })} defaultValue={pageData.tuesday_morning} InputContext={InputContext} />
-                                                            <CheckboxInput name='tuesday_afternoon' grow title='Afternoon' onClick={() => setPageData({ ...pageData, tuesday_afternoon: !pageData.tuesday_afternoon })} defaultValue={pageData.tuesday_afternoon} InputContext={InputContext} />
-                                                            <CheckboxInput name='tuesday_evening' grow title='Evening' onClick={() => setPageData({ ...pageData, tuesday_evening: !pageData.tuesday_evening })} defaultValue={pageData.tuesday_evening} InputContext={InputContext} />
-                                                        </div>
-                                                    }
-                                                </div>
-                                            </InputLine>
-                                            <InputLine>
-                                                <div className='flex flex-col md:flex-row items-center justify-start gap-4'>
-                                                    <CheckboxInput name='wednesday_availability' grow title='Wednesday' onClick={() => handleAvailability('wednesday')} defaultValue={pageData.wednesday_availability} InputContext={InputContext} />
-                                                    {pageData.wednesday_availability &&
-                                                        <div className='flex flex-row items-start justify-start gap-1'>
-                                                            <CheckboxInput name='wednesday_morning' grow title='Morning' onClick={() => setPageData({ ...pageData, wednesday_morning: !pageData.wednesday_morning })} defaultValue={pageData.wednesday_morning} InputContext={InputContext} />
-                                                            <CheckboxInput name='wednesday_afternoon' grow title='Afternoon' onClick={() => setPageData({ ...pageData, wednesday_afternoon: !pageData.wednesday_afternoon })} defaultValue={pageData.wednesday_afternoon} InputContext={InputContext} />
-                                                            <CheckboxInput name='wednesday_evening' grow title='Evening' onClick={() => setPageData({ ...pageData, wednesday_evening: !pageData.wednesday_evening })} defaultValue={pageData.wednesday_evening} InputContext={InputContext} />
-                                                        </div>
-                                                    }
-                                                </div>
-                                            </InputLine>
-                                            <InputLine>
-                                                <div className='flex flex-col md:flex-row items-center justify-start gap-4'>
-                                                    <CheckboxInput name='thursday_availability' grow title='Thursday' onClick={() => handleAvailability('thursday')} defaultValue={pageData.thursday_availability} InputContext={InputContext} />
-                                                    {pageData.thursday_availability &&
-                                                        <div className='flex flex-row items-start justify-start gap-1'>
-                                                            <CheckboxInput name='thursday_morning' grow title='Morning' onClick={() => setPageData({ ...pageData, thursday_morning: !pageData.thursday_morning })} defaultValue={pageData.thursday_morning} InputContext={InputContext} />
-                                                            <CheckboxInput name='thursday_afternoon' grow title='Afternoon' onClick={() => setPageData({ ...pageData, thursday_afternoon: !pageData.thursday_afternoon })} defaultValue={pageData.thursday_afternoon} InputContext={InputContext} />
-                                                            <CheckboxInput name='thursday_evening' grow title='Evening' onClick={() => setPageData({ ...pageData, thursday_evening: !pageData.thursday_evening })} defaultValue={pageData.thursday_evening} InputContext={InputContext} />
-                                                        </div>
-                                                    }
-                                                </div>
-                                            </InputLine>
-                                            <InputLine>
-                                                <div className='flex flex-col md:flex-row items-center justify-start gap-4'>
-                                                    <CheckboxInput name='friday_availability' grow title='Friday' onClick={() => handleAvailability('friday')} defaultValue={pageData.friday_availability} InputContext={InputContext} />
-                                                    {pageData.friday_availability &&
-                                                        <div className='flex flex-row items-start justify-start gap-1'>
-                                                            <CheckboxInput name='friday_morning' grow title='Morning' onClick={() => setPageData({ ...pageData, friday_morning: !pageData.friday_morning })} defaultValue={pageData.friday_morning} InputContext={InputContext} />
-                                                            <CheckboxInput name='friday_afternoon' grow title='Afternoon' onClick={() => setPageData({ ...pageData, friday_afternoon: !pageData.friday_afternoon })} defaultValue={pageData.friday_afternoon} InputContext={InputContext} />
-                                                            <CheckboxInput name='friday_evening' grow title='Evening' onClick={() => setPageData({ ...pageData, friday_evening: !pageData.friday_evening })} defaultValue={pageData.friday_evening} InputContext={InputContext} />
-                                                        </div>
-                                                    }
-                                                </div>
-                                            </InputLine>
-                                            <InputLine>
-                                                <div className='flex flex-col md:flex-row items-center justify-start gap-4'>
-                                                    <CheckboxInput name='saturday_availability' grow title='Saturday' onClick={() => handleAvailability('saturday')} defaultValue={pageData.saturday_availability} InputContext={InputContext} />
-                                                    {pageData.saturday_availability &&
-                                                        <div className='flex flex-row items-start justify-start gap-1'>
-                                                            <CheckboxInput name='saturday_morning' grow title='Morning' onClick={() => setPageData({ ...pageData, saturday_morning: !pageData.saturday_morning })} defaultValue={pageData.saturday_morning} InputContext={InputContext} />
-                                                            <CheckboxInput name='saturday_afternoon' grow title='Afternoon' onClick={() => setPageData({ ...pageData, saturday_afternoon: !pageData.saturday_afternoon })} defaultValue={pageData.saturday_afternoon} InputContext={InputContext} />
-                                                            <CheckboxInput name='saturday_evening' grow title='Evening' onClick={() => setPageData({ ...pageData, saturday_evening: !pageData.saturday_evening })} defaultValue={pageData.saturday_evening} InputContext={InputContext} />
-                                                        </div>
-                                                    }
-                                                </div>
-                                            </InputLine> */}
                                             <Input type='hidden' name='employee_type' defaultValue={pageData.employee_type} InputContext={InputContext} />
                                             <Input type='hidden' name='employee_subtype' defaultValue={pageData.employee_subtype} InputContext={InputContext} />
-
-                                        </InputLineGroup>
-                                        <InputLineGroup title='DOCUMENTS' activeMenu={activeMenu === 'documents'}>
-
+                                            {/* {console.log(pageData)} */}
                                             {pageData.documents && pageData.documents.length > 0 && pageData.documents.map((document, index) => {
                                                 return <Scope key={index} path={`documents[${index}]`} >
                                                     <Input type='hidden' name='document_id' defaultValue={document.id} InputContext={InputContext} />
                                                     <InputLine title={document.title}>
                                                         {!document.multiple && pageData.staffdocuments && pageData.staffdocuments.filter(staffdocument => staffdocument.document_id === document.id).length === 0 &&
-                                                            <FileInput type='file' name='file_id' title={'File'} grow InputContext={InputContext} />
+                                                            <FileInput type='file' required={document.required} name='file_id' title={'File'} grow InputContext={InputContext} />
                                                         }
                                                         {document.multiple &&
-                                                            <FileInputMultiple type='file' name='file_id' title={'Multiple Files'} grow InputContext={InputContext} />
+                                                            <FileInputMultiple required={document.required} type='file' name='file_id' title={'Multiple Files'} grow InputContext={InputContext} />
                                                         }
                                                     </InputLine>
-                                                    <InputLine subtitle='Attached Files'>
+                                                    {pageData.staffdocuments && pageData.staffdocuments.length > 0 && <InputLine subtitle='Attached Files'>
                                                         <div className='flex flex-col justify-center items-start gap-4'>
                                                             {
-                                                                pageData.staffdocuments && pageData.staffdocuments.map((staffdocument, index) => {
+                                                                pageData.staffdocuments.map((staffdocument, index) => {
                                                                     if (staffdocument.document_id === document.id) {
                                                                         return <>
                                                                             <div className='flex flex-row justify-center items-center gap-2'>
@@ -418,7 +339,7 @@ export default function PagePreviewOutside({ access = null, id = null, handleOpe
                                                                     }
                                                                 })}
                                                         </div>
-                                                    </InputLine>
+                                                    </InputLine>}
                                                 </Scope>
                                             })}
 

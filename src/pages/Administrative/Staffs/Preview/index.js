@@ -36,36 +36,10 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         state: '',
         city: '',
         date_of_birth: null,
+        is_student: false,
+        is_us_citizen: false,
         whatsapp: '',
         address: '',
-        sunday_availability: false,
-        monday_availability: false,
-        tuesday_availability: false,
-        wednesday_availability: false,
-        thursday_availability: false,
-        friday_availability: false,
-        saturday_availability: false,
-        sunday_morning: false,
-        sunday_afternoon: false,
-        sunday_evening: false,
-        monday_morning: false,
-        monday_afternoon: false,
-        monday_evening: false,
-        tuesday_morning: false,
-        tuesday_afternoon: false,
-        tuesday_evening: false,
-        wednesday_morning: false,
-        wednesday_afternoon: false,
-        wednesday_evening: false,
-        thursday_morning: false,
-        thursday_afternoon: false,
-        thursday_evening: false,
-        friday_morning: false,
-        friday_afternoon: false,
-        friday_evening: false,
-        saturday_morning: false,
-        saturday_afternoon: false,
-        saturday_evening: false,
         comments: '',
         wage_amount: 0,
         loaded: false
@@ -84,6 +58,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     const employeeTypeOptions = [{ value: 'Staff', label: 'Staff' }, { value: 'Faculty', label: 'Faculty' }]
     const employeeSubtypeOptions = [{ value: 'Pay Roll', label: 'Pay Roll' }, { value: 'Contract', label: 'Contract' }]
     const wageTypeOptions = [{ value: 'Hourly', label: 'Hourly' }, { value: 'Salary', label: 'Salary' }]
+    const isOrNotOptions = [{ value: true, label: 'Yes' }, { value: false, label: 'No' }]
 
     const countriesOptions = countries_list.map(country => {
         return { value: country, label: country }
@@ -253,7 +228,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                     title: 'Yes',
                     onPress: async () => {
                         try {
-                            await api.post(`/staffs/formMail`, { crypt: btoa(id) })
+                            await api.post(`/staffs/formMail`, { crypt: id })
                             toast("Link sent!", { autoClose: 1000 })
                         } catch (err) {
                             toast("Error!", { autoClose: 1000 })
@@ -265,51 +240,51 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         })
     }
 
-    function handleAvailability(day) {
-        if (day === 'sunday') {
-            if (pageData.sunday_availability) {
-                setPageData({ ...pageData, sunday_availability: false, sunday_morning: false, sunday_afternoon: false, sunday_evening: false })
-            } else {
-                setPageData({ ...pageData, sunday_availability: true })
-            }
-        } else if (day === 'monday') {
-            if (pageData.monday_availability) {
-                setPageData({ ...pageData, monday_availability: false, monday_morning: false, monday_afternoon: false, monday_evening: false })
-            } else {
-                setPageData({ ...pageData, monday_availability: true })
-            }
-        } else if (day === 'tuesday') {
-            if (pageData.tuesday_availability) {
-                setPageData({ ...pageData, tuesday_availability: false, tuesday_morning: false, tuesday_afternoon: false, tuesday_evening: false })
-            } else {
-                setPageData({ ...pageData, tuesday_availability: true })
-            }
-        } else if (day === 'wednesday') {
-            if (pageData.wednesday_availability) {
-                setPageData({ ...pageData, wednesday_availability: false, wednesday_morning: false, wednesday_afternoon: false, wednesday_evening: false })
-            } else {
-                setPageData({ ...pageData, wednesday_availability: true })
-            }
-        } else if (day === 'thursday') {
-            if (pageData.thursday_availability) {
-                setPageData({ ...pageData, thursday_availability: false, thursday_morning: false, thursday_afternoon: false, thursday_evening: false })
-            } else {
-                setPageData({ ...pageData, thursday_availability: true })
-            }
-        } else if (day === 'friday') {
-            if (pageData.friday_availability) {
-                setPageData({ ...pageData, friday_availability: false, friday_morning: false, friday_afternoon: false, friday_evening: false })
-            } else {
-                setPageData({ ...pageData, friday_availability: true })
-            }
-        } else if (day === 'saturday') {
-            if (pageData.saturday_availability) {
-                setPageData({ ...pageData, saturday_availability: false, saturday_morning: false, saturday_afternoon: false, saturday_evening: false })
-            } else {
-                setPageData({ ...pageData, saturday_availability: true })
-            }
-        }
-    }
+    // function handleAvailability(day) {
+    //     if (day === 'sunday') {
+    //         if (pageData.sunday_availability) {
+    //             setPageData({ ...pageData, sunday_availability: false, sunday_morning: false, sunday_afternoon: false, sunday_evening: false })
+    //         } else {
+    //             setPageData({ ...pageData, sunday_availability: true })
+    //         }
+    //     } else if (day === 'monday') {
+    //         if (pageData.monday_availability) {
+    //             setPageData({ ...pageData, monday_availability: false, monday_morning: false, monday_afternoon: false, monday_evening: false })
+    //         } else {
+    //             setPageData({ ...pageData, monday_availability: true })
+    //         }
+    //     } else if (day === 'tuesday') {
+    //         if (pageData.tuesday_availability) {
+    //             setPageData({ ...pageData, tuesday_availability: false, tuesday_morning: false, tuesday_afternoon: false, tuesday_evening: false })
+    //         } else {
+    //             setPageData({ ...pageData, tuesday_availability: true })
+    //         }
+    //     } else if (day === 'wednesday') {
+    //         if (pageData.wednesday_availability) {
+    //             setPageData({ ...pageData, wednesday_availability: false, wednesday_morning: false, wednesday_afternoon: false, wednesday_evening: false })
+    //         } else {
+    //             setPageData({ ...pageData, wednesday_availability: true })
+    //         }
+    //     } else if (day === 'thursday') {
+    //         if (pageData.thursday_availability) {
+    //             setPageData({ ...pageData, thursday_availability: false, thursday_morning: false, thursday_afternoon: false, thursday_evening: false })
+    //         } else {
+    //             setPageData({ ...pageData, thursday_availability: true })
+    //         }
+    //     } else if (day === 'friday') {
+    //         if (pageData.friday_availability) {
+    //             setPageData({ ...pageData, friday_availability: false, friday_morning: false, friday_afternoon: false, friday_evening: false })
+    //         } else {
+    //             setPageData({ ...pageData, friday_availability: true })
+    //         }
+    //     } else if (day === 'saturday') {
+    //         if (pageData.saturday_availability) {
+    //             setPageData({ ...pageData, saturday_availability: false, saturday_morning: false, saturday_afternoon: false, saturday_evening: false })
+    //         } else {
+    //             setPageData({ ...pageData, saturday_availability: true })
+    //         }
+    //     }
+    // }
 
     function handleDeleteDocument(id) {
         // const { file } = pageData.staffdocuments.find(staffdocument => staffdocument.id === id);
@@ -386,6 +361,10 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                     <SelectPopover name='birth_country' grow title='Nationality' options={countriesOptions} isSearchable defaultValue={countriesOptions.find(country => country.value === pageData.birth_country)} InputContext={InputContext} />
                                                     <DatePicker name='date_of_birth' grow title='Birthday ' defaultValue={pageData.date_of_birth ? parseISO(pageData.date_of_birth) : null} placeholderText='MM/DD/YYYY' InputContext={InputContext} />
                                                 </InputLine>
+                                                <InputLine>
+                                                    <SelectPopover name='is_student' grow title='Is Student?' options={isOrNotOptions} isSearchable defaultValue={isOrNotOptions.find(type => type.value === pageData.is_student)} InputContext={InputContext} />
+                                                    <SelectPopover name='is_us_citizen' grow title='Is US Citizen?' options={isOrNotOptions} isSearchable defaultValue={isOrNotOptions.find(type => type.value === pageData.is_us_citizen)} InputContext={InputContext} />
+                                                </InputLine>
                                                 <InputLine title='Contact'>
                                                     <Input type='text' name='email' required title='E-mail' grow defaultValue={pageData.email} InputContext={InputContext} />
                                                     <Input type='text' grow name='whatsapp' title='Whatsapp' isPhoneNumber defaultValue={pageData.whatsapp} defaultValueDDI={pageData.whatsapp_ddi} InputContext={InputContext} />
@@ -415,7 +394,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                 <InputLine title='Notes'>
                                                     <Textarea type='text' name='comments' title='Comments' rows={5} defaultValue={pageData.comments} InputContext={InputContext} />
                                                 </InputLine>
-                                                <InputLine title='Availability'>
+                                                {/* <InputLine title='Availability'>
                                                     <div className='flex flex-col md:flex-row items-center justify-start gap-4'>
                                                         <CheckboxInput name='sunday_availability' grow title='Sunday' onClick={() => handleAvailability('sunday')} defaultValue={pageData.sunday_availability} InputContext={InputContext} />
                                                         {pageData.sunday_availability &&
@@ -498,7 +477,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                             </div>
                                                         }
                                                     </div>
-                                                </InputLine>
+                                                </InputLine> */}
 
                                             </InputLineGroup>
                                             <InputLineGroup title='DOCUMENTS' activeMenu={activeMenu === 'documents'}>

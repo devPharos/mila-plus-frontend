@@ -4,7 +4,7 @@ import React, { useContext } from 'react';
 
 // import { Container } from './styles';
 
-export default function FormHeader({ loading = false, saveText = 'Save changes', outside = false, access = { view: false, edit: false, create: false, inactivate: false }, title = '', registry = { registryBy: null, registryAt: null, registryStatus: null }, InputContext = null }) {
+export default function FormHeader({ loading = false, saveText = 'Save changes', outside = false, access = { view: false, edit: false, create: false, inactivate: false }, title = '', registry = { registryBy: null, registryAt: null, registryStatus: null }, InputContext = null, emailButtonText = 'Send Mail' }) {
     const { registryBy, registryAt, registryStatus } = registry;
     const { id, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm, handleInactivate, canceled, handleOutsideMail } = useContext(InputContext)
 
@@ -19,7 +19,7 @@ export default function FormHeader({ loading = false, saveText = 'Save changes',
                 </div>
                 :
                 <>
-                    {!outside &&
+                    {!outside && access &&
                         <>
                             <button type='button' onClick={() => setFullscreen(!fullscreen)} className='text-md font-bold bg-secondary border hover:border-primary hover:text-primary rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1'>
                                 <Scaling size={16} /> {fullscreen ? 'Minimize' : 'Full Screen'}
@@ -31,15 +31,15 @@ export default function FormHeader({ loading = false, saveText = 'Save changes',
                                     <X size={16} /> Close
                                 </button>}
                         </>}
-                    {(outside || access.create) && id === 'new' && <button type="submit" className={`text-md font-bold ${!successfullyUpdated ? 'bg-red-500' : 'bg-primary'} text-white rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1`}>
+                    {(outside || (access && access.create)) && id === 'new' && <button type="submit" className={`text-md font-bold ${!successfullyUpdated ? 'bg-red-500' : 'bg-primary'} text-white rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1`}>
                         <><Save size={16} /> Create</>
                     </button>}
-                    {(outside || access.edit) && id !== 'new' && <button type="submit" className={`text-md font-bold ${!successfullyUpdated ? 'bg-red-500' : 'bg-primary'} text-white rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1`}>
+                    {(outside || (access && access.edit)) && id !== 'new' && <button type="submit" className={`text-md font-bold ${!successfullyUpdated ? 'bg-red-500' : 'bg-primary'} text-white rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1`}>
                         {!successfullyUpdated ? <><Save size={16} /> {saveText}</> : <><CheckCheck size={16} /> {'Saved'}</>}
                     </button>}
                     {!outside && handleOutsideMail && id !== 'new' &&
                         <button type="button" onClick={() => handleOutsideMail()} className='text-md font-bold bg-secondary border hover:border-primary hover:text-primary rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1'>
-                            <Mail size={16} /> Send Form Fill Link
+                            <Mail size={16} /> {emailButtonText}
                         </button>}
                 </>}
         </div>

@@ -103,6 +103,9 @@ export default function SponsorOutside({ access = null, handleOpened, setOpened,
             return
         }
 
+        // console.log(data)
+        // return
+
         if (pageData.activeMenu === 'sponsor-signature') {
             const signature = signatureRef.current.toDataURL()
 

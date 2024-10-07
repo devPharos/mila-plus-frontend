@@ -220,7 +220,7 @@ export default function TransferOutside({ access = null, handleOpened, setOpened
             await uploadString(imageRef, signature.substring(22), 'base64')
                 .then(async (snapshot) => {
                     await getDownloadURL(snapshot.ref).then(async (downloadURL) => {
-                        await api.post(`/enrollmentstudentsignature`, {
+                        await api.post(`/enrollmentdsosignature`, {
                             enrollment_id: id, files: {
                                 url: downloadURL,
                                 name: fileUuid + ".png",
@@ -349,6 +349,10 @@ export default function TransferOutside({ access = null, handleOpened, setOpened
         }
     }
 
+    function handlePreviousSchoolFilial(el) {
+        setPageData({ ...pageData, enrollmenttransfers: { ...pageData.enrollmenttransfers, previous_school_id: el.value } })
+    }
+
     return <Preview formType={formType} fullscreen={fullscreen}>
         {!sent && pageData.loaded ?
             <div className='flex h-full flex-col items-start justify-between gap-4 md:flex-row'>
@@ -377,17 +381,21 @@ export default function TransferOutside({ access = null, handleOpened, setOpened
                                                 </InputLine>
                                                 <InputLine>
                                                     <Input type='text' readOnly name='email' required grow title='E-mail' defaultValue={pageData.students.email} InputContext={InputContext} />
-                                                    <Input type='text' name='nsevis' required grow title='NSEVIS' defaultValue={pageData.students.nsevis} InputContext={InputContext} />
+                                                    <Input type='text' name='nsevis' maxLength={11} minLength={11} required grow title='NSEVIS' defaultValue={pageData.students.nsevis} InputContext={InputContext} />
                                                 </InputLine>
                                             </Scope>
                                             <InputLine title='Previous School'>
                                                 <Scope path={`enrollmenttransfers`}>
-                                                    {/* <Input type='text' name='previous_school_name' required grow title='School Name' defaultValue={pageData.enrollmenttransfers ? pageData.enrollmenttransfers.previous_school_name : null} InputContext={InputContext} /> */}
-                                                    <SelectPopover name='previous_school_id' required grow title='School Name' options={pageData.filials.filter(filial => filial.id !== pageData.filial_id).map(filial => {
-                                                        return { value: filial.id, label: filial.name }
+                                                    <SelectPopover onChange={(el) => handlePreviousSchoolFilial(el)} name='previous_school_id' required grow title='School Name' options={pageData.filials.filter(filial => filial.id !== pageData.filial_id).map(filial => {
+
+                                                        return { value: filial.id, label: filial.id ? 'MILA - ' + filial.name : filial.name }
                                                     })} defaultValue={pageData.enrollmenttransfers ? pageData.enrollmenttransfers.previous_school_id : null} InputContext={InputContext} />
-                                                    <Input type='text' name='previous_school_dso_name' required grow title='DSO Name' defaultValue={pageData.enrollmenttransfers ? pageData.enrollmenttransfers.previous_school_dso_name : null} InputContext={InputContext} />
-                                                    <Input type='text' name='previous_school_dso_email' required grow title='DSO Email' defaultValue={pageData.enrollmenttransfers ? pageData.enrollmenttransfers.previous_school_dso_email : null} InputContext={InputContext} />
+                                                    {!pageData.enrollmenttransfers || !pageData.enrollmenttransfers.previous_school_id &&
+                                                        <>
+                                                            <Input type='text' name='previous_school_name' required grow title='School Name' defaultValue={pageData.enrollmenttransfers ? pageData.enrollmenttransfers.previous_school_name : null} InputContext={InputContext} />
+                                                            <Input type='text' name='previous_school_dso_name' required grow title='DSO Name' defaultValue={pageData.enrollmenttransfers ? pageData.enrollmenttransfers.previous_school_dso_name : null} InputContext={InputContext} />
+                                                            <Input type='text' name='previous_school_dso_email' required grow title='DSO Email' defaultValue={pageData.enrollmenttransfers ? pageData.enrollmenttransfers.previous_school_dso_email : null} InputContext={InputContext} />
+                                                        </>}
                                                 </Scope>
                                             </InputLine>
                                             {pageData.documents && pageData.documents.length > 0 && pageData.documents.map((document, index) => {
@@ -424,9 +432,6 @@ export default function TransferOutside({ access = null, handleOpened, setOpened
                                                 </Scope>
                                             })}
                                             <InputLine title='Student Signature'>
-                                                <CheckboxInput name='terms_agreement' grow title='Please indicate by checking this box if you are requesting a transfer to another MILA institution and would prefer us to directly send all your personal documentation to the new campus.' defaultValue={pageData.terms_agreement} InputContext={InputContext} />
-                                            </InputLine>
-                                            <InputLine>
                                                 <div className='flex flex-1 flex-col items-start justify-start'>
                                                     <div onClick={() => setSuccessfullyUpdated(false)} className='h-[19rem] w-[36rem] gap-2 border rounded'>
                                                         <SignaturePad redrawOnResize ref={signatureRef} options={{ backgroundColor: '#FFF', penColor: '#111' }} />

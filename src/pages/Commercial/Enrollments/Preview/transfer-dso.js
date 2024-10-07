@@ -75,7 +75,7 @@ export default function TransferDSOOutside({ access = null, handleOpened, setOpe
     const yesOrNoOptions = [{ value: true, label: 'Yes' }, { value: false, label: 'No' }]
     const sponsorshipOptions = [{ value: true, label: 'Yes' }, { value: false, label: 'No (Self Financial Resource)' }]
 
-    const menus = [{ order: 1, name: 'transfer-dso' }, { order: 2, name: 'student-information' }]
+    const menus = [{ order: 1, name: 'transfer-dso' }, { order: 2, name: 'transfer-agent' }]
 
     const countriesOptions = countries_list.map(country => {
         return { value: country, label: country }
@@ -117,6 +117,8 @@ export default function TransferDSOOutside({ access = null, handleOpened, setOpe
     }, [pageData.loaded])
 
     async function handleGeneralFormSubmit(data) {
+        console.log(data)
+        console.log(pageData)
         // return
         try {
             generalForm.current.setErrors({});
@@ -288,7 +290,7 @@ export default function TransferDSOOutside({ access = null, handleOpened, setOpe
                     <RegisterFormMenu disabled={false} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[0].name })} activeMenu={pageData.activeMenu} name='transfer-dso' >
                         <User size={22} /> Transfer Information
                     </RegisterFormMenu>
-                    <RegisterFormMenu disabled={pageData.lastActiveMenu.order < 8 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[7].name })} activeMenu={pageData.activeMenu} name='student-information' >
+                    <RegisterFormMenu disabled={pageData.lastActiveMenu.order < 8 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[7].name })} activeMenu={pageData.activeMenu} name='transfer-agent' >
                         <CheckCheck size={18} /> Finished
                     </RegisterFormMenu>
                 </div>
@@ -303,7 +305,7 @@ export default function TransferDSOOutside({ access = null, handleOpened, setOpe
                                             <InputLine>
                                                 <p className='text-lg'>To be completed by the <strong>Designated School Official (DSO)</strong></p>
                                             </InputLine>
-                                            <Scope path={`none`}>
+                                            <Scope path={`students`}>
                                                 <InputLine title='Student Information'>
                                                     <Input type='text' readOnly disabled name='name' required grow title='First Name' defaultValue={pageData.students.name} InputContext={InputContext} />
                                                     <Input type='text' readOnly disabled name='last_name' required grow title='Last Name' defaultValue={pageData.students.last_name} InputContext={InputContext} />
@@ -322,10 +324,10 @@ export default function TransferDSOOutside({ access = null, handleOpened, setOpe
                                             <InputLine>
                                                 <p>Please do not transfer the I-20 until the student provides you with an acceptance letter:</p>
                                             </InputLine>
-                                            <Scope path={`students`}>
+                                            <Scope path={`enrollmenttransfers`}>
                                                 <InputLine title='Eligibility'>
-                                                    <SelectPopover name='is_last_school' required grow title='Is your school the last school the student was authorized to attend?' options={yesOrNoOptions} defaultValue={pageData.enrollmentransfers ? yesOrNoOptions.find(type => type.value === pageData.enrollmentransfers.is_last_school) : null} InputContext={InputContext} />
-                                                    <DatePicker name='attendance_date_from' required title='Dates of attendance From' placeholderText='MM/DD/YYYY' defaultValue={pageData.enrollmentransfers ? pageData.enrollmentransfers.attendance_date_from : null} InputContext={InputContext} />
+                                                    <SelectPopover name='is_last_school' required grow title='Is your school the last school the student was authorized to attend?' options={yesOrNoOptions} defaultValue={pageData.enrollmenttransfers ? yesOrNoOptions.find(type => type.value === pageData.enrollmenttransfers.is_last_school) : null} InputContext={InputContext} />
+                                                    <DatePicker name='attendance_date_from' required title='Dates of attendance From' placeholderText='MM/DD/YYYY' defaultValue={pageData.enrollmenttransfers ? pageData.enrollmenttransfers.attendance_date_from : null} InputContext={InputContext} />
                                                     <DatePicker name='attendance_date_to' required title='Dates of attendance To' placeholderText='MM/DD/YYYY' defaultValue={pageData.enrollmenttransfers ? pageData.enrollmenttransfers.attendance_date_to : null} InputContext={InputContext} />
                                                 </InputLine>
                                                 <InputLine>
@@ -334,8 +336,9 @@ export default function TransferDSOOutside({ access = null, handleOpened, setOpe
                                                 </InputLine>
                                                 <InputLine>
                                                     <DatePicker name='transfer_release_date' title='Intended transfer release date' placeholderText='MM/DD/YYYY' defaultValue={pageData.enrollmenttransfers ? pageData.enrollmenttransfers.transfer_release_date : null} InputContext={InputContext} />
-                                                    <SelectPopover name='uppon_acceptance' required title='Upon acceptance' options={yesOrNoOptions} defaultValue={pageData.enrollmenttransfers ? pageData.enrollmenttransfers.uppon_acceptance : null} isSearchable InputContext={InputContext} />
-                                                    <Textarea type='text' name='comments' grow title='Comments' defaultValue={pageData.enrollmentransfers ? pageData.enrollmenttransfers.comments : null} rows={1} InputContext={InputContext} />
+                                                    {console.log(pageData.enrollmenttransfers)}
+                                                    <SelectPopover name='uppon_acceptance' required title='Upon acceptance' options={yesOrNoOptions} defaultValue={pageData.enrollmenttransfers ? yesOrNoOptions.find(type => type.value === pageData.enrollmenttransfers.uppon_acceptance) : null} isSearchable InputContext={InputContext} />
+                                                    <Textarea type='text' name='comments' grow title='Comments' defaultValue={pageData.enrollmenttransfers ? pageData.enrollmenttransfers.comments : null} rows={1} InputContext={InputContext} />
                                                 </InputLine>
                                                 <InputLine title='Previous School'>
                                                     <Input type='text' name='previous_school_name' required grow title='School Name' defaultValue={pageData.enrollmenttransfers ? pageData.enrollmenttransfers.previous_school_name : null} InputContext={InputContext} />
@@ -349,7 +352,7 @@ export default function TransferDSOOutside({ access = null, handleOpened, setOpe
                                                     <Input type='text' name='previous_school_city' required grow title='City' defaultValue={pageData.enrollmenttransfers ? pageData.enrollmenttransfers.previous_school_city : null} InputContext={InputContext} />
                                                     <Input type='text' name='previous_school_state' required grow title='State' defaultValue={pageData.enrollmenttransfers ? pageData.enrollmenttransfers.previous_school_state : null} InputContext={InputContext} />
                                                 </InputLine>
-                                                <InputLine title={`DSO's Signature`}>
+                                                {!searchparams.has('activeMenu') && <InputLine title={`DSO's Signature`}>
                                                     <div className='flex flex-1 flex-col items-start justify-start'>
                                                         <div onClick={() => setSuccessfullyUpdated(false)} className='h-[19rem] w-[36rem] gap-2 border rounded'>
                                                             <SignaturePad redrawOnResize ref={signatureRef} options={{ backgroundColor: '#FFF', penColor: '#111' }} />
@@ -359,10 +362,10 @@ export default function TransferDSOOutside({ access = null, handleOpened, setOpe
                                                         </div>
                                                     </div>
 
-                                                </InputLine>
+                                                </InputLine>}
                                             </Scope>
                                         </InputLineGroup>}
-                                        <InputLineGroup title='Finish' activeMenu={pageData.activeMenu === 'student-information'}>
+                                        <InputLineGroup title='Finish' activeMenu={pageData.activeMenu === 'transfer-agent'}>
 
                                             <div className='flex flex-1 w-full flex-col items-center justify-center text-center gap-4'>
                                                 <div className='flex w-full flex-row items-center justify-center text-center gap-4'>

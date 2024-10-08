@@ -1,5 +1,5 @@
 import { Form } from '@unform/web';
-import { Building, Loader2, Pencil, X } from 'lucide-react';
+import { Building, Contact, Files, ListMinus, Loader2, Pencil, X } from 'lucide-react';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import Input from '~/components/RegisterForm/Input';
 import RegisterFormMenu from '~/components/RegisterForm/Menu';
@@ -99,7 +99,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
             const subStatusOptions = await getSubStatusOptions()
             if (id !== 'new') {
                 try {
-                    const { data } = await api.get(`/students/${id}`)
+                    const { data } = await api.get(`/prospects/${id}`)
                     setPageData({ ...data, find_processtype_id: data.processtype_id, loaded: true, ddiOptions, filialOptions, agentOptions, typesOptions, subStatusOptions })
                     const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at } = data;
                     const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
@@ -203,6 +203,24 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         })
     }
 
+    let emailButtonText = '';
+
+    if (pageData.enrollments) {
+        const enrollment = pageData.enrollments;
+        const lastTimeline = pageData.enrollments.enrollmenttimelines ? pageData.enrollments.enrollmenttimelines[pageData.enrollments.enrollmenttimelines.length - 1] : null;
+        const step = pageData.enrollments.form_step;
+        if (step === 'transfer-request') {
+            if (lastTimeline) {
+                if (lastTimeline.status === 'Waiting') {
+                    emailButtonText = '';
+                }
+            }
+            emailButtonText = 'Send Transfer Eligibility Form'
+        } else {
+            emailButtonText = 'Send Enrollment Form'
+        }
+    }
+
     return <Preview formType={formType} fullscreen={fullscreen}>
         {pageData ?
             formType === 'preview' ? <div className='border h-full rounded-xl overflow-hidden flex flex-col justify-start gap-1 overflow-y-scroll'>
@@ -228,7 +246,13 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
 
                     <div className='flex flex-col items-center justify-between text-xs w-32 gap-4'>
                         <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='general' >
-                            <Building size={16} /> General
+                            <Contact size={16} /> General
+                        </RegisterFormMenu>
+                        <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='follow-up' >
+                            <ListMinus size={16} /> Follow Up
+                        </RegisterFormMenu>
+                        <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='documents' >
+                            <Files size={16} /> Documents
                         </RegisterFormMenu>
 
                     </div>
@@ -238,7 +262,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                 <InputContext.Provider value={{ id, generalForm, setSuccessfullyUpdated, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm, handleInactivate, handleOutsideMail, canceled: pageData.canceled_at }}>
                                     {id === 'new' || pageData.loaded ?
                                         <>
-                                            <FormHeader access={access} title={pageData.name + ' ' + pageData.last_name} registry={registry} InputContext={InputContext} disabled={!pageData.processtype_id} emailButtonText='Send Enrollment Form' />
+                                            <FormHeader access={access} title={pageData.name + ' ' + pageData.last_name} registry={registry} InputContext={InputContext} disabled={!pageData.processtype_id} emailButtonText={emailButtonText} />
                                             <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
                                                 {auth.filial.id === 1 && <InputLine title='Filial'>
                                                     <SelectPopover name='filial_id' required title='Filial' isSearchable defaultValue={filialOptions.filter(filial => filial.value === pageData.filial_id)} options={filialOptions} InputContext={InputContext} />
@@ -265,6 +289,13 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                     {/* <SelectPopover name='status' grow disabled title='Status' isSearchable defaultValue={statusesOptions.find(status => status.value === 'Waiting')} options={statusesOptions} InputContext={InputContext} /> */}
                                                     <SelectPopover name='processsubstatus_id' grow required title='Sub Status' isSearchable defaultValue={pageData.processsubstatus_id ? pageData.subStatusOptions.find(substatus => substatus.value === pageData.processsubstatus_id) : null} options={pageData.find_processtype_id ? pageData.subStatusOptions.filter(type => type.father_id === pageData.find_processtype_id) : []} InputContext={InputContext} />
                                                 </InputLine>
+                                                <InputLine title='Location'>
+
+                                                    <Input type='text' name='foreign_address' title='Address' grow defaultValue={pageData.foreign_address} InputContext={InputContext} />
+                                                    <SelectPopover name='birth_country' grow title='Country' options={countriesOptions} isSearchable defaultValue={countriesOptions.find(country => country.value === pageData.birth_country)} InputContext={InputContext} />
+                                                    <Input type='text' name='birth_state' grow title='State' defaultValue={pageData.birth_state} InputContext={InputContext} />
+                                                    <Input type='text' name='birth_city' grow title='City' defaultValue={pageData.birth_city} InputContext={InputContext} />
+                                                </InputLine>
                                                 <InputLine title='Contact'>
                                                     <Input type='text' name='email' required title='E-mail' grow defaultValue={pageData.email} InputContext={InputContext} />
                                                     <SelectCountry name='whatsapp_ddi' title='DDI' options={countriesList} defaultValue={countriesList.find(ddi => ddi.value === pageData.whatsapp_ddi)} InputContext={InputContext} />
@@ -274,15 +305,29 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                 <InputLine>
                                                     <Input type='text' name='preferred_contact_form' grow title='Preferred Contact Form' defaultValue={pageData.preferred_contact_form} InputContext={InputContext} />
                                                 </InputLine>
-                                                <InputLine title='Location'>
-                                                    <SelectPopover name='birth_country' grow title='Country' options={countriesOptions} isSearchable defaultValue={countriesOptions.find(country => country.value === pageData.birth_country)} InputContext={InputContext} />
-                                                    <Input type='text' name='birth_state' grow title='State' defaultValue={pageData.birth_state} InputContext={InputContext} />
-                                                    <Input type='text' name='birth_city' grow title='City' defaultValue={pageData.birth_city} InputContext={InputContext} />
-                                                </InputLine>
+                                            </InputLineGroup>
 
-                                                <InputLine>
-                                                    <Textarea type='text' name='foreign_address' title='Address' rows={5} defaultValue={pageData.foreign_address} InputContext={InputContext} />
-                                                </InputLine>
+                                            <InputLineGroup title='Documents' activeMenu={activeMenu === 'documents'}>
+                                                {pageData.enrollmentdocuments && pageData.enrollmentdocuments.length > 0 && <InputLine subtitle='Attached Files'>
+                                                    <div className='flex flex-col justify-center items-start gap-4'>
+                                                        {
+                                                            pageData.enrollmentdocuments && pageData.enrollmentdocuments.map((enrollmentdocument, index) => {
+                                                                if (enrollmentdocument.document_id === document.id) {
+                                                                    return <>
+                                                                        <div className='flex flex-row justify-center items-center gap-2'>
+                                                                            <a href={enrollmentdocument.file.url} target="_blank" className='text-xs'>
+                                                                                <div className='flex flex-row items-center border px-4 py-2 gap-1 rounded-md bg-gray-100 hover:border-gray-300' key={index}>
+                                                                                    <Files size={16} />
+                                                                                    {enrollmentdocument.file.name}
+                                                                                </div>
+                                                                            </a>
+                                                                            <button type='button' onClick={() => handleDeleteDocument(enrollmentdocument.id)} className='text-xs text-red-700 cursor-pointer flex flex-row items-center justify-start gap-1 mt-1 px-2 py-1 rounded hover:bg-red-100'><X size={12} /> Delete</button>
+                                                                        </div>
+                                                                    </>
+                                                                }
+                                                            })}
+                                                    </div>
+                                                </InputLine>}
                                             </InputLineGroup>
                                         </>
                                         :

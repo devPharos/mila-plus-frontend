@@ -274,7 +274,6 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
 
                                             <InputLineGroup title='PRICE LIST' activeMenu={activeMenu === 'price-list'}>
                                                 <h1 className='w-full border-b p-4 pb-0 pt-2 pb-2 font-bold'>Price List</h1>
-                                                {console.log(pageData.pricelists)}
                                                 {pageData.pricelists.sort((a, b) => a.processsubstatuses ? a.processsubstatuses.name : a.name > b.processsubstatuses ? b.processsubstatuses.name : b.name).map((price, index) =>
                                                     <Scope key={index} path={`pricelists[${index}]`}>
                                                         <InputLine>
@@ -284,7 +283,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                             <Input type='text' readOnly grow name={`name`} title='Process' defaultValue={price.processsubstatuses ? price.processsubstatuses.name : price.name} InputContext={InputContext} />
                                                             <Input type='text' shrink name={`registration_fee`} title='Registration Fee' defaultValue={price.registration_fee || 0} InputContext={InputContext} />
                                                             <Input type='text' shrink name={`book`} title='Book' defaultValue={price.book || 0} InputContext={InputContext} />
-                                                            <Input type='text' shrink name={`installment`} title='Tuition' defaultValue={price.installment || 0} InputContext={InputContext} />
+                                                            <Input type='text' shrink name={`tuition`} title='Tuition' defaultValue={price.tuition || 0} InputContext={InputContext} />
                                                             <SelectPopover name='active' title='Active' options={[{ value: 'Yes', label: 'Yes' }, { value: 'No', label: 'No' }]} defaultValue={{ value: price.active ? 'Yes' : 'No', label: price.active ? 'Yes' : 'No' }} InputContext={InputContext} />
                                                         </InputLine>
                                                         <div className='w-full border-b'></div>

@@ -36,19 +36,19 @@ export default function CommercialProspects() {
       filter: false,
     },
     {
-      title: 'Phone',
+      title: 'Type',
       type: 'text',
-      filter: false,
+      filter: true,
+    },
+    {
+      title: 'Sub Status',
+      type: 'text',
+      filter: true,
     },
     {
       title: 'Responsible Agent',
       type: 'text',
       filter: true,
-    },
-    {
-      title: 'Ways of Contact',
-      type: 'text',
-      filter: false,
     },
   ])
   const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
@@ -66,9 +66,9 @@ export default function CommercialProspects() {
   useEffect(() => {
 
     async function getData() {
-      const { data } = await api.get(`/students`)
-      const gridDataValues = data.map(({ id, name, last_name, email, phone, salesagent_id, preferred_contact_form, canceled_at, filial: studentFilial }) => {
-        const ret = { show: true, id, fields: [name, last_name, email, phone, salesagent_id, preferred_contact_form], canceled: canceled_at }
+      const { data } = await api.get(`/prospects`)
+      const gridDataValues = data.map(({ id, name, last_name, email, canceled_at, agent, processtypes, processsubstatuses }) => {
+        const ret = { show: true, id, fields: [name, last_name, email, processtypes.name, processsubstatuses.name, agent.name], canceled: canceled_at }
         return ret
       })
       setGridData(gridDataValues)

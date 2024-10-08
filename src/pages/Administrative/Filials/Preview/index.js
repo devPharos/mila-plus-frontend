@@ -24,7 +24,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         active: false,
         alias: '',
         name: '',
-        Filialtype: { id: null, label: '' },
+        FilialType: { id: null, label: '' },
         administrator: null,
         ein: '',
         address: '',

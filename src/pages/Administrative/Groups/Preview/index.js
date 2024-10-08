@@ -21,7 +21,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     const [pageData, setPageData] = useState({
         name: '',
         filialtype_id: null,
-        Filialtype: null,
+        FilialType: null,
         loaded: false
     })
     const [formType, setFormType] = useState(defaultFormType)

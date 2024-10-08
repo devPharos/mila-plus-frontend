@@ -19,7 +19,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     const [pageData, setPageData] = useState({
         name: '',
         loaded: false,
-        Programcategory: {
+        ProgramCategory: {
             name: ''
         }
     })

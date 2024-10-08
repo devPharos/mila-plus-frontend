@@ -21,6 +21,7 @@ export default function Enrollments() {
   const accesses = useSelector(state => state.auth.accesses);
   const filial = useSelector(state => state.auth.filial);
   const currentPage = getCurrentPage();
+  const [refresh, setRefresh] = useState(true)
   const [gridHeader, setGridHeader] = useState([
     {
       title: 'Enroll. Start',
@@ -90,13 +91,17 @@ export default function Enrollments() {
         const sub_status = processsubstatuses ? processsubstatuses.name : '';
         const { phase, phase_step, created_at: stepCreatedAt, step_status, expected_date } = enrollmenttimelines[enrollmenttimelines.length - 1];
         const exptected = expected_date ? format(parseISO(expected_date), 'MM/dd/yyyy') : '-'
-        const ret = { show: true, id, fields: ['10/07/2024', name, type, sub_status, phase, phase_step, format(stepCreatedAt, 'MM/dd/yyyy @ HH:mm'), step_status, expected_date && expected_date <= format(new Date(), 'yyyyMMdd') ? <div className='flex flex-row gap-2 items-center text-red-500'>{exptected} <History size={12} color='#f00' /></div> : exptected], canceled: canceled_at }
+        const enroll_start = enrollmenttimelines.length > 0 ? format(parseISO(enrollmenttimelines[0].created_at), 'MM/dd/yyyy') : '-';
+        const ret = { show: true, id, fields: [enroll_start, name, type, sub_status, phase, phase_step, format(stepCreatedAt, 'MM/dd/yyyy @ HH:mm'), step_status, expected_date && expected_date <= format(new Date(), 'yyyyMMdd') ? <div className='flex flex-row gap-2 items-center text-red-500'>{exptected} <History size={12} color='#f00' /></div> : exptected], canceled: canceled_at }
         return ret
       })
+      setRefresh(false)
       setGridData(gridDataValues)
     }
-    getData()
-  }, [opened, filial])
+    if (!opened && filial && refresh) {
+      getData()
+    }
+  }, [opened, filial, refresh])
 
   function handleOpened(id) {
     if (!id) {

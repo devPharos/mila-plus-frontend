@@ -163,14 +163,18 @@ export default function TransferOutside({ access = null, handleOpened, setOpened
                     const { data } = await api.get(`/outside/enrollments/${id}`)
                     const { data: filialsData } = await api.get(`/filials`)
                     documents = await getDocuments(data.students.processsubstatuses.name)
-                    filialsData.push({ id: null, name: 'Other School' })
+                    const filialOptions = filialsData.filter(filial => filial.id !== pageData.filial_id).map(filial => {
+                        return { value: filial.id, label: filial.id ? 'MILA - ' + filial.name : filial.name }
+                    })
+                    filialOptions.push({ value: null, label: 'Other School' })
                     const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at } = data;
                     const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
                     setRegistry(registries)
+
                     if (searchparams.has('activeMenu')) {
-                        setPageData({ ...data, documents, filials: filialsData, loaded: true, activeMenu: searchparams.get('activeMenu'), lastActiveMenu: menus.find(menu => menu.name === searchparams.get('activeMenu')) })
+                        setPageData({ ...data, documents, filials: filialOptions, loaded: true, activeMenu: searchparams.get('activeMenu'), lastActiveMenu: menus.find(menu => menu.name === searchparams.get('activeMenu')) })
                     } else {
-                        setPageData({ ...data, documents, filials: filialsData, loaded: true, activeMenu: data.form_step, lastActiveMenu: menus.find(menu => menu.name === data.form_step) })
+                        setPageData({ ...data, documents, filials: filialOptions, loaded: true, activeMenu: data.form_step, lastActiveMenu: menus.find(menu => menu.name === data.form_step) })
                     }
 
                 } catch (err) {
@@ -204,103 +208,108 @@ export default function TransferOutside({ access = null, handleOpened, setOpened
             }
             return;
         }
-        if (successfullyUpdated) {
-            toast("No need to be saved!", { autoClose: 1000, type: 'info', transition: Zoom })
-            setLoading(false)
-            return
-        }
 
-        if (pageData.activeMenu === 'student-signature') {
-            const signature = signatureRef.current.toDataURL()
+        try {
+            if (successfullyUpdated) {
+                toast("No need to be saved!", { autoClose: 1000, type: 'info', transition: Zoom })
+                setLoading(false)
+                return
+            }
 
-            const fileUuid = uuidv4();
-            const storage = getStorage(app);
-            const local = 'Enrollments/Signatures/' + fileUuid + '.png';
-            const imageRef = ref(storage, local);
-            await uploadString(imageRef, signature.substring(22), 'base64')
-                .then(async (snapshot) => {
-                    await getDownloadURL(snapshot.ref).then(async (downloadURL) => {
-                        await api.post(`/enrollmentdsosignature`, {
-                            enrollment_id: id, files: {
-                                url: downloadURL,
-                                name: fileUuid + ".png",
-                                size: signature.length,
-                                key: fileUuid + ".png"
-                            }
-                        })
-                        await api.put(`/outside/enrollments/${id}`, { activeMenu: pageData.activeMenu, lastActiveMenu: pageData.lastActiveMenu })
-                        setPageData({ ...pageData, loaded: false })
-                        setSuccessfullyUpdated(true)
-                        toast("Saved!", { autoClose: 1000 })
-                        setLoading(false)
-                    })
-                })
-        }
+            if (pageData.activeMenu === 'transfer-request') {
+                const signature = signatureRef.current.toDataURL()
 
-        if (id !== 'new') {
-            const updated = handleUpdatedFields(data, pageData)
-
-            if (updated.length > 0) {
-                const objUpdated = Object.fromEntries(updated);
-                const { date_of_birth, passport_expiration_date, i94_expiration_date } = objUpdated;
-
-
-                if (data.documents && data.documents.length > 0) {
-                    let toastId = null;
-                    if (data.documents.find(document => (typeof document.file_id === 'undefined' && document.file_id) || (typeof document.file_id === 'object' && Array.from(document.file_id).length > 0))) {
-                        toastId = toast.loading("Files are being uploaded...");
-                    }
-                    const allPromises = organizeMultiAndSingleFiles(data.documents, 'Enrollments');
-                    Promise.all(allPromises).then(async (files) => {
-                        try {
-                            files.map(async (file) => {
-                                if (!file) {
-                                    return
-                                }
-                                if (file.name) {
-                                    api.post(`/enrollmentdocuments`, { enrollment_id: id, files: file })
-                                    toastId && toast.update(toastId, { render: 'All files have been uploaded!', type: 'success', autoClose: 3000, isLoading: false });
-                                } else {
-                                    file.sort((a, b) => a.size > b.size).map(async (promise, index) => {
-                                        await Promise.all([promise]).then(async (singleFile) => {
-                                            console.log(singleFile[0])
-                                            if (index + 1 === file.length) {
-                                                toastId && toast.update(toastId, { render: 'All files have been uploaded!', type: 'success', autoClose: 3000, isLoading: false });
-                                            }
-                                            await api.post(`/enrollmentdocuments`, { enrollment_id: id, files: singleFile[0] })
-                                        })
-                                    })
+                const fileUuid = uuidv4();
+                const storage = getStorage(app);
+                const local = 'Enrollments/Signatures/' + fileUuid + '.png';
+                const imageRef = ref(storage, local);
+                await uploadString(imageRef, signature.substring(22), 'base64')
+                    .then(async (snapshot) => {
+                        await getDownloadURL(snapshot.ref).then(async (downloadURL) => {
+                            await api.post(`/enrollmentstudentsignature`, {
+                                enrollment_id: id, files: {
+                                    url: downloadURL,
+                                    name: fileUuid + ".png",
+                                    size: signature.length,
+                                    key: fileUuid + ".png"
                                 }
                             })
+                            // await api.put(`/outside/enrollments/${id}`, { activeMenu: pageData.activeMenu, lastActiveMenu: pageData.lastActiveMenu })
+                            // setPageData({ ...pageData, loaded: false })
+                            // setSuccessfullyUpdated(true)
+                            // toast("Saved!", { autoClose: 1000 })
+                            // setLoading(false)
+                        })
+                    })
+            }
+
+            if (id !== 'new') {
+                const updated = handleUpdatedFields(data, pageData)
+
+                if (updated.length > 0) {
+                    const objUpdated = Object.fromEntries(updated);
+                    const { date_of_birth, passport_expiration_date, i94_expiration_date } = objUpdated;
+
+
+                    if (data.documents && data.documents.length > 0) {
+                        let toastId = null;
+                        if (data.documents.find(document => (typeof document.file_id === 'undefined' && document.file_id) || (typeof document.file_id === 'object' && Array.from(document.file_id).length > 0))) {
+                            toastId = toast.loading("Files are being uploaded...");
+                        }
+                        const allPromises = organizeMultiAndSingleFiles(data.documents, 'Enrollments');
+                        Promise.all(allPromises).then(async (files) => {
+                            try {
+                                files.map(async (file) => {
+                                    if (!file) {
+                                        return
+                                    }
+                                    if (file.name) {
+                                        api.post(`/enrollmentdocuments`, { enrollment_id: id, files: file })
+                                        toastId && toast.update(toastId, { render: 'All files have been uploaded!', type: 'success', autoClose: 3000, isLoading: false });
+                                    } else {
+                                        file.sort((a, b) => a.size > b.size).map(async (promise, index) => {
+                                            await Promise.all([promise]).then(async (singleFile) => {
+                                                console.log(singleFile[0])
+                                                if (index + 1 === file.length) {
+                                                    toastId && toast.update(toastId, { render: 'All files have been uploaded!', type: 'success', autoClose: 3000, isLoading: false });
+                                                }
+                                                await api.post(`/enrollmentdocuments`, { enrollment_id: id, files: singleFile[0] })
+                                            })
+                                        })
+                                    }
+                                })
+                            } catch (err) {
+                                console.log(err)
+                                // toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+                            }
+                            // return
+                            delete objUpdated.documents;
+                            await api.put(`/outside/enrollments/${id}`, { ...objUpdated, activeMenu: pageData.activeMenu, lastActiveMenu: pageData.lastActiveMenu, date_of_birth: date_of_birth ? format(date_of_birth, 'yyyyMMdd') : null, passport_expiration_date: passport_expiration_date ? format(passport_expiration_date, 'yyyyMMdd') : null, i94_expiration_date: i94_expiration_date ? format(i94_expiration_date, 'yyyyMMdd') : null })
+                            setPageData({ ...pageData, loaded: false })
+                            setSuccessfullyUpdated(true)
+                            toast("Saved!", { autoClose: 1000 })
+                            setLoading(false)
+                        })
+                    } else {
+                        try {
+                            await api.put(`/outside/enrollments/${id}`, { ...objUpdated, activeMenu: pageData.activeMenu, lastActiveMenu: pageData.lastActiveMenu, date_of_birth: date_of_birth ? format(date_of_birth, 'yyyyMMdd') : null, passport_expiration_date: passport_expiration_date ? format(passport_expiration_date, 'yyyyMMdd') : null, i94_expiration_date: i94_expiration_date ? format(i94_expiration_date, 'yyyyMMdd') : null })
+                            setPageData({ ...pageData, loaded: false })
+                            setSuccessfullyUpdated(true)
+                            toast("Saved!", { autoClose: 1000 })
+                            setLoading(false)
                         } catch (err) {
                             console.log(err)
-                            // toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+                            toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+                            setLoading(false)
                         }
-                        // return
-                        delete objUpdated.documents;
-                        await api.put(`/outside/enrollments/${id}`, { ...objUpdated, activeMenu: pageData.activeMenu, lastActiveMenu: pageData.lastActiveMenu, date_of_birth: date_of_birth ? format(date_of_birth, 'yyyyMMdd') : null, passport_expiration_date: passport_expiration_date ? format(passport_expiration_date, 'yyyyMMdd') : null, i94_expiration_date: i94_expiration_date ? format(i94_expiration_date, 'yyyyMMdd') : null })
-                        setPageData({ ...pageData, loaded: false })
-                        setSuccessfullyUpdated(true)
-                        toast("Saved!", { autoClose: 1000 })
-                        setLoading(false)
-                    })
-                } else {
-                    try {
-                        await api.put(`/outside/enrollments/${id}`, { ...objUpdated, activeMenu: pageData.activeMenu, lastActiveMenu: pageData.lastActiveMenu, date_of_birth: date_of_birth ? format(date_of_birth, 'yyyyMMdd') : null, passport_expiration_date: passport_expiration_date ? format(passport_expiration_date, 'yyyyMMdd') : null, i94_expiration_date: i94_expiration_date ? format(i94_expiration_date, 'yyyyMMdd') : null })
-                        setPageData({ ...pageData, loaded: false })
-                        setSuccessfullyUpdated(true)
-                        toast("Saved!", { autoClose: 1000 })
-                        setLoading(false)
-                    } catch (err) {
-                        console.log(err)
-                        toast(err.response.data.error, { type: 'error', autoClose: 3000 })
-                        setLoading(false)
                     }
-                }
 
-            } else {
-                // console.log(updated)
+                } else {
+                    // console.log(updated)
+                }
             }
+        } catch (err) {
+            console.log(err)
         }
     }
 
@@ -386,10 +395,7 @@ export default function TransferOutside({ access = null, handleOpened, setOpened
                                             </Scope>
                                             <InputLine title='Previous School'>
                                                 <Scope path={`enrollmenttransfers`}>
-                                                    <SelectPopover onChange={(el) => handlePreviousSchoolFilial(el)} name='previous_school_id' required grow title='School Name' options={pageData.filials.filter(filial => filial.id !== pageData.filial_id).map(filial => {
-
-                                                        return { value: filial.id, label: filial.id ? 'MILA - ' + filial.name : filial.name }
-                                                    })} defaultValue={pageData.enrollmenttransfers ? pageData.enrollmenttransfers.previous_school_id : null} InputContext={InputContext} />
+                                                    <SelectPopover onChange={(el) => handlePreviousSchoolFilial(el)} name='previous_school_id' required grow title='Previous School' options={pageData.filials} defaultValue={pageData.enrollmenttransfers ? pageData.filials.find(filial => filial.value === pageData.enrollmenttransfers.previous_school_id) : null} InputContext={InputContext} />
                                                     {!pageData.enrollmenttransfers || !pageData.enrollmenttransfers.previous_school_id &&
                                                         <>
                                                             <Input type='text' name='previous_school_name' required grow title='School Name' defaultValue={pageData.enrollmenttransfers ? pageData.enrollmenttransfers.previous_school_name : null} InputContext={InputContext} />

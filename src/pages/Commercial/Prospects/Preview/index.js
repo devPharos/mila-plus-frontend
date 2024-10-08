@@ -192,7 +192,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                     onPress: async () => {
                         try {
                             await api.post(`/prospects/formMail`, { crypt: id })
-                            toast("Link sent!", { autoClose: 1000 })
+                            toast("E-mail sent!", { autoClose: 1000 })
                         } catch (err) {
                             toast("Error!", { autoClose: 1000 })
                             console.log(err)

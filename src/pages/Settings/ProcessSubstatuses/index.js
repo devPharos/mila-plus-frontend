@@ -24,16 +24,6 @@ export default function ProcessSubstatuses() {
       type: 'text',
       filter: false,
     },
-    {
-      title: 'Value',
-      type: 'text',
-      filter: false,
-    },
-    {
-      title: 'Type',
-      type: 'text',
-      filter: true,
-    },
   ])
   const [successfullyUpdated, setSuccessfullyUpdated] = useState(true)
 
@@ -49,9 +39,9 @@ export default function ProcessSubstatuses() {
 
   useEffect(() => {
     async function getFilials() {
-      const { data } = await api.get('/parameters')
-      const gridDataValues = data.map(({ id, name, value, type }) => {
-        return { show: true, id, fields: [name, value, type] }
+      const { data } = await api.get('/processsubstatuses')
+      const gridDataValues = data.map(({ id, name }) => {
+        return { show: true, id, fields: [name] }
       })
       setGridData(gridDataValues)
     }

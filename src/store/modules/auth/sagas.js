@@ -5,8 +5,6 @@ import history from "~/services/history";
 import api from "~/services/api";
 
 import { loginSuccess, loginFailure, registerFailure } from "./actions";
-import backblaze from "~/services/backblaze";
-import backblazeAuth from "~/services/backblazeAuth";
 
 export function* login({ payload }) {
   try {
@@ -20,14 +18,6 @@ export function* login({ payload }) {
     const { token, user } = data;
 
     api.defaults.headers.authorization = `Bearer ${token}`;
-
-    // -- Backblaze
-
-    // const response = yield call(backblazeAuth.get, "b2api/v3/b2_authorize_account");
-
-    // console.log('backblaze', response)
-
-    // -- Backblaze
 
     const { data: accesses } = yield call(api.get, "MenuHierarchy/user/" + user.id)
 

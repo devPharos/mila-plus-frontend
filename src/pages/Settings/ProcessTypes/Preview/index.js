@@ -42,7 +42,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         }
         if (id === 'new') {
             try {
-                const response = await api.post(`/parameters`, data)
+                const response = await api.post(`/processtypes`, data)
                 setOpened(response.data.id)
                 setPageData({ ...pageData, ...data })
                 setSuccessfullyUpdated(true)
@@ -57,7 +57,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
             if (updated.length > 0) {
                 const objUpdated = Object.fromEntries(updated);
                 try {
-                    await api.put(`/parameters/${id}`, objUpdated)
+                    await api.put(`/processtypes/${id}`, objUpdated)
                     setPageData({ ...pageData, ...objUpdated })
                     setSuccessfullyUpdated(true)
                     toast("Saved!", { autoClose: 1000 })
@@ -74,7 +74,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     useEffect(() => {
         async function getPageData() {
             try {
-                const { data } = await api.get(`parameters/${id}`)
+                const { data } = await api.get(`processtypes/${id}`)
                 setPageData({ ...data, loaded: true })
                 const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at } = data;
                 const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
@@ -126,8 +126,6 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                             <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
                                                 <InputLine title='General Data'>
                                                     <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
-                                                    <Input type='text' name='value' required title='Value' grow defaultValue={pageData.value} InputContext={InputContext} />
-                                                    <Input type='text' name='type' required title='Type' grow defaultValue={pageData.type} InputContext={InputContext} />
                                                 </InputLine>
 
                                             </InputLineGroup>

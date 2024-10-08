@@ -269,8 +269,14 @@ const router = createBrowserRouter([
         </UnprotectedRoute>,
       },
       {
+        path: "/404",
+        element: <UnprotectedRoute>
+          <Page404 />
+        </UnprotectedRoute>,
+      },
+      {
         path: "/*",
-        element: <ProtectedRoute><Errors><Page404 /></Errors></ProtectedRoute>
+        element: <UnprotectedRoute><Errors><Page404 /></Errors></UnprotectedRoute>
       },
     ]
   },

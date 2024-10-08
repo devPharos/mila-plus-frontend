@@ -20,6 +20,24 @@ export function hasAccessTo(accesses = null, menu_alias = null) {
   return { view, edit, create, inactivate };
 }
 
+export function getCurrentPage() {
+  const { signed } = useSelector(state => state.auth)
+  const { pages } = useContext(PageContext)
+  const { pathname } = useLocation();
+  const paths = pathname.substring(1).split('/');
+  let currentModule = null;
+  if (signed) {
+    currentModule = pages.filter(module => module.name === paths[0])[0];
+  } else {
+    currentModule = pages[pages.length - 1];
+  }
+  let currentPage = null;
+  if (currentModule) {
+    currentPage = currentModule.children.filter(page => page.path === pathname)[0];
+  }
+  return currentPage
+}
+
 export const countries_list = [
   `Afghanistan`,
   `Albania`,
@@ -229,14 +247,12 @@ export function applyFilters(activeFilters, gridData, gridHeader, orderBy, setGr
       const fieldPos = gridHeader.findIndex((el) => el.title === filter.title);
       if (fieldPos > -1) {
         if (Array.isArray(filter.value)) {
-          console.log(typeof filter.value)
         } else if (typeof filter.value === 'boolean') {
-          console.log(line.fields[fieldPos].toString(), filter.value.toString())
           if (line.fields[fieldPos].toString().search(filter.value.toString()) === -1) {
             line.show = false;
           }
         } else {
-          if (!line.fields[fieldPos] || line.fields[fieldPos].toUpperCase().search(filter.value.toUpperCase()) === -1) {
+          if (!line.fields[fieldPos] || line.fields[fieldPos].toUpperCase() !== filter.value.toUpperCase()) {
             line.show = false;
           }
         }
@@ -318,21 +334,6 @@ export function handleUpdatedFields(data, pageData) {
     }
   })
 
-}
-
-export function getCurrentPage() {
-  const { signed } = useSelector(state => state.auth)
-  const { pages } = useContext(PageContext)
-  const { pathname } = useLocation();
-  const paths = pathname.substring(1).split('/');
-  let currentModule = null;
-  if (signed) {
-    currentModule = pages.filter(module => module.name === paths[0])[0];
-  } else {
-    currentModule = pages[pages.length - 1];
-  }
-  const currentPage = currentModule.children.filter(page => page.path === pathname)[0];
-  return currentPage
 }
 
 export const formatter = new Intl.NumberFormat('en-US', {

@@ -117,9 +117,6 @@ export default function TransferDSOOutside({ access = null, handleOpened, setOpe
     }, [pageData.loaded])
 
     async function handleGeneralFormSubmit(data) {
-        console.log(data)
-        console.log(pageData)
-        // return
         try {
             generalForm.current.setErrors({});
         } catch (err) {
@@ -137,103 +134,107 @@ export default function TransferDSOOutside({ access = null, handleOpened, setOpe
             }
             return;
         }
-        if (successfullyUpdated) {
-            toast("No need to be saved!", { autoClose: 1000, type: 'info', transition: Zoom })
-            setLoading(false)
-            return
-        }
+        try {
+            if (successfullyUpdated) {
+                toast("No need to be saved!", { autoClose: 1000, type: 'info', transition: Zoom })
+                setLoading(false)
+                return
+            }
 
-        if (pageData.activeMenu === 'student-signature') {
-            const signature = signatureRef.current.toDataURL()
+            if (pageData.activeMenu === 'transfer-dso') {
+                const signature = signatureRef.current.toDataURL()
 
-            const fileUuid = uuidv4();
-            const storage = getStorage(app);
-            const local = 'Enrollments/Signatures/' + fileUuid + '.png';
-            const imageRef = ref(storage, local);
-            await uploadString(imageRef, signature.substring(22), 'base64')
-                .then(async (snapshot) => {
-                    await getDownloadURL(snapshot.ref).then(async (downloadURL) => {
-                        await api.post(`/enrollmentstudentsignature`, {
-                            enrollment_id: id, files: {
-                                url: downloadURL,
-                                name: fileUuid + ".png",
-                                size: signature.length,
-                                key: fileUuid + ".png"
-                            }
-                        })
-                        await api.put(`/outside/enrollments/${id}`, { activeMenu: pageData.activeMenu, lastActiveMenu: pageData.lastActiveMenu })
-                        setPageData({ ...pageData, loaded: false })
-                        setSuccessfullyUpdated(true)
-                        toast("Saved!", { autoClose: 1000 })
-                        setLoading(false)
-                    })
-                })
-        }
-
-        if (id !== 'new') {
-            const updated = handleUpdatedFields(data, pageData)
-
-            if (updated.length > 0) {
-                const objUpdated = Object.fromEntries(updated);
-                const { date_of_birth, passport_expiration_date, i94_expiration_date } = objUpdated;
-
-
-                if (data.documents && data.documents.length > 0) {
-                    let toastId = null;
-                    if (data.documents.find(document => (typeof document.file_id === 'undefined' && document.file_id) || (typeof document.file_id === 'object' && Array.from(document.file_id).length > 0))) {
-                        toastId = toast.loading("Files are being uploaded...");
-                    }
-                    const allPromises = organizeMultiAndSingleFiles(data.documents, 'Enrollments');
-                    Promise.all(allPromises).then(async (files) => {
-                        try {
-                            files.map(async (file) => {
-                                if (!file) {
-                                    return
-                                }
-                                if (file.name) {
-                                    api.post(`/enrollmentdocuments`, { enrollment_id: id, files: file })
-                                    toastId && toast.update(toastId, { render: 'All files have been uploaded!', type: 'success', autoClose: 3000, isLoading: false });
-                                } else {
-                                    file.sort((a, b) => a.size > b.size).map(async (promise, index) => {
-                                        await Promise.all([promise]).then(async (singleFile) => {
-                                            console.log(singleFile[0])
-                                            if (index + 1 === file.length) {
-                                                toastId && toast.update(toastId, { render: 'All files have been uploaded!', type: 'success', autoClose: 3000, isLoading: false });
-                                            }
-                                            await api.post(`/enrollmentdocuments`, { enrollment_id: id, files: singleFile[0] })
-                                        })
-                                    })
+                const fileUuid = uuidv4();
+                const storage = getStorage(app);
+                const local = 'Enrollments/Signatures/' + fileUuid + '.png';
+                const imageRef = ref(storage, local);
+                await uploadString(imageRef, signature.substring(22), 'base64')
+                    .then(async (snapshot) => {
+                        await getDownloadURL(snapshot.ref).then(async (downloadURL) => {
+                            await api.post(`/enrollmentdsosignature`, {
+                                enrollment_id: id, files: {
+                                    url: downloadURL,
+                                    name: fileUuid + ".png",
+                                    size: signature.length,
+                                    key: fileUuid + ".png"
                                 }
                             })
+                            await api.put(`/outside/enrollments/${id}`, { activeMenu: pageData.activeMenu, lastActiveMenu: pageData.lastActiveMenu })
+                            setPageData({ ...pageData, loaded: false })
+                            setSuccessfullyUpdated(true)
+                            toast("Saved!", { autoClose: 1000 })
+                            setLoading(false)
+                        })
+                    })
+            }
+
+            if (id !== 'new') {
+                const updated = handleUpdatedFields(data, pageData)
+
+                if (updated.length > 0) {
+                    const objUpdated = Object.fromEntries(updated);
+                    const { date_of_birth, passport_expiration_date, i94_expiration_date } = objUpdated;
+
+
+                    if (data.documents && data.documents.length > 0) {
+                        let toastId = null;
+                        if (data.documents.find(document => (typeof document.file_id === 'undefined' && document.file_id) || (typeof document.file_id === 'object' && Array.from(document.file_id).length > 0))) {
+                            toastId = toast.loading("Files are being uploaded...");
+                        }
+                        const allPromises = organizeMultiAndSingleFiles(data.documents, 'Enrollments');
+                        Promise.all(allPromises).then(async (files) => {
+                            try {
+                                files.map(async (file) => {
+                                    if (!file) {
+                                        return
+                                    }
+                                    if (file.name) {
+                                        api.post(`/enrollmentdocuments`, { enrollment_id: id, files: file })
+                                        toastId && toast.update(toastId, { render: 'All files have been uploaded!', type: 'success', autoClose: 3000, isLoading: false });
+                                    } else {
+                                        file.sort((a, b) => a.size > b.size).map(async (promise, index) => {
+                                            await Promise.all([promise]).then(async (singleFile) => {
+                                                console.log(singleFile[0])
+                                                if (index + 1 === file.length) {
+                                                    toastId && toast.update(toastId, { render: 'All files have been uploaded!', type: 'success', autoClose: 3000, isLoading: false });
+                                                }
+                                                await api.post(`/enrollmentdocuments`, { enrollment_id: id, files: singleFile[0] })
+                                            })
+                                        })
+                                    }
+                                })
+                            } catch (err) {
+                                console.log(err)
+                                // toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+                            }
+                            // return
+                            delete objUpdated.documents;
+                            await api.put(`/outside/enrollments/${id}`, { ...objUpdated, activeMenu: pageData.activeMenu, lastActiveMenu: pageData.lastActiveMenu, date_of_birth: date_of_birth ? format(date_of_birth, 'yyyyMMdd') : null, passport_expiration_date: passport_expiration_date ? format(passport_expiration_date, 'yyyyMMdd') : null, i94_expiration_date: i94_expiration_date ? format(i94_expiration_date, 'yyyyMMdd') : null })
+                            setPageData({ ...pageData, loaded: false })
+                            setSuccessfullyUpdated(true)
+                            toast("Saved!", { autoClose: 1000 })
+                            setLoading(false)
+                        })
+                    } else {
+                        try {
+                            await api.put(`/outside/enrollments/${id}`, { ...objUpdated, activeMenu: pageData.activeMenu, lastActiveMenu: pageData.lastActiveMenu, date_of_birth: date_of_birth ? format(date_of_birth, 'yyyyMMdd') : null, passport_expiration_date: passport_expiration_date ? format(passport_expiration_date, 'yyyyMMdd') : null, i94_expiration_date: i94_expiration_date ? format(i94_expiration_date, 'yyyyMMdd') : null })
+                            setPageData({ ...pageData, loaded: false })
+                            setSuccessfullyUpdated(true)
+                            toast("Saved!", { autoClose: 1000 })
+                            setLoading(false)
                         } catch (err) {
                             console.log(err)
-                            // toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+                            toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+                            setLoading(false)
                         }
-                        // return
-                        delete objUpdated.documents;
-                        await api.put(`/outside/enrollments/${id}`, { ...objUpdated, activeMenu: pageData.activeMenu, lastActiveMenu: pageData.lastActiveMenu, date_of_birth: date_of_birth ? format(date_of_birth, 'yyyyMMdd') : null, passport_expiration_date: passport_expiration_date ? format(passport_expiration_date, 'yyyyMMdd') : null, i94_expiration_date: i94_expiration_date ? format(i94_expiration_date, 'yyyyMMdd') : null })
-                        setPageData({ ...pageData, loaded: false })
-                        setSuccessfullyUpdated(true)
-                        toast("Saved!", { autoClose: 1000 })
-                        setLoading(false)
-                    })
-                } else {
-                    try {
-                        await api.put(`/outside/enrollments/${id}`, { ...objUpdated, activeMenu: pageData.activeMenu, lastActiveMenu: pageData.lastActiveMenu, date_of_birth: date_of_birth ? format(date_of_birth, 'yyyyMMdd') : null, passport_expiration_date: passport_expiration_date ? format(passport_expiration_date, 'yyyyMMdd') : null, i94_expiration_date: i94_expiration_date ? format(i94_expiration_date, 'yyyyMMdd') : null })
-                        setPageData({ ...pageData, loaded: false })
-                        setSuccessfullyUpdated(true)
-                        toast("Saved!", { autoClose: 1000 })
-                        setLoading(false)
-                    } catch (err) {
-                        console.log(err)
-                        toast(err.response.data.error, { type: 'error', autoClose: 3000 })
-                        setLoading(false)
                     }
-                }
 
-            } else {
-                // console.log(updated)
+                } else {
+                    // console.log(updated)
+                }
             }
+        } catch (err) {
+            console.log(err)
         }
     }
 
@@ -313,16 +314,15 @@ export default function TransferDSOOutside({ access = null, handleOpened, setOpe
                                                 </InputLine>
                                             </Scope>
                                             <InputLine title='Details'>
-                                                <p>This student wishes to transfer to MILA International Language Academy – Orlando.</p>
-                                            </InputLine>
-                                            <InputLine>
-                                                <p>Please provide the information requested to help us determine eligibility for the transfer notification process.</p>
-                                            </InputLine>
-                                            <InputLine>
-                                                <p>If you have any questions, don't hesitate to contact the Office of MILA's admission at 407 286-0404.</p>
-                                            </InputLine>
-                                            <InputLine>
-                                                <p>Please do not transfer the I-20 until the student provides you with an acceptance letter:</p>
+                                                <p>This student wishes to be transfered to <strong>MILA International Language Academy – {pageData.filial.name}</strong>.
+                                                    <br /><br />
+                                                    Please provide the information requested to help us determine eligibility for the transfer notification process.
+                                                    <br /><br />
+                                                    If you have any question, don't hesitate to contact the Office of MILA's admission at <strong>407 286-0404</strong>.
+                                                    <br /><br />
+                                                    <span className='text-mila_orange'>Please do not transfer the I-20 until the student provides you with an acceptance letter.</span>
+                                                </p>
+
                                             </InputLine>
                                             <Scope path={`enrollmenttransfers`}>
                                                 <InputLine title='Eligibility'>

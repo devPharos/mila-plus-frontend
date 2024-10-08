@@ -1,6 +1,5 @@
 import React, { createContext, useState } from 'react';
 import Popover from './components/Popover';
-import Secondary from './components/buttons/Secondary';
 import { BellRing, Inbox, MapPin, User } from 'lucide-react';
 import PopoverNotifications from './components/Popover/PopoverNotifications';
 import PopoverInbox from './components/Popover/PopoverInbox';
@@ -51,9 +50,9 @@ export default function Header() {
         {signed && <div className='px-4 h-12 flex flex-1 flex-row justify-between items-center'>
           <div className='flex flex-row justify-between items-center gap-x-2'>
             <Popover Content={PopoverLocation} name='location' active={activePopover} opened={activePopover} setOppened={setActivePopover}>
-              <Secondary>
+              <div className={`rounded-xl p-2 bg-secondary flex flex-row justify-center items-center cursor-pointer hover:ring hover:ring-secondary-50`}>
                 <MapPin size={16} />
-              </Secondary>
+              </div>
             </Popover>
             <div className='leading-none text-xs'>Location<br /><strong className='text-mila_orange'>{auth.filial.name}</strong></div>
           </div>
@@ -81,19 +80,19 @@ export default function Header() {
         </div>}
         {signed && <div className='px-4 h-12 border-l flex flex-row justify-between items-center gap-x-4'>
           <Popover Content={PopoverNotifications} name='notifications' active={activePopover} opened={activePopover} setOppened={setActivePopover}>
-            <Secondary>
+            <div className={`rounded-xl p-2 bg-secondary flex flex-row justify-center items-center cursor-pointer hover:ring hover:ring-secondary-50`}>
               <BellRing size={16} />
-            </Secondary>
+            </div>
           </Popover>
           <Popover Content={PopoverInbox} name='inbox' active={activePopover} opened={activePopover} setOppened={setActivePopover}>
-            <Secondary>
+            <div className={`rounded-xl p-2 bg-secondary flex flex-row justify-center items-center cursor-pointer hover:ring hover:ring-secondary-50`}>
               <Inbox size={16} />
-            </Secondary>
+            </div>
           </Popover>
           <Popover Content={PopoverProfile} name='profile' active={activePopover} opened={activePopover} setOppened={setActivePopover}>
-            <Secondary>
+            <div className={`rounded-xl p-2 bg-secondary flex flex-row justify-center items-center cursor-pointer hover:ring hover:ring-secondary-50`}>
               <User size={16} />
-            </Secondary>
+            </div>
           </Popover>
         </div>}
       </div>

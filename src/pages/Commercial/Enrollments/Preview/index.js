@@ -125,7 +125,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                         <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='timeline' >
                             <Building size={16} /> Timeline
                         </RegisterFormMenu>
-                        <NavLink to={`http://localhost:3000/fill-form/Enrollment?crypt=${id}&activeMenu=student-information`} target="_blank" className='w-full'>
+                        <NavLink to={`/fill-form/Enrollment?crypt=${id}&activeMenu=student-information`} target="_blank" className='w-full'>
                             <RegisterFormMenu setActiveMenu={() => null} activeMenu={null} name='form'>
                                 <Building size={16} /> Form
                             </RegisterFormMenu>

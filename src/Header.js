@@ -18,25 +18,35 @@ export default function Header() {
   const [activePopover, setActivePopover] = useState('');
   const { profile } = useSelector(state => state.user);
   const auth = useSelector(state => state.auth);
-  const modules = [{
-    title: 'Academic',
-    alias: 'academic'
-  }, {
-    title: 'Administrative',
-    alias: 'administrative'
-  }, {
-    title: 'Commercial',
-    alias: 'commercial'
-  }, {
-    title: 'Financial',
-    alias: 'financial'
-  }, {
-    title: 'Operational',
-    alias: 'operational'
-  }, {
-    title: 'Settings',
-    alias: 'settings'
-  }]
+  const defaultModules = [
+    {
+      title: 'Academic',
+      alias: 'academic'
+    }, {
+      title: 'Administrative',
+      alias: 'administrative'
+    }, {
+      title: 'Commercial',
+      alias: 'commercial'
+    }, {
+      title: 'Financial',
+      alias: 'financial'
+    }, {
+      title: 'Operational',
+      alias: 'operational'
+    }, {
+      title: 'Settings',
+      alias: 'settings'
+    }
+  ]
+  const modules = defaultModules
+
+  // auth.accesses.hierarchy.map((module) => {
+  //   if (module.alias)
+  //     return { title, alias } = module;
+  // })
+
+  // console.log()
 
   return <HeaderContext.Provider value={{ activePopover, setActivePopover }}>
     <header className="z-50 sticky top-0 bg-white min-h-16 h-16 border-b flex">

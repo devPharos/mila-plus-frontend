@@ -95,9 +95,9 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                         value: 'Student',
                     },
                     {
-                        subtype: 'Depdendent',
-                        label: 'Depdendent',
-                        value: 'Depdendent',
+                        subtype: 'Dependent',
+                        label: 'Dependent',
+                        value: 'Dependent',
                     },
                     {
                         subtype: 'Sponsor',
@@ -117,9 +117,9 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                         value: 'Student',
                     },
                     {
-                        subtype: 'Depdendent',
-                        label: 'Depdendent',
-                        value: 'Depdendent',
+                        subtype: 'Dependent',
+                        label: 'Dependent',
+                        value: 'Dependent',
                     },
                     {
                         subtype: 'Sponsor',
@@ -139,9 +139,9 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                         value: 'Student',
                     },
                     {
-                        subtype: 'Depdendent',
-                        label: 'Depdendent',
-                        value: 'Depdendent',
+                        subtype: 'Dependent',
+                        label: 'Dependent',
+                        value: 'Dependent',
                     },
                     {
                         subtype: 'Sponsor',
@@ -161,9 +161,9 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                         value: 'Student',
                     },
                     {
-                        subtype: 'Depdendent',
-                        label: 'Depdendent',
-                        value: 'Depdendent',
+                        subtype: 'Dependent',
+                        label: 'Dependent',
+                        value: 'Dependent',
                     },
                     {
                         subtype: 'Sponsor',
@@ -200,6 +200,33 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                     }
                 ]
             },
+        ]
+    }, {
+        origin: 'Branches',
+        label: 'Branches',
+        value: 'Branches',
+        types: [
+            {
+                type: 'Contracts',
+                label: 'Contracts',
+                value: 'Contracts',
+                subtypes: [
+                    {
+                        subtype: 'F1 Contract',
+                        label: 'F1 Contract',
+                        value: 'F1 Contract',
+                        multiple: false,
+                        required: false
+                    },
+                    {
+                        subtype: 'Non-F1 Contract',
+                        label: 'Non-F1 Contract',
+                        value: 'Non-F1 Contract',
+                        multiple: false,
+                        required: false
+                    }
+                ]
+            }
         ]
     }]
 

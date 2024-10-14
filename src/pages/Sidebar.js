@@ -30,7 +30,7 @@ export default function Sidebar({ pages }) {
       {oppened && <span className='text-gray-500 text-xs'>Minimize</span>}
     </div>
 
-    <div className='my-12 flex flex-1 flex-col justify-start items-start gap-8 w-full'>
+    <div className={`my-12 flex flex-1 flex-col justify-start items-start gap-6 w-full`}>
       {pages.map((page, index) => {
         if (hasAccessTo(accesses, page.alias).view) {
           return <NavLink key={index} to={page.path} className='w-full'>

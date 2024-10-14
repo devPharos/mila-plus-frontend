@@ -20,12 +20,6 @@ function App() {
         name: 'Academic',
         children: [
           {
-            alias: 'academic-dashboard',
-            path: '/Academic/Dashboard',
-            title: 'Dashboard',
-            icon: 'LayoutDashboard',
-          },
-          {
             alias: 'calendar',
             path: '/Academic/Calendar',
             title: 'Calendar',
@@ -150,7 +144,7 @@ function App() {
             alias: 'users',
             path: '/Settings/Users',
             title: 'Users',
-            icon: 'User'
+            icon: 'User',
           },
           {
             alias: 'languages',

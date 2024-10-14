@@ -1,5 +1,5 @@
 import { Form } from '@unform/web';
-import { Building, CircleDollarSign, Pencil, Trash, X } from 'lucide-react';
+import { Building, CircleDollarSign, Files, FileSignature, Pencil, Trash, X } from 'lucide-react';
 import React, { useEffect, useRef, useState, createContext } from 'react';
 import Input from '~/components/RegisterForm/Input';
 import RegisterFormMenu from '~/components/RegisterForm/Menu';
@@ -16,6 +16,8 @@ import CheckboxInput from '~/components/RegisterForm/CheckboxInput';
 import Preview from '~/components/Preview';
 import SelectPopover from '~/components/RegisterForm/SelectPopover';
 import FormLoading from '~/components/RegisterForm/FormLoading';
+import FileInput from '~/components/RegisterForm/FileInput';
+import { organizeMultiAndSingleFiles } from '~/functions/uploadFile';
 
 export const InputContext = createContext({})
 
@@ -94,8 +96,6 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
             toast("No need to be saved!", { autoClose: 1000, type: 'info', transition: Zoom })
             return
         }
-        // console.log(data)
-        // return;
         if (id === 'new') {
             try {
                 const response = await api.post(`/filials`, data)
@@ -108,22 +108,39 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                 toast(err.response.data.error, { type: 'error', autoClose: 3000 })
             }
         } else if (id !== 'new') {
-            const updated = handleUpdatedFields(data, pageData)
-
-            if (updated.length > 0) {
-                const objUpdated = Object.fromEntries(updated);
-                try {
-                    await api.put(`/filials/${id}`, objUpdated)
-                    setPageData({ ...pageData, ...objUpdated })
-                    setSuccessfullyUpdated(true)
-                    toast("Saved!", { autoClose: 1000 })
-                    handleOpened(null)
-                } catch (err) {
-                    toast(err.response.data.error, { type: 'error', autoClose: 3000 })
-                }
-            } else {
-                console.log(updated)
+            let allPromises = [];
+            let toastId = null;
+            if (data.f1_contract_id || data.non_f1_contract_id) {
+                data.documents = [data.f1_contract_id, data.non_f1_contract_id];
+                toastId = toast.loading("Files are being uploaded...");
+                allPromises = organizeMultiAndSingleFiles(data.documents, 'Filials');
             }
+            Promise.all(allPromises).then(async (files) => {
+                try {
+                    console.log(pageData)
+                    toastId && toast.update(toastId, { render: 'All files have been uploaded!', type: 'success', autoClose: 3000, isLoading: false });
+
+                    delete data.documents;
+                    delete data.f1_contract_id;
+                    delete data.non_f1_contract_id;
+
+                    const updated = handleUpdatedFields(data, pageData)
+
+                    if (updated.length > 0) {
+                        const objUpdated = Object.fromEntries(updated);
+                        await api.put(`/filials/${id}`, objUpdated)
+                        setPageData({ ...pageData, ...objUpdated })
+                        setSuccessfullyUpdated(true)
+                        toast("Saved!", { autoClose: 1000 })
+                        handleOpened(null)
+                    }
+
+                } catch (err) {
+                    console.log(err)
+                    toast(err && err.response && err.response.data.error, { type: 'error', autoClose: 3000 })
+                }
+            })
+
         }
     }
 
@@ -132,20 +149,6 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
             toast("Changes discarted!", { autoClose: 1000 })
         }
         handleOpened(null)
-    }
-
-    function handleAddPrice() {
-        const newPrices = [...pageData.pricelists, { id: null, name: null, installment: 0, installment_f1: 0, mailling: 0, private: 0, book: 0, registration_fee: 0, active: true }];
-        setPageData({ ...pageData, pricelists: newPrices })
-        setSuccessfullyUpdated(false)
-    }
-
-    function handleRemovePrice(index) {
-        const newPrices = generalForm.current.getData()
-        const removed = newPrices.pricelists.splice(index, 1)
-        generalForm.current.setData(newPrices)
-        setPageData({ ...pageData, pricelists: [...newPrices.pricelists] })
-        setSuccessfullyUpdated(false)
     }
 
     function handleAddDiscount() {
@@ -213,6 +216,9 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                         </RegisterFormMenu>
                         <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='financial-support' disabled={id === 'new'} messageOnDisabled='Create the filial to have access to Financial Support.'>
                             <CircleDollarSign size={16} /> Financial Support
+                        </RegisterFormMenu>
+                        <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='contracts' disabled={id === 'new'} messageOnDisabled='Create the filial to have access to Contracts.'>
+                            <FileSignature size={16} /> Contracts
                         </RegisterFormMenu>
 
                     </div>
@@ -323,6 +329,49 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                 <InputLine>
                                                     <Input type='text' onlyFloat grow name={`financial_support_student_amount`} title='Amount ($) per month required for students' defaultValue={pageData.financial_support_student_amount} InputContext={InputContext} />
                                                     <Input type='text' onlyFloat grow name={`financial_support_dependent_amount`} title='Amount ($) per month required for dependents' defaultValue={pageData.financial_support_dependent_amount} InputContext={InputContext} />
+                                                </InputLine>
+                                            </InputLineGroup>
+
+                                            <InputLineGroup title='CONTRACTS' activeMenu={activeMenu === 'contracts'}>
+                                                <InputLine title='F1 Contract'>
+                                                    <FileInput name='f1_contract_id' grow title='F1 Contract' InputContext={InputContext} />
+                                                </InputLine>
+                                                <InputLine subtitle='Attached Files'>
+                                                    <div className='flex flex-col justify-center items-start gap-4'>
+                                                        {
+                                                            pageData.f1_contract && <>
+                                                                <div className='flex flex-row justify-center items-center gap-2'>
+                                                                    <a href={pageData.f1_contract.file.url} target="_blank" className='text-xs'>
+                                                                        <div className='flex flex-row items-center border px-4 py-2 gap-1 rounded-md bg-gray-100 hover:border-gray-300'>
+                                                                            <Files size={16} />
+                                                                            {pageData.f1_contract.file.name}
+                                                                        </div>
+                                                                    </a>
+                                                                    {/* <button type='button' onClick={() => handleDeleteDocument(enrollmentdocument.id)} className='text-xs text-red-700 cursor-pointer flex flex-row items-center justify-start gap-1 mt-1 px-2 py-1 rounded hover:bg-red-100'><X size={12} /> Delete</button> */}
+                                                                </div>
+                                                            </>
+                                                        }
+                                                    </div>
+                                                </InputLine>
+                                                <InputLine title='Non-F1 Contract'>
+                                                    <FileInput name='non_f1_contract_id' grow title='Non F1 Contract' InputContext={InputContext} />
+                                                </InputLine>
+                                                <InputLine subtitle='Attached Files'>
+                                                    <div className='flex flex-col justify-center items-start gap-4'>
+                                                        {
+                                                            pageData.non_f1_contract && <>
+                                                                <div className='flex flex-row justify-center items-center gap-2'>
+                                                                    <a href={pageData.non_f1_contract.file.url} target="_blank" className='text-xs'>
+                                                                        <div className='flex flex-row items-center border px-4 py-2 gap-1 rounded-md bg-gray-100 hover:border-gray-300'>
+                                                                            <Files size={16} />
+                                                                            {pageData.non_f1_contract.file.name}
+                                                                        </div>
+                                                                    </a>
+                                                                    {/* <button type='button' onClick={() => handleDeleteDocument(enrollmentdocument.id)} className='text-xs text-red-700 cursor-pointer flex flex-row items-center justify-start gap-1 mt-1 px-2 py-1 rounded hover:bg-red-100'><X size={12} /> Delete</button> */}
+                                                                </div>
+                                                            </>
+                                                        }
+                                                    </div>
                                                 </InputLine>
                                             </InputLineGroup>
 

@@ -49,6 +49,14 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
             label: 'Progress Test',
         },
         {
+            value: 'First Survey',
+            label: 'First Survey',
+        },
+        {
+            value: 'Second Survey',
+            label: 'Second Survey',
+        },
+        {
             value: 'Midterm Oral Test',
             label: 'Midterm Oral Test',
         },

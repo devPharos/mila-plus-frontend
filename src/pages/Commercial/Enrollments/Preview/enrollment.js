@@ -429,27 +429,24 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                     <RegisterFormMenu disabled={false} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[0].name })} activeMenu={pageData.activeMenu} name='student-information' >
                         <User size={22} /> Student Information
                     </RegisterFormMenu>
-                    {pageData.students.processsubstatuses.name !== 'Transfer' &&
-                        <>
-                            <RegisterFormMenu disabled={pageData.lastActiveMenu && pageData.lastActiveMenu.order < 2} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[1].name })} activeMenu={pageData.activeMenu} name='emergency-contact' >
-                                <Ambulance size={22} /> Emergency Contact
-                            </RegisterFormMenu>
-                            <RegisterFormMenu disabled={pageData.lastActiveMenu && pageData.lastActiveMenu.order < 3 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[2].name })} activeMenu={pageData.activeMenu} name='enrollment-information' >
-                                <BookText size={22} /> Enrollment Information
-                            </RegisterFormMenu>
-                            <RegisterFormMenu disabled={pageData.lastActiveMenu && pageData.lastActiveMenu.order < 4 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[3].name })} activeMenu={pageData.activeMenu} name='dependent-information' >
-                                <Contact size={22} /> Dependent Information
-                            </RegisterFormMenu>
-                            <RegisterFormMenu disabled={pageData.lastActiveMenu && pageData.lastActiveMenu.order < 5 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[4].name })} activeMenu={pageData.activeMenu} name='affidavit-of-support' >
-                                <BadgeDollarSign size={22} /> Affidavit of Support
-                            </RegisterFormMenu>
-                            <RegisterFormMenu disabled={pageData.lastActiveMenu && pageData.lastActiveMenu.order < 6 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[5].name })} activeMenu={pageData.activeMenu} name='documents-upload' >
-                                <Files size={22} /> Documents Upload
-                            </RegisterFormMenu>
-                            <RegisterFormMenu disabled={pageData.lastActiveMenu && pageData.lastActiveMenu.order < 7 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[6].name })} activeMenu={pageData.activeMenu} name='student-signature' >
-                                <FileSignature size={22} /> Student's Signature
-                            </RegisterFormMenu>
-                        </>}
+                    <RegisterFormMenu disabled={pageData.lastActiveMenu && pageData.lastActiveMenu.order < 2} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[1].name })} activeMenu={pageData.activeMenu} name='emergency-contact' >
+                        <Ambulance size={22} /> Emergency Contact
+                    </RegisterFormMenu>
+                    <RegisterFormMenu disabled={pageData.lastActiveMenu && pageData.lastActiveMenu.order < 3 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[2].name })} activeMenu={pageData.activeMenu} name='enrollment-information' >
+                        <BookText size={22} /> Enrollment Information
+                    </RegisterFormMenu>
+                    <RegisterFormMenu disabled={pageData.lastActiveMenu && pageData.lastActiveMenu.order < 4 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[3].name })} activeMenu={pageData.activeMenu} name='dependent-information' >
+                        <Contact size={22} /> Dependent Information
+                    </RegisterFormMenu>
+                    <RegisterFormMenu disabled={pageData.lastActiveMenu && pageData.lastActiveMenu.order < 5 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[4].name })} activeMenu={pageData.activeMenu} name='affidavit-of-support' >
+                        <BadgeDollarSign size={22} /> Affidavit of Support
+                    </RegisterFormMenu>
+                    <RegisterFormMenu disabled={pageData.lastActiveMenu && pageData.lastActiveMenu.order < 6 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[5].name })} activeMenu={pageData.activeMenu} name='documents-upload' >
+                        <Files size={22} /> Documents Upload
+                    </RegisterFormMenu>
+                    <RegisterFormMenu disabled={pageData.lastActiveMenu && pageData.lastActiveMenu.order < 7 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[6].name })} activeMenu={pageData.activeMenu} name='student-signature' >
+                        <FileSignature size={22} /> Student's Signature
+                    </RegisterFormMenu>
                     <RegisterFormMenu disabled={pageData.lastActiveMenu && pageData.lastActiveMenu.order < 8 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[7].name })} activeMenu={pageData.activeMenu} name='sponsor-signature' >
                         <CheckCheck size={18} /> Finished
                     </RegisterFormMenu>

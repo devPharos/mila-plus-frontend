@@ -156,7 +156,6 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
     useEffect(() => {
         async function getDocuments(type = '') {
             const { data } = await api.get(`/documentsByOrigin?origin=Enrollment&type=${type}&subtype=Student`)
-            console.log(data, type)
             return data;
         }
         async function getPageData() {
@@ -174,7 +173,7 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                     if (searchparams.has('activeMenu')) {
                         setPageData({ ...data, documents, contracts: filialData.filialdocuments, loaded: true, activeMenu: searchparams.get('activeMenu'), lastActiveMenu: menus.find(menu => menu.name === searchparams.get('activeMenu')) })
                     } else {
-                        setPageData({ ...data, documents, contracts: filialData.filialdocuments, loaded: true, activeMenu: data.form_step, lastActiveMenu: menus.find(menu => menu.name === data.form_step) })
+                        setPageData({ ...data, documents, contracts: filialData.filialdocuments, loaded: true, activeMenu: data.form_step === 'transfer-agent' ? 'student-information' : data.form_step, lastActiveMenu: menus.find(menu => menu.name === data.form_step) })
                     }
 
                 } catch (err) {

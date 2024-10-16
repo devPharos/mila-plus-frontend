@@ -46,7 +46,7 @@ export default function Login() {
   return <div className='h-full flex flex-1 flex-col justify-center items-center rounded-tr-2xl gap-8'>
 
     <div>
-      <img alt='Mila' src={logo} className='h-16' />
+      <img alt='MILA' src={logo} className='h-16' />
     </div>
     <Form ref={formRef} onSubmit={handleFormSubmit} className='flex flex-col justify-between items-center gap-4'>
       <Input name="email" placeholder="E-mail" />

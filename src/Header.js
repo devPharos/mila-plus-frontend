@@ -48,7 +48,7 @@ export default function Header() {
       <div className="max-w-screen-2xl flex flex-row justify-between items-center w-screen">
         <div className='px-4 h-12 flex flex-row justify-between items-center border-r'>
           <Link to='/'>
-            <img alt='Mila' src={logo} style={{ height: 32 }} />
+            <img alt='MILA' src={logo} style={{ height: 32 }} />
           </Link>
         </div>
         {signed && <div className='px-4 h-12 flex flex-1 flex-row justify-between items-center'>

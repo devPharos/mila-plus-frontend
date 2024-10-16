@@ -19,7 +19,7 @@ export default function Sidebar({ pages }) {
     class: 'p-2 bg-transparent rounded flex flex-row hover:bg-gray-300 justify-center items-center cursor-pointer text-xs gap-2',
     color: '#6b7280'
   }
-  return <div className={`h-full bg-secondary flex flex-col justify-start items-start rounded-tl-2xl p-4`}>
+  return <div className={`h-full bg-secondary flex flex-col justify-start items-start rounded-tl-2xl p-4 overflow-y-scroll`}>
 
     <div className='flex flex-row justify-center items-center'>
       <button type="button" onClick={() => setOppened(!oppened)} className="relative w-10 h-10 text-gray-300 rounded hover:bg-gray-300 transition mr-2 lg:block" id="menu-toggle" aria-label="Abrir Menu" aria-haspopup="dialog" aria-expanded="false" aria-controls="radix-:R9b6uubda:" data-state="closed">
@@ -35,7 +35,7 @@ export default function Sidebar({ pages }) {
         if (hasAccessTo(accesses, page.alias).view) {
           return <NavLink key={index} to={page.path} className='w-full'>
             {({ isActive }) => (<div className={`${isActive ? activeMenu.class : inactiveMenu.class}`}>
-              <Icon name={page.icon} color={`${isActive ? activeMenu.color : inactiveMenu.color}`} size={20} /> {oppened && <div className={`flex-1 ${isActive ? 'text-white' : 'text-gray-500'}`}>{page.title}</div>}
+              {page.icon && <Icon name={page.icon} color={`${isActive ? activeMenu.color : inactiveMenu.color}`} size={20} />} {oppened && <div className={`flex-1 ${isActive ? 'text-white' : 'text-gray-500'}`}>{page.title}</div>}
             </div>
             )}
           </NavLink>

@@ -1,5 +1,5 @@
 import { Form } from '@unform/web';
-import { Building, Contact, Files, ListMinus, Loader2, Pencil, X } from 'lucide-react';
+import { Contact, Files, ListMinus, Pencil, X } from 'lucide-react';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import Input from '~/components/RegisterForm/Input';
 import RegisterFormMenu from '~/components/RegisterForm/Menu';
@@ -9,9 +9,8 @@ import InputLine from '~/components/RegisterForm/InputLine';
 import InputLineGroup from '~/components/RegisterForm/InputLineGroup';
 import FormHeader from '~/components/RegisterForm/FormHeader';
 import Preview from '~/components/Preview';
-import { countries_list, getRegistries, handleUpdatedFields } from '~/functions';
+import { countries_list, formatter, getRegistries, handleUpdatedFields } from '~/functions';
 import SelectPopover from '~/components/RegisterForm/SelectPopover';
-import Textarea from '~/components/RegisterForm/Textarea';
 import DatePicker from '~/components/RegisterForm/DatePicker';
 import SelectCountry from '~/components/RegisterForm/SelectCountry';
 import { format, parseISO } from 'date-fns';
@@ -46,10 +45,14 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     const [countriesList, setCountriesList] = useState([])
     const [filialOptions, setFilialOptions] = useState([])
     const [agentOptions, setAgentOptions] = useState([])
+    const [priceLists, setPriceLists] = useState(null)
+    const [discountLists, setDiscountLists] = useState(null)
+    const [totalDiscount, setTotalDiscount] = useState(0)
     const generalForm = useRef()
     const auth = useSelector(state => state.auth);
 
     const genderOptions = [{ value: 'male', label: 'Male' }, { value: 'female', label: 'Female' }, { value: 'not specified', label: 'Not Specified' }]
+    const yesOrNoOptions = [{ value: true, label: 'Yes' }, { value: false, label: 'No' }]
 
     const countriesOptions = countries_list.map(country => {
         return { value: country, label: country }
@@ -71,7 +74,6 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         }
         async function getDefaultAgentOptions() {
             const { data } = await api.get('/agents')
-            console.log(data)
             const retAgentOptions = data.map((agent) => {
                 return { value: agent.id, label: agent.name }
             })
@@ -114,6 +116,19 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         }
         getPageData()
     }, [])
+
+    useEffect(() => {
+        if (pageData.processtype_id && pageData.processsubstatus_id) {
+            api.get(`filials/${pageData.filial_id}`).then(({ data }) => {
+                setPriceLists(data.pricelists.find(price => price.processsubstatus_id === pageData.processsubstatus_id))
+                setDiscountLists(data.discountlists.filter(discount => discount.active))
+            })
+        } else {
+            setPriceLists(null)
+            setDiscountLists(null)
+        }
+    }, [pageData.processtype_id, pageData.processsubstatus_id])
+
 
     async function handleGeneralFormSubmit(data) {
         if (data.processsubstatus_id && pageData.subStatusOptions.find(subStatus => subStatus.value === data.processsubstatus_id).father_id !== data.processtype_id) {
@@ -285,10 +300,44 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                     <Input type='text' name='nsevis' title='NSEVIS' grow defaultValue={pageData.nsevis} placeholder='-----' InputContext={InputContext} />
                                                 </InputLine>
                                                 <InputLine title='Enrollment'>
-                                                    <SelectPopover name='processtype_id' grow required title='Type' onChange={(el) => { setPageData({ ...pageData, find_processtype_id: el.value }); generalForm.current.setFieldValue('processsubstatus_id', null); setSuccessfullyUpdated(false) }} defaultValue={pageData.processtype_id ? pageData.typesOptions.find(type => type.value === pageData.processtype_id) : null} options={pageData.typesOptions} InputContext={InputContext} />
-                                                    {/* <SelectPopover name='status' grow disabled title='Status' isSearchable defaultValue={statusesOptions.find(status => status.value === 'Waiting')} options={statusesOptions} InputContext={InputContext} /> */}
-                                                    <SelectPopover name='processsubstatus_id' grow required title='Sub Status' isSearchable defaultValue={pageData.processsubstatus_id ? pageData.subStatusOptions.find(substatus => substatus.value === pageData.processsubstatus_id) : null} options={pageData.find_processtype_id ? pageData.subStatusOptions.filter(type => type.father_id === pageData.find_processtype_id) : []} InputContext={InputContext} />
+                                                    <SelectPopover name='processtype_id' grow required title='Type' onChange={(el) => { setPageData({ ...pageData, find_processtype_id: el.value, processsubstatus_id: null }); generalForm.current.setFieldValue('processsubstatus_id', null); setSuccessfullyUpdated(false) }} defaultValue={pageData.processtype_id ? pageData.typesOptions.find(type => type.value === pageData.processtype_id) : null} options={pageData.typesOptions} InputContext={InputContext} />
+                                                    <SelectPopover name='processsubstatus_id' grow required title='Sub Status' onChange={(el) => setPageData({ ...pageData, processsubstatus_id: el.value })} isSearchable defaultValue={pageData.processsubstatus_id ? pageData.subStatusOptions.find(substatus => substatus.value === pageData.processsubstatus_id) : null} options={pageData.find_processtype_id ? pageData.subStatusOptions.filter(type => type.father_id === pageData.find_processtype_id) : []} InputContext={InputContext} />
                                                 </InputLine>
+                                                {priceLists && <InputLine title='Prices'>
+                                                    <table className='table-auto w-full text-center'>
+                                                        <thead className='bg-slate-100 rounded-lg overflow-hidden'>
+                                                            <tr>
+                                                                <th className='w-1/6'>Registration Fee</th>
+                                                                <th className='w-1/6'>Books</th>
+                                                                <th className='w-1/6'>Tuition</th>
+                                                                <th className='w-1/6'>Tuition in Advanced</th>
+                                                                <th className='w-1/6'>Discount</th>
+                                                                <th className='w-1/6'>Total</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td>{formatter.format(priceLists.registration_fee)}</td>
+                                                                <td>{formatter.format(priceLists.book)}</td>
+                                                                <td>{formatter.format(priceLists.tuition)}</td>
+                                                                <td>{priceLists.tuition_in_advance ? 'Yes' : 'No'}</td>
+                                                                <td>{formatter.format(totalDiscount)}</td>
+                                                                <td>{formatter.format(priceLists.registration_fee + priceLists.book + priceLists.tuition)}</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </InputLine>}
+                                                {discountLists && discountLists.map((discount) => {
+                                                    return <InputLine>
+                                                        {console.log({ discount })}
+                                                        <Input readOnly={true} type='text' name='discount_id' grow title='Discount' defaultValue={discount.name} InputContext={InputContext} />
+                                                        <Input readOnly={true} type='text' name='value' grow title='Discount' defaultValue={(discount.percent ? '%' : '$') + ' ' + discount.value} InputContext={InputContext} />
+                                                        <SelectPopover readOnly={true} name='all_installments' title='All Installments?' options={yesOrNoOptions} defaultValue={yesOrNoOptions.find(option => option.value === discount.all_installments)} InputContext={InputContext} />
+                                                        <SelectPopover readOnly={true} name='free_vacation' title='Free Vacation?' options={yesOrNoOptions} defaultValue={yesOrNoOptions.find(option => option.value === discount.free_vacation)} InputContext={InputContext} />
+                                                        <SelectPopover name='apply' title='Apply?' options={yesOrNoOptions} InputContext={InputContext} />
+                                                    </InputLine>
+                                                })
+                                                }
                                                 <InputLine title='Location'>
 
                                                     <Input type='text' name='foreign_address' title='Address' grow defaultValue={pageData.foreign_address} InputContext={InputContext} />

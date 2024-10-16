@@ -23,6 +23,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         title: '',
         loaded: false
     })
+    const [loading, setLoading] = useState(false)
     const [formType, setFormType] = useState(defaultFormType)
     const [fullscreen, setFullscreen] = useState(false)
     const [activeMenu, setActiveMenu] = useState('general')
@@ -171,6 +172,28 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                         value: 'Sponsor',
                     }
                 ]
+            },
+            {
+                type: 'Regular',
+                label: 'Regular',
+                value: 'Regular',
+                subtypes: [
+                    {
+                        subtype: 'Student',
+                        label: 'Student',
+                        value: 'Student',
+                    },
+                    {
+                        subtype: 'Dependent',
+                        label: 'Dependent',
+                        value: 'Dependent',
+                    },
+                    {
+                        subtype: 'Sponsor',
+                        label: 'Sponsor',
+                        value: 'Sponsor',
+                    }
+                ]
             }
         ]
     }, {
@@ -253,8 +276,10 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     }, [])
 
     async function handleGeneralFormSubmit(data) {
+        setLoading(true)
         if (successfullyUpdated) {
             toast("No need to be saved!", { autoClose: 1000, type: 'info', transition: Zoom })
+            setLoading(false)
             return
         }
         if (id === 'new') {
@@ -265,9 +290,12 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                 setSuccessfullyUpdated(true)
                 toast("Saved!", { autoClose: 1000 })
                 handleOpened(null)
+                setLoading(false)
             } catch (err) {
                 toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+                setLoading(false)
             }
+            return
         } else if (id !== 'new') {
             const updated = handleUpdatedFields(data, pageData)
 
@@ -279,11 +307,14 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                     setSuccessfullyUpdated(true)
                     toast("Saved!", { autoClose: 1000 })
                     handleOpened(null)
+                    setLoading(false)
                 } catch (err) {
                     console.log(err)
                     toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+                    setLoading(false)
                 }
             } else {
+                setLoading(false)
                 // console.log(updated)
             }
         }
@@ -341,7 +372,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                 <InputContext.Provider value={{ id, generalForm, setSuccessfullyUpdated, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm, handleInactivate, canceled: pageData.canceled_at }}>
                                     {pageData.loaded ?
                                         <>
-                                            <FormHeader access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
+                                            <FormHeader loading={loading} access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
                                             <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
                                                 <InputLine title='General Data'>
                                                     <SelectPopover name='origin' grow required title='Origin' isSearchable onChange={(el) => setPageData({ ...pageData, origin: el.value, type: null, subtype: null })} defaultValue={pageData.origin ? options.find(origin => origin.value === pageData.origin) : null} options={options} InputContext={InputContext} />

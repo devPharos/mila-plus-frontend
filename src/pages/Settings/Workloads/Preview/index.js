@@ -1,5 +1,5 @@
 import { Form } from '@unform/web';
-import { Archive, Building, FileText, Pencil, PlusCircle, Route, Trash, X } from 'lucide-react';
+import { Building, FileText, Pencil, PlusCircle, Route, Trash, X } from 'lucide-react';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import Input from '~/components/RegisterForm/Input';
 import SelectPopover from '~/components/RegisterForm/SelectPopover';
@@ -14,8 +14,6 @@ import { getRegistries, handleUpdatedFields } from '~/functions';
 import { Scope } from '@unform/core';
 import { AlertContext } from '~/App';
 import FormLoading from '~/components/RegisterForm/FormLoading';
-import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
-import { app } from '../../../../services/firebase';
 import FileInput from '~/components/RegisterForm/FileInput';
 import uploadFile from '~/functions/uploadFile';
 

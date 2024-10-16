@@ -75,13 +75,14 @@ export default function SponsorOutside({ access = null, handleOpened, setOpened,
                 try {
                     let documents = [];
                     const { data } = await api.get(`/outside/sponsors/${id}`)
+                    const { data: filialData } = await api.get(`/filials/${data.filial_id}`)
 
                     documents = await getDocuments(data.students.processsubstatuses.name)
 
                     const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at } = data;
                     const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
                     setRegistry(registries)
-                    setPageData({ ...data, documents, loaded: true, activeMenu: data.form_step, lastActiveMenu: menus.find(menu => menu.name === data.form_step) })
+                    setPageData({ ...data, documents, contracts: filialData.filialdocuments, loaded: true, activeMenu: data.form_step, lastActiveMenu: menus.find(menu => menu.name === data.form_step) })
 
                 } catch (err) {
                     if (err.response && err.response.data && err.response.data.error) {
@@ -299,7 +300,7 @@ export default function SponsorOutside({ access = null, handleOpened, setOpened,
                                                 {pageData.has_dependents ?
                                                     <div className='text-lg'>{formatter.format((parseFloat(pageData.filial.financial_support_student_amount) + (parseFloat(pageData.filial.financial_support_dependent_amount) * pageData.enrollmentdependents.length)) * pageData.plan_months)} (Estimate)</div>
                                                     :
-                                                    <div className='text-lg'>$ {formatter.format(parseFloat(pageData.filial.financial_support_student_amount) * pageData.plan_months)} (Estimate)</div>
+                                                    <div className='text-lg'>{formatter.format(parseFloat(pageData.filial.financial_support_student_amount) * pageData.plan_months)} (Estimate)</div>
                                                 }
                                             </InputLine>
                                             <InputLine>
@@ -343,7 +344,7 @@ export default function SponsorOutside({ access = null, handleOpened, setOpened,
                                                 </Scope>
                                             })}
                                             <InputLine title='Sponsor Signature'>
-                                                <PDFViewer file='http://localhost:3000/student.pdf' height={450} />
+                                                <PDFViewer download={true} pageNumber={5} onlyOnePage={true} file={{ url: pageData.contracts.find(contract => contract.file.document.subtype === 'F1 Contract').file.url + '#page=5' }} height={450} />
                                                 <div className='flex flex-1 flex-col items-start justify-start'>
                                                     <div onClick={handleSignature} className='h-[19rem] w-[36rem] gap-2 border rounded'>
                                                         <SignaturePad redrawOnResize ref={signatureRef} options={{ backgroundColor: '#FFF', penColor: '#111' }} />

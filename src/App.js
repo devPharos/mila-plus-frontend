@@ -88,17 +88,17 @@ function App() {
       {
         name: 'Financial',
         children: [
-          {
-            alias: 'financial-dashboard',
-            path: '/Financial/Dashboard',
-            title: 'Dashboard',
-            icon: 'LayoutDashboard',
-          },
+          // {
+          //   alias: 'financial-dashboard',
+          //   path: '/Financial/Dashboard',
+          //   title: 'Dashboard',
+          //   icon: 'LayoutDashboard',
+          // },
           {
             alias: 'chart-of-accounts',
             path: '/Financial/ChartOfAccounts',
             title: 'Chart of Accounts',
-            icon: 'GanttChart'
+            icon: 'ChartGantt'
           },
         ]
       },
@@ -124,14 +124,14 @@ function App() {
           },
           {
             alias: 'filials',
-            path: '/Settings/Filials',
-            title: 'Filials',
+            path: '/Settings/Branches',
+            title: 'Branches',
             icon: 'Building'
           },
           {
             alias: 'filial-types',
-            path: '/Settings/FilialTypes',
-            title: 'Filial Types',
+            path: '/Settings/BranchesTypes',
+            title: 'Branches Types',
             icon: 'Building2'
           },
           {

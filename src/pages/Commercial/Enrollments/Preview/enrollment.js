@@ -46,6 +46,9 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
             email: '',
             phone: ''
         }],
+        lastActiveMenu: {
+
+        },
         activeMenu: null,
         loaded: false
     })
@@ -69,7 +72,7 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
     const yesOrNoOptions = [{ value: true, label: 'Yes' }, { value: false, label: 'No' }]
     const sponsorshipOptions = [{ value: true, label: 'Yes' }, { value: false, label: 'No (Self Financial Resource)' }]
 
-    const menus = [{ order: 1, name: 'student-information' }, { order: 2, name: 'emergency-contact' }, { order: 3, name: 'enrollment-information' }, { order: 4, name: 'dependent-information' }, { order: 5, name: 'affidavit-of-support' }, { order: 6, name: 'documents-upload' }, { order: 7, name: 'student-signature' }, { order: 8, name: 'sponsor-signature' }]
+    const menus = [{ order: 1, name: 'student-information' }, { order: 2, name: 'emergency-contact' }, { order: 3, name: 'enrollment-information' }, { order: 4, name: 'dependent-information' }, { order: 5, name: 'affidavit-of-support' }, { order: 6, name: 'documents-upload' }, { order: 7, name: 'student-signature' }, { order: 8, name: 'sponsor-signature' }, { order: 8, name: 'finished' }]
 
     const countriesOptions = countries_list.map(country => {
         return { value: country, label: country }
@@ -161,6 +164,7 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                 try {
                     let documents = [];
                     const { data } = await api.get(`/outside/enrollments/${id}`)
+                    const { data: filialData } = await api.get(`/filials/${data.filial_id}`)
 
                     documents = await getDocuments(data.students.processsubstatuses.name)
 
@@ -168,9 +172,9 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                     const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
                     setRegistry(registries)
                     if (searchparams.has('activeMenu')) {
-                        setPageData({ ...data, documents, loaded: true, activeMenu: searchparams.get('activeMenu'), lastActiveMenu: menus.find(menu => menu.name === searchparams.get('activeMenu')) })
+                        setPageData({ ...data, documents, contracts: filialData.filialdocuments, loaded: true, activeMenu: searchparams.get('activeMenu'), lastActiveMenu: menus.find(menu => menu.name === searchparams.get('activeMenu')) })
                     } else {
-                        setPageData({ ...data, documents, loaded: true, activeMenu: data.form_step, lastActiveMenu: menus.find(menu => menu.name === data.form_step) })
+                        setPageData({ ...data, documents, contracts: filialData.filialdocuments, loaded: true, activeMenu: data.form_step, lastActiveMenu: menus.find(menu => menu.name === data.form_step) })
                     }
 
                 } catch (err) {
@@ -187,7 +191,7 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
     }, [pageData.loaded])
 
     async function handleGeneralFormSubmit(data) {
-        // return
+        setLoading(true)
         try {
             generalForm.current.setErrors({});
             if (pageData.activeMenu === 'student-information') {
@@ -220,6 +224,7 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                 console.log(validationErrors)
                 generalForm.current.setErrors(validationErrors);
             }
+            setLoading(false)
             return;
         }
         if (successfullyUpdated) {
@@ -427,26 +432,26 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                     </RegisterFormMenu>
                     {pageData.students.processsubstatuses.name !== 'Transfer' &&
                         <>
-                            <RegisterFormMenu disabled={pageData.lastActiveMenu.order < 2} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[1].name })} activeMenu={pageData.activeMenu} name='emergency-contact' >
+                            <RegisterFormMenu disabled={pageData.lastActiveMenu && pageData.lastActiveMenu.order < 2} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[1].name })} activeMenu={pageData.activeMenu} name='emergency-contact' >
                                 <Ambulance size={22} /> Emergency Contact
                             </RegisterFormMenu>
-                            <RegisterFormMenu disabled={pageData.lastActiveMenu.order < 3 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[2].name })} activeMenu={pageData.activeMenu} name='enrollment-information' >
+                            <RegisterFormMenu disabled={pageData.lastActiveMenu && pageData.lastActiveMenu.order < 3 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[2].name })} activeMenu={pageData.activeMenu} name='enrollment-information' >
                                 <BookText size={22} /> Enrollment Information
                             </RegisterFormMenu>
-                            <RegisterFormMenu disabled={pageData.lastActiveMenu.order < 4 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[3].name })} activeMenu={pageData.activeMenu} name='dependent-information' >
+                            <RegisterFormMenu disabled={pageData.lastActiveMenu && pageData.lastActiveMenu.order < 4 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[3].name })} activeMenu={pageData.activeMenu} name='dependent-information' >
                                 <Contact size={22} /> Dependent Information
                             </RegisterFormMenu>
-                            <RegisterFormMenu disabled={pageData.lastActiveMenu.order < 5 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[4].name })} activeMenu={pageData.activeMenu} name='affidavit-of-support' >
+                            <RegisterFormMenu disabled={pageData.lastActiveMenu && pageData.lastActiveMenu.order < 5 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[4].name })} activeMenu={pageData.activeMenu} name='affidavit-of-support' >
                                 <BadgeDollarSign size={22} /> Affidavit of Support
                             </RegisterFormMenu>
-                            <RegisterFormMenu disabled={pageData.lastActiveMenu.order < 6 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[5].name })} activeMenu={pageData.activeMenu} name='documents-upload' >
+                            <RegisterFormMenu disabled={pageData.lastActiveMenu && pageData.lastActiveMenu.order < 6 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[5].name })} activeMenu={pageData.activeMenu} name='documents-upload' >
                                 <Files size={22} /> Documents Upload
                             </RegisterFormMenu>
-                            <RegisterFormMenu disabled={pageData.lastActiveMenu.order < 7 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[6].name })} activeMenu={pageData.activeMenu} name='student-signature' >
+                            <RegisterFormMenu disabled={pageData.lastActiveMenu && pageData.lastActiveMenu.order < 7 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[6].name })} activeMenu={pageData.activeMenu} name='student-signature' >
                                 <FileSignature size={22} /> Student's Signature
                             </RegisterFormMenu>
                         </>}
-                    <RegisterFormMenu disabled={pageData.lastActiveMenu.order < 8 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[7].name })} activeMenu={pageData.activeMenu} name='sponsor-signature' >
+                    <RegisterFormMenu disabled={pageData.lastActiveMenu && pageData.lastActiveMenu.order < 8 && !searchparams.has('activeMenu')} setActiveMenu={() => setPageData({ ...pageData, activeMenu: menus[7].name })} activeMenu={pageData.activeMenu} name='sponsor-signature' >
                         <CheckCheck size={18} /> Finished
                     </RegisterFormMenu>
                 </div>
@@ -556,11 +561,11 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                                                 {pageData.has_dependents ?
                                                     <div className='text-lg'>{formatter.format((parseFloat(pageData.filial.financial_support_student_amount) + (parseFloat(pageData.filial.financial_support_dependent_amount) * pageData.enrollmentdependents.length)) * pageData.plan_months)} (Estimate)</div>
                                                     :
-                                                    <div className='text-lg'>$ {formatter.format(parseFloat(pageData.filial.financial_support_student_amount) * pageData.plan_months)} (Estimate)</div>
+                                                    <div className='text-lg'>{formatter.format(parseFloat(pageData.filial.financial_support_student_amount) * pageData.plan_months)} (Estimate)</div>
                                                 }
                                                 {/* </InputLine>
                                             <InputLine title='Affidavit of Support'> */}
-                                                <SelectPopover name='need_sponsorship' onChange={(el) => handleHasSponsors(el)} required grow title='Do you need sponsorship?' options={sponsorshipOptions} defaultValue={sponsorshipOptions.find(type => type.value === pageData.need_sponsorship)} InputContext={InputContext} />
+                                                <SelectPopover name='need_sponsorship' onChange={(el) => handleHasSponsors(el)} required grow title='Do you need sponsorship?' options={sponsorshipOptions} defaultValue={pageData.need_sponsorship ? sponsorshipOptions.find(type => type.value === pageData.need_sponsorship) : null} InputContext={InputContext} />
                                             </InputLine>
                                             {pageData.need_sponsorship && <>
                                                 {pageData.enrollmentsponsors && pageData.enrollmentsponsors.map((sponsor, index) => {
@@ -615,11 +620,8 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
                                             })}
                                         </InputLineGroup>}
                                         {pageData.activeMenu === 'student-signature' && <InputLineGroup title='Student Signature' activeMenu={pageData.activeMenu === 'student-signature'}>
-                                            {/* <InputLine title='Document Preview'>
-                                                <PDFViewer file='http://localhost:3000/student.pdf' />
-                                            </InputLine> */}
                                             <InputLine title='Student Signature'>
-                                                <PDFViewer file='http://localhost:3000/student.pdf' height={450} />
+                                                <PDFViewer download={true} file={{ url: pageData.contracts.find(contract => contract.file.document.subtype === 'F1 Contract').file.url }} height={450} />
                                                 <div className='flex flex-1 flex-col items-start justify-start'>
                                                     <div onClick={() => setSuccessfullyUpdated(false)} className='h-[19rem] w-[36rem] gap-2 border rounded'>
                                                         <SignaturePad redrawOnResize ref={signatureRef} options={{ backgroundColor: '#FFF', penColor: '#111' }} />
@@ -631,7 +633,8 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
 
                                             </InputLine>
                                         </InputLineGroup>}
-                                        {pageData.activeMenu === 'sponsor-signature' && <InputLineGroup title='Finish' activeMenu={pageData.activeMenu === 'sponsor-signature'}>
+                                        {console.log(pageData.activeMenu)}
+                                        {(pageData.activeMenu === 'sponsor-signature' || pageData.activeMenu === 'finished') && <InputLineGroup title='Finish' activeMenu={(pageData.activeMenu === 'sponsor-signature' || pageData.activeMenu === 'finished')}>
 
                                             <div className='flex flex-1 w-full flex-col items-center justify-center text-center gap-4'>
                                                 <div className='flex w-full flex-row items-center justify-center text-center gap-4'>

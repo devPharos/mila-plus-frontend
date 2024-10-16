@@ -8,9 +8,9 @@ export default function Grid({ children, gridHeader = null, gridData = null, ord
   if (!gridHeader || !gridData) {
     return null;
   }
-  return <div className='relative flex flex-1 w-full h-full'>
+  return <div className='relative flex flex-1 justify-start w-full h-screen overflow-y-scroll'>
     <table className="bg-secondary-50 rounded-xl p-4 w-full table-auto text-xs overflow-hidden text-left">
-      <thead>
+      <thead className='sticky top-0 border-md'>
         <tr className='bg-secondary h-8 sticky'>
 
           {/* <th className='px-4'>

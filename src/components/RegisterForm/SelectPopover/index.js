@@ -6,7 +6,7 @@ import AsyncSelect from 'react-select/async';
 export default function SelectPopover({ name, title, grow, hidden = false, shrink, type, options = [], isSearchable = false, InputContext, ...rest }) {
   const inputRef = useRef()
   const { fieldName, registerField, error } = useField(name)
-  const { defaultValue, required, disabled } = { ...rest }
+  const { defaultValue, required, disabled, readOnly } = { ...rest }
 
   const { setSuccessfullyUpdated } = useContext(InputContext)
 
@@ -62,7 +62,7 @@ export default function SelectPopover({ name, title, grow, hidden = false, shrin
           isClearable={false}
           loadOptions={loadOptions}
           isSearchable={isSearchable}
-          isDisabled={disabled}
+          isDisabled={disabled || readOnly}
           ref={inputRef}
           onChange={handleChanged}
           classNamePrefix="react-select"

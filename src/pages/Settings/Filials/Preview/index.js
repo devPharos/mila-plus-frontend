@@ -1,6 +1,6 @@
 import { Form } from '@unform/web';
 import { Building, CircleDollarSign, Files, FileSignature, Pencil, Trash, X } from 'lucide-react';
-import React, { useEffect, useRef, useState, createContext } from 'react';
+import React, { useEffect, useRef, useState, createContext, useContext } from 'react';
 import Input from '~/components/RegisterForm/Input';
 import RegisterFormMenu from '~/components/RegisterForm/Menu';
 import Select from '~/components/RegisterForm/Select';
@@ -18,6 +18,7 @@ import SelectPopover from '~/components/RegisterForm/SelectPopover';
 import FormLoading from '~/components/RegisterForm/FormLoading';
 import FileInput from '~/components/RegisterForm/FileInput';
 import { organizeMultiAndSingleFiles } from '~/functions/uploadFile';
+import { AlertContext } from '~/App';
 
 export const InputContext = createContext({})
 
@@ -26,7 +27,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         active: false,
         alias: '',
         name: '',
-        FilialType: { id: null, label: '' },
+        Filialtype: { id: null, label: '' },
         administrator: null,
         ein: '',
         address: '',
@@ -35,6 +36,8 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         state: '',
         country: '',
         observations: '',
+        pricelists: [],
+        discountlists: [],
         loaded: false
     })
     const [formType, setFormType] = useState(defaultFormType)
@@ -44,6 +47,8 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     const [registry, setRegistry] = useState({ created_by: null, created_at: null, updated_by: null, updated_at: null, canceled_by: null, canceled_at: null })
     const [filialTypesOptions, setFilialTypesOptions] = useState([])
     const generalForm = useRef()
+    const { alertBox } = useContext(AlertContext)
+    const [loading, setLoading] = useState(false)
     const discountOptions = [{ value: true, label: 'Percent %' }, { value: false, label: 'Value $' }]
     const discountTypesOptions = [{ value: 'Admission', label: 'Admission' }, { value: 'Financial', label: 'Financial' }]
     const yesOrNoOptions = [{ value: true, label: 'Yes' }, { value: false, label: 'No' }]
@@ -57,12 +62,14 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
             try {
                 api.get(`filials/${id}`).then(async ({ data }) => {
                     api.get(`processsubstatuses`).then(async ({ data: processsubstatuses }) => {
+
+                        const { data: documents } = await api.get(`/documentsByOrigin?origin=Branches&type=Contracts`)
                         const mappedProcessSubstatuses = processsubstatuses.map(processsubstatus => {
                             return { id: null, name: processsubstatus.name, processsubstatus_id: processsubstatus.id, registration_fee: 0, book: 0, tuition: 0, active: false }
                         })
                         const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at, pricelists } = data;
                         // console.log(pricelists, mappedProcessSubstatuses)
-                        setPageData({ ...data, loaded: true, pricelists: pricelists.concat(mappedProcessSubstatuses.filter(processsubstatus => !pricelists.find(price => price.processsubstatus_id === processsubstatus.processsubstatus_id))) })
+                        setPageData({ ...data, documents, loaded: true, pricelists: pricelists.concat(mappedProcessSubstatuses.filter(processsubstatus => !pricelists.find(price => price.processsubstatus_id === processsubstatus.processsubstatus_id))) })
                         const registries = await getRegistries({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
                         setRegistry(registries)
                     })
@@ -81,6 +88,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
             } catch (err) {
                 toast(err.response.data.error, { type: 'error', autoClose: 3000 })
             }
+
         }
 
         getDefaultOptions()
@@ -92,8 +100,10 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     }, [])
 
     async function handleGeneralFormSubmit(data) {
+        setLoading(true)
         if (successfullyUpdated) {
             toast("No need to be saved!", { autoClose: 1000, type: 'info', transition: Zoom })
+            setLoading(false)
             return
         }
         if (id === 'new') {
@@ -104,42 +114,79 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                 setSuccessfullyUpdated(true)
                 toast("Saved!", { autoClose: 1000 })
                 handleOpened(null)
+                setLoading(false)
             } catch (err) {
                 toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+                setLoading(false)
+                return
             }
         } else if (id !== 'new') {
-            let allPromises = [];
-            let toastId = null;
-            if (data.f1_contract_id || data.non_f1_contract_id) {
-                data.documents = [data.f1_contract_id, data.non_f1_contract_id];
-                toastId = toast.loading("Files are being uploaded...");
-                allPromises = organizeMultiAndSingleFiles(data.documents, 'Filials');
-            }
-            Promise.all(allPromises).then(async (files) => {
-                try {
-                    console.log(pageData)
-                    toastId && toast.update(toastId, { render: 'All files have been uploaded!', type: 'success', autoClose: 3000, isLoading: false });
+            const updated = handleUpdatedFields(data, pageData)
 
-                    delete data.documents;
-                    delete data.f1_contract_id;
-                    delete data.non_f1_contract_id;
+            if (updated.length > 0) {
+                const objUpdated = Object.fromEntries(updated);
+                if (data.documents && data.documents.length > 0) {
+                    let toastId = null;
+                    if (data.documents.find(document => (typeof document.file_id === 'undefined' && document.file_id) || (typeof document.file_id === 'object' && Array.from(document.file_id).length > 0))) {
+                        toastId = toast.loading("Files are being uploaded...");
+                    }
+                    const allPromises = organizeMultiAndSingleFiles(data.documents, 'Branches');
+                    Promise.all(allPromises).then(async (files) => {
+                        try {
+                            files.map(async (file) => {
+                                if (!file) {
+                                    return
+                                }
+                                if (file.name) {
+                                    api.post(`/filialdocuments`, { filial_id: id, files: file })
+                                    toastId && toast.update(toastId, { render: 'All files have been uploaded!', type: 'success', autoClose: 3000, isLoading: false });
+                                } else {
+                                    file.sort((a, b) => a.size > b.size).map(async (promise, index) => {
+                                        await Promise.all([promise]).then(async (singleFile) => {
+                                            // console.log(singleFile[0])
+                                            if (index + 1 === file.length) {
+                                                toastId && toast.update(toastId, { render: 'All files have been uploaded!', type: 'success', autoClose: 3000, isLoading: false });
+                                            }
+                                            await api.post(`/filialdocuments`, { filial_id: id, files: singleFile[0] })
+                                        })
+                                    })
+                                }
+                            })
+                        } catch (err) {
+                            console.log(err)
+                            setLoading(false)
+                            return;
+                            // toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+                        }
+                        delete objUpdated.documents;
 
-                    const updated = handleUpdatedFields(data, pageData)
-
-                    if (updated.length > 0) {
-                        const objUpdated = Object.fromEntries(updated);
                         await api.put(`/filials/${id}`, objUpdated)
                         setPageData({ ...pageData, ...objUpdated })
                         setSuccessfullyUpdated(true)
                         toast("Saved!", { autoClose: 1000 })
                         handleOpened(null)
+                        setLoading(false)
+                    })
+                } else {
+                    try {
+                        delete objUpdated.documents;
+                        await api.put(`/filials/${id}`, objUpdated)
+                        setPageData({ ...pageData, ...objUpdated })
+                        setSuccessfullyUpdated(true)
+                        toast("Saved!", { autoClose: 1000 })
+                        handleOpened(null)
+                        setLoading(false)
+                    } catch (err) {
+                        console.log(err)
+                        toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+                        setLoading(false)
                     }
-
-                } catch (err) {
-                    console.log(err)
-                    toast(err && err.response && err.response.data.error, { type: 'error', autoClose: 3000 })
                 }
-            })
+            } else {
+                setLoading(false)
+            }
+
+
 
         }
     }
@@ -165,6 +212,32 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
         setSuccessfullyUpdated(false)
     }
 
+    function handleDeleteDocument(id) {
+        // const { file } = pageData.staffdocuments.find(staffdocument => staffdocument.id === id);
+        alertBox({
+            title: 'Attention!',
+            descriptionHTML: `<p>Are you sure you want to delete this file?</p>`,
+            buttons: [
+                {
+                    title: 'No',
+                    class: 'cancel'
+                },
+                {
+                    title: 'Yes',
+                    onPress: async () => {
+                        try {
+                            await api.delete(`/filialdocuments/${id}`)
+                            toast("File deleted!", { autoClose: 1000 })
+                            setPageData({ ...pageData, filialdocuments: pageData.filialdocuments.filter(filialdocument => filialdocument.id !== id) })
+                        } catch (err) {
+                            toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+                        }
+                    }
+                },
+            ]
+        })
+    }
+
     return <Preview formType={formType} fullscreen={fullscreen}>
         {pageData ?
             formType === 'preview' ? <div className='border h-full rounded-xl overflow-hidden flex flex-col justify-start gap-1 overflow-y-scroll'>
@@ -180,7 +253,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
 
                 </div>
                 <div className='flex flex-1 flex-col items-left px-4 py-2 gap-1'>
-                    <p className='border-b mb-1 pb-1'>Filial Information</p>
+                    <p className='border-b mb-1 pb-1'>Branch Information</p>
                     <div className='flex flex-row items-center gap-1 text-xs'><strong>Initials:</strong> {pageData.alias}</div>
                     <div className='flex flex-row items-center gap-1 text-xs'><strong>Type:</strong> {pageData.Filialtype && pageData.Filialtype.name}</div>
                     <div className='flex flex-row items-center gap-1 text-xs'><strong>Ein:</strong> {pageData.ein}</div>
@@ -208,16 +281,16 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                         <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='general' >
                             <Building size={16} /> General
                         </RegisterFormMenu>
-                        <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='price-list' messageOnDisabled='Create the filial to have access to Price List.' disabled={id === 'new'}>
+                        <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='price-list' messageOnDisabled='Create the branch to have access to Price List.' disabled={id === 'new'}>
                             <CircleDollarSign size={16} /> Price List
                         </RegisterFormMenu>
-                        <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='discount-list' disabled={id === 'new'} messageOnDisabled='Create the filial to have access to Discount List.'>
+                        <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='discount-list' disabled={id === 'new'} messageOnDisabled='Create the branch to have access to Discount List.'>
                             <CircleDollarSign size={16} /> Discount List
                         </RegisterFormMenu>
-                        <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='financial-support' disabled={id === 'new'} messageOnDisabled='Create the filial to have access to Financial Support.'>
+                        <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='financial-support' disabled={id === 'new'} messageOnDisabled='Create the branch to have access to Financial Support.'>
                             <CircleDollarSign size={16} /> Financial Support
                         </RegisterFormMenu>
-                        <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='contracts' disabled={id === 'new'} messageOnDisabled='Create the filial to have access to Contracts.'>
+                        <RegisterFormMenu setActiveMenu={setActiveMenu} activeMenu={activeMenu} name='contracts' disabled={id === 'new'} messageOnDisabled='Create the branch to have access to Contracts.'>
                             <FileSignature size={16} /> Contracts
                         </RegisterFormMenu>
 
@@ -228,12 +301,12 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                 <InputContext.Provider value={{ id, generalForm, setSuccessfullyUpdated, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm }}>
                                     {id === 'new' || pageData.loaded ?
                                         <>
-                                            <FormHeader access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
+                                            <FormHeader loading={loading} access={access} title={pageData.name} registry={registry} InputContext={InputContext} />
 
                                             <InputLineGroup title='GENERAL' activeMenu={activeMenu === 'general'}>
 
                                                 <Scope path={`administrator`}>
-                                                    <InputLine title='Filial Administrator'>
+                                                    <InputLine title='Branch Administrator'>
                                                         <Input type='hidden' name='id' title='ID' defaultValue={pageData.administrator ? pageData.administrator.id : null} InputContext={InputContext} />
                                                         <Input type='text' name='name' title='Name' defaultValue={pageData.administrator ? pageData.administrator.name : ''} InputContext={InputContext} />
                                                         <Input type='text' name='email' title='E-mail' grow defaultValue={pageData.administrator ? pageData.administrator.email : ''} InputContext={InputContext} />
@@ -290,7 +363,8 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                                             <Input type='text' shrink name={`registration_fee`} title='Registration Fee' defaultValue={price.registration_fee || 0} InputContext={InputContext} />
                                                             <Input type='text' shrink name={`book`} title='Book' defaultValue={price.book || 0} InputContext={InputContext} />
                                                             <Input type='text' shrink name={`tuition`} title='Tuition' defaultValue={price.tuition || 0} InputContext={InputContext} />
-                                                            <SelectPopover name='active' title='Active' options={[{ value: 'Yes', label: 'Yes' }, { value: 'No', label: 'No' }]} defaultValue={{ value: price.active ? 'Yes' : 'No', label: price.active ? 'Yes' : 'No' }} InputContext={InputContext} />
+                                                            <SelectPopover name='tuition_in_advance' title='In Advance?' options={yesOrNoOptions} defaultValue={{ value: price.tuition_in_advance ? 'Yes' : 'No', label: price.tuition_in_advance ? 'Yes' : 'No' }} InputContext={InputContext} />
+                                                            <SelectPopover name='active' title='Active' options={yesOrNoOptions} defaultValue={{ value: price.active ? 'Yes' : 'No', label: price.active ? 'Yes' : 'No' }} InputContext={InputContext} />
                                                         </InputLine>
                                                         <div className='w-full border-b'></div>
                                                     </Scope>
@@ -333,46 +407,39 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                             </InputLineGroup>
 
                                             <InputLineGroup title='CONTRACTS' activeMenu={activeMenu === 'contracts'}>
-                                                <InputLine title='F1 Contract'>
-                                                    <FileInput name='f1_contract_id' grow title='F1 Contract' InputContext={InputContext} />
-                                                </InputLine>
-                                                <InputLine subtitle='Attached Files'>
-                                                    <div className='flex flex-col justify-center items-start gap-4'>
-                                                        {
-                                                            pageData.f1_contract && <>
-                                                                <div className='flex flex-row justify-center items-center gap-2'>
-                                                                    <a href={pageData.f1_contract.file.url} target="_blank" className='text-xs'>
-                                                                        <div className='flex flex-row items-center border px-4 py-2 gap-1 rounded-md bg-gray-100 hover:border-gray-300'>
-                                                                            <Files size={16} />
-                                                                            {pageData.f1_contract.file.name}
-                                                                        </div>
-                                                                    </a>
-                                                                    {/* <button type='button' onClick={() => handleDeleteDocument(enrollmentdocument.id)} className='text-xs text-red-700 cursor-pointer flex flex-row items-center justify-start gap-1 mt-1 px-2 py-1 rounded hover:bg-red-100'><X size={12} /> Delete</button> */}
-                                                                </div>
-                                                            </>
-                                                        }
-                                                    </div>
-                                                </InputLine>
-                                                <InputLine title='Non-F1 Contract'>
-                                                    <FileInput name='non_f1_contract_id' grow title='Non F1 Contract' InputContext={InputContext} />
-                                                </InputLine>
-                                                <InputLine subtitle='Attached Files'>
-                                                    <div className='flex flex-col justify-center items-start gap-4'>
-                                                        {
-                                                            pageData.non_f1_contract && <>
-                                                                <div className='flex flex-row justify-center items-center gap-2'>
-                                                                    <a href={pageData.non_f1_contract.file.url} target="_blank" className='text-xs'>
-                                                                        <div className='flex flex-row items-center border px-4 py-2 gap-1 rounded-md bg-gray-100 hover:border-gray-300'>
-                                                                            <Files size={16} />
-                                                                            {pageData.non_f1_contract.file.name}
-                                                                        </div>
-                                                                    </a>
-                                                                    {/* <button type='button' onClick={() => handleDeleteDocument(enrollmentdocument.id)} className='text-xs text-red-700 cursor-pointer flex flex-row items-center justify-start gap-1 mt-1 px-2 py-1 rounded hover:bg-red-100'><X size={12} /> Delete</button> */}
-                                                                </div>
-                                                            </>
-                                                        }
-                                                    </div>
-                                                </InputLine>
+                                                {pageData.documents && pageData.documents.length > 0 && pageData.documents.map((document, index) => {
+                                                    return <Scope key={index} path={`documents[${index}]`} >
+                                                        <Input type='hidden' name='document_id' defaultValue={document.id} InputContext={InputContext} />
+                                                        <InputLine title={document.title}>
+                                                            {!document.multiple && pageData.filialdocuments && pageData.filialdocuments.filter(filialdocument => filialdocument.document_id === document.id).length === 0 &&
+                                                                <FileInput type='file' name='file_id' title={'File'} grow InputContext={InputContext} />
+                                                            }
+                                                            {document.multiple &&
+                                                                <FileInputMultiple type='file' name='file_id' title={'Multiple Files'} grow InputContext={InputContext} />
+                                                            }
+                                                        </InputLine>
+                                                        {pageData.filialdocuments && pageData.filialdocuments.length > 0 && <InputLine subtitle='Attached Files'>
+                                                            <div className='flex flex-col justify-center items-start gap-4'>
+                                                                {
+                                                                    pageData.filialdocuments && pageData.filialdocuments.map((filialdocument, index) => {
+                                                                        if (filialdocument.document_id === document.id && filialdocument.file) {
+                                                                            return <>
+                                                                                <div className='flex flex-row justify-center items-center gap-2'>
+                                                                                    <a href={filialdocument.file.url} target="_blank" className='text-xs'>
+                                                                                        <div className='flex flex-row items-center border px-4 py-2 gap-1 rounded-md bg-gray-100 hover:border-gray-300' key={index}>
+                                                                                            <Files size={16} />
+                                                                                            {filialdocument.file.name}
+                                                                                        </div>
+                                                                                    </a>
+                                                                                    <button type='button' onClick={() => handleDeleteDocument(filialdocument.id)} className='text-xs text-red-700 cursor-pointer flex flex-row items-center justify-start gap-1 mt-1 px-2 py-1 rounded hover:bg-red-100'><X size={12} /> Delete</button>
+                                                                                </div>
+                                                                            </>
+                                                                        }
+                                                                    })}
+                                                            </div>
+                                                        </InputLine>}
+                                                    </Scope>
+                                                })}
                                             </InputLineGroup>
 
                                         </> : <FormLoading />}

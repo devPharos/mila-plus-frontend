@@ -233,11 +233,11 @@ const router = createBrowserRouter([
             element: <Workloads />
           },
           {
-            path: "/Settings/FilialTypes",
+            path: "/Settings/BranchesTypes",
             element: <AdministrativeFilialTypes />
           },
           {
-            path: "/Settings/Filials",
+            path: "/Settings/Branches",
             element: <AdministrativeFilials />
           },
           {

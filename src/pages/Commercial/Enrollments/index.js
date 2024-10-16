@@ -86,6 +86,7 @@ export default function Enrollments() {
     async function getData() {
       const { data } = await api.get(`/enrollments`)
       const gridDataValues = data.map(({ id, students, enrollmenttimelines, canceled_at }) => {
+        console.log(enrollmenttimelines)
         const { name, processtypes, processsubstatuses } = students;
         const type = processtypes ? processtypes.name : '';
         const sub_status = processsubstatuses ? processsubstatuses.name : '';

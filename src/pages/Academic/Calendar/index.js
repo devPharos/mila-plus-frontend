@@ -9,12 +9,8 @@ import { Badge, Calendar } from 'rsuite';
 import { format, parseISO } from 'date-fns'
 import SelectPopover from '~/components/RegisterForm/SelectPopover';
 import { Form } from '@unform/web';
-import Input from '~/components/RegisterForm/Input';
-import InputLine from '~/components/RegisterForm/InputLine';
-import DatePicker from '~/components/RegisterForm/DatePicker';
 import PagePreview from './Preview';
 import Icon from '~/components/Icon';
-import Grid from '~/components/Grid';
 import { PreviewContext } from '~/pages/Commercial/Enrollments';
 import PreviewController from '~/components/PreviewController';
 
@@ -111,25 +107,26 @@ export default function AcademicCalendar() {
     <PageHeader>
       <Breadcrumbs currentPage={currentPage} />
     </PageHeader>
+    <div className='relative flex flex-1 justify-start w-full h-screen overflow-y-scroll'>
+      <div className='relative flex flex-1 flex-row justify-between items-start rounded-tr-2xl px-4'>
+        <Calendar value={date} compact={false} onSelect={handleSelect} onChange={setDate} renderCell={renderCell} bordered cellClassName={date => (date.getDay() % 2 ? 'bg-zinc-50' : undefined)} />
 
-    <div className='relative flex flex-1 flex-row justify-between items-start rounded-tr-2xl px-4'>
-      <Calendar value={date} onSelect={handleSelect} onChange={setDate} renderCell={renderCell} bordered cellClassName={date => (date.getDay() % 2 ? 'bg-zinc-50' : undefined)} />
-
-      <div className='flex w-full min-w-44 flex-col items-center justify-center pt-2 pb-2'>
-        <Form className='w-full'>
-          <InputContext.Provider value={{ setSuccessfullyUpdated, successfullyUpdated }}>
-            <SelectPopover onChange={(year) => setYear(year.value)} name='year' options={yearsOptions} defaultValue={yearsOptions[1]} InputContext={InputContext} />
-            <button type='button' onClick={() => handleOpened('new')} className='w-full bg-mila_orange text-white rounded-md py-6 my-2 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1'>
-              <Icon name='Plus' size={16} /> <strong>Free Day</strong>
+        <div className='flex w-full min-w-44 flex-col items-center justify-center pt-2 pb-2'>
+          <Form className='w-full'>
+            <InputContext.Provider value={{ setSuccessfullyUpdated, successfullyUpdated }}>
+              <SelectPopover onChange={(year) => setYear(year.value)} name='year' options={yearsOptions} defaultValue={yearsOptions[1]} InputContext={InputContext} />
+              <button type='button' onClick={() => handleOpened('new')} className='w-full bg-mila_orange text-white rounded-md py-6 my-2 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1'>
+                <Icon name='Plus' size={16} /> <strong>Free Day</strong>
+              </button>
+            </InputContext.Provider>
+          </Form>
+          {freeDays.map((freeDay, index) =>
+            <button type='button' key={index} onClick={() => setDate(parseISO(freeDay.date))} className={`w-48 text-xs text-center text-zinc-500 py-1 px-2 my-1 ${freeDay.type == 'Academic' ? 'bg-yellow-100' : 'bg-green-100'} transition hover:bg-zinc-500 hover:text-white rounded-md`}>
+              <strong>{format(parseISO(freeDay.day), 'MMM, do')} {freeDay.dayto ? `- ${format(parseISO(freeDay.dayto), 'MMM, do')}` : ''}</strong>
+              <div>{freeDay.title}</div>
             </button>
-          </InputContext.Provider>
-        </Form>
-        {freeDays.map((freeDay, index) =>
-          <button type='button' key={index} onClick={() => setDate(parseISO(freeDay.date))} className={`w-48 text-xs text-center text-zinc-500 py-1 px-2 my-1 ${freeDay.type == 'Academic' ? 'bg-yellow-100' : 'bg-green-100'} transition hover:bg-zinc-500 hover:text-white rounded-md`}>
-            <strong>{format(parseISO(freeDay.day), 'MMM, do')} {freeDay.dayto ? `- ${format(parseISO(freeDay.dayto), 'MMM, do')}` : ''}</strong>
-            <div>{freeDay.title}</div>
-          </button>
-        )}
+          )}
+        </div>
       </div>
 
       {opened && <div className='fixed left-0 top-0 z-40 w-full h-full' style={{ background: 'rgba(0,0,0,.2)' }}></div>}

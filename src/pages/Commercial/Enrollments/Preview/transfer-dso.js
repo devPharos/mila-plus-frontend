@@ -83,7 +83,7 @@ export default function TransferDSOOutside({ access = null, handleOpened, setOpe
 
     useEffect(() => {
         async function getDocuments(type = '') {
-            const { data } = await api.get(`/documentsByOrigin?origin=Enrollment&type=${type}&subtype=DSO`)
+            const { data } = await api.get(`/documentsByOrigin?origin=Enrollment&type=${type}&subtype=Student`)
             return data;
         }
         async function getPageData() {
@@ -301,7 +301,7 @@ export default function TransferDSOOutside({ access = null, handleOpened, setOpe
                             <InputContext.Provider value={{ id, generalForm, setSuccessfullyUpdated, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm, handleInactivate, handleOutsideMail: null, canceled: pageData.canceled_at }}>
                                 {pageData.loaded ?
                                     <>
-                                        <FormHeader saveText='Save & Continue' outside={!searchparams.has('activeMenu')} loading={loading} access={access} title={pageData.students.name + ' ' + pageData.students.last_name + ' - Enrollment Process'} registry={registry} InputContext={InputContext} />
+                                        <FormHeader saveText='Save & Continue' outside={!searchparams.has('activeMenu')} loading={loading} access={access} title={pageData.students.name + ' ' + pageData.students.last_name + ' - Enrollment Process - Transfer Eligibility'} registry={registry} InputContext={InputContext} />
                                         {pageData.activeMenu === 'transfer-dso' && <InputLineGroup title='Student Information' activeMenu={pageData.activeMenu === 'transfer-dso'}>
                                             <InputLine>
                                                 <p className='text-lg'>To be completed by the <strong>Designated School Official (DSO)</strong></p>

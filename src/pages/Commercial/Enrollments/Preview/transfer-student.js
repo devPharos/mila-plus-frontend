@@ -153,7 +153,7 @@ export default function TransferOutside({ access = null, handleOpened, setOpened
 
     useEffect(() => {
         async function getDocuments(type = '') {
-            const { data } = await api.get(`/documentsByOrigin?origin=Enrollment&type=${type}&subtype=Student`)
+            const { data } = await api.get(`/documentsByOrigin?origin=Transfer Eligibility&type=${type}&subtype=Student`)
             return data;
         }
         async function getPageData() {
@@ -380,7 +380,7 @@ export default function TransferOutside({ access = null, handleOpened, setOpened
                             <InputContext.Provider value={{ id, generalForm, setSuccessfullyUpdated, fullscreen, setFullscreen, successfullyUpdated, handleCloseForm, handleInactivate, handleOutsideMail: null, canceled: pageData.canceled_at }}>
                                 {pageData.loaded ?
                                     <>
-                                        <FormHeader saveText='Save & Continue' outside={!searchparams.has('activeMenu')} loading={loading} access={access} title={pageData.students.name + ' ' + pageData.students.last_name + ' - Enrollment Process'} registry={registry} InputContext={InputContext} />
+                                        <FormHeader saveText='Save & Continue' outside={!searchparams.has('activeMenu')} loading={loading} access={access} title={pageData.students.name + ' ' + pageData.students.last_name + ' - Enrollment Process - Transfer Eligibility'} registry={registry} InputContext={InputContext} />
                                         {pageData.activeMenu === 'transfer-request' && <InputLineGroup title='Student Information' activeMenu={pageData.activeMenu === 'transfer-request'}>
                                             <Scope path={`students`}>
                                                 <InputLine title='Student Information'>

@@ -1,5 +1,5 @@
 import { Form } from '@unform/web';
-import { Ambulance, BadgeDollarSign, BookText, Building, CheckCheck, CheckCircle, Contact, Files, FileSignature, PlusCircle, SkipForward, Trash, User, X } from 'lucide-react';
+import { Ambulance, BadgeDollarSign, BookText, CheckCheck, CheckCircle, Contact, Files, FileSignature, PlusCircle, Trash, User, X } from 'lucide-react';
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import Input from '~/components/RegisterForm/Input';
 import RegisterFormMenu from '~/components/RegisterForm/Menu';
@@ -12,8 +12,7 @@ import Preview from '~/components/Preview';
 import { countries_list, formatter, getRegistries, handleUpdatedFields } from '~/functions';
 import SelectPopover from '~/components/RegisterForm/SelectPopover';
 import DatePicker from '~/components/RegisterForm/DatePicker';
-import { add, format, parseISO, set } from 'date-fns';
-import CountryList from 'country-list-with-dial-code-and-flag';
+import { format, parseISO } from 'date-fns';
 import FormLoading from '~/components/RegisterForm/FormLoading';
 import { useSearchParams } from 'react-router-dom';
 import { Scope } from '@unform/core';
@@ -23,14 +22,13 @@ import FileInput from '~/components/RegisterForm/FileInput';
 import { organizeMultiAndSingleFiles } from '~/functions/uploadFile';
 import { AlertContext } from '~/App';
 import SignaturePad from 'react-signature-pad-wrapper';
-import { getDownloadURL, getStorage, ref, uploadBytes, uploadString } from 'firebase/storage';
+import { getDownloadURL, getStorage, ref, uploadString } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
 import { app } from '~/services/firebase';
-import { Document, Page, pdfjs } from 'react-pdf';
+import { pdfjs } from 'react-pdf';
 
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
-import Icon from '~/components/Icon';
 import PDFViewer from '~/components/PDFViewer';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -72,7 +70,7 @@ export default function EnrollmentOutside({ access = null, handleOpened, setOpen
     const yesOrNoOptions = [{ value: true, label: 'Yes' }, { value: false, label: 'No' }]
     const sponsorshipOptions = [{ value: true, label: 'Yes' }, { value: false, label: 'No (Self Financial Resource)' }]
 
-    const menus = [{ order: 1, name: 'student-information' }, { order: 2, name: 'emergency-contact' }, { order: 3, name: 'enrollment-information' }, { order: 4, name: 'dependent-information' }, { order: 5, name: 'affidavit-of-support' }, { order: 6, name: 'documents-upload' }, { order: 7, name: 'student-signature' }, { order: 8, name: 'sponsor-signature' }, { order: 8, name: 'finished' }]
+    const menus = [{ order: 1, name: 'transfer-agent' }, { order: 1, name: 'student-information' }, { order: 2, name: 'emergency-contact' }, { order: 3, name: 'enrollment-information' }, { order: 4, name: 'dependent-information' }, { order: 5, name: 'affidavit-of-support' }, { order: 6, name: 'documents-upload' }, { order: 7, name: 'student-signature' }, { order: 8, name: 'sponsor-signature' }, { order: 8, name: 'finished' }]
 
     const countriesOptions = countries_list.map(country => {
         return { value: country, label: country }

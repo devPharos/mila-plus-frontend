@@ -21,15 +21,15 @@ function LoginRoute({ children }) {
   if (signed && accesses) {
     // user is authenticated
     let module_page = '';
-    if (hasAccessTo(accesses, 'administrative').view) {
+    if (hasAccessTo(accesses, null, 'administrative').view) {
       module_page = 'Administrative';
-    } else if (hasAccessTo(accesses, 'academic').view) {
+    } else if (hasAccessTo(accesses, null, 'academic').view) {
       module_page = 'Academic';
-    } else if (hasAccessTo(accesses, 'operational').view) {
+    } else if (hasAccessTo(accesses, null, 'operational').view) {
       module_page = 'Operational';
-    } else if (hasAccessTo(accesses, 'commercial').view) {
+    } else if (hasAccessTo(accesses, null, 'commercial').view) {
       module_page = 'Commercial';
-    } else if (hasAccessTo(accesses, 'marketing').view) {
+    } else if (hasAccessTo(accesses, null, 'marketing').view) {
       module_page = 'Marketing';
     }
     if (!module_page) {

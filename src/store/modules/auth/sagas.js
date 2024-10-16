@@ -61,7 +61,7 @@ export function* register({ payload }) {
 export function setToken({ payload }) {
   if (!payload) return;
 
-  console.log(api.defaults.headers.authorization)
+  // console.log(api.defaults.headers.authorization)
 
   const { token } = payload.auth;
 

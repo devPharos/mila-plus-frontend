@@ -75,13 +75,13 @@ export default function AdministrativeGroups() {
         <Filter size={14} /> Custom Filters
       </FiltersBar>
     </PageHeader>
-    <Filters access={hasAccessTo(accesses, currentPage.alias)} handleNew={() => setOpened('new')} search handleFilters={handleFilters} gridHeader={gridHeader} gridData={gridData} setGridHeader={setGridHeader} activeFilters={activeFilters} />
+    <Filters access={hasAccessTo(accesses, currentPage.path.split('/')[1], currentPage.alias)} handleNew={() => setOpened('new')} search handleFilters={handleFilters} gridHeader={gridHeader} gridData={gridData} setGridHeader={setGridHeader} activeFilters={activeFilters} />
 
     <Grid gridData={gridData} gridHeader={gridHeader} orderBy={orderBy} setOrderBy={setOrderBy} handleOpened={handleOpened} opened={opened}>
       {opened && <div className='fixed left-0 top-0 z-40 w-full h-full' style={{ background: 'rgba(0,0,0,.2)' }}></div>}
       {opened && <PreviewContext.Provider value={{ successfullyUpdated, handleOpened }}>
         <PreviewController>
-          <PagePreview access={hasAccessTo(accesses, currentPage.alias)} id={opened} handleOpened={handleOpened} setOpened={setOpened} defaultFormType='full' successfullyUpdated={successfullyUpdated} setSuccessfullyUpdated={setSuccessfullyUpdated} />
+          <PagePreview access={hasAccessTo(accesses, currentPage.path.split('/')[1], currentPage.alias)} id={opened} handleOpened={handleOpened} setOpened={setOpened} defaultFormType='full' successfullyUpdated={successfullyUpdated} setSuccessfullyUpdated={setSuccessfullyUpdated} />
         </PreviewController>
       </PreviewContext.Provider>}
     </Grid>

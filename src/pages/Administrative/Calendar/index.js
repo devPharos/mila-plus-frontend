@@ -131,7 +131,7 @@ export default function AdministrativeCalendar() {
       {opened && <div className='fixed left-0 top-0 z-40 w-full h-full' style={{ background: 'rgba(0,0,0,.2)' }}></div>}
       {opened && <PreviewContext.Provider value={{ successfullyUpdated, handleOpened }}>
         <PreviewController>
-          <PagePreview access={hasAccessTo(accesses, currentPage.alias)} id={opened} handleOpened={handleOpened} setOpened={setOpened} defaultFormType='full' successfullyUpdated={successfullyUpdated} setSuccessfullyUpdated={setSuccessfullyUpdated} />
+          <PagePreview access={hasAccessTo(accesses, currentPage.path.split('/')[1], currentPage.alias)} id={opened} handleOpened={handleOpened} setOpened={setOpened} defaultFormType='full' successfullyUpdated={successfullyUpdated} setSuccessfullyUpdated={setSuccessfullyUpdated} />
         </PreviewController>
       </PreviewContext.Provider>}
     </div>

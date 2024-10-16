@@ -4,13 +4,22 @@ import { useLocation } from "react-router-dom";
 import { PageContext } from "~/App";
 import api from "~/services/api";
 
-export function hasAccessTo(accesses = null, menu_alias = null) {
+export function hasAccessTo(accesses = null, main_menu = null, menu_alias = null) {
   const defaultFalse = { view: false, edit: false, create: false, inactivate: false };
   if (!accesses || !accesses.hierarchy || !menu_alias) {
+    console.log(accesses, accesses.hierarchy, menu_alias)
     return defaultFalse
   }
 
-  const current = accesses.hierarchy.filter(access => access.alias === menu_alias)[0];
+  if (accesses.children) {
+    accesses.hierarchy = accesses.children;
+  }
+  let current = null;
+  if (main_menu) {
+    current = accesses.hierarchy.find(access => access.alias === main_menu.toLowerCase()).children.find(access => access.alias === menu_alias);
+  } else {
+    current = accesses.hierarchy.find(access => access.alias === menu_alias);
+  }
 
   if (!current || !current.MenuHierarchyXGroup) {
     return defaultFalse;

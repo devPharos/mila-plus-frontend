@@ -8,16 +8,17 @@ import { Zoom, toast } from 'react-toastify';
 import InputLine from '~/components/RegisterForm/InputLine';
 import InputLineGroup from '~/components/RegisterForm/InputLineGroup';
 import FormHeader from '~/components/RegisterForm/FormHeader';
-import Select from '~/components/RegisterForm/Select';
 import Preview from '~/components/Preview';
 import { getRegistries, handleUpdatedFields } from '~/functions';
 import SelectPopover from '~/components/RegisterForm/SelectPopover';
 import { Scope } from '@unform/core';
 import FormLoading from '~/components/RegisterForm/FormLoading';
+import Icon from '~/components/Icon';
 
 export const InputContext = createContext({})
 
 export default function PagePreview({ access, id, handleOpened, setOpened, defaultFormType = 'preview', successfullyUpdated, setSuccessfullyUpdated }) {
+    console.log(access)
     const [pageData, setPageData] = useState({
         name: '',
         filialtype_id: null,
@@ -67,7 +68,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
     }, [])
 
     async function handleGeneralFormSubmit(data) {
-        console.log(data)
+        // console.log(data)
         // return
         if (successfullyUpdated) {
             toast("No need to be saved!", { autoClose: 1000, type: 'info', transition: Zoom })
@@ -99,7 +100,7 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                     toast(err.response.data.error, { type: 'error', autoClose: 3000 })
                 }
             } else {
-                console.log(updated)
+                // console.log(updated)
             }
         }
     }
@@ -172,10 +173,9 @@ export default function PagePreview({ access, id, handleOpened, setOpened, defau
                                             <InputLineGroup title='Group Access' activeMenu={activeMenu === 'group-access'}>
 
                                                 {pageData.groupAccess && pageData.groupAccess.map((access, index) => {
-
-                                                    return <Scope key={index} path={`groupAccess[${index}]`}><h1 className='w-full border-b p-4 pb-0 pt-2 pb-2 font-bold'>{access.name}</h1>
-
-                                                        {access.MenuHierarchies.map((menu, indexMenu) => {
+                                                    return <Scope key={index} path={`groupAccess[${index}]`}>
+                                                        <h1 className='w-full border-b p-4 pb-0 pt-2 pb-2 font-bold flex flex-row items-center gap-2'>{access.name}</h1>
+                                                        {access.children.map((menu, indexMenu) => {
                                                             return <Scope key={indexMenu} path={`menus[${indexMenu}]`}>
                                                                 <InputLine>
                                                                     <Input type='text' name='name' required title='Name' grow defaultValue={menu.name} InputContext={InputContext} />

@@ -1,14 +1,17 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { NavLink } from 'react-router-dom';
+import { PageContext } from '~/App';
 import Icon from '~/components/Icon';
 import { hasAccessTo } from '~/functions';
 
 // import { Container } from './styles';
 
-export default function Sidebar({ pages }) {
+export default function Sidebar({ main = null, pages = [] }) {
   const [oppened, setOppened] = useState(true)
   const { accesses } = useSelector(state => state.auth);
+
+  // const { pages } = useContext(PageContext)
 
   const activeMenu = {
     class: 'p-2 bg-mila_orange transition ease-out delay-100 duration-300 rounded flex flex-row justify-center items-center cursor-pointer text-xs text-white gap-2',
@@ -32,7 +35,7 @@ export default function Sidebar({ pages }) {
 
     <div className={`my-12 flex flex-1 flex-col justify-start items-start gap-6 w-full`}>
       {pages.map((page, index) => {
-        if (hasAccessTo(accesses, page.alias).view) {
+        if (accesses.hierarchy.find(h => h.alias === main).children.find(h => h.alias === page.alias)) {
           return <NavLink key={index} to={page.path} className='w-full'>
             {({ isActive }) => (<div className={`${isActive ? activeMenu.class : inactiveMenu.class}`}>
               {page.icon && <Icon name={page.icon} color={`${isActive ? activeMenu.color : inactiveMenu.color}`} size={20} />} {oppened && <div className={`flex-1 ${isActive ? 'text-white' : 'text-gray-500'}`}>{page.title}</div>}

@@ -41,12 +41,6 @@ export default function Header() {
   ]
   const modules = defaultModules
 
-  // auth.accesses.hierarchy.map((module) => {
-  //   if (module.alias)
-  //     return { title, alias } = module;
-  // })
-
-  // console.log()
 
   return <HeaderContext.Provider value={{ activePopover, setActivePopover }}>
     <header className="z-50 sticky top-0 bg-white min-h-16 h-16 border-b flex">
@@ -69,8 +63,7 @@ export default function Header() {
 
           <div className='flex flex-row justify-between items-center gap-x-8 text-xl'>
             {modules.map((module, index) => {
-              // console.log(auth.accesses, module.alias)
-              if (hasAccessTo(auth.accesses, module.alias).view) {
+              if (hasAccessTo(auth.accesses, null, module.alias).view) {
                 return <NavLink key={index} to={`/${module.alias}`} className={`relative text-gray-400 text-sm`}>
                   {({ isActive }) => {
 

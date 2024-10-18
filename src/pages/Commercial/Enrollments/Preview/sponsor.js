@@ -85,6 +85,7 @@ export default function SponsorOutside({
 
   const menus = [
     { order: 8, name: "sponsor-signature" },
+    { order: 8, name: "transfer-agent" },
     { order: 9, name: "finished" },
   ];
 

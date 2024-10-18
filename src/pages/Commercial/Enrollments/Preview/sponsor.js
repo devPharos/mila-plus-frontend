@@ -1,19 +1,5 @@
 import { Form } from "@unform/web";
-import {
-  Ambulance,
-  BadgeDollarSign,
-  BookText,
-  Building,
-  CheckCircle,
-  Contact,
-  Files,
-  FileSignature,
-  PlusCircle,
-  SkipForward,
-  Trash,
-  User,
-  X,
-} from "lucide-react";
+import { CheckCircle, Files, FileSignature, X } from "lucide-react";
 import React, {
   createContext,
   useContext,
@@ -29,15 +15,10 @@ import InputLine from "~/components/RegisterForm/InputLine";
 import InputLineGroup from "~/components/RegisterForm/InputLineGroup";
 import FormHeader from "~/components/RegisterForm/FormHeader";
 import Preview from "~/components/Preview";
-import {
-  countries_list,
-  formatter,
-  getRegistries,
-  handleUpdatedFields,
-} from "~/functions";
+import { countries_list, formatter, getRegistries } from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import DatePicker from "~/components/RegisterForm/DatePicker";
-import { add, format, parseISO, set } from "date-fns";
+import { format, parseISO } from "date-fns";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSearchParams } from "react-router-dom";
 import { Scope } from "@unform/core";
@@ -50,16 +31,14 @@ import {
   getDownloadURL,
   getStorage,
   ref,
-  uploadBytes,
   uploadString,
 } from "firebase/storage";
 import { v4 as uuidv4 } from "uuid";
 import { app } from "~/services/firebase";
-import { Document, Page, pdfjs } from "react-pdf";
+import { pdfjs } from "react-pdf";
 
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
-import Icon from "~/components/Icon";
 import PDFViewer from "~/components/PDFViewer";
 import CheckboxInput from "~/components/RegisterForm/CheckboxInput";
 

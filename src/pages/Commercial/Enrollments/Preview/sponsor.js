@@ -135,6 +135,8 @@ export default function SponsorOutside({
             loaded: true,
             activeMenu: searchparams.has("activeMenu")
               ? searchparams.get("activeMenu")
+              : data.form_step === "transfer-agent"
+              ? "sponsor-signature"
               : data.form_step,
             lastActiveMenu: data.form_step,
           });

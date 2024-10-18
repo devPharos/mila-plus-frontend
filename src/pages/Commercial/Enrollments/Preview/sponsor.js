@@ -85,8 +85,8 @@ export default function SponsorOutside({
 
   const menus = [
     { order: 8, name: "sponsor-signature" },
-    { order: 8, name: "transfer-agent" },
-    { order: 9, name: "finished" },
+    { order: 9, name: "transfer-agent" },
+    { order: 10, name: "finished" },
   ];
 
   const countriesOptions = countries_list.map((country) => {
@@ -367,7 +367,7 @@ export default function SponsorOutside({
             <RegisterFormMenu
               disabled={
                 pageData.lastActiveMenu &&
-                pageData.lastActiveMenu.order < 8 &&
+                pageData.lastActiveMenu.order < 10 &&
                 !searchparams.has("activeMenu")
               }
               setActiveMenu={() =>

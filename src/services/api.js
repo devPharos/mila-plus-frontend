@@ -1,38 +1,51 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: process.env.NODE_ENV === 'production' ? 'https://milaplus.pharosit.com.br/' : 'http://localhost:3333',
+  baseURL:
+    process.env.NODE_ENV === "production"
+      ? "https://milaplus.pharosit.com.br/"
+      : "http://localhost:3333",
 });
 
-let store
+let store;
 
-export const injectStore = _store => {
-  store = _store
-}
+export const injectStore = (_store) => {
+  store = _store;
+};
 
-api.interceptors.request.use(function (config) {
-  config.headers.Filial = store.getState().auth && store.getState().auth.filial && store.getState().auth.filial.id || null
-  return config;
-}, function (error) {
-  return Promise.reject(error);
-});
+api.interceptors.request.use(
+  function (config) {
+    config.headers.Filial =
+      (store.getState().auth &&
+        store.getState().auth.filial &&
+        store.getState().auth.filial.id) ||
+      null;
+    return config;
+  },
+  function (error) {
+    return Promise.reject(error);
+  }
+);
 
-api.interceptors.response.use(response => {
-  return response
-}, error => {
-  if (!error.response) {
-    console.log(error)
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (!error.response) {
+      console.log(error);
+    }
+    if (error.response.status === 401) {
+      // window.location.href = "/401";
+    }
+    if (error.response.status === 404) {
+      // window.location.href = "/404";
+    }
+    if (error.response.status === 500) {
+      // window.location.href = "/500";
+    }
+    return Promise.reject(error);
   }
-  if (error.response.status === 401) {
-    // window.location.href = "/401";
-  }
-  if (error.response.status === 404) {
-    window.location.href = "/404";
-  }
-  if (error.response.status === 500) {
-    // window.location.href = "/500";
-  }
-  return Promise.reject(error)
-})
+);
 
 export default api;

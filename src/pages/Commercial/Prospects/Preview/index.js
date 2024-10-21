@@ -551,19 +551,19 @@ export default function PagePreview({
                 }}
               >
                 <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll">
-                  <FormHeader
-                    access={access}
-                    title={pageData.name + " " + pageData.last_name}
-                    registry={registry}
-                    InputContext={InputContext}
-                    disabled={!pageData.processtype_id}
-                    emailButtonText={emailButtonText}
-                  />
                   <Form
                     ref={generalForm}
                     onSubmit={handleGeneralFormSubmit}
                     className="w-full"
                   >
+                    <FormHeader
+                      access={access}
+                      title={pageData.name + " " + pageData.last_name}
+                      registry={registry}
+                      InputContext={InputContext}
+                      disabled={!pageData.processtype_id}
+                      emailButtonText={emailButtonText}
+                    />
                     {id === "new" || pageData.loaded ? (
                       <>
                         <InputLineGroup

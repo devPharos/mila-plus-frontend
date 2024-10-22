@@ -1482,6 +1482,10 @@ export default function EnrollmentOutside({
                               required
                               onChange={(el) => handleHasDependents(el)}
                               grow
+                              disabled={
+                                pageData.lastActiveMenu &&
+                                pageData.lastActiveMenu.order < 7
+                              }
                               title="Do you have dependents?"
                               options={yesOrNoOptions}
                               defaultValue={yesOrNoOptions.find(
@@ -1796,6 +1800,10 @@ export default function EnrollmentOutside({
                               name="need_sponsorship"
                               onChange={(el) => handleHasSponsors(el)}
                               required
+                              disabled={
+                                pageData.lastActiveMenu &&
+                                pageData.lastActiveMenu.order < 7
+                              }
                               grow
                               title="Do you need sponsorship?"
                               options={sponsorshipOptions}

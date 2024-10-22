@@ -404,6 +404,39 @@ export default function EnrollmentOutside({
     }
 
     if (id !== "new") {
+      if (pageData.activeMenu === "student-signature") {
+        const signature = signatureRef.current.toDataURL();
+
+        const fileUuid = uuidv4();
+        const storage = getStorage(app);
+        const local = "Enrollments/Signatures/" + fileUuid + ".png";
+        const imageRef = ref(storage, local);
+        await uploadString(imageRef, signature.substring(22), "base64").then(
+          async (snapshot) => {
+            await getDownloadURL(snapshot.ref).then(async (downloadURL) => {
+              await api.post(`/enrollmentstudentsignature`, {
+                enrollment_id: id,
+                files: {
+                  url: downloadURL,
+                  name: fileUuid + ".png",
+                  size: signature.length,
+                  key: fileUuid + ".png",
+                },
+              });
+              await api.put(`/outside/enrollments/${id}`, {
+                activeMenu: pageData.activeMenu,
+                lastActiveMenu: pageData.lastActiveMenu,
+              });
+              setPageData({ ...pageData, loaded: false });
+              setSuccessfullyUpdated(true);
+              toast("Saved!", { autoClose: 1000 });
+              setLoading(false);
+            });
+          }
+        );
+        return;
+      }
+
       const updated = handleUpdatedFields(data, pageData);
 
       const promises = [];
@@ -412,38 +445,6 @@ export default function EnrollmentOutside({
         const objUpdated = Object.fromEntries(updated);
         const { date_of_birth, passport_expiration_date, i94_expiration_date } =
           objUpdated;
-
-        if (pageData.activeMenu === "student-signature") {
-          const signature = signatureRef.current.toDataURL();
-
-          const fileUuid = uuidv4();
-          const storage = getStorage(app);
-          const local = "Enrollments/Signatures/" + fileUuid + ".png";
-          const imageRef = ref(storage, local);
-          await uploadString(imageRef, signature.substring(22), "base64").then(
-            async (snapshot) => {
-              await getDownloadURL(snapshot.ref).then(async (downloadURL) => {
-                await api.post(`/enrollmentstudentsignature`, {
-                  enrollment_id: id,
-                  files: {
-                    url: downloadURL,
-                    name: fileUuid + ".png",
-                    size: signature.length,
-                    key: fileUuid + ".png",
-                  },
-                });
-                await api.put(`/outside/enrollments/${id}`, {
-                  activeMenu: pageData.activeMenu,
-                  lastActiveMenu: pageData.lastActiveMenu,
-                });
-                setPageData({ ...pageData, loaded: false });
-                setSuccessfullyUpdated(true);
-                toast("Saved!", { autoClose: 1000 });
-                setLoading(false);
-              });
-            }
-          );
-        }
 
         Promise.all(promises)
           .then((result) => {

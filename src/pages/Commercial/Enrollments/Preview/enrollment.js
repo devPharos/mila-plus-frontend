@@ -61,6 +61,7 @@ import { pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import PDFViewer from "~/components/PDFViewer";
+import CheckboxInput from "~/components/RegisterForm/CheckboxInput";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -1032,7 +1033,7 @@ export default function EnrollmentOutside({
                     <>
                       <FormHeader
                         saveText="Save & Continue"
-                        outside={!searchparams.has("activeMenu")}
+                        outside={true}
                         loading={loading}
                         access={{
                           view: true,
@@ -2020,17 +2021,26 @@ export default function EnrollmentOutside({
                           <InputLine title="Student Signature">
                             {pageData.contracts &&
                               pageData.contracts.length > 0 && (
-                                <PDFViewer
-                                  download={true}
-                                  file={{
-                                    url: pageData.contracts.find(
-                                      (contract) =>
-                                        contract.file.document.subtype ===
-                                        "F1 Contract"
-                                    ).file.url,
-                                  }}
-                                  height={450}
-                                />
+                                <div className="flex flex-col gap-2">
+                                  <PDFViewer
+                                    download={true}
+                                    file={{
+                                      url: pageData.contracts.find(
+                                        (contract) =>
+                                          contract.file.document.subtype ===
+                                          "F1 Contract"
+                                      ).file.url,
+                                    }}
+                                    height={450}
+                                  />
+                                  <CheckboxInput
+                                    name="agreement"
+                                    required={true}
+                                    title="I agree to the terms and conditions above"
+                                    InputContext={InputContext}
+                                    grow
+                                  />
+                                </div>
                               )}
                             <div className="flex flex-1 flex-col items-start justify-start">
                               <div

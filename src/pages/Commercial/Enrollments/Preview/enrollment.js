@@ -392,6 +392,7 @@ export default function EnrollmentOutside({
       setLoading(false);
       return;
     }
+    delete data.agreement;
     if (successfullyUpdated) {
       toast("No need to be saved!", {
         autoClose: 1000,

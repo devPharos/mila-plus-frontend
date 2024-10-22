@@ -88,17 +88,17 @@ function App() {
       {
         name: 'Financial',
         children: [
-          // {
-          //   alias: 'financial-dashboard',
-          //   path: '/Financial/Dashboard',
-          //   title: 'Dashboard',
-          //   icon: 'LayoutDashboard',
-          // },
+          {
+            alias: 'financial-bank',
+            path: '/Financial/Bank',
+            title: 'Bank ',
+            icon: 'Landmark',
+          },
           {
             alias: 'chart-of-accounts',
             path: '/Financial/ChartOfAccounts',
             title: 'Chart of Accounts',
-            icon: 'ChartGantt'
+            icon: 'GanttChart'
           },
         ]
       },

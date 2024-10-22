@@ -558,6 +558,7 @@ export default function PagePreview({
                   >
                     <FormHeader
                       access={access}
+                      loading={loading}
                       title={pageData.name + " " + pageData.last_name}
                       registry={registry}
                       InputContext={InputContext}
@@ -635,9 +636,12 @@ export default function PagePreview({
                               defaultValue={pageData.last_name}
                               InputContext={InputContext}
                             />
+                          </InputLine>
+                          <InputLine>
                             <SelectPopover
                               name="gender"
                               required
+                              grow
                               title="Gender"
                               isSearchable
                               defaultValue={genderOptions.find(
@@ -658,8 +662,6 @@ export default function PagePreview({
                               placeholderText="MM/DD/YYYY"
                               InputContext={InputContext}
                             />
-                          </InputLine>
-                          <InputLine>
                             <Input
                               type="text"
                               name="passport_number"
@@ -669,6 +671,8 @@ export default function PagePreview({
                               defaultValue={pageData.passport_number}
                               InputContext={InputContext}
                             />
+                          </InputLine>
+                          <InputLine>
                             <Input
                               type="text"
                               name="visa_number"
@@ -1027,7 +1031,9 @@ export default function PagePreview({
                         >
                           <EnrollmentProcess
                             enrollment={pageData.enrollmentProcess}
+                            student_id={id}
                             loading={loading}
+                            setLoading={setLoading}
                             handleStartProcess={handleStartProcess}
                           />
                         </InputLineGroup>

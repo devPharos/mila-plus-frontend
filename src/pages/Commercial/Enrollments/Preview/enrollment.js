@@ -83,6 +83,7 @@ export default function EnrollmentOutside({
         phone: "",
       },
     ],
+    agreement: false,
     lastActiveMenu: {},
     activeMenu: null,
     loaded: false,

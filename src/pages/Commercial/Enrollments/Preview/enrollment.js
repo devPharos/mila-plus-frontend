@@ -1513,7 +1513,8 @@ export default function EnrollmentOutside({
                                             defaultValue={dependent.id}
                                             InputContext={InputContext}
                                           />
-                                          {index > 0 &&
+                                          {pageData.lastActiveMenu.order < 7 &&
+                                          index > 0 &&
                                           index ===
                                             pageData.enrollmentdependents
                                               .length -
@@ -1837,7 +1838,8 @@ export default function EnrollmentOutside({
                                             defaultValue={sponsor.id}
                                             InputContext={InputContext}
                                           />
-                                          {index > 0 &&
+                                          {pageData.lastActiveMenu.order < 7 &&
+                                          index > 0 &&
                                           index ===
                                             pageData.enrollmentsponsors.length -
                                               1 ? (

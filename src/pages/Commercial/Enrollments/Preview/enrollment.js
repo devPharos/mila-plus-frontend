@@ -9,8 +9,6 @@ import {
   Files,
   FileSignature,
   PlusCircle,
-  Save,
-  Send,
   Trash,
   User,
   X,
@@ -1480,7 +1478,12 @@ export default function EnrollmentOutside({
                             <SelectPopover
                               name="has_dependents"
                               required
-                              onChange={(el) => handleHasDependents(el)}
+                              onChange={(el) =>
+                                pageData.lastActiveMenu &&
+                                pageData.lastActiveMenu.order
+                                  ? handleHasDependents(el)
+                                  : null
+                              }
                               grow
                               disabled={
                                 pageData.lastActiveMenu &&
@@ -1749,13 +1752,16 @@ export default function EnrollmentOutside({
                                   }
                                 }
                               )}
-                              <button
-                                type="button"
-                                onClick={() => handleAddDependent()}
-                                className="bg-slate-100 border ml-6 py-2 px-2 text-xs flex flex-row justify-center items-center gap-2 rounded-md transition-all hover:border-primary hover:text-primary"
-                              >
-                                <PlusCircle size={16} /> Add Dependent
-                              </button>
+                              {pageData.lastActiveMenu &&
+                                pageData.lastActiveMenu.order < 7 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAddDependent()}
+                                    className="bg-slate-100 border ml-6 py-2 px-2 text-xs flex flex-row justify-center items-center gap-2 rounded-md transition-all hover:border-primary hover:text-primary"
+                                  >
+                                    <PlusCircle size={16} /> Add Dependent
+                                  </button>
+                                )}
                             </>
                           )}
                         </InputLineGroup>
@@ -1799,7 +1805,12 @@ export default function EnrollmentOutside({
                                             <InputLine title='Affidavit of Support'> */}
                             <SelectPopover
                               name="need_sponsorship"
-                              onChange={(el) => handleHasSponsors(el)}
+                              onChange={(el) =>
+                                pageData.lastActiveMenu &&
+                                pageData.lastActiveMenu.order < 7
+                                  ? handleHasSponsors(el)
+                                  : null
+                              }
                               required
                               disabled={
                                 pageData.lastActiveMenu &&
@@ -1909,13 +1920,16 @@ export default function EnrollmentOutside({
                                     );
                                   }
                                 )}
-                              <button
-                                type="button"
-                                onClick={() => handleAddSponsor()}
-                                className="bg-slate-100 border ml-6 py-1 px-2 text-xs flex flex-row justify-center items-center gap-2 rounded-md transition-all hover:border-primary hover:text-primary"
-                              >
-                                <PlusCircle size={16} /> Sponsor
-                              </button>
+                              {pageData.lastActiveMenu &&
+                                pageData.lastActiveMenu.order < 7 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAddSponsor()}
+                                    className="bg-slate-100 border ml-6 py-1 px-2 text-xs flex flex-row justify-center items-center gap-2 rounded-md transition-all hover:border-primary hover:text-primary"
+                                  >
+                                    <PlusCircle size={16} /> Sponsor
+                                  </button>
+                                )}
                             </>
                           )}
                         </InputLineGroup>

@@ -1480,7 +1480,7 @@ export default function EnrollmentOutside({
                               required
                               onChange={(el) =>
                                 pageData.lastActiveMenu &&
-                                pageData.lastActiveMenu.order
+                                pageData.lastActiveMenu.order < 7
                                   ? handleHasDependents(el)
                                   : null
                               }

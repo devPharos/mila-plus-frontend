@@ -61,7 +61,7 @@ function EnrollmentProcess({
     <div className="flex flex-1 w-full flex-col items-start justify-start text-center gap-4 px-4">
       <div className="flex w-full flex-row items-center justify-start text-center gap-4 border border-gray-200 bg-slate-50 rounded-md p-4">
         <NavLink
-          to={`/fill-form/Enrollment?crypt=${enrollment.id}&activeMenu=student-information`}
+          to={`/fill-form/Enrollment?crypt=${enrollment.id}`}
           target="_blank"
           disabled={true}
           className="bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2"

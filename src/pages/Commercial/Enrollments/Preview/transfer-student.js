@@ -417,8 +417,9 @@ export default function TransferOutside({
                 pageData.lastActiveMenu.order < 8 &&
                 !searchparams.has("activeMenu")
               }
-              setActiveMenu={() =>
-                setPageData({ ...pageData, activeMenu: menus[7].name })
+              setActiveMenu={
+                () => null
+                // setPageData({ ...pageData, activeMenu: menus[1].name })
               }
               activeMenu={pageData.activeMenu}
               name="transfer-dso"

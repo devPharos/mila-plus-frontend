@@ -59,6 +59,7 @@ import { pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import PDFViewer from "~/components/PDFViewer";
+import CheckboxInput from "~/components/RegisterForm/CheckboxInput";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -80,6 +81,7 @@ export default function EnrollmentOutside({
         phone: "",
       },
     ],
+    agreement: false,
     lastActiveMenu: {},
     activeMenu: null,
     loaded: false,
@@ -276,15 +278,25 @@ export default function EnrollmentOutside({
       );
       return data;
     }
+    async function getDependentDocuments(type = "") {
+      const { data } = await api.get(
+        `/documentsByOrigin?origin=Enrollment&type=${type}&subtype=Dependent`
+      );
+      return data;
+    }
     async function getPageData() {
       if (id !== "new") {
         try {
           let documents = [];
+          let dependentDocuments = [];
           const { data } = await api.get(`/outside/enrollments/${id}`);
           const { data: filialData } = await api.get(
             `/filials/${data.filial_id}`
           );
           documents = await getDocuments(data.students.processsubstatuses.name);
+          dependentDocuments = await getDependentDocuments(
+            data.students.processsubstatuses.name
+          );
 
           const {
             created_by,
@@ -307,6 +319,7 @@ export default function EnrollmentOutside({
             setPageData({
               ...data,
               documents,
+              dependentDocuments,
               contracts: filialData.filialdocuments,
               loaded: true,
               activeMenu: searchparams.get("activeMenu"),
@@ -318,6 +331,7 @@ export default function EnrollmentOutside({
             setPageData({
               ...data,
               documents,
+              dependentDocuments,
               contracts: filialData.filialdocuments,
               loaded: true,
               activeMenu:
@@ -376,6 +390,7 @@ export default function EnrollmentOutside({
       setLoading(false);
       return;
     }
+    delete data.agreement;
     if (successfullyUpdated) {
       toast("No need to be saved!", {
         autoClose: 1000,
@@ -386,72 +401,189 @@ export default function EnrollmentOutside({
       return;
     }
 
-    if (pageData.activeMenu === "student-signature") {
-      const signature = signatureRef.current.toDataURL();
-
-      const fileUuid = uuidv4();
-      const storage = getStorage(app);
-      const local = "Enrollments/Signatures/" + fileUuid + ".png";
-      const imageRef = ref(storage, local);
-      await uploadString(imageRef, signature.substring(22), "base64").then(
-        async (snapshot) => {
-          await getDownloadURL(snapshot.ref).then(async (downloadURL) => {
-            await api.post(`/enrollmentstudentsignature`, {
-              enrollment_id: id,
-              files: {
-                url: downloadURL,
-                name: fileUuid + ".png",
-                size: signature.length,
-                key: fileUuid + ".png",
-              },
-            });
-            await api.put(`/outside/enrollments/${id}`, {
-              activeMenu: pageData.activeMenu,
-              lastActiveMenu: pageData.lastActiveMenu,
-            });
-            setPageData({ ...pageData, loaded: false });
-            setSuccessfullyUpdated(true);
-            toast("Saved!", { autoClose: 1000 });
-            setLoading(false);
-          });
-        }
-      );
-    }
-
     if (id !== "new") {
+      if (pageData.activeMenu === "student-signature") {
+        const signature = signatureRef.current.toDataURL();
+
+        const fileUuid = uuidv4();
+        const storage = getStorage(app);
+        const local = "Enrollments/Signatures/" + fileUuid + ".png";
+        const imageRef = ref(storage, local);
+        await uploadString(imageRef, signature.substring(22), "base64").then(
+          async (snapshot) => {
+            await getDownloadURL(snapshot.ref).then(async (downloadURL) => {
+              await api.post(`/enrollmentstudentsignature`, {
+                enrollment_id: id,
+                files: {
+                  url: downloadURL,
+                  name: fileUuid + ".png",
+                  size: signature.length,
+                  key: fileUuid + ".png",
+                },
+              });
+              await api.put(`/outside/enrollments/${id}`, {
+                activeMenu: pageData.activeMenu,
+                lastActiveMenu: pageData.lastActiveMenu,
+              });
+              setPageData({ ...pageData, loaded: false });
+              setSuccessfullyUpdated(true);
+              toast("Saved!", { autoClose: 1000 });
+              setLoading(false);
+            });
+          }
+        );
+        return;
+      }
+
       const updated = handleUpdatedFields(data, pageData);
+
+      const promises = [];
 
       if (updated.length > 0) {
         const objUpdated = Object.fromEntries(updated);
         const { date_of_birth, passport_expiration_date, i94_expiration_date } =
           objUpdated;
 
-        if (data.documents && data.documents.length > 0) {
-          let toastId = null;
-          if (
-            data.documents.find(
-              (document) =>
-                (typeof document.file_id === "undefined" && document.file_id) ||
-                (typeof document.file_id === "object" &&
-                  Array.from(document.file_id).length > 0)
-            )
-          ) {
-            toastId = toast.loading("Files are being uploaded...");
-          }
-          const allPromises = organizeMultiAndSingleFiles(
-            data.documents,
-            "Enrollments"
-          );
-          Promise.all(allPromises).then(async (files) => {
+        Promise.all(promises)
+          .then((result) => {
+            console.log(result);
+            console.log(9);
+            if (data.documents && data.documents.length > 0) {
+              let toastId = null;
+              if (
+                data.documents.find(
+                  (document) =>
+                    (typeof document.file_id === "undefined" &&
+                      document.file_id) ||
+                    (typeof document.file_id === "object" &&
+                      Array.from(document.file_id).length > 0)
+                )
+              ) {
+                toastId = toast.loading("Files are being uploaded...");
+              }
+              const allPromises = organizeMultiAndSingleFiles(
+                data.documents,
+                "Enrollments"
+              );
+              Promise.all(allPromises).then(async (files) => {
+                try {
+                  files.map(async (file) => {
+                    if (!file) {
+                      return;
+                    }
+                    if (file.name) {
+                      api.post(`/enrollmentdocuments`, {
+                        enrollment_id: id,
+                        files: file,
+                      });
+                      toastId &&
+                        toast.update(toastId, {
+                          render: "All files have been uploaded!",
+                          type: "success",
+                          autoClose: 3000,
+                          isLoading: false,
+                        });
+                    } else {
+                      file
+                        .sort((a, b) => a.size > b.size)
+                        .map(async (promise, index) => {
+                          await Promise.all([promise]).then(
+                            async (singleFile) => {
+                              if (index + 1 === file.length) {
+                                toastId &&
+                                  toast.update(toastId, {
+                                    render: "All files have been uploaded!",
+                                    type: "success",
+                                    autoClose: 3000,
+                                    isLoading: false,
+                                  });
+                              }
+                              await api.post(`/enrollmentdocuments`, {
+                                enrollment_id: id,
+                                files: singleFile[0],
+                              });
+                            }
+                          );
+                        });
+                    }
+                  });
+                } catch (err) {
+                  toast(err.response.data.error, {
+                    type: "error",
+                    autoClose: 3000,
+                  });
+                }
+                // return
+                delete objUpdated.documents;
+              });
+            }
+          })
+          .finally(async () => {
+            await api
+              .put(`/outside/enrollments/${id}`, {
+                ...objUpdated,
+                activeMenu: pageData.activeMenu,
+                lastActiveMenu: pageData.lastActiveMenu,
+                date_of_birth: date_of_birth
+                  ? format(date_of_birth, "yyyyMMdd")
+                  : null,
+                passport_expiration_date: passport_expiration_date
+                  ? format(passport_expiration_date, "yyyyMMdd")
+                  : null,
+                i94_expiration_date: i94_expiration_date
+                  ? format(i94_expiration_date, "yyyyMMdd")
+                  : null,
+              })
+              .then(async () => {
+                verifyDependentDocuments(data);
+                setPageData({ ...pageData, loaded: false });
+                setLoading(false);
+                setSuccessfullyUpdated(true);
+                toast("Saved!", { autoClose: 1000 });
+              });
+          });
+      }
+    }
+  }
+
+  function verifyDependentDocuments(data = null) {
+    if (data.enrollmentdependents && data.enrollmentdependents.length > 0) {
+      console.log("has dependents");
+      let toastId = null;
+      data.enrollmentdependents.map((dependent, index) => {
+        console.log("for each dependent");
+        if (
+          dependent.dependentDocuments.find(
+            (document) =>
+              (typeof document.file_id === "undefined" && document.file_id) ||
+              (typeof document.file_id === "object" &&
+                Array.from(document.file_id).length > 0)
+          )
+        ) {
+          toastId = toast.loading("Dependents files are being uploaded...");
+        }
+        console.log(`sending files for dependent ${index} `);
+        const allPromises = organizeMultiAndSingleFiles(
+          dependent.dependentDocuments,
+          "Dependents"
+        );
+        data.enrollmentdependents[index].storedFiles = [];
+        Promise.all(allPromises)
+          .then(async (files) => {
+            console.log(`files from ${index} uploaded`);
             try {
               files.map(async (file) => {
+                console.log(`for each file`);
                 if (!file) {
                   return;
                 }
                 if (file.name) {
-                  api.post(`/enrollmentdocuments`, {
+                  data.enrollmentdependents[index].storedFiles.push(file);
+                  console.log(data);
+                  await api.post(`/dependentsdocuments`, {
                     enrollment_id: id,
                     files: file,
+                    dependent_id: dependent.id,
                   });
                   toastId &&
                     toast.update(toastId, {
@@ -461,11 +593,12 @@ export default function EnrollmentOutside({
                       isLoading: false,
                     });
                 } else {
+                  console.log(`multiple files`);
                   file
                     .sort((a, b) => a.size > b.size)
                     .map(async (promise, index) => {
                       await Promise.all([promise]).then(async (singleFile) => {
-                        console.log(singleFile[0]);
+                        console.log(`now is a single file`);
                         if (index + 1 === file.length) {
                           toastId &&
                             toast.update(toastId, {
@@ -475,68 +608,30 @@ export default function EnrollmentOutside({
                               isLoading: false,
                             });
                         }
-                        await api.post(`/enrollmentdocuments`, {
+                        data.enrollmentdependents[index].storedFiles.push(
+                          singleFile[0]
+                        );
+                        await api.post(`/dependentsdocuments`, {
                           enrollment_id: id,
                           files: singleFile[0],
+                          dependent_id: dependent.id,
                         });
                       });
                     });
                 }
               });
             } catch (err) {
-              console.log(err);
-              // toast(err.response.data.error, { type: 'error', autoClose: 3000 })
+              toast(err.response.data.error, {
+                type: "error",
+                autoClose: 3000,
+              });
             }
-            // return
-            delete objUpdated.documents;
-            await api.put(`/outside/enrollments/${id}`, {
-              ...objUpdated,
-              activeMenu: pageData.activeMenu,
-              lastActiveMenu: pageData.lastActiveMenu,
-              date_of_birth: date_of_birth
-                ? format(date_of_birth, "yyyyMMdd")
-                : null,
-              passport_expiration_date: passport_expiration_date
-                ? format(passport_expiration_date, "yyyyMMdd")
-                : null,
-              i94_expiration_date: i94_expiration_date
-                ? format(i94_expiration_date, "yyyyMMdd")
-                : null,
-            });
-            setPageData({ ...pageData, loaded: false });
-            setSuccessfullyUpdated(true);
-            toast("Saved!", { autoClose: 1000 });
-            setLoading(false);
+          })
+          .finally(() => {
+            console.log(data);
+            return data;
           });
-        } else {
-          try {
-            await api.put(`/outside/enrollments/${id}`, {
-              ...objUpdated,
-              activeMenu: pageData.activeMenu,
-              lastActiveMenu: pageData.lastActiveMenu,
-              date_of_birth: date_of_birth
-                ? format(date_of_birth, "yyyyMMdd")
-                : null,
-              passport_expiration_date: passport_expiration_date
-                ? format(passport_expiration_date, "yyyyMMdd")
-                : null,
-              i94_expiration_date: i94_expiration_date
-                ? format(i94_expiration_date, "yyyyMMdd")
-                : null,
-            });
-            setPageData({ ...pageData, loaded: false });
-            setSuccessfullyUpdated(true);
-            toast("Saved!", { autoClose: 1000 });
-            setLoading(false);
-          } catch (err) {
-            console.log(err);
-            toast(err.response.data.error, { type: "error", autoClose: 3000 });
-            setLoading(false);
-          }
-        }
-      } else {
-        // console.log(updated)
-      }
+      });
     }
   }
 
@@ -549,91 +644,211 @@ export default function EnrollmentOutside({
 
   function handleInactivate() {}
 
-  function handleHasDependents(el) {
-    setSuccessfullyUpdated(false);
-    setPageData({
-      ...pageData,
-      has_dependents: el.value,
-      enrollmentdependents: el.value
-        ? [
-            {
-              name: null,
-              relationship_type: null,
-              gender: null,
-              dept1_type: null,
-              email: null,
-              phone: null,
-            },
-          ]
-        : [],
+  async function handleHasDependents(el) {
+    let newDependent = null;
+    function resetDependents() {
+      const promises = [];
+      promises.push(
+        pageData.enrollmentdependents.map((dependent, index) => {
+          // console.log(dependent);
+          return handleRemoveDependent(index, dependent.id);
+        })
+      );
+      Promise.all(promises).then(() => {
+        return;
+      });
+    }
+    const promises = [];
+    if (el.value === false) {
+      setSuccessfullyUpdated(false);
+      promises.push(resetDependents());
+    } else {
+      if (pageData.enrollmentdependents.length > 0) {
+        promises.push(resetDependents());
+      }
+      setSuccessfullyUpdated(true);
+      promises.push((newDependent = await handleCreateDependent()));
+    }
+    Promise.all(promises).then(() => {
+      setPageData({
+        ...pageData,
+        has_dependents: el.value,
+        enrollmentdependents: el.value ? [newDependent] : [],
+      });
     });
   }
 
-  function handleHasSponsors(el) {
-    setSuccessfullyUpdated(false);
-    setPageData({
-      ...pageData,
-      need_sponsorship: el.value,
-      enrollmentsponsors: el.value
-        ? [{ name: null, relationship_type: null, email: null, phone: null }]
-        : [],
+  async function handleHasSponsors(el) {
+    let newSponsor = null;
+    const promises = [];
+    function resetSponsors() {
+      const promises = [];
+      promises.push(
+        pageData.enrollmentsponsors.map((sponsor, index) => {
+          return handleRemoveSponsor(index, sponsor.id);
+        })
+      );
+      Promise.all(promises).then(() => {
+        return;
+      });
+    }
+    if (el.value === false) {
+      setSuccessfullyUpdated(false);
+      promises.push(resetSponsors());
+    } else {
+      setSuccessfullyUpdated(true);
+      if (pageData.enrollmentsponsors.length > 0) {
+        promises.push(resetSponsors());
+      }
+      setSuccessfullyUpdated(true);
+      promises.push((newSponsor = await handleCreateSponsor()));
+    }
+    Promise.all(promises).then(() => {
+      setPageData({
+        ...pageData,
+        need_sponsorship: el.value,
+        enrollmentsponsors: el.value ? [newSponsor] : [],
+      });
     });
   }
 
-  function handleAddDependent() {
+  async function handleCreateDependent() {
+    try {
+      const { data } = await api.post(`/enrollmentdependent`, {
+        enrollment_id: id,
+        name: null,
+        relationship_type: null,
+        gender: null,
+        dept1_type: null,
+        email: null,
+        phone: null,
+      });
+      return data;
+    } catch (err) {
+      console.log({ err });
+      toast(err.response.data.error, { type: "error", autoClose: 3000 });
+      return null;
+    }
+  }
+
+  async function handleCreateSponsor() {
+    try {
+      const { data } = await api.post(`/enrollmentsponsor`, {
+        enrollment_id: id,
+      });
+      return data;
+    } catch (err) {
+      console.log({ err });
+      toast(err.response.data.error, { type: "error", autoClose: 3000 });
+      return null;
+    }
+  }
+
+  async function handleAddDependent() {
     setSuccessfullyUpdated(false);
     const addedDependents = [...pageData.enrollmentdependents];
-    addedDependents.push({
-      name: null,
-      relationship_type: null,
-      gender: null,
-      dept1_type: null,
-      email: null,
-      phone: null,
-    });
+    addedDependents.push(await handleCreateDependent());
     setPageData({ ...pageData, enrollmentdependents: addedDependents });
   }
 
-  function handleAddSponsor() {
+  async function handleAddSponsor() {
     setSuccessfullyUpdated(false);
     const addedSponsors = [...pageData.enrollmentsponsors];
-    addedSponsors.push({
-      name: null,
-      relationship_type: null,
-      email: null,
-      phone: null,
-    });
+    addedSponsors.push(await handleCreateSponsor());
+    // addedSponsors.push({
+    //   name: null,
+    //   relationship_type: null,
+    //   email: null,
+    //   phone: null,
+    // });
     setPageData({ ...pageData, enrollmentsponsors: addedSponsors });
   }
 
-  function handleRemoveDependent(index) {
+  function handleRemoveDependent(index, id) {
     setSuccessfullyUpdated(false);
 
-    const newData = generalForm.current.getData();
-    const removedDependent = { ...newData.enrollmentdependents[index] };
+    try {
+      api.delete(`/enrollmentdependent/${id}`).then(() => {
+        const newData = generalForm.current.getData();
 
-    newData.enrollmentdependents.splice(index, 1);
-    generalForm.current.setData(newData);
+        if (newData.enrollmentdependents) {
+          newData.enrollmentdependents.splice(index, 1);
+          generalForm.current.setData(newData);
 
-    const removedDependents = pageData.enrollmentdependents.filter(
-      (dependent) => dependent.id !== removedDependent.id
-    );
-    setPageData({ ...pageData, enrollmentdependents: removedDependents });
+          setPageData({
+            ...pageData,
+            enrollmentdependents: newData.enrollmentdependents,
+          });
+        }
+      });
+    } catch (err) {
+      console.log(err);
+    }
   }
 
-  function handleRemoveSponsor(index) {
+  function handleRemoveSponsor(index, id) {
     setSuccessfullyUpdated(false);
 
-    const newData = generalForm.current.getData();
-    const removedSponsor = { ...newData.enrollmentsponsors[index] };
+    try {
+      api.delete(`/enrollmentsponsor/${id}`).then(() => {
+        const newData = generalForm.current.getData();
 
-    newData.enrollmentsponsors.splice(index, 1);
-    generalForm.current.setData(newData);
+        if (newData.enrollmentsponsors) {
+          newData.enrollmentsponsors.splice(index, 1);
+          generalForm.current.setData(newData);
+          setPageData({
+            ...pageData,
+            enrollmentsponsors: newData.enrollmentsponsors,
+          });
+        }
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
-    const removedSponsors = pageData.enrollmentsponsors.filter(
-      (sponsor) => sponsor.id !== removedSponsor.id
-    );
-    setPageData({ ...pageData, enrollmentsponsors: removedSponsors });
+  function handleDeleteDependentDocument(dependent_id, id) {
+    alertBox({
+      title: "Attention!",
+      descriptionHTML: `<p>Are you sure you want to delete this file?</p>`,
+      buttons: [
+        {
+          title: "No",
+          class: "cancel",
+        },
+        {
+          title: "Yes",
+          onPress: async () => {
+            try {
+              await api.delete(`/dependentsdocuments/${id}`);
+              toast("File deleted!", { autoClose: 1000 });
+              const newDependents = pageData.enrollmentdependents.map(
+                (dependent) => {
+                  if (dependent.id === dependent_id) {
+                    const newDocuments = dependent.documents.filter(
+                      (document) => document.id !== id
+                    );
+                    return { ...dependent, documents: newDocuments };
+                  } else {
+                    return dependent;
+                  }
+                }
+              );
+              setPageData({
+                ...pageData,
+                enrollmentdependents: newDependents,
+              });
+            } catch (err) {
+              console.log(err);
+              // toast(err.response.data.error, {
+              //   type: "error",
+              //   autoClose: 3000,
+              // });
+            }
+          },
+        },
+      ],
+    });
   }
 
   function handleDeleteDocument(id) {
@@ -696,7 +911,9 @@ export default function EnrollmentOutside({
             </RegisterFormMenu>
             <RegisterFormMenu
               disabled={
-                pageData.lastActiveMenu && pageData.lastActiveMenu.order < 2
+                pageData.lastActiveMenu &&
+                pageData.lastActiveMenu.order < 2 &&
+                !searchparams.has("activeMenu")
               }
               setActiveMenu={() =>
                 setPageData({ ...pageData, activeMenu: menus[2].name })
@@ -782,8 +999,9 @@ export default function EnrollmentOutside({
                 pageData.lastActiveMenu.order < 8 &&
                 !searchparams.has("activeMenu")
               }
-              setActiveMenu={() =>
-                setPageData({ ...pageData, activeMenu: menus[8].name })
+              setActiveMenu={
+                () => null
+                // setPageData({ ...pageData, activeMenu: menus[8].name })
               }
               activeMenu={pageData.activeMenu}
               name="sponsor-signature"
@@ -816,7 +1034,7 @@ export default function EnrollmentOutside({
                     <>
                       <FormHeader
                         saveText="Save & Continue"
-                        outside={!searchparams.has("activeMenu")}
+                        outside={true}
                         loading={loading}
                         access={{
                           view: true,
@@ -1260,8 +1478,17 @@ export default function EnrollmentOutside({
                             <SelectPopover
                               name="has_dependents"
                               required
-                              onChange={(el) => handleHasDependents(el)}
+                              onChange={(el) =>
+                                pageData.lastActiveMenu &&
+                                pageData.lastActiveMenu.order < 7
+                                  ? handleHasDependents(el)
+                                  : null
+                              }
                               grow
+                              disabled={
+                                pageData.lastActiveMenu &&
+                                pageData.lastActiveMenu.order < 7
+                              }
                               title="Do you have dependents?"
                               options={yesOrNoOptions}
                               defaultValue={yesOrNoOptions.find(
@@ -1283,11 +1510,25 @@ export default function EnrollmentOutside({
                                         <InputLine
                                           title={`Dependent ${index + 1}`}
                                         >
-                                          {index ? (
+                                          <Input
+                                            type="hidden"
+                                            name="id"
+                                            defaultValue={dependent.id}
+                                            InputContext={InputContext}
+                                          />
+                                          {pageData.lastActiveMenu.order < 7 &&
+                                          index > 0 &&
+                                          index ===
+                                            pageData.enrollmentdependents
+                                              .length -
+                                              1 ? (
                                             <button
                                               type="button"
                                               onClick={() =>
-                                                handleRemoveDependent(index)
+                                                handleRemoveDependent(
+                                                  index,
+                                                  dependent.id
+                                                )
                                               }
                                             >
                                               <Trash
@@ -1367,18 +1608,160 @@ export default function EnrollmentOutside({
                                             InputContext={InputContext}
                                           />
                                         </InputLine>
+
+                                        {pageData.dependentDocuments &&
+                                          pageData.dependentDocuments.length >
+                                            0 &&
+                                          pageData.dependentDocuments.map(
+                                            (dependentDocument, docIndex) => {
+                                              return (
+                                                <Scope
+                                                  key={docIndex}
+                                                  path={`dependentDocuments[${docIndex}]`}
+                                                >
+                                                  <Input
+                                                    type="hidden"
+                                                    name="document_id"
+                                                    defaultValue={
+                                                      dependentDocument.id
+                                                    }
+                                                    InputContext={InputContext}
+                                                  />
+                                                  <InputLine
+                                                    subtitle={
+                                                      dependentDocument.title
+                                                    }
+                                                  >
+                                                    {!dependentDocument.multiple &&
+                                                      pageData.dependentDocuments &&
+                                                      pageData.dependentDocuments.filter(
+                                                        (doc) =>
+                                                          doc.document_id ===
+                                                          dependentDocument.id
+                                                      ).length === 0 && (
+                                                        <FileInput
+                                                          type="file"
+                                                          name="file_id"
+                                                          title={"File"}
+                                                          required={
+                                                            dependentDocument.required &&
+                                                            dependent.documents
+                                                              .length === 0
+                                                          }
+                                                          grow
+                                                          InputContext={
+                                                            InputContext
+                                                          }
+                                                        />
+                                                      )}
+                                                    {dependentDocument.multiple && (
+                                                      <FileInputMultiple
+                                                        type="file"
+                                                        name="file_id"
+                                                        required={
+                                                          dependentDocument.required &&
+                                                          dependent.documents
+                                                            .length === 0
+                                                        }
+                                                        title={"Multiple Files"}
+                                                        grow
+                                                        InputContext={
+                                                          InputContext
+                                                        }
+                                                      />
+                                                    )}
+                                                  </InputLine>
+                                                  {dependent.documents &&
+                                                    dependent.documents.length >
+                                                      0 && (
+                                                      <InputLine subtitle="Attached Files">
+                                                        <div className="flex flex-col justify-center items-start gap-4">
+                                                          {dependent.documents.map(
+                                                            (doc, index) => {
+                                                              if (
+                                                                doc.document_id ===
+                                                                dependentDocument.id
+                                                              ) {
+                                                                return (
+                                                                  <>
+                                                                    <div
+                                                                      key={
+                                                                        index
+                                                                      }
+                                                                      className="flex flex-row justify-center items-center gap-2"
+                                                                    >
+                                                                      <a
+                                                                        href={
+                                                                          doc
+                                                                            .file
+                                                                            .url
+                                                                        }
+                                                                        target="_blank"
+                                                                        className="text-xs"
+                                                                      >
+                                                                        <div
+                                                                          className="flex flex-row items-center border px-4 py-2 gap-1 rounded-md bg-gray-100 hover:border-gray-300"
+                                                                          key={
+                                                                            index
+                                                                          }
+                                                                        >
+                                                                          <Files
+                                                                            size={
+                                                                              16
+                                                                            }
+                                                                          />
+                                                                          {
+                                                                            doc
+                                                                              .file
+                                                                              .name
+                                                                          }
+                                                                        </div>
+                                                                      </a>
+                                                                      <button
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                          handleDeleteDependentDocument(
+                                                                            dependent.id,
+                                                                            doc.id
+                                                                          )
+                                                                        }
+                                                                        className="text-xs text-red-700 cursor-pointer flex flex-row items-center justify-start gap-1 mt-1 px-2 py-1 rounded hover:bg-red-100"
+                                                                      >
+                                                                        <X
+                                                                          size={
+                                                                            12
+                                                                          }
+                                                                        />{" "}
+                                                                        Delete
+                                                                      </button>
+                                                                    </div>
+                                                                  </>
+                                                                );
+                                                              }
+                                                            }
+                                                          )}
+                                                        </div>
+                                                      </InputLine>
+                                                    )}
+                                                </Scope>
+                                              );
+                                            }
+                                          )}
                                       </Scope>
                                     );
                                   }
                                 }
                               )}
-                              <button
-                                type="button"
-                                onClick={() => handleAddDependent()}
-                                className="bg-slate-100 border ml-6 py-1 px-2 text-xs flex flex-row justify-center items-center gap-2 rounded-md transition-all hover:border-primary hover:text-primary"
-                              >
-                                <PlusCircle size={16} /> Dependent
-                              </button>
+                              {pageData.lastActiveMenu &&
+                                pageData.lastActiveMenu.order < 7 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAddDependent()}
+                                    className="bg-slate-100 border ml-6 py-2 px-2 text-xs flex flex-row justify-center items-center gap-2 rounded-md transition-all hover:border-primary hover:text-primary"
+                                  >
+                                    <PlusCircle size={16} /> Add Dependent
+                                  </button>
+                                )}
                             </>
                           )}
                         </InputLineGroup>
@@ -1422,8 +1805,17 @@ export default function EnrollmentOutside({
                                             <InputLine title='Affidavit of Support'> */}
                             <SelectPopover
                               name="need_sponsorship"
-                              onChange={(el) => handleHasSponsors(el)}
+                              onChange={(el) =>
+                                pageData.lastActiveMenu &&
+                                pageData.lastActiveMenu.order < 7
+                                  ? handleHasSponsors(el)
+                                  : null
+                              }
                               required
+                              disabled={
+                                pageData.lastActiveMenu &&
+                                pageData.lastActiveMenu.order < 7
+                              }
                               grow
                               title="Do you need sponsorship?"
                               options={sponsorshipOptions}
@@ -1451,11 +1843,24 @@ export default function EnrollmentOutside({
                                         <InputLine
                                           title={`Sponsor ${index + 1}`}
                                         >
-                                          {index ? (
+                                          <Input
+                                            type="hidden"
+                                            name="id"
+                                            defaultValue={sponsor.id}
+                                            InputContext={InputContext}
+                                          />
+                                          {pageData.lastActiveMenu.order < 7 &&
+                                          index > 0 &&
+                                          index ===
+                                            pageData.enrollmentsponsors.length -
+                                              1 ? (
                                             <button
                                               type="button"
                                               onClick={() =>
-                                                handleRemoveSponsor(index)
+                                                handleRemoveSponsor(
+                                                  index,
+                                                  sponsor.id
+                                                )
                                               }
                                             >
                                               <Trash
@@ -1515,13 +1920,16 @@ export default function EnrollmentOutside({
                                     );
                                   }
                                 )}
-                              <button
-                                type="button"
-                                onClick={() => handleAddSponsor()}
-                                className="bg-slate-100 border ml-6 py-1 px-2 text-xs flex flex-row justify-center items-center gap-2 rounded-md transition-all hover:border-primary hover:text-primary"
-                              >
-                                <PlusCircle size={16} /> Sponsor
-                              </button>
+                              {pageData.lastActiveMenu &&
+                                pageData.lastActiveMenu.order < 7 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAddSponsor()}
+                                    className="bg-slate-100 border ml-6 py-1 px-2 text-xs flex flex-row justify-center items-center gap-2 rounded-md transition-all hover:border-primary hover:text-primary"
+                                  >
+                                    <PlusCircle size={16} /> Sponsor
+                                  </button>
+                                )}
                             </>
                           )}
                         </InputLineGroup>
@@ -1640,17 +2048,26 @@ export default function EnrollmentOutside({
                           <InputLine title="Student Signature">
                             {pageData.contracts &&
                               pageData.contracts.length > 0 && (
-                                <PDFViewer
-                                  download={true}
-                                  file={{
-                                    url: pageData.contracts.find(
-                                      (contract) =>
-                                        contract.file.document.subtype ===
-                                        "F1 Contract"
-                                    ).file.url,
-                                  }}
-                                  height={450}
-                                />
+                                <div className="flex flex-col gap-2">
+                                  <PDFViewer
+                                    download={true}
+                                    file={{
+                                      url: pageData.contracts.find(
+                                        (contract) =>
+                                          contract.file.document.subtype ===
+                                          "F1 Contract"
+                                      ).file.url,
+                                    }}
+                                    height={450}
+                                  />
+                                  <CheckboxInput
+                                    name="agreement"
+                                    required={true}
+                                    title="I agree to the terms and conditions above"
+                                    InputContext={InputContext}
+                                    grow
+                                  />
+                                </div>
                               )}
                             <div className="flex flex-1 flex-col items-start justify-start">
                               <div

@@ -22,7 +22,7 @@ import {
 } from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import DatePicker from "~/components/RegisterForm/DatePicker";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSearchParams } from "react-router-dom";
 import { Scope } from "@unform/core";
@@ -176,30 +176,33 @@ export default function TransferDSOOutside({
         return;
       }
 
-      const signature = signatureRef.current.toDataURL();
+      if (signatureRef && signatureRef.current) {
+        const signature = signatureRef.current.toDataURL();
 
-      const fileUuid = uuidv4();
-      const storage = getStorage(app);
-      const local = "Enrollments/Signatures/" + fileUuid + ".png";
-      const imageRef = ref(storage, local);
-      await uploadString(imageRef, signature.substring(22), "base64").then(
-        async (snapshot) => {
-          await getDownloadURL(snapshot.ref).then(async (downloadURL) => {
-            await api.post(`/enrollmentdsosignature`, {
-              enrollment_id: id,
-              files: {
-                url: downloadURL,
-                name: fileUuid + ".png",
-                size: signature.length,
-                key: fileUuid + ".png",
-              },
+        const fileUuid = uuidv4();
+        const storage = getStorage(app);
+        const local = "Enrollments/Signatures/" + fileUuid + ".png";
+        const imageRef = ref(storage, local);
+        await uploadString(imageRef, signature.substring(22), "base64").then(
+          async (snapshot) => {
+            await getDownloadURL(snapshot.ref).then(async (downloadURL) => {
+              await api.post(`/enrollmentdsosignature`, {
+                enrollment_id: id,
+                files: {
+                  url: downloadURL,
+                  name: fileUuid + ".png",
+                  size: signature.length,
+                  key: fileUuid + ".png",
+                },
+              });
             });
-          });
-        }
-      );
+          }
+        );
+      }
       await api.put(`/outside/enrollments/${id}`, {
         activeMenu: pageData.activeMenu,
         lastActiveMenu: pageData.lastActiveMenu,
+        ...data,
       });
       setPageData({ ...pageData, loaded: false });
       setSuccessfullyUpdated(true);
@@ -258,42 +261,42 @@ export default function TransferDSOOutside({
             </RegisterFormMenu>
           </div>
           <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
-            <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll h-full">
-              <Form
-                ref={generalForm}
-                onSubmit={handleGeneralFormSubmit}
-                className="w-full h-full"
-              >
-                <InputContext.Provider
-                  value={{
-                    id,
-                    generalForm,
-                    setSuccessfullyUpdated,
-                    fullscreen,
-                    setFullscreen,
-                    successfullyUpdated,
-                    handleCloseForm,
-                    handleInactivate,
-                    handleOutsideMail: null,
-                    canceled: pageData.canceled_at,
-                  }}
+            <InputContext.Provider
+              value={{
+                id,
+                generalForm,
+                setSuccessfullyUpdated,
+                fullscreen,
+                setFullscreen,
+                successfullyUpdated,
+                handleCloseForm,
+                handleInactivate,
+                handleOutsideMail: null,
+                canceled: pageData.canceled_at,
+              }}
+            >
+              <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll h-full">
+                <Form
+                  ref={generalForm}
+                  onSubmit={handleGeneralFormSubmit}
+                  className="w-full"
                 >
+                  <FormHeader
+                    saveText="Save & Continue"
+                    outside={!searchparams.has("activeMenu")}
+                    loading={loading}
+                    access={access}
+                    title={
+                      pageData.students.name +
+                      " " +
+                      pageData.students.last_name +
+                      " - Enrollment Process - Transfer Eligibility"
+                    }
+                    registry={registry}
+                    InputContext={InputContext}
+                  />
                   {pageData.loaded ? (
                     <>
-                      <FormHeader
-                        saveText="Save & Continue"
-                        outside={!searchparams.has("activeMenu")}
-                        loading={loading}
-                        access={access}
-                        title={
-                          pageData.students.name +
-                          " " +
-                          pageData.students.last_name +
-                          " - Enrollment Process - Transfer Eligibility"
-                        }
-                        registry={registry}
-                        InputContext={InputContext}
-                      />
                       {pageData.activeMenu === "transfer-dso" && (
                         <InputLineGroup
                           title="Student Information"
@@ -617,8 +620,8 @@ export default function TransferDSOOutside({
                                 InputContext={InputContext}
                               />
                             </InputLine>
-                            {!searchparams.has("activeMenu") && (
-                              <InputLine title={`DSO's Signature`}>
+                            {!pageData.enrollmenttransfers.dsosignature ? (
+                              <InputLine title="DSO Signature">
                                 <div className="flex flex-1 flex-col items-start justify-start">
                                   <div
                                     onClick={() =>
@@ -644,6 +647,36 @@ export default function TransferDSOOutside({
                                       Clear Signature
                                     </button>
                                   </div>
+                                </div>
+                              </InputLine>
+                            ) : (
+                              <InputLine title="DSO Signature">
+                                <div className="flex flex-1 flex-col items-start justify-start">
+                                  <img
+                                    src={
+                                      pageData.enrollmenttransfers.dsosignature
+                                        .url
+                                    }
+                                    className="border w-96"
+                                  />
+                                  <p className="text-xs p-2 border border-t-0 rounded-b-md bg-slate-100 w-96">
+                                    Signed:{" "}
+                                    {format(
+                                      parseISO(
+                                        pageData.enrollmenttransfers
+                                          .dsosignature.created_at
+                                      ),
+                                      "MMM do, yyyy"
+                                    )}{" "}
+                                    at{" "}
+                                    {format(
+                                      parseISO(
+                                        pageData.enrollmenttransfers
+                                          .dsosignature.created_at
+                                      ),
+                                      "HH:mm"
+                                    )}
+                                  </p>
                                 </div>
                               </InputLine>
                             )}
@@ -672,9 +705,9 @@ export default function TransferDSOOutside({
                   ) : (
                     <FormLoading />
                   )}
-                </InputContext.Provider>
-              </Form>
-            </div>
+                </Form>
+              </div>
+            </InputContext.Provider>
           </div>
         </div>
       ) : null}

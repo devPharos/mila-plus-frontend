@@ -165,6 +165,7 @@ export default function EnrollmentOutside({
   ];
 
   const menus = [
+    { order: 0, name: "transfer-request" },
     { order: 0, name: "transfer-agent" },
     { order: 1, name: "student-information" },
     { order: 2, name: "emergency-contact" },
@@ -315,34 +316,21 @@ export default function EnrollmentOutside({
             canceled_at,
           });
           setRegistry(registries);
-          if (searchparams.has("activeMenu")) {
-            setPageData({
-              ...data,
-              documents,
-              dependentDocuments,
-              contracts: filialData.filialdocuments,
-              loaded: true,
-              activeMenu: searchparams.get("activeMenu"),
-              lastActiveMenu: menus.find(
-                (menu) => menu.name === searchparams.get("activeMenu")
-              ),
-            });
-          } else {
-            setPageData({
-              ...data,
-              documents,
-              dependentDocuments,
-              contracts: filialData.filialdocuments,
-              loaded: true,
-              activeMenu:
-                data.form_step === "transfer-agent"
-                  ? "student-information"
-                  : data.form_step,
-              lastActiveMenu: menus.find(
-                (menu) => menu.name === data.form_step
-              ),
-            });
-          }
+          setPageData({
+            ...data,
+            documents,
+            dependentDocuments,
+            contracts: filialData.filialdocuments,
+            loaded: true,
+            activeMenu: searchparams.has("activeMenu")
+              ? searchparams.get("activeMenu")
+              : data.form_step === "transfer-agent"
+              ? "student-information"
+              : data.form_step,
+            lastActiveMenu: searchparams.has("activeMenu")
+              ? searchparams.get("activeMenu")
+              : menus.find((menu) => menu.name === data.form_step),
+          });
         } catch (err) {
           if (err.response && err.response.data && err.response.data.error) {
             toast(err.response.data.error, { type: "error", autoClose: 3000 });
@@ -902,7 +890,7 @@ export default function EnrollmentOutside({
             <RegisterFormMenu
               disabled={false}
               setActiveMenu={() =>
-                setPageData({ ...pageData, activeMenu: menus[1].name })
+                setPageData({ ...pageData, activeMenu: menus[2].name })
               }
               activeMenu={pageData.activeMenu}
               name="student-information"
@@ -916,7 +904,7 @@ export default function EnrollmentOutside({
                 !searchparams.has("activeMenu")
               }
               setActiveMenu={() =>
-                setPageData({ ...pageData, activeMenu: menus[2].name })
+                setPageData({ ...pageData, activeMenu: menus[3].name })
               }
               activeMenu={pageData.activeMenu}
               name="emergency-contact"
@@ -930,7 +918,7 @@ export default function EnrollmentOutside({
                 !searchparams.has("activeMenu")
               }
               setActiveMenu={() =>
-                setPageData({ ...pageData, activeMenu: menus[3].name })
+                setPageData({ ...pageData, activeMenu: menus[4].name })
               }
               activeMenu={pageData.activeMenu}
               name="enrollment-information"
@@ -944,7 +932,7 @@ export default function EnrollmentOutside({
                 !searchparams.has("activeMenu")
               }
               setActiveMenu={() =>
-                setPageData({ ...pageData, activeMenu: menus[4].name })
+                setPageData({ ...pageData, activeMenu: menus[5].name })
               }
               activeMenu={pageData.activeMenu}
               name="dependent-information"
@@ -958,7 +946,7 @@ export default function EnrollmentOutside({
                 !searchparams.has("activeMenu")
               }
               setActiveMenu={() =>
-                setPageData({ ...pageData, activeMenu: menus[5].name })
+                setPageData({ ...pageData, activeMenu: menus[6].name })
               }
               activeMenu={pageData.activeMenu}
               name="affidavit-of-support"
@@ -972,7 +960,7 @@ export default function EnrollmentOutside({
                 !searchparams.has("activeMenu")
               }
               setActiveMenu={() =>
-                setPageData({ ...pageData, activeMenu: menus[6].name })
+                setPageData({ ...pageData, activeMenu: menus[7].name })
               }
               activeMenu={pageData.activeMenu}
               name="documents-upload"
@@ -986,7 +974,7 @@ export default function EnrollmentOutside({
                 !searchparams.has("activeMenu")
               }
               setActiveMenu={() =>
-                setPageData({ ...pageData, activeMenu: menus[7].name })
+                setPageData({ ...pageData, activeMenu: menus[8].name })
               }
               activeMenu={pageData.activeMenu}
               name="student-signature"
@@ -1001,7 +989,7 @@ export default function EnrollmentOutside({
               }
               setActiveMenu={
                 () => null
-                // setPageData({ ...pageData, activeMenu: menus[8].name })
+                // setPageData({ ...pageData, activeMenu: menus[9].name })
               }
               activeMenu={pageData.activeMenu}
               name="sponsor-signature"
@@ -1010,47 +998,47 @@ export default function EnrollmentOutside({
             </RegisterFormMenu>
           </div>
           <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
-            <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll h-full">
-              <Form
-                ref={generalForm}
-                onSubmit={handleGeneralFormSubmit}
-                className="w-full h-full"
-              >
-                <InputContext.Provider
-                  value={{
-                    id,
-                    generalForm,
-                    setSuccessfullyUpdated,
-                    fullscreen,
-                    setFullscreen,
-                    successfullyUpdated,
-                    handleCloseForm,
-                    handleInactivate,
-                    handleOutsideMail: null,
-                    canceled: pageData.canceled_at,
-                  }}
+            <InputContext.Provider
+              value={{
+                id,
+                generalForm,
+                setSuccessfullyUpdated,
+                fullscreen,
+                setFullscreen,
+                successfullyUpdated,
+                handleCloseForm,
+                handleInactivate,
+                handleOutsideMail: null,
+                canceled: pageData.canceled_at,
+              }}
+            >
+              <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll h-full">
+                <Form
+                  ref={generalForm}
+                  onSubmit={handleGeneralFormSubmit}
+                  className="w-full"
                 >
+                  <FormHeader
+                    saveText="Save & Continue"
+                    outside={true}
+                    loading={loading}
+                    access={{
+                      view: true,
+                      edit: true,
+                      create: true,
+                      inactivate: true,
+                    }}
+                    title={
+                      pageData.students.name +
+                      " " +
+                      pageData.students.last_name +
+                      " - Enrollment Process"
+                    }
+                    registry={registry}
+                    InputContext={InputContext}
+                  />
                   {pageData.loaded ? (
                     <>
-                      <FormHeader
-                        saveText="Save & Continue"
-                        outside={true}
-                        loading={loading}
-                        access={{
-                          view: true,
-                          edit: true,
-                          create: true,
-                          inactivate: true,
-                        }}
-                        title={
-                          pageData.students.name +
-                          " " +
-                          pageData.students.last_name +
-                          " - Enrollment Process"
-                        }
-                        registry={registry}
-                        InputContext={InputContext}
-                      />
                       {pageData.activeMenu === "student-information" && (
                         <InputLineGroup
                           title="Student Information"
@@ -1475,6 +1463,7 @@ export default function EnrollmentOutside({
                           }
                         >
                           <InputLine title="Dependent Information">
+                            {console.log(pageData.lastActiveMenu)}
                             <SelectPopover
                               name="has_dependents"
                               required
@@ -1487,7 +1476,7 @@ export default function EnrollmentOutside({
                               grow
                               disabled={
                                 pageData.lastActiveMenu &&
-                                pageData.lastActiveMenu.order < 7
+                                pageData.lastActiveMenu.order > 7
                               }
                               title="Do you have dependents?"
                               options={yesOrNoOptions}
@@ -1814,19 +1803,15 @@ export default function EnrollmentOutside({
                               required
                               disabled={
                                 pageData.lastActiveMenu &&
-                                pageData.lastActiveMenu.order < 7
+                                pageData.lastActiveMenu.order > 7
                               }
                               grow
                               title="Do you need sponsorship?"
                               options={sponsorshipOptions}
-                              defaultValue={
-                                pageData.need_sponsorship
-                                  ? sponsorshipOptions.find(
-                                      (type) =>
-                                        type.value === pageData.need_sponsorship
-                                    )
-                                  : null
-                              }
+                              defaultValue={sponsorshipOptions.find(
+                                (type) =>
+                                  type.value === pageData.need_sponsorship
+                              )}
                               InputContext={InputContext}
                             />
                           </InputLine>
@@ -2045,58 +2030,80 @@ export default function EnrollmentOutside({
                             pageData.activeMenu === "student-signature"
                           }
                         >
-                          <InputLine title="Student Signature">
-                            {pageData.contracts &&
-                              pageData.contracts.length > 0 && (
-                                <div className="flex flex-col gap-2">
-                                  <PDFViewer
-                                    download={true}
-                                    file={{
-                                      url: pageData.contracts.find(
-                                        (contract) =>
-                                          contract.file.document.subtype ===
-                                          "F1 Contract"
-                                      ).file.url,
+                          {!pageData.signature ? (
+                            <InputLine title="Student Signature">
+                              {pageData.contracts &&
+                                pageData.contracts.length > 0 && (
+                                  <div className="flex flex-col gap-2">
+                                    <PDFViewer
+                                      download={true}
+                                      file={{
+                                        url: pageData.contracts.find(
+                                          (contract) =>
+                                            contract.file.document.subtype ===
+                                            "F1 Contract"
+                                        ).file.url,
+                                      }}
+                                      height={450}
+                                    />
+                                    <CheckboxInput
+                                      name="agreement"
+                                      required={true}
+                                      title="I agree to the terms and conditions above"
+                                      InputContext={InputContext}
+                                      grow
+                                    />
+                                  </div>
+                                )}
+                              <div className="flex flex-1 flex-col items-start justify-start">
+                                <div
+                                  onClick={() => setSuccessfullyUpdated(false)}
+                                  className="h-[19rem] w-[36rem] gap-2 border rounded"
+                                >
+                                  <SignaturePad
+                                    redrawOnResize
+                                    ref={signatureRef}
+                                    options={{
+                                      backgroundColor: "#FFF",
+                                      penColor: "#111",
                                     }}
-                                    height={450}
-                                  />
-                                  <CheckboxInput
-                                    name="agreement"
-                                    required={true}
-                                    title="I agree to the terms and conditions above"
-                                    InputContext={InputContext}
-                                    grow
                                   />
                                 </div>
-                              )}
-                            <div className="flex flex-1 flex-col items-start justify-start">
-                              <div
-                                onClick={() => setSuccessfullyUpdated(false)}
-                                className="h-[19rem] w-[36rem] gap-2 border rounded"
-                              >
-                                <SignaturePad
-                                  redrawOnResize
-                                  ref={signatureRef}
-                                  options={{
-                                    backgroundColor: "#FFF",
-                                    penColor: "#111",
-                                  }}
+                                <div className="flex flex-1 flex-row items-center justify-start gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={handleClearSignature}
+                                    className="bg-primary text-white rounded-md py-4 px-8 my-2 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1"
+                                  >
+                                    Clear Signature
+                                  </button>
+                                </div>
+                              </div>
+                            </InputLine>
+                          ) : (
+                            <InputLine title="Student Signature">
+                              <div className="flex flex-1 flex-col items-start justify-start">
+                                <img
+                                  src={pageData.signature.url}
+                                  className="border w-96"
                                 />
+                                <p className="text-xs p-2 border border-t-0 rounded-b-md bg-slate-100 w-96">
+                                  Signed:{" "}
+                                  {format(
+                                    parseISO(pageData.signature.created_at),
+                                    "MMM do, yyyy"
+                                  )}{" "}
+                                  at{" "}
+                                  {format(
+                                    parseISO(pageData.signature.created_at),
+                                    "HH:mm"
+                                  )}
+                                </p>
                               </div>
-                              <div className="flex flex-1 flex-row items-center justify-start gap-2">
-                                <button
-                                  type="button"
-                                  onClick={handleClearSignature}
-                                  className="bg-primary text-white rounded-md py-4 px-8 my-2 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1"
-                                >
-                                  Clear Signature
-                                </button>
-                              </div>
-                            </div>
-                          </InputLine>
+                            </InputLine>
+                          )}
                         </InputLineGroup>
                       )}
-                      {console.log(pageData.activeMenu)}
                       {(pageData.activeMenu === "sponsor-signature" ||
                         pageData.activeMenu === "finished") && (
                         <InputLineGroup
@@ -2125,9 +2132,9 @@ export default function EnrollmentOutside({
                   ) : (
                     <FormLoading />
                   )}
-                </InputContext.Provider>
-              </Form>
-            </div>
+                </Form>
+              </div>
+            </InputContext.Provider>
           </div>
         </div>
       ) : null}

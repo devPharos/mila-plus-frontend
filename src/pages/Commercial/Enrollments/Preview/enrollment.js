@@ -633,40 +633,43 @@ export default function EnrollmentOutside({
   function handleInactivate() {}
 
   async function handleHasDependents(el) {
-    let newDependent = null;
-    function resetDependents() {
-      const promises = [];
-      promises.push(
-        pageData.enrollmentdependents.map((dependent, index) => {
-          // console.log(dependent);
+    if (pageData.has_dependents === el.value) {
+      return;
+    }
+    const promisesReset = [];
+    promisesReset.push(
+      pageData.enrollmentdependents.map((dependent, index) => {
+        if (dependent) {
           return handleRemoveDependent(index, dependent.id);
-        })
-      );
-      Promise.all(promises).then(() => {
-        return;
-      });
-    }
-    const promises = [];
-    if (el.value === false) {
-      setSuccessfullyUpdated(false);
-      promises.push(resetDependents());
-    } else {
-      if (pageData.enrollmentdependents.length > 0) {
-        promises.push(resetDependents());
+        }
+      })
+    );
+    Promise.all(promisesReset).then(async () => {
+      const promises = [];
+      if (el.value === false) {
+        setSuccessfullyUpdated(false);
+        setPageData({
+          ...pageData,
+          has_dependents: el.value,
+          enrollmentdependents: [],
+        });
+      } else {
+        setSuccessfullyUpdated(true);
+        await handleCreateDependent().then((newDependent) => {
+          setPageData({
+            ...pageData,
+            has_dependents: el.value,
+            enrollmentdependents: [newDependent],
+          });
+        });
       }
-      setSuccessfullyUpdated(true);
-      promises.push((newDependent = await handleCreateDependent()));
-    }
-    Promise.all(promises).then(() => {
-      setPageData({
-        ...pageData,
-        has_dependents: el.value,
-        enrollmentdependents: el.value ? [newDependent] : [],
-      });
     });
   }
 
   async function handleHasSponsors(el) {
+    if (pageData.need_sponsorship === el.value) {
+      return;
+    }
     let newSponsor = null;
     const promises = [];
     function resetSponsors() {
@@ -704,17 +707,11 @@ export default function EnrollmentOutside({
     try {
       const { data } = await api.post(`/enrollmentdependent`, {
         enrollment_id: id,
-        name: null,
-        relationship_type: null,
-        gender: null,
-        dept1_type: null,
-        email: null,
-        phone: null,
       });
       return data;
     } catch (err) {
       console.log({ err });
-      toast(err.response.data.error, { type: "error", autoClose: 3000 });
+      // toast(err.response.data.error, { type: "error", autoClose: 3000 });
       return null;
     }
   }
@@ -1490,7 +1487,7 @@ export default function EnrollmentOutside({
                             <>
                               {pageData.enrollmentdependents.map(
                                 (dependent, index) => {
-                                  if (dependent.id !== 1) {
+                                  if (dependent && dependent.id !== 1) {
                                     return (
                                       <Scope
                                         key={index}
@@ -1820,89 +1817,93 @@ export default function EnrollmentOutside({
                               {pageData.enrollmentsponsors &&
                                 pageData.enrollmentsponsors.map(
                                   (sponsor, index) => {
-                                    return (
-                                      <Scope
-                                        key={index}
-                                        path={`enrollmentsponsors[${index}]`}
-                                      >
-                                        <InputLine
-                                          title={`Sponsor ${index + 1}`}
+                                    if (sponsor) {
+                                      return (
+                                        <Scope
+                                          key={index}
+                                          path={`enrollmentsponsors[${index}]`}
                                         >
-                                          <Input
-                                            type="hidden"
-                                            name="id"
-                                            defaultValue={sponsor.id}
-                                            InputContext={InputContext}
-                                          />
-                                          {pageData.lastActiveMenu.order < 7 &&
-                                          index > 0 &&
-                                          index ===
-                                            pageData.enrollmentsponsors.length -
-                                              1 ? (
-                                            <button
-                                              type="button"
-                                              onClick={() =>
-                                                handleRemoveSponsor(
-                                                  index,
-                                                  sponsor.id
-                                                )
+                                          <InputLine
+                                            title={`Sponsor ${index + 1}`}
+                                          >
+                                            <Input
+                                              type="hidden"
+                                              name="id"
+                                              defaultValue={sponsor.id}
+                                              InputContext={InputContext}
+                                            />
+                                            {pageData.lastActiveMenu.order <
+                                              7 &&
+                                            index > 0 &&
+                                            index ===
+                                              pageData.enrollmentsponsors
+                                                .length -
+                                                1 ? (
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  handleRemoveSponsor(
+                                                    index,
+                                                    sponsor.id
+                                                  )
+                                                }
+                                              >
+                                                <Trash
+                                                  size={14}
+                                                  className="mt-4"
+                                                />
+                                              </button>
+                                            ) : null}
+                                            <Input
+                                              type="text"
+                                              name="name"
+                                              required
+                                              grow
+                                              title="Full Name"
+                                              defaultValue={sponsor.name}
+                                              InputContext={InputContext}
+                                            />
+                                            <SelectPopover
+                                              name="relationship_type"
+                                              required
+                                              grow
+                                              title="Relationship Type"
+                                              options={
+                                                sponsorRelationshipTypeOptions
                                               }
-                                            >
-                                              <Trash
-                                                size={14}
-                                                className="mt-4"
-                                              />
-                                            </button>
-                                          ) : null}
-                                          <Input
-                                            type="text"
-                                            name="name"
-                                            required
-                                            grow
-                                            title="Full Name"
-                                            defaultValue={sponsor.name}
-                                            InputContext={InputContext}
-                                          />
-                                          <SelectPopover
-                                            name="relationship_type"
-                                            required
-                                            grow
-                                            title="Relationship Type"
-                                            options={
-                                              sponsorRelationshipTypeOptions
-                                            }
-                                            isSearchable
-                                            defaultValue={sponsorRelationshipTypeOptions.find(
-                                              (relationshipType) =>
-                                                relationshipType.value ===
-                                                sponsor.relationship_type
-                                            )}
-                                            InputContext={InputContext}
-                                          />
-                                          {/* </InputLine>
+                                              isSearchable
+                                              defaultValue={sponsorRelationshipTypeOptions.find(
+                                                (relationshipType) =>
+                                                  relationshipType.value ===
+                                                  sponsor.relationship_type
+                                              )}
+                                              InputContext={InputContext}
+                                            />
+                                            {/* </InputLine>
                                                         <InputLine> */}
-                                          <Input
-                                            type="text"
-                                            name="email"
-                                            required
-                                            grow
-                                            title="E-mail"
-                                            defaultValue={sponsor.email}
-                                            InputContext={InputContext}
-                                          />
-                                          <Input
-                                            type="text"
-                                            name="phone"
-                                            required
-                                            grow
-                                            title="Phone Number"
-                                            isPhoneNumber
-                                            defaultValue={sponsor.phone}
-                                            InputContext={InputContext}
-                                          />
-                                        </InputLine>
-                                      </Scope>
-                                    );
+                                            <Input
+                                              type="text"
+                                              name="email"
+                                              required
+                                              grow
+                                              title="E-mail"
+                                              defaultValue={sponsor.email}
+                                              InputContext={InputContext}
+                                            />
+                                            <Input
+                                              type="text"
+                                              name="phone"
+                                              required
+                                              grow
+                                              title="Phone Number"
+                                              isPhoneNumber
+                                              defaultValue={sponsor.phone}
+                                              InputContext={InputContext}
+                                            />
+                                          </InputLine>
+                                        </Scope>
+                                      );
+                                    }
                                   }
                                 )}
                               {pageData.lastActiveMenu &&

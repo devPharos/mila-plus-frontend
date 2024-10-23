@@ -183,7 +183,7 @@ export default function PagePreview({
                 <Building size={16} /> Timeline
               </RegisterFormMenu>
               <NavLink
-                to={`/fill-form/Transfer?crypt=${id}&activeMenu=transfer-request`}
+                to={`/fill-form/Transfer?crypt=${id}`}
                 target="_blank"
                 className="w-full"
               >
@@ -196,7 +196,7 @@ export default function PagePreview({
                 </RegisterFormMenu>
               </NavLink>
               <NavLink
-                to={`/fill-form/Enrollment?crypt=${id}&activeMenu=student-information`}
+                to={`/fill-form/Enrollment?crypt=${id}`}
                 target="_blank"
                 className="w-full"
               >

@@ -94,6 +94,7 @@ export default function TransferDSOOutside({
   const menus = [
     { order: 1, name: "transfer-dso" },
     { order: 2, name: "transfer-agent" },
+    { order: 2, name: "finished" },
   ];
 
   useEffect(() => {

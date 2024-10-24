@@ -31,13 +31,13 @@ export default function PagePreview({
   setSuccessfullyUpdated,
 }) {
   const [pageData, setPageData] = useState({
-    father_id: null,
-    name: "",
-    code: "",
-    Father: {
+    loaded: false,
+    bank_name: "",
+    bank_alias: "",
+    company_id: null,
+    company: {
       name: "",
     },
-    loaded: false,
   });
 
   const [registry, setRegistry] = useState({
@@ -51,13 +51,9 @@ export default function PagePreview({
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
-  const [chartOfAccountsOptions, setChartOfAccountsOptions] = useState([]);
+  const [companyOptions, setCompanyOptions] = useState([]);
+
   const generalForm = useRef();
-  const visibilityOptions = [
-    { value: "All", label: "All" },
-    { value: "Filial Only", label: "Filial Only" },
-    { value: "Holding Only", label: "Holding Only" },
-  ];
 
   function handleCloseForm() {
     if (!successfullyUpdated) {
@@ -77,7 +73,6 @@ export default function PagePreview({
     }
     if (id === "new") {
       try {
-        // console.log(data)
         const response = await api.post(`/bank`, data);
         setOpened(response.data.id);
         setPageData({ ...pageData, ...data });
@@ -136,20 +131,12 @@ export default function PagePreview({
     }
     async function getDefaultOptions() {
       try {
-        const { data } = await api.get(`bank`);
-        const chartsOfAccounts = data
-          .filter((f) => f.id !== id)
-          .map(({ id: chartId, name, code, Father }) => {
-            let chartName = "";
-            if (Father) {
-              if (Father.Father) {
-                chartName += Father.Father.name + " > ";
-              }
-              chartName += Father.name + " > ";
-            }
-            return { value: chartId, label: chartName + name };
-          });
-        setChartOfAccountsOptions(chartsOfAccounts);
+        const { data } = await api.get(`/companies`);
+        const companyOptions = data.filter((f) => f.id !== id).map((f) => {
+          return { value: f.id, label: f.name };
+        });
+
+        setCompanyOptions(companyOptions);
       } catch (err) {
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
@@ -226,55 +213,38 @@ export default function PagePreview({
                           activeMenu={activeMenu === "general"}
                         >
                           <InputLine title="General Data">
-                            <SelectPopover
+                            <Input
                               type="text"
-                              isSearchable
-                              name="father_id"
+                              name="bank_name"
                               required
-                              title="Father Account"
-                              options={chartOfAccountsOptions}
+                              title="Bank Name"
                               grow
-                              defaultValue={
-                                pageData.father_id
-                                  ? {
-                                      value: pageData.father_id,
-                                      label:
-                                        pageData.Father.code.length === 2
-                                          ? pageData.Father.name
-                                          : pageData.code.substring(0, 2) ===
-                                              "01"
-                                            ? "Receipts > " +
-                                              pageData.Father.name
-                                            : "Expenses > " +
-                                              pageData.Father.name +
-                                              pageData.Father.Father.name,
-                                    }
-                                  : null
-                              }
+                              defaultValue={pageData.bank_name}
                               InputContext={InputContext}
                             />
                             <Input
                               type="text"
-                              name="name"
+                              name="bank_alias"
                               required
-                              title="Name"
+                              title="Bank Alias"
                               grow
-                              defaultValue={pageData.name}
+                              defaultValue={pageData.bank_alias}
                               InputContext={InputContext}
                             />
                             <SelectPopover
                               type="text"
                               isSearchable
-                              name="visibility"
+                              name="company_id"
                               required
-                              title="Visibility"
-                              options={visibilityOptions}
+                              title="Company"
+                              options={companyOptions}
                               grow
                               defaultValue={
-                                pageData.visibility
-                                  ? visibilityOptions.find(
-                                      (f) => f.value === pageData.visibility,
-                                    )
+                                pageData.company_id
+                                  ? {
+                                      value: pageData.company_id,
+                                      label: pageData.company.name,
+                                    }
                                   : null
                               }
                               InputContext={InputContext}

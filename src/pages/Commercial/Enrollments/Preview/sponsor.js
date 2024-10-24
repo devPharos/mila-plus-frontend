@@ -382,43 +382,42 @@ export default function SponsorOutside({
             </RegisterFormMenu>
           </div>
           <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
-            <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll h-full">
-              <Form
-                ref={generalForm}
-                onSubmit={handleGeneralFormSubmit}
-                className="w-full h-full"
-              >
-                <InputContext.Provider
-                  value={{
-                    id,
-                    generalForm,
-                    setSuccessfullyUpdated: () => null,
-                    fullscreen,
-                    setFullscreen,
-                    successfullyUpdated,
-                    handleCloseForm,
-                    handleInactivate,
-                    handleOutsideMail,
-                    canceled: pageData.canceled_at,
-                  }}
+            <InputContext.Provider
+              value={{
+                id,
+                generalForm,
+                setSuccessfullyUpdated: () => null,
+                fullscreen,
+                setFullscreen,
+                successfullyUpdated,
+                handleCloseForm,
+                handleInactivate,
+                handleOutsideMail,
+                canceled: pageData.canceled_at,
+              }}
+            >
+              <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll h-full">
+                <Form
+                  ref={generalForm}
+                  onSubmit={handleGeneralFormSubmit}
+                  className="w-full"
                 >
+                  <FormHeader
+                    saveText="Save & Continue"
+                    outside
+                    loading={loading}
+                    access={access}
+                    title={
+                      pageData.students.name +
+                      " " +
+                      pageData.students.last_name +
+                      " - Enrollment Process"
+                    }
+                    registry={registry}
+                    InputContext={InputContext}
+                  />
                   {pageData.loaded ? (
                     <>
-                      <FormHeader
-                        saveText="Save & Continue"
-                        outside
-                        loading={loading}
-                        access={access}
-                        title={
-                          pageData.students.name +
-                          " " +
-                          pageData.students.last_name +
-                          " - Enrollment Process"
-                        }
-                        registry={registry}
-                        InputContext={InputContext}
-                      />
-
                       {pageData.activeMenu === "sponsor-signature" ? (
                         <InputLineGroup
                           title="Sponsor Signature"
@@ -738,46 +737,78 @@ export default function SponsorOutside({
                                 </Scope>
                               );
                             })}
-                          <InputLine title="Sponsor Signature">
-                            <PDFViewer
-                              download={true}
-                              pageNumber={5}
-                              onlyOnePage={true}
-                              file={{
-                                url:
-                                  pageData.contracts.find(
-                                    (contract) =>
-                                      contract.file.document.subtype ===
-                                      "F1 Contract"
-                                  ).file.url + "#page=5",
-                              }}
-                              height={450}
-                            />
-                            <div className="flex flex-1 flex-col items-start justify-start">
-                              <div
-                                onClick={handleSignature}
-                                className="h-[19rem] w-[36rem] gap-2 border rounded"
-                              >
-                                <SignaturePad
-                                  redrawOnResize
-                                  ref={signatureRef}
-                                  options={{
-                                    backgroundColor: "#FFF",
-                                    penColor: "#111",
-                                  }}
+                          {pageData.enrollmentsponsors[0].sponsorsignature ? (
+                            <InputLine title="Sponsor Signature">
+                              <div className="flex flex-1 flex-col items-start justify-start">
+                                <img
+                                  src={
+                                    pageData.enrollmentsponsors[0]
+                                      .sponsorsignature.url
+                                  }
+                                  className="border w-96"
                                 />
+                                <p className="text-xs p-2 border border-t-0 rounded-b-md bg-slate-100 w-96">
+                                  Signed:{" "}
+                                  {format(
+                                    parseISO(
+                                      pageData.enrollmentsponsors[0]
+                                        .sponsorsignature.created_at
+                                    ),
+                                    "MMM do, yyyy"
+                                  )}{" "}
+                                  at{" "}
+                                  {format(
+                                    parseISO(
+                                      pageData.enrollmentsponsors[0]
+                                        .sponsorsignature.created_at
+                                    ),
+                                    "HH:mm"
+                                  )}
+                                </p>
                               </div>
-                              <div className="flex flex-1 flex-row items-center justify-start gap-2">
-                                <button
-                                  type="button"
-                                  onClick={handleClearSignature}
-                                  className="bg-primary text-white rounded-md py-4 px-8 my-2 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1"
+                            </InputLine>
+                          ) : (
+                            <InputLine title="Sponsor Signature">
+                              <PDFViewer
+                                download={true}
+                                pageNumber={5}
+                                onlyOnePage={true}
+                                file={{
+                                  url:
+                                    pageData.contracts.find(
+                                      (contract) =>
+                                        contract.file.document.subtype ===
+                                        "F1 Contract"
+                                    ).file.url + "#page=5",
+                                }}
+                                height={450}
+                              />
+                              <div className="flex flex-1 flex-col items-start justify-start">
+                                <div
+                                  onClick={handleSignature}
+                                  className="h-[19rem] w-[36rem] gap-2 border rounded"
                                 >
-                                  Clear Signature
-                                </button>
+                                  <SignaturePad
+                                    redrawOnResize
+                                    ref={signatureRef}
+                                    options={{
+                                      backgroundColor: "#FFF",
+                                      penColor: "#111",
+                                    }}
+                                  />
+                                </div>
+                                <div className="flex flex-1 flex-row items-center justify-start gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={handleClearSignature}
+                                    className="bg-primary text-white rounded-md py-4 px-8 my-2 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1"
+                                  >
+                                    Clear Signature
+                                  </button>
+                                </div>
                               </div>
-                            </div>
-                          </InputLine>
+                            </InputLine>
+                          )}
                         </InputLineGroup>
                       ) : (
                         <div className="flex h-full flex-row items-center justify-center text-center gap-4">
@@ -789,9 +820,9 @@ export default function SponsorOutside({
                   ) : (
                     <FormLoading />
                   )}
-                </InputContext.Provider>
-              </Form>
-            </div>
+                </Form>
+              </div>
+            </InputContext.Provider>
           </div>
         </div>
       ) : null}

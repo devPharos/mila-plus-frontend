@@ -21,7 +21,7 @@ import {
   handleUpdatedFields,
 } from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSearchParams } from "react-router-dom";
 import { Scope } from "@unform/core";
@@ -428,42 +428,42 @@ export default function TransferOutside({
             </RegisterFormMenu>
           </div>
           <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
-            <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll h-full">
-              <Form
-                ref={generalForm}
-                onSubmit={handleGeneralFormSubmit}
-                className="w-full h-full"
-              >
-                <InputContext.Provider
-                  value={{
-                    id,
-                    generalForm,
-                    setSuccessfullyUpdated,
-                    fullscreen,
-                    setFullscreen,
-                    successfullyUpdated,
-                    handleCloseForm,
-                    handleInactivate,
-                    handleOutsideMail: null,
-                    canceled: pageData.canceled_at,
-                  }}
+            <InputContext.Provider
+              value={{
+                id,
+                generalForm,
+                setSuccessfullyUpdated,
+                fullscreen,
+                setFullscreen,
+                successfullyUpdated,
+                handleCloseForm,
+                handleInactivate,
+                handleOutsideMail: null,
+                canceled: pageData.canceled_at,
+              }}
+            >
+              <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll h-full">
+                <Form
+                  ref={generalForm}
+                  onSubmit={handleGeneralFormSubmit}
+                  className="w-full"
                 >
+                  <FormHeader
+                    saveText="Save & Continue"
+                    outside={!searchparams.has("activeMenu")}
+                    loading={loading}
+                    access={access}
+                    title={
+                      pageData.students.name +
+                      " " +
+                      pageData.students.last_name +
+                      " - Enrollment Process - Transfer Eligibility"
+                    }
+                    registry={registry}
+                    InputContext={InputContext}
+                  />
                   {pageData.loaded ? (
                     <>
-                      <FormHeader
-                        saveText="Save & Continue"
-                        outside={!searchparams.has("activeMenu")}
-                        loading={loading}
-                        access={access}
-                        title={
-                          pageData.students.name +
-                          " " +
-                          pageData.students.last_name +
-                          " - Enrollment Process - Transfer Eligibility"
-                        }
-                        registry={registry}
-                        InputContext={InputContext}
-                      />
                       {pageData.activeMenu === "transfer-request" && (
                         <InputLineGroup
                           title="Student Information"
@@ -695,32 +695,55 @@ export default function TransferOutside({
                                 </Scope>
                               );
                             })}
-                          <InputLine title="Student Signature">
-                            <div className="flex flex-1 flex-col items-start justify-start">
-                              <div
-                                onClick={() => setSuccessfullyUpdated(false)}
-                                className="h-[19rem] w-[36rem] gap-2 border rounded"
-                              >
-                                <SignaturePad
-                                  redrawOnResize
-                                  ref={signatureRef}
-                                  options={{
-                                    backgroundColor: "#FFF",
-                                    penColor: "#111",
-                                  }}
-                                />
-                              </div>
-                              <div className="flex flex-1 flex-row items-center justify-start gap-2">
-                                <button
-                                  type="button"
-                                  onClick={handleClearSignature}
-                                  className="bg-primary text-white rounded-md py-4 px-8 my-2 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1"
+                          {!pageData.signature ? (
+                            <InputLine title="Student Signature">
+                              <div className="flex flex-1 flex-col items-start justify-start">
+                                <div
+                                  onClick={() => setSuccessfullyUpdated(false)}
+                                  className="h-[19rem] w-[36rem] gap-2 border rounded"
                                 >
-                                  Clear Signature
-                                </button>
+                                  <SignaturePad
+                                    redrawOnResize
+                                    ref={signatureRef}
+                                    options={{
+                                      backgroundColor: "#FFF",
+                                      penColor: "#111",
+                                    }}
+                                  />
+                                </div>
+                                <div className="flex flex-1 flex-row items-center justify-start gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={handleClearSignature}
+                                    className="bg-primary text-white rounded-md py-4 px-8 my-2 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1"
+                                  >
+                                    Clear Signature
+                                  </button>
+                                </div>
                               </div>
-                            </div>
-                          </InputLine>
+                            </InputLine>
+                          ) : (
+                            <InputLine title="Student Signature">
+                              <div className="flex flex-1 flex-col items-start justify-start">
+                                <img
+                                  src={pageData.signature.url}
+                                  className="border w-96"
+                                />
+                                <p className="text-xs p-2 border border-t-0 rounded-b-md bg-slate-100 w-96">
+                                  Signed:{" "}
+                                  {format(
+                                    parseISO(pageData.signature.created_at),
+                                    "MMM do, yyyy"
+                                  )}{" "}
+                                  at{" "}
+                                  {format(
+                                    parseISO(pageData.signature.created_at),
+                                    "HH:mm"
+                                  )}
+                                </p>
+                              </div>
+                            </InputLine>
+                          )}
                         </InputLineGroup>
                       )}
                       <InputLineGroup
@@ -745,9 +768,9 @@ export default function TransferOutside({
                   ) : (
                     <FormLoading />
                   )}
-                </InputContext.Provider>
-              </Form>
-            </div>
+                </Form>
+              </div>
+            </InputContext.Provider>
           </div>
         </div>
       ) : null}

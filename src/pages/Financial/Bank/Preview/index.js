@@ -1,74 +1,45 @@
-import { Form } from '@unform/web';
-import {
-  Building,
-  Contact,
-  Files,
-  ListMinus,
-  Loader2,
-  Pencil,
-  X,
-} from 'lucide-react';
+import { Form } from "@unform/web";
+import { Building, Pencil, X } from "lucide-react";
 import React, {
   createContext,
   useContext,
   useEffect,
   useRef,
   useState,
-} from 'react';
-import Input from '~/components/RegisterForm/Input';
-import RegisterFormMenu from '~/components/RegisterForm/Menu';
-import api from '~/services/api';
-import { Zoom, toast } from 'react-toastify';
-import InputLine from '~/components/RegisterForm/InputLine';
-import InputLineGroup from '~/components/RegisterForm/InputLineGroup';
-import FormHeader from '~/components/RegisterForm/FormHeader';
-import Preview from '~/components/Preview';
-import {
-  countries_list,
-  getRegistries,
-  handleUpdatedFields,
-} from '~/functions';
-import SelectPopover from '~/components/RegisterForm/SelectPopover';
-import Textarea from '~/components/RegisterForm/Textarea';
-import DatePicker from '~/components/RegisterForm/DatePicker';
-import SelectCountry from '~/components/RegisterForm/SelectCountry';
-import { format } from 'date-fns';
-import CountryList from 'country-list-with-dial-code-and-flag';
-import FormLoading from '~/components/RegisterForm/FormLoading';
-import { useSelector } from 'react-redux';
-import { AlertContext } from '~/App';
+} from "react";
+import Input from "~/components/RegisterForm/Input";
+import RegisterFormMenu from "~/components/RegisterForm/Menu";
+import InputLine from "~/components/RegisterForm/InputLine";
+import InputLineGroup from "~/components/RegisterForm/InputLineGroup";
+import FormHeader from "~/components/RegisterForm/FormHeader";
+import Preview from "~/components/Preview";
+import { Zoom, toast } from "react-toastify";
+import api from "~/services/api";
+import { getRegistries, handleUpdatedFields } from "~/functions";
+import SelectPopover from "~/components/RegisterForm/SelectPopover";
+import FormLoading from "~/components/RegisterForm/FormLoading";
 
 export const InputContext = createContext({});
 
-export const statusesOptions = [
-  { value: 'In Class', label: 'In Class' },
-  { value: 'School Waiting List', label: 'School Waiting List' },
-  { value: 'Waiting', label: 'Waiting' },
-  { value: 'Inactive', label: 'Inactive' },
-];
-
-export default function BankPreview({
+export default function PagePreview({
   access,
   id,
   handleOpened,
   setOpened,
-  defaultFormType = 'preview',
+  defaultFormType = "preview",
   successfullyUpdated,
   setSuccessfullyUpdated,
 }) {
   const [pageData, setPageData] = useState({
-    name: '',
-    last_name: '',
-    email: '',
-    visa_expiration: null,
-    gender: null,
-    processtype_id: null,
-    processsubstatus_id: null,
-    status: 'Waiting',
-    date_of_birth: null,
+    father_id: null,
+    name: "",
+    code: "",
+    Father: {
+      name: "",
+    },
     loaded: false,
   });
-  const [formType, setFormType] = useState(defaultFormType);
+
   const [registry, setRegistry] = useState({
     created_by: null,
     created_at: null,
@@ -77,18 +48,79 @@ export default function BankPreview({
     canceled_by: null,
     canceled_at: null,
   });
+  const [formType, setFormType] = useState(defaultFormType);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [activeMenu, setActiveMenu] = useState("general");
+  const [chartOfAccountsOptions, setChartOfAccountsOptions] = useState([]);
   const generalForm = useRef();
-  const auth = useSelector((state) => state.auth);
+  const visibilityOptions = [
+    { value: "All", label: "All" },
+    { value: "Filial Only", label: "Filial Only" },
+    { value: "Holding Only", label: "Holding Only" },
+  ];
+
+  function handleCloseForm() {
+    if (!successfullyUpdated) {
+      toast("Changes discarted!", { autoClose: 1000 });
+    }
+    handleOpened(null);
+  }
+
+  async function handleGeneralFormSubmit(data) {
+    if (successfullyUpdated) {
+      toast("No need to be saved!", {
+        autoClose: 1000,
+        type: "info",
+        transition: Zoom,
+      });
+      return;
+    }
+    if (id === "new") {
+      try {
+        // console.log(data)
+        const response = await api.post(`/bank`, data);
+        setOpened(response.data.id);
+        setPageData({ ...pageData, ...data });
+        setSuccessfullyUpdated(true);
+        toast("Saved!", { autoClose: 1000 });
+        handleOpened(null);
+      } catch (err) {
+        toast(err.response.data.error, { type: "error", autoClose: 3000 });
+      }
+    } else if (id !== "new") {
+      const updated = handleUpdatedFields(data, pageData);
+
+      if (updated.length > 0) {
+        const objUpdated = Object.fromEntries(updated);
+        try {
+          console.log(objUpdated);
+          await api.put(`/bank/${id}`, objUpdated);
+          setPageData({ ...pageData, ...objUpdated });
+          setSuccessfullyUpdated(true);
+          toast("Saved!", { autoClose: 1000 });
+          handleOpened(null);
+        } catch (err) {
+          toast(err.response.data.error, { type: "error", autoClose: 3000 });
+        }
+      } else {
+        console.log(updated);
+      }
+    }
+  }
 
   useEffect(() => {
     async function getPageData() {
       try {
-        const { data } = await api.get(`/prospects/${id}`);
-        setPageData({
-          ...data,
-          loaded: true,
-        });
-        const { created_by, created_at, updated_by, updated_at, canceled_by, canceled_at } = data;
+        const { data } = await api.get(`bank/${id}`);
+        setPageData({ ...data, loaded: true });
+        const {
+          created_by,
+          created_at,
+          updated_by,
+          updated_at,
+          canceled_by,
+          canceled_at,
+        } = data;
         const registries = await getRegistries({
           created_by,
           created_at,
@@ -99,65 +131,56 @@ export default function BankPreview({
         });
         setRegistry(registries);
       } catch (err) {
-        toast(err.response.data.error, { type: 'error', autoClose: 3000 });
+        toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     }
-
-    getPageData();
-  }, [id]);
-
-  async function handleGeneralFormSubmit(data) {
-    if (successfullyUpdated) {
-      toast('No need to save again!', { autoClose: 1000, type: 'info', transition: Zoom });
-      return;
+    async function getDefaultOptions() {
+      try {
+        const { data } = await api.get(`bank`);
+        const chartsOfAccounts = data
+          .filter((f) => f.id !== id)
+          .map(({ id: chartId, name, code, Father }) => {
+            let chartName = "";
+            if (Father) {
+              if (Father.Father) {
+                chartName += Father.Father.name + " > ";
+              }
+              chartName += Father.name + " > ";
+            }
+            return { value: chartId, label: chartName + name };
+          });
+        setChartOfAccountsOptions(chartsOfAccounts);
+      } catch (err) {
+        toast(err.response.data.error, { type: "error", autoClose: 3000 });
+      }
     }
-
-    try {
-      const { date_of_birth, visa_expiration } = data;
-      await api.put(`/students/${id}`, {
-        ...data,
-        date_of_birth: date_of_birth ? format(date_of_birth, 'yyyy-MM-dd') : null,
-        visa_expiration: visa_expiration ? format(visa_expiration, 'yyyy-MM-dd') : null,
-      });
-      setPageData({ ...pageData, ...data });
-      setSuccessfullyUpdated(true);
-      toast('Saved!', { autoClose: 1000 });
-      handleOpened(null);
-    } catch (err) {
-      toast(err.response.data.error, { type: 'error', autoClose: 3000 });
+    getDefaultOptions();
+    if (id === "new") {
+      setFormType("full");
+    } else if (id) {
+      getPageData();
     }
-  }
-
-  function handleCloseForm() {
-    if (!successfullyUpdated) {
-      toast('Changes discarded!', { autoClose: 1000 });
-    }
-    handleOpened(null);
-  }
+  }, []);
 
   return (
     <Preview formType={formType} fullscreen={fullscreen}>
       {pageData ? (
-        formType === 'preview' ? (
+        formType === "preview" ? (
           <div className="border h-full rounded-xl overflow-hidden flex flex-col justify-start gap-1 overflow-y-scroll">
             <div className="relative bg-gray-100 h-16 px-4 py-2 flex flex-row items-start justify-start">
               <button
-                onClick={() => setFormType('full')}
-                className="absolute top-2 right-20 text-md font-bold bg-mila_orange text-white rounded-md p-1 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1">
+                onClick={() => setFormType("full")}
+                className="absolute top-2 right-20 text-md font-bold bg-mila_orange text-white rounded-md p-1 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1"
+              >
                 <Pencil size={16} color="#fff" /> Open
               </button>
               <button
                 onClick={() => handleOpened(null)}
-                className="absolute top-2 right-2 text-md font-bold bg-secondary rounded-md p-1 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1">
+                className="absolute top-2 right-2 text-md font-bold bg-secondary rounded-md p-1 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1"
+              >
                 <X size={16} /> Close
               </button>
               <h2 style={{ fontSize: 24 }}>{pageData.name}</h2>
-            </div>
-            <div className="flex flex-1 flex-col items-left px-4 py-2 gap-1">
-              <p className="border-b mb-1 pb-1">Prospect Information</p>
-              <div className="flex flex-row items-center gap-1 text-xs">
-                <strong>Name:</strong> {pageData.name}
-              </div>
             </div>
           </div>
         ) : (
@@ -166,20 +189,9 @@ export default function BankPreview({
               <RegisterFormMenu
                 setActiveMenu={setActiveMenu}
                 activeMenu={activeMenu}
-                name="general">
-                <Contact size={16} /> General
-              </RegisterFormMenu>
-              <RegisterFormMenu
-                setActiveMenu={setActiveMenu}
-                activeMenu={activeMenu}
-                name="follow-up">
-                <ListMinus size={16} /> Follow Up
-              </RegisterFormMenu>
-              <RegisterFormMenu
-                setActiveMenu={setActiveMenu}
-                activeMenu={activeMenu}
-                name="documents">
-                <Files size={16} /> Documents
+                name="general"
+              >
+                <Building size={16} /> General
               </RegisterFormMenu>
             </div>
             <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
@@ -187,7 +199,8 @@ export default function BankPreview({
                 <Form
                   ref={generalForm}
                   onSubmit={handleGeneralFormSubmit}
-                  className="w-full">
+                  className="w-full"
+                >
                   <InputContext.Provider
                     value={{
                       id,
@@ -197,350 +210,76 @@ export default function BankPreview({
                       setFullscreen,
                       successfullyUpdated,
                       handleCloseForm,
-                      handleInactivate,
-                      handleOutsideMail,
-                      canceled: pageData.canceled_at,
-                    }}>
-                    {id === 'new' || pageData.loaded ? (
+                    }}
+                  >
+                    {id === "new" || pageData.loaded ? (
                       <>
                         <FormHeader
                           access={access}
-                          title={pageData.name + ' ' + pageData.last_name}
+                          title={pageData.name}
                           registry={registry}
                           InputContext={InputContext}
-                          disabled={!pageData.processtype_id}
-                          emailButtonText={emailButtonText}
                         />
+
                         <InputLineGroup
                           title="GENERAL"
-                          activeMenu={activeMenu === 'general'}>
-                          {auth.filial.id === 1 && (
-                            <InputLine title="Filial">
-                              <SelectPopover
-                                name="filial_id"
-                                required
-                                title="Filial"
-                                isSearchable
-                                defaultValue={filialOptions.filter(
-                                  (filial) =>
-                                    filial.value === pageData.filial_id,
-                                )}
-                                options={filialOptions}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-                          )}
-                          <InputLine title="Agent">
-                            <SelectPopover
-                              name="agent_id"
-                              required
-                              title="Responsible Agent"
-                              isSearchable
-                              defaultValue={agentOptions.filter(
-                                (agent) => agent.value === pageData.agent_id,
-                              )}
-                              options={agentOptions}
-                              InputContext={InputContext}
-                            />
-                          </InputLine>
+                          activeMenu={activeMenu === "general"}
+                        >
                           <InputLine title="General Data">
-                            <Input
-                              type="hidden"
-                              name="category"
+                            <SelectPopover
+                              type="text"
+                              isSearchable
+                              name="father_id"
                               required
+                              title="Father Account"
+                              options={chartOfAccountsOptions}
                               grow
-                              title="Category"
-                              defaultValue="prospect"
+                              defaultValue={
+                                pageData.father_id
+                                  ? {
+                                      value: pageData.father_id,
+                                      label:
+                                        pageData.Father.code.length === 2
+                                          ? pageData.Father.name
+                                          : pageData.code.substring(0, 2) ===
+                                              "01"
+                                            ? "Receipts > " +
+                                              pageData.Father.name
+                                            : "Expenses > " +
+                                              pageData.Father.name +
+                                              pageData.Father.Father.name,
+                                    }
+                                  : null
+                              }
                               InputContext={InputContext}
                             />
                             <Input
                               type="text"
                               name="name"
                               required
-                              grow
                               title="Name"
+                              grow
                               defaultValue={pageData.name}
                               InputContext={InputContext}
                             />
-                            <Input
-                              type="text"
-                              name="middle_name"
-                              grow
-                              title="Middle Name"
-                              defaultValue={pageData.middle_name}
-                              InputContext={InputContext}
-                            />
-                            <Input
-                              type="text"
-                              name="last_name"
-                              required
-                              grow
-                              title="Last Name"
-                              defaultValue={pageData.last_name}
-                              InputContext={InputContext}
-                            />
                             <SelectPopover
-                              name="gender"
-                              required
-                              title="Gender"
+                              type="text"
                               isSearchable
-                              defaultValue={genderOptions.find(
-                                (gender) => gender.value === pageData.gender,
-                              )}
-                              options={genderOptions}
-                              InputContext={InputContext}
-                            />
-                            <DatePicker
-                              name="date_of_birth"
-                              grow
-                              title="Birthday "
-                              defaultValue={
-                                pageData.date_of_birth
-                                  ? parseISO(pageData.date_of_birth)
-                                  : null
-                              }
-                              placeholderText="MM/DD/YYYY"
-                              InputContext={InputContext}
-                            />
-                          </InputLine>
-                          <InputLine>
-                            <Input
-                              type="text"
-                              name="passport_number"
-                              grow
-                              title="Passport Number"
-                              placeholder="-----"
-                              defaultValue={pageData.passport_number}
-                              InputContext={InputContext}
-                            />
-                            <Input
-                              type="text"
-                              name="visa_number"
-                              grow
-                              title="Visa Number"
-                              placeholder="-----"
-                              defaultValue={pageData.visa_number}
-                              InputContext={InputContext}
-                            />
-                            <DatePicker
-                              name="visa_expiration"
-                              title="Visa Expiration"
-                              defaultValue={
-                                pageData.visa_expiration
-                                  ? parseISO(pageData.visa_expiration)
-                                  : null
-                              }
-                              placeholderText="MM/DD/YYYY"
-                              InputContext={InputContext}
-                            />
-                            <Input
-                              type="text"
-                              name="nsevis"
-                              title="NSEVIS"
-                              grow
-                              defaultValue={pageData.nsevis}
-                              placeholder="-----"
-                              InputContext={InputContext}
-                            />
-                          </InputLine>
-                          <InputLine title="Enrollment">
-                            <SelectPopover
-                              name="processtype_id"
-                              grow
+                              name="visibility"
                               required
-                              title="Type"
-                              onChange={(el) => {
-                                setPageData({
-                                  ...pageData,
-                                  find_processtype_id: el.value,
-                                });
-                                generalForm.current.setFieldValue(
-                                  'processsubstatus_id',
-                                  null,
-                                );
-                                setSuccessfullyUpdated(false);
-                              }}
+                              title="Visibility"
+                              options={visibilityOptions}
+                              grow
                               defaultValue={
-                                pageData.processtype_id
-                                  ? pageData.typesOptions.find(
-                                      (type) =>
-                                        type.value === pageData.processtype_id,
+                                pageData.visibility
+                                  ? visibilityOptions.find(
+                                      (f) => f.value === pageData.visibility,
                                     )
                                   : null
                               }
-                              options={pageData.typesOptions}
-                              InputContext={InputContext}
-                            />
-                            {/* <SelectPopover name='status' grow disabled title='Status' isSearchable defaultValue={statusesOptions.find(status => status.value === 'Waiting')} options={statusesOptions} InputContext={InputContext} /> */}
-                            <SelectPopover
-                              name="processsubstatus_id"
-                              grow
-                              required
-                              title="Sub Status"
-                              isSearchable
-                              defaultValue={
-                                pageData.processsubstatus_id
-                                  ? pageData.subStatusOptions.find(
-                                      (substatus) =>
-                                        substatus.value ===
-                                        pageData.processsubstatus_id,
-                                    )
-                                  : null
-                              }
-                              options={
-                                pageData.find_processtype_id
-                                  ? pageData.subStatusOptions.filter(
-                                      (type) =>
-                                        type.father_id ===
-                                        pageData.find_processtype_id,
-                                    )
-                                  : []
-                              }
                               InputContext={InputContext}
                             />
                           </InputLine>
-                          <InputLine title="Location">
-                            <Input
-                              type="text"
-                              name="foreign_address"
-                              title="Address"
-                              grow
-                              defaultValue={pageData.foreign_address}
-                              InputContext={InputContext}
-                            />
-                            <SelectPopover
-                              name="birth_country"
-                              grow
-                              title="Country"
-                              options={countriesOptions}
-                              isSearchable
-                              defaultValue={countriesOptions.find(
-                                (country) =>
-                                  country.value === pageData.birth_country,
-                              )}
-                              InputContext={InputContext}
-                            />
-                            <Input
-                              type="text"
-                              name="birth_state"
-                              grow
-                              title="State"
-                              defaultValue={pageData.birth_state}
-                              InputContext={InputContext}
-                            />
-                            <Input
-                              type="text"
-                              name="birth_city"
-                              grow
-                              title="City"
-                              defaultValue={pageData.birth_city}
-                              InputContext={InputContext}
-                            />
-                          </InputLine>
-                          <InputLine title="Contact">
-                            <Input
-                              type="text"
-                              name="email"
-                              required
-                              title="E-mail"
-                              grow
-                              defaultValue={pageData.email}
-                              InputContext={InputContext}
-                            />
-                            <SelectCountry
-                              name="whatsapp_ddi"
-                              title="DDI"
-                              options={countriesList}
-                              defaultValue={countriesList.find(
-                                (ddi) => ddi.value === pageData.whatsapp_ddi,
-                              )}
-                              InputContext={InputContext}
-                            />
-                            <Input
-                              type="text"
-                              grow
-                              name="whatsapp"
-                              title="Whatsapp"
-                              isPhoneNumber
-                              defaultValue={pageData.whatsapp}
-                              defaultValueDDI={pageData.whatsapp_ddi}
-                              InputContext={InputContext}
-                            />
-                            <Input
-                              type="text"
-                              grow
-                              name="home_country_phone"
-                              hasDDI
-                              title="Home Country Phone"
-                              isPhoneNumber
-                              defaultValue={pageData.home_country_phone}
-                              InputContext={InputContext}
-                            />
-                          </InputLine>
-                          <InputLine>
-                            <Input
-                              type="text"
-                              name="preferred_contact_form"
-                              grow
-                              title="Preferred Contact Form"
-                              defaultValue={pageData.preferred_contact_form}
-                              InputContext={InputContext}
-                            />
-                          </InputLine>
-                        </InputLineGroup>
-
-                        <InputLineGroup
-                          title="Documents"
-                          activeMenu={activeMenu === 'documents'}>
-                          {pageData.enrollmentdocuments &&
-                            pageData.enrollmentdocuments.length > 0 && (
-                              <InputLine subtitle="Attached Files">
-                                <div className="flex flex-col justify-center items-start gap-4">
-                                  {pageData.enrollmentdocuments &&
-                                    pageData.enrollmentdocuments.map(
-                                      (enrollmentdocument, index) => {
-                                        if (
-                                          enrollmentdocument.document_id ===
-                                          document.id
-                                        ) {
-                                          return (
-                                            <>
-                                              <div className="flex flex-row justify-center items-center gap-2">
-                                                <a
-                                                  href={
-                                                    enrollmentdocument.file.url
-                                                  }
-                                                  target="_blank"
-                                                  className="text-xs">
-                                                  <div
-                                                    className="flex flex-row items-center border px-4 py-2 gap-1 rounded-md bg-gray-100 hover:border-gray-300"
-                                                    key={index}>
-                                                    <Files size={16} />
-                                                    {
-                                                      enrollmentdocument.file
-                                                        .name
-                                                    }
-                                                  </div>
-                                                </a>
-                                                <button
-                                                  type="button"
-                                                  onClick={() =>
-                                                    handleDeleteDocument(
-                                                      enrollmentdocument.id,
-                                                    )
-                                                  }
-                                                  className="text-xs text-red-700 cursor-pointer flex flex-row items-center justify-start gap-1 mt-1 px-2 py-1 rounded hover:bg-red-100">
-                                                  <X size={12} /> Delete
-                                                </button>
-                                              </div>
-                                            </>
-                                          );
-                                        }
-                                      },
-                                    )}
-                                </div>
-                              </InputLine>
-                            )}
                         </InputLineGroup>
                       </>
                     ) : (

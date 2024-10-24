@@ -98,7 +98,7 @@ function App() {
             alias: 'chart-of-accounts',
             path: '/Financial/ChartOfAccounts',
             title: 'Chart of Accounts',
-            icon: 'GanttChart'
+            icon: 'ChartGantt'
           },
         ]
       },

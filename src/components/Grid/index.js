@@ -30,13 +30,20 @@ export default function Grid({ children, gridHeader = null, gridData = null, ord
           return row.show && <tr key={index} onClick={() => handleOpened(row.id || null)} className={`${opened === row.id ? 'bg-mila_orange text-white' : row.canceled ? 'opacity-40' : 'odd:bg-white'} h-10  hover:rounded hover:border hover:border-mila_orange cursor-pointer`}>
             {
               row.fields.map((field, index) => {
-                if (gridHeader[index].type === 'image') {
+                if (gridHeader[index]?.type === 'image') {
                   return <td className='px-4 w-10' key={index}><img src={field} width="30" className='rounded-md overflow-hidden' /></td>
                 }
-                if (gridHeader[index].type === 'boolean') {
+                if (gridHeader[index]?.type === 'boolean') {
                   return <td className={`px-4`} key={index}>
                     <div className={`flex flex-row items-center justify-start gap-2`}>
                       <span>{field ? 'Yes' : 'No'}</span>
+                    </div>
+                  </td>
+                }
+                if (gridHeader[index]?.type === 'date') {
+                  return <td className={`px-4`} key={index}>
+                    <div className={`flex flex-row items-center justify-start gap-2`}>
+                      <span>{new Date(field).toLocaleDateString()}</span>
                     </div>
                   </td>
                 }

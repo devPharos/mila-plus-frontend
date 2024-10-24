@@ -5,9 +5,13 @@ import { PageContext } from "~/App";
 import Icon from "~/components/Icon";
 import { hasAccessTo } from "~/functions";
 
+// import { Container } from './styles';
+
 export default function Sidebar({ main = null, pages = [] }) {
   const [oppened, setOppened] = useState(true);
   const { accesses } = useSelector((state) => state.auth);
+
+  // const { pages } = useContext(PageContext)
 
   const activeMenu = {
     class:

@@ -1,30 +1,28 @@
-import { Filter } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
-import Breadcrumbs from '~/components/Breadcrumbs';
-import Filters from '~/components/Filters';
-import FiltersBar from '~/components/FiltersBar';
-import Grid from '~/components/Grid';
-import api from '~/services/api';
-import { applyFilters, getCurrentPage, hasAccessTo } from '~/functions';
-import BankPreview from './Preview';
-import { useSelector } from 'react-redux';
-import PageHeader from '~/components/PageHeader';
-import PreviewController from '~/components/PreviewController';
-import { createContext } from 'react';
+import { Filter } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import Breadcrumbs from "~/components/Breadcrumbs";
+import Filters from "~/components/Filters";
+import FiltersBar from "~/components/FiltersBar";
+import Grid from "~/components/Grid";
+import api from "~/services/api";
+import { applyFilters, getCurrentPage, hasAccessTo } from "~/functions";
+import PageHeader from "~/components/PageHeader";
+import PagePreview from "./Preview";
+import { useSelector } from "react-redux";
+import PreviewController from "~/components/PreviewController";
 
 export const PreviewContext = createContext({});
 
 export default function FinancialBank() {
   const [activeFilters, setActiveFilters] = useState([]);
   const [opened, setOpened] = useState(false);
-  const [orderBy, setOrderBy] = useState({ column: 'Account Name', asc: true });
-  const accesses = useSelector((state) => state.auth.accesses);
-  const branch = useSelector((state) => state.auth.branch);
+  const [orderBy, setOrderBy] = useState({ column: "Code", asc: true });
+  const { accesses } = useSelector((state) => state.auth);
   const currentPage = getCurrentPage();
   const [gridHeader, setGridHeader] = useState([
     {
-      title: 'Bank Name',
-      type: 'text',
+      title: "Bank Name",
+      type: "text",
       filter: true,
     },
   ]);
@@ -32,8 +30,8 @@ export default function FinancialBank() {
 
   const [gridData, setGridData] = useState();
 
-  function handleFilters({ title = '', value = '' }) {
-    if (value) {
+  function handleFilters({ title = "", value = "" }) {
+    if (value || (title === "Active" && value !== "")) {
       setActiveFilters([
         ...activeFilters.filter((el) => el.title != title),
         { title, value },
@@ -44,26 +42,24 @@ export default function FinancialBank() {
   }
 
   useEffect(() => {
-    async function getData() {
-      const { data } = await api.get(`/bank`);
-      console.log('logs',data);
+    async function getFilials() {
+      const { data } = await api.get("/bank");
       const gridDataValues = data.map(
-        ({ id, company_id,  bank_alias, bank_name, canceled_at }) => {
-          const ret = {
+        ({ id, company_id, bank_alias, bank_name, canceled_at }) => {
+          return {
             show: true,
             id,
             fields: [
-              bank_name
+              bank_name,
+
             ],
-            canceled: canceled_at,
           };
-          return ret;
         },
       );
       setGridData(gridDataValues);
     }
-    getData();
-  }, [opened, branch]);
+    getFilials();
+  }, [opened]);
 
   function handleOpened(id) {
     if (!id) {
@@ -79,16 +75,20 @@ export default function FinancialBank() {
   }, [activeFilters, orderBy]);
 
   return (
-    <div className="h-full bg-white flex flex-1 flex-col justify-between items-start rounded-tr-2xl px-4">
+    <div className="h-full bg-white flex flex-1 flex-col justify-start items-start rounded-tr-2xl px-4">
       <PageHeader>
         <Breadcrumbs currentPage={currentPage} />
         <FiltersBar>
-          <Filter size={14} /> Bank Filters
+          <Filter size={14} /> Custom Filters
         </FiltersBar>
       </PageHeader>
       <Filters
-        access={hasAccessTo(accesses, currentPage.alias)}
-        handleNew={() => setOpened('new')}
+        access={hasAccessTo(
+          accesses,
+          currentPage.path.split("/")[1],
+          currentPage.alias,
+        )}
+        handleNew={() => setOpened("new")}
         search
         handleFilters={handleFilters}
         gridHeader={gridHeader}
@@ -103,18 +103,25 @@ export default function FinancialBank() {
         orderBy={orderBy}
         setOrderBy={setOrderBy}
         handleOpened={handleOpened}
-        opened={opened}>
+        opened={opened}
+      >
         {opened && (
           <div
             className="fixed left-0 top-0 z-40 w-full h-full"
-            style={{ background: 'rgba(0,0,0,.2)' }}></div>
+            style={{ background: "rgba(0,0,0,.2)" }}
+          ></div>
         )}
         {opened && (
           <PreviewContext.Provider
-            value={{ successfullyUpdated, handleOpened }}>
+            value={{ successfullyUpdated, handleOpened }}
+          >
             <PreviewController>
-              <BankPreview
-                access={hasAccessTo(accesses, currentPage.alias)}
+              <PagePreview
+                access={hasAccessTo(
+                  accesses,
+                  currentPage.path.split("/")[1],
+                  currentPage.alias,
+                )}
                 id={opened}
                 handleOpened={handleOpened}
                 setOpened={setOpened}

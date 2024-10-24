@@ -1,4 +1,6 @@
 import axios from "axios";
+import { logout } from '~/store/modules/auth/actions';
+import { Navigate } from 'react-router-dom';
 
 const api = axios.create({
   baseURL:
@@ -37,6 +39,9 @@ api.interceptors.response.use(
     }
     if (error.response.status === 401) {
       // window.location.href = "/401";
+
+      return <Navigate to="/login" />;
+
     }
     if (error.response.status === 404) {
       // window.location.href = "/404";

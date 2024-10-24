@@ -91,7 +91,7 @@ function App() {
           {
             alias: 'financial-bank',
             path: '/Financial/Bank',
-            title: 'Bank ',
+            title: 'Bank',
             icon: 'Landmark',
           },
           {

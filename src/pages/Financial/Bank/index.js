@@ -10,6 +10,7 @@ import PageHeader from "~/components/PageHeader";
 import PagePreview from "./Preview";
 import { useSelector } from "react-redux";
 import PreviewController from "~/components/PreviewController";
+import { createContext } from "react";
 
 export const PreviewContext = createContext({});
 
@@ -51,7 +52,8 @@ export default function FinancialBank() {
             id,
             fields: [
               bank_name,
-
+              bank_alias,
+              company_id
             ],
           };
         },

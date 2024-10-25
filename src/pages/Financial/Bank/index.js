@@ -30,17 +30,7 @@ export default function FinancialBank() {
       title: "Bank Alias",
       type: "text",
       filter: false,
-    },
-    {
-      title: "Company Name",
-      type: "text",
-      filter: false,
-    },
-    {
-      title: "Created At",
-      type: "date",
-      filter: false,
-    },
+    }
   ]);
   const [successfullyUpdated, setSuccessfullyUpdated] = useState(true);
 
@@ -61,15 +51,13 @@ export default function FinancialBank() {
     async function getFilials() {
       const { data } = await api.get("/bank");
       const gridDataValues = data.map(
-        ({ id, bank_alias, bank_name, company,created_at, }) => {
+        ({ id, bank_alias, bank_name}) => {
           return {
             show: true,
             id,
             fields: [
               bank_name,
               bank_alias,
-              company.name,
-              created_at
             ]
           };
         },

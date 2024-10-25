@@ -34,10 +34,6 @@ export default function PagePreview({
     loaded: false,
     bank_name: "",
     bank_alias: "",
-    company_id: null,
-    company: {
-      name: "",
-    },
   });
 
   const [registry, setRegistry] = useState({
@@ -51,7 +47,6 @@ export default function PagePreview({
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
-  const [companyOptions, setCompanyOptions] = useState([]);
 
   const generalForm = useRef();
 
@@ -129,19 +124,6 @@ export default function PagePreview({
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     }
-    async function getDefaultOptions() {
-      try {
-        const { data } = await api.get(`/companies`);
-        const companyOptions = data.filter((f) => f.id !== id).map((f) => {
-          return { value: f.id, label: f.name };
-        });
-
-        setCompanyOptions(companyOptions);
-      } catch (err) {
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
-      }
-    }
-    getDefaultOptions();
     if (id === "new") {
       setFormType("full");
     } else if (id) {
@@ -229,24 +211,6 @@ export default function PagePreview({
                               title="Bank Alias"
                               grow
                               defaultValue={pageData.bank_alias}
-                              InputContext={InputContext}
-                            />
-                            <SelectPopover
-                              type="text"
-                              isSearchable
-                              name="company_id"
-                              required
-                              title="Company"
-                              options={companyOptions}
-                              grow
-                              defaultValue={
-                                pageData.company_id
-                                  ? {
-                                      value: pageData.company_id,
-                                      label: pageData.company.name,
-                                    }
-                                  : null
-                              }
                               InputContext={InputContext}
                             />
                           </InputLine>

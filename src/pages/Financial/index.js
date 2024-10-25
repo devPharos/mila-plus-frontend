@@ -11,7 +11,7 @@ export default function Financial() {
 
   useEffect(() => {
     if (pathname.toUpperCase() === '/Financial'.toUpperCase() || pathname.toUpperCase() === '/Financial/'.toUpperCase()) {
-      navigate("/Financial/ChartOfAccounts")
+      navigate("/Financial/Bank")
     }
   }, [pathname])
 

@@ -64,7 +64,8 @@ import ProcessSubstatuses from './pages/Settings/ProcessSubstatuses';
 import SponsorOutside from './pages/Commercial/Enrollments/Preview/sponsor';
 import TransferOutside from './pages/Commercial/Enrollments/Preview/transfer-student';
 import TransferDSOOutside from './pages/Commercial/Enrollments/Preview/transfer-dso';
-import FinancialBankAccounts from './pages/Financial/Bank';
+import FinancialBank from './pages/Financial/Bank';
+import FinancialBankAccounts from './pages/Financial/BankAccount';
 
 injectStore(store)
 
@@ -191,6 +192,10 @@ const router = createBrowserRouter([
           },
           {
             path: '/Financial/Bank',
+            element: <FinancialBank />,
+          },
+          {
+            path: '/Financial/BankAccount',
             element: <FinancialBankAccounts />,
           },
           {

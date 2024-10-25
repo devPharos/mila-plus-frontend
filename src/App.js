@@ -95,6 +95,12 @@ function App() {
             icon: 'Landmark',
           },
           {
+            alias: 'financial-bank-account',
+            path: '/Financial/BankAccount',
+            title: 'Bank Accounts',
+            icon: 'CreditCard',
+          },
+          {
             alias: 'chart-of-accounts',
             path: '/Financial/ChartOfAccounts',
             title: 'Chart of Accounts',

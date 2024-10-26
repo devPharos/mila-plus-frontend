@@ -58,7 +58,7 @@ export default function FinancialBankAccount() {
   }
 
   useEffect(() => {
-    async function getFilials() {
+    async function getBankAccounts() {
       const { data } = await api.get("/bankaccounts");
       const gridDataValues = data.map(
         ({ id, bank_id, bank, filial_id, filial, account, routing_number }) => {
@@ -71,7 +71,7 @@ export default function FinancialBankAccount() {
       );
       setGridData(gridDataValues);
     }
-    getFilials();
+    getBankAccounts();
   }, [opened]);
 
   function handleOpened(id) {

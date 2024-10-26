@@ -18,6 +18,7 @@ import api from "~/services/api";
 import { getRegistries, handleUpdatedFields } from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";
+import { useSelector } from "react-redux";
 
 export const InputContext = createContext({});
 
@@ -58,6 +59,8 @@ export default function PagePreview({
   const [activeMenu, setActiveMenu] = useState("general");
   const [filialOptions, setFilialOptions] = useState([]);
   const [bankOptions, setBankOptions] = useState([]);
+
+  const auth = useSelector((state) => state.auth);
 
   const generalForm = useRef();
 
@@ -144,7 +147,7 @@ export default function PagePreview({
             return { value: f.id, label: f.name };
           });
 
-          setFilialOptions(filialOptions);
+        setFilialOptions(filialOptions);
       } catch (err) {
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
@@ -233,6 +236,43 @@ export default function PagePreview({
                           title="GENERAL"
                           activeMenu={activeMenu === "general"}
                         >
+                          {auth.filial.id === 1 && (
+                            <InputLine title="Filial">
+                              <SelectPopover
+                                name="filial_id"
+                                required
+                                title="Filial"
+                                isSearchable
+                                grow
+                                defaultValue={filialOptions.filter(
+                                  (filial) =>
+                                    filial.value === pageData.filial_id
+                                )}
+                                options={filialOptions}
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+                          )}
+                          <InputLine title="Bank">
+                            <SelectPopover
+                              type="text"
+                              isSearchable
+                              name="bank_id"
+                              required
+                              title="Bank"
+                              options={bankOptions}
+                              grow
+                              defaultValue={
+                                pageData.bank_id
+                                  ? {
+                                      value: pageData.bank_id,
+                                      label: pageData.bank.bank_name,
+                                    }
+                                  : null
+                              }
+                              InputContext={InputContext}
+                            />
+                          </InputLine>
                           <InputLine title="General Data">
                             <Input
                               type="number"
@@ -252,43 +292,6 @@ export default function PagePreview({
                               defaultValue={pageData.routing_number}
                               InputContext={InputContext}
                             />
-                            <SelectPopover
-                              type="text"
-                              isSearchable
-                              name="bank_id"
-                              required
-                              title="Bank"
-                              options={bankOptions}
-                              grow
-                              defaultValue={
-                                pageData.bank_id
-                                  ? {
-                                      value: pageData.bank_id,
-                                      label: pageData.bank.bank_name,
-                                    }
-                                  : null
-                              }
-                              InputContext={InputContext}
-                            />
-                            <SelectPopover
-                              type="text"
-                              isSearchable
-                              name="filial_id"
-                              required
-                              title="Filial"
-                              options={filialOptions}
-                              grow
-                              defaultValue={
-                                pageData.filial_id
-                                  ? {
-                                      value: pageData.filial_id,
-                                      label: pageData.filial.name,
-                                    }
-                                  : null
-                              }
-                              InputContext={InputContext}
-                            />
-
                           </InputLine>
                         </InputLineGroup>
                       </>

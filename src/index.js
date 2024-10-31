@@ -66,6 +66,11 @@ import TransferOutside from './pages/Commercial/Enrollments/Preview/transfer-stu
 import TransferDSOOutside from './pages/Commercial/Enrollments/Preview/transfer-dso';
 import FinancialBank from './pages/Financial/Bank';
 import FinancialBankAccounts from './pages/Financial/BankAccount';
+import FinancialPaymentMethods from './pages/Financial/PaymentMethods';
+import FinancialPaymentCriteria from './pages/Financial/PaymentCriterias';
+import FinancialMerchants from './pages/Financial/Merchants';
+import FinancialMerchantsChartOfAccounts from './pages/Financial/MerchantsXChartOfAccounts';
+import FinancialIssuers from './pages/Financial/Issuer';
 
 injectStore(store)
 
@@ -199,8 +204,29 @@ const router = createBrowserRouter([
             element: <FinancialBankAccounts />,
           },
           {
+            path: '/Financial/PaymentCriteria',
+            element: <FinancialPaymentCriteria />,
+          },
+          {
+            path: "/Financial/PaymentMethod",
+            element: <FinancialPaymentMethods />
+          },
+
+          {
+            path: '/Financial/Merchants',
+            element: <FinancialMerchants />,
+          },
+          {
+            path: '/Financial/MerchantsXChartOfAccounts',
+            element: <FinancialMerchantsChartOfAccounts />,
+          },
+          {
             path: "/Financial/ChartOfAccounts",
             element: <AdministrativeChartOfAccounts />
+          },
+          {
+            path: '/Financial/Issuer',
+            element: <FinancialIssuers />,
           },
         ]
       },

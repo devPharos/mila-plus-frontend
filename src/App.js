@@ -101,11 +101,41 @@ function App() {
             icon: 'CreditCard',
           },
           {
+            alias: 'financial-payment-criteria',
+            path: '/Financial/PaymentCriteria',
+            title: 'Payment Criteria',
+            icon: 'HandCoins',
+          },
+          {
+            alias: 'financial-payment-method',
+            path: '/Financial/PaymentMethod',
+            title: 'Payment Methods',
+            icon: 'WalletCards',
+          },
+          {
+            alias: 'financial-merchants',
+            path: '/Financial/Merchants',
+            title: 'Merchants',
+            icon: 'Store',
+          },
+          {
+            alias: 'financial-merchants-x-chart-of-accounts',
+            path: '/Financial/MerchantsXChartOfAccounts',
+            title: 'Merchants X Chart of Accounts',
+            icon: 'Store',
+          },
+          {
             alias: 'chart-of-accounts',
             path: '/Financial/ChartOfAccounts',
             title: 'Chart of Accounts',
             icon: 'ChartGantt'
           },
+          {
+            alias: 'financial-issuer',
+            path: '/Financial/Issuer',
+            title: 'Issuer',
+            icon: 'Store',
+          }
         ]
       },
       {

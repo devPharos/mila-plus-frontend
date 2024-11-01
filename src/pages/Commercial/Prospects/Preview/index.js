@@ -162,6 +162,7 @@ export default function PagePreview({
     });
     return retSubStatusOptions;
   }
+
   async function getPageData(prospectId = null) {
     const filialOptions = await getDefaultFilialOptions();
     const agentOptions = await getDefaultAgentOptions();

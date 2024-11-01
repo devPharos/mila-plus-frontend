@@ -71,6 +71,7 @@ import FinancialPaymentCriteria from './pages/Financial/PaymentCriterias';
 import FinancialMerchants from './pages/Financial/Merchants';
 import FinancialMerchantsChartOfAccounts from './pages/Financial/MerchantsXChartOfAccounts';
 import FinancialIssuers from './pages/Financial/Issuer';
+import FinancialReceivables from './pages/Financial/Receivables';
 
 injectStore(store)
 
@@ -228,6 +229,10 @@ const router = createBrowserRouter([
             path: '/Financial/Issuer',
             element: <FinancialIssuers />,
           },
+          {
+            path: '/Financial/Receivables',
+            element: <FinancialReceivables />,
+          }
         ]
       },
       {

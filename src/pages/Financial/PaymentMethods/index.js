@@ -35,7 +35,7 @@ export default function FinancialPaymentMethods() {
       title: "Bank Account",
       type: "text",
       filter: true,
-    }
+    },
   ]);
   const [successfullyUpdated, setSuccessfullyUpdated] = useState(true);
 
@@ -56,11 +56,21 @@ export default function FinancialPaymentMethods() {
     async function getBankAccounts() {
       const { data } = await api.get("/paymentmethods");
       const gridDataValues = data.map(
-        ({ id, description, filial_id, filial, bankaccount_id, bankAccount }) => {
+        ({
+          id,
+          description,
+          filial_id,
+          filial,
+          bankaccount_id,
+          bankAccount,
+        }) => {
           return {
             show: true,
             id,
-            fields: [ description, filial.name,  bankAccount.account ],
+            fields: [
+              description.slice(0, 50) + "...",
+              filial.name,
+              bankAccount.account],
           };
         }
       );

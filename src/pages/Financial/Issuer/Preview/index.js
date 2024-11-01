@@ -160,6 +160,8 @@ export default function PagePreview({
         const filialData = await api.get(`/filials`);
         const merchantData = await api.get(`/merchants`);
         const studentData = await api.get(`/students`);
+
+        console.log(studentData);
         const filialOptions = filialData.data
           .filter((f) => f.id !== id)
           .map((f) => {

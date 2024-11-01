@@ -90,7 +90,7 @@ export default function FinancialReceivables() {
 
   useEffect(() => {
     async function getBankAccounts() {
-      const { data } = await api.get("/receivable");
+      const { data } = await api.get("/receivables");
       const gridDataValues = data.map(
         ({
           id,

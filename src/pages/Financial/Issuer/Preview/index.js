@@ -297,7 +297,6 @@ export default function PagePreview({
                           <InputLine title="Student">
                             <SelectPopover
                               name="student_id"
-                              required
                               title="Student"
                               isSearchable
                               grow

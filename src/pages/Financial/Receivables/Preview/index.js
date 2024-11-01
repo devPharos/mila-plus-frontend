@@ -157,7 +157,6 @@ export default function PagePreview({
     },
   ]);
 
-
   const auth = useSelector((state) => state.auth);
 
   const generalForm = useRef();
@@ -208,9 +207,14 @@ export default function PagePreview({
         const response = await api.post(`/receivables`, data);
         setPageData({ ...pageData, ...response.data });
 
+        setOpened(response.data.id);
         setActiveMenu("installments");
 
-        const gridDataValues = data.map(
+
+
+        console.log(response.data);
+
+        const gridDataValues = response.data.receivableInstallmentsItems.map(
           ({ id, canceled_at, amount, fee, total, status }) => {
             const ret = {
               show: true,
@@ -227,9 +231,7 @@ export default function PagePreview({
       } catch (err) {
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
-    }
-
-    if (id !== "new") {
+    } else if (id !== "new") {
       const updated = handleUpdatedFields(data, pageData);
 
       if (updated.length > 0) {
@@ -252,10 +254,9 @@ export default function PagePreview({
   useEffect(() => {
     async function getPageData() {
       try {
-        const { data } = await api.get(`/issuers/${id}`);
+        const { data } = await api.get(`/receivables/${id}`);
         setPageData({ ...data, loaded: true });
 
-        console.log(data);
         const {
           created_by,
           created_at,
@@ -301,13 +302,13 @@ export default function PagePreview({
         const paymentMethodOptions = paymentMethodData.data
           .filter((f) => f.id !== id)
           .map((f) => {
-            return { value: f.id, label: f.name };
+            return { value: f.id, label: f.description.slice(0, 20) };
           });
 
         const paymentCriteriaOptions = paymentCriteriaData.data
           .filter((f) => f.id !== id)
           .map((f) => {
-            return { value: f.id, label: f.name };
+            return { value: f.id, label: f.description.slice(0, 20) };
           });
 
         const chartOfAccountOptions = chartOfAccountData.data
@@ -402,26 +403,13 @@ export default function PagePreview({
                             InputContext={InputContext}
                           />
 
-                          <Filters
-                            access={hasAccessTo(
-                              accesses,
-                              currentPage.path.split("/")[1],
-                              currentPage.alias
-                            )}
-                            handleNew={() => setOpened("new")}
-                            search
-                            handleFilters={handleFilters}
-                            gridHeader={gridHeader}
-                            gridData={gridData}
-                            setGridHeader={setGridHeader}
-                            activeFilters={activeFilters}
-                          />
 
                           <Grid
                             gridData={gridData}
                             gridHeader={gridHeader}
                             orderBy={orderBy}
                             setOrderBy={setOrderBy}
+                            handleOpened={handleOpened}
                           />
                         </>
                       ) : (
@@ -569,32 +557,6 @@ export default function PagePreview({
                                 title="Contract Number"
                                 grow
                                 defaultValue={pageData.contract_number}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-
-                            <InputLine title="Status">
-                              <SelectPopover
-                                name="status"
-                                title="Status"
-                                grow
-                                defaultValue={
-                                  pageData.status
-                                    ? {
-                                        value: pageData.status,
-                                        label: pageData.status,
-                                      }
-                                    : null
-                                }
-                                options={subStatusOptions}
-                                InputContext={InputContext}
-                              />
-                              <Input
-                                type="date"
-                                name="status_date"
-                                title="Status Date"
-                                grow
-                                defaultValue={pageData.status_date}
                                 InputContext={InputContext}
                               />
                             </InputLine>

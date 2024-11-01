@@ -122,7 +122,7 @@ function App() {
             alias: 'financial-merchants-x-chart-of-accounts',
             path: '/Financial/MerchantsXChartOfAccounts',
             title: 'Merchants X Chart of Accounts',
-            icon: 'Store',
+            icon: 'SquareChartGantt',
           },
           {
             alias: 'chart-of-accounts',
@@ -134,7 +134,13 @@ function App() {
             alias: 'financial-issuer',
             path: '/Financial/Issuer',
             title: 'Issuer',
-            icon: 'Store',
+            icon: 'SatelliteDish',
+          },
+          {
+            alias: 'financial-receivables',
+            path: '/Financial/Receivables',
+            title: 'Receivables',
+            icon: 'CreditCard',
           }
         ]
       },

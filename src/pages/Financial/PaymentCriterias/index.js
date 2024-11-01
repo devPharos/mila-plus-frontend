@@ -99,7 +99,7 @@ export default function FinancialPaymentCriteria() {
             show: true,
             id,
             fields: [
-              description,
+              description.slice(0, 50) + "...",
               recurring_qt,
               recurring_metric,
               fee_qt,

@@ -136,12 +136,12 @@ function App() {
             title: 'Issuer',
             icon: 'SatelliteDish',
           },
-          {
-            alias: 'financial-receivables',
-            path: '/Financial/Receivables',
-            title: 'Receivables',
-            icon: 'CreditCard',
-          }
+          // {
+          //   alias: 'financial-receivables',
+          //   path: '/Financial/Receivables',
+          //   title: 'Receivables',
+          //   icon: 'CreditCard',
+          // }
         ]
       },
       {

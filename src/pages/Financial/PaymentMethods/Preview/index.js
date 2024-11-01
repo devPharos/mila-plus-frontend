@@ -282,6 +282,7 @@ export default function PagePreview({
                               width={""}
                               title="Description"
                               grow
+                              rows={3}
                               defaultValue={pageData.description}
                               InputContext={InputContext}
                             />

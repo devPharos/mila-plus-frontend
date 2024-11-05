@@ -1,3 +1,4 @@
+// prospect preview page
 import { Form } from "@unform/web";
 import {
   CheckCircle,
@@ -110,6 +111,7 @@ export default function PagePreview({
     { value: "female", label: "Female" },
     { value: "not specified", label: "Not Specified" },
   ];
+
   const yesOrNoOptions = [
     { value: true, label: "Yes" },
     { value: false, label: "No" },

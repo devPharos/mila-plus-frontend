@@ -91,6 +91,8 @@ export default function FinancialReceivables() {
   useEffect(() => {
     async function getBankAccounts() {
       const { data } = await api.get("/receivables");
+      console.log("data get all in receivables", data);
+
       const gridDataValues = data.map(
         ({
           id,
@@ -102,6 +104,8 @@ export default function FinancialReceivables() {
           amount,
           fee,
           total,
+          paymentMethod,
+          paymentMethod_id,
           status,
           status_date,
         }) => {
@@ -116,6 +120,7 @@ export default function FinancialReceivables() {
               amount,
               fee,
               total,
+              paymentMethod.description.slice(0, 20),
               status,
               status_date,
             ],
@@ -152,20 +157,20 @@ export default function FinancialReceivables() {
           <Filter size={14} /> Custom Filters
         </FiltersBar>
       </PageHeader>
-        <Filters
-          access={hasAccessTo(
-            accesses,
-            currentPage.path.split("/")[1],
-            currentPage.alias
-          )}
-          handleNew={() => setOpened("new")}
-          search
-          handleFilters={handleFilters}
-          gridHeader={gridHeader}
-          gridData={gridData}
-          setGridHeader={setGridHeader}
-          activeFilters={activeFilters}
-        />
+      <Filters
+        access={hasAccessTo(
+          accesses,
+          currentPage.path.split("/")[1],
+          currentPage.alias
+        )}
+        handleNew={() => setOpened("new")}
+        search
+        handleFilters={handleFilters}
+        gridHeader={gridHeader}
+        gridData={gridData}
+        setGridHeader={setGridHeader}
+        activeFilters={activeFilters}
+      />
 
       <Grid
         gridData={gridData}

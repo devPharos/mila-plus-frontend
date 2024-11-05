@@ -1,3 +1,4 @@
+// receivables preview page
 import { Form } from "@unform/web";
 import { Building, Pencil, X, ListMinus, Filter } from "lucide-react";
 import React, {
@@ -68,8 +69,6 @@ export default function PagePreview({
 }) {
   const { accesses } = useSelector((state) => state.auth);
 
-  const currentPage = getCurrentPage();
-
   const [pageData, setPageData] = useState({
     loaded: false,
     filial_id: null,
@@ -89,21 +88,21 @@ export default function PagePreview({
     is_recurrency: false,
     contract_number: "",
     paymentmethod_id: null,
-    paymentmethod: {
-      name: "",
+    paymentMethod: {
+      description: "",
     },
     status: "open",
     status_date: null,
     authorization_code: "",
     chartofaccount_id: null,
-    chartofaccount: {
+    chartOfAccount: {
       name: "",
     },
     paymentcriteria_id: null,
-    paymentcriteria: {
-      name: "",
+    paymentCriteria: {
+      description: "",
     },
-    receivableInstallmentsItems: [],
+    installment: [],
   });
 
   const [registry, setRegistry] = useState({
@@ -128,13 +127,15 @@ export default function PagePreview({
   const [paymentCriteriaOptions, setPaymentCriteriaOptions] = useState([]);
   const [chartOfAccountOptions, setChartOfAccountOptions] = useState([]);
 
-  const [receivableInstallmentsItems, setReceivableInstallmentsItems] =
-    useState([]);
-
   const [orderBy, setOrderBy] = useState({ column: "Code", asc: true });
 
   const [gridData, setGridData] = useState();
   const [gridHeader, setGridHeader] = useState([
+    {
+      title: "Installment",
+      type: "text",
+      filter: false,
+    },
     {
       title: "Amount",
       type: "currency",
@@ -153,6 +154,11 @@ export default function PagePreview({
     {
       title: "Status",
       type: "text",
+      filter: false,
+    },
+    {
+      title: "Status Date",
+      type: "date",
       filter: false,
     },
   ]);
@@ -195,38 +201,44 @@ export default function PagePreview({
     }
 
     if (id === "new") {
-      /*
-        setOpened(response.data.id);
-        setPageData({ ...pageData, ...data });
-        setSuccessfullyUpdated(true);
-        toast("Saved!", { autoClose: 1000 });
-        handleOpened(null);
-      */
-
       try {
         const response = await api.post(`/receivables`, data);
         setPageData({ ...pageData, ...response.data });
 
+        console.log("response", response.data);
         setOpened(response.data.id);
+
+        // Navega para a aba de 'Installments'
         setActiveMenu("installments");
 
+        id = response.data.id;
 
+        toast("Created!", { autoClose: 1000 });
 
-        console.log(response.data);
+        // Atualiza os dados do grid com os 'receivableInstallmentsItems' retornados
 
-        const gridDataValues = response.data.receivableInstallmentsItems.map(
-          ({ id, canceled_at, amount, fee, total, status }) => {
-            const ret = {
+        if (response?.data?.installments) {
+          const gridDataValues = response.data.installments.map(
+            ({
+              id,
+              canceled_at,
+              installment,
+              amount,
+              fee,
+              total,
+              status,
+              status_date,
+            }) => ({
               show: true,
               id,
-              fields: [amount, fee, total, status],
+              fields: [installment, amount, fee, total, status, status_date],
               canceled: canceled_at,
-            };
-            return ret;
-          }
-        );
+            })
+          );
 
-        setGridData(gridDataValues);
+          setGridData(gridDataValues);
+        }
+
         setStepCount(2);
       } catch (err) {
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
@@ -240,12 +252,34 @@ export default function PagePreview({
           await api.put(`/receivables/${id}`, objUpdated);
           setPageData({ ...pageData, ...objUpdated });
           setSuccessfullyUpdated(true);
+
+          // Atualiza os dados do grid com os 'receivableInstallmentsItems' retornados
+          const gridDataValues = response.data.installment.map(
+            ({
+              id,
+              canceled_at,
+              installment,
+              amount,
+              fee,
+              total,
+              status,
+              status_date,
+            }) => ({
+              show: true,
+              id,
+              fields: [installment, amount, fee, total, status, status_date],
+              canceled: canceled_at,
+            })
+          );
+
+          setGridData(gridDataValues);
           toast("Saved!", { autoClose: 1000 });
           handleOpened(null);
         } catch (err) {
           toast(err.response.data.error, { type: "error", autoClose: 3000 });
         }
       } else {
+        console.log("No changes to be saved!");
         console.log(updated);
       }
     }
@@ -255,6 +289,7 @@ export default function PagePreview({
     async function getPageData() {
       try {
         const { data } = await api.get(`/receivables/${id}`);
+
         setPageData({ ...data, loaded: true });
 
         const {
@@ -265,6 +300,7 @@ export default function PagePreview({
           canceled_by,
           canceled_at,
         } = data;
+
         const registries = await getRegistries({
           created_by,
           created_at,
@@ -273,10 +309,35 @@ export default function PagePreview({
           canceled_by,
           canceled_at,
         });
+
         setRegistry(registries);
+
+        // Atualiza os dados do grid com os 'receivableInstallmentsItems'
+        const gridDataValues = data.installments.map(
+          ({
+            id,
+            canceled_at,
+            installment,
+            amount,
+            fee,
+            total,
+            status,
+            status_date,
+          }) => ({
+            show: true,
+            id,
+            fields: [installment, amount, fee, total, status, status_date],
+            canceled: canceled_at,
+          })
+        );
+
+        setGridData(gridDataValues);
       } catch (err) {
         console.log(err);
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
+        toast(err || err.response.data.error, {
+          type: "error",
+          autoClose: 3000,
+        });
       }
     }
     async function getDefaultOptions() {
@@ -333,7 +394,7 @@ export default function PagePreview({
       getPageData();
     }
     getDefaultOptions();
-  }, []);
+  }, [id]);
 
   return (
     <Preview formType={formType} fullscreen={fullscreen}>
@@ -370,6 +431,7 @@ export default function PagePreview({
               <RegisterFormMenu
                 setActiveMenu={setActiveMenu}
                 activeMenu={activeMenu}
+                disabled={id === "new"}
                 name="installments"
               >
                 <ListMinus size={16} /> Installments
@@ -402,7 +464,6 @@ export default function PagePreview({
                             registry={registry}
                             InputContext={InputContext}
                           />
-
 
                           <Grid
                             gridData={gridData}
@@ -591,7 +652,8 @@ export default function PagePreview({
                                   pageData.paymentmethod_id
                                     ? {
                                         value: pageData.paymentmethod_id,
-                                        label: pageData.paymentmethod.name,
+                                        label:
+                                          pageData.paymentMethod.description,
                                       }
                                     : null
                                 }
@@ -621,7 +683,7 @@ export default function PagePreview({
                                   pageData.chartofaccount_id
                                     ? {
                                         value: pageData.chartofaccount_id,
-                                        label: pageData.chartofaccount.name,
+                                        label: pageData.chartOfAccount.name,
                                       }
                                     : null
                                 }
@@ -640,7 +702,7 @@ export default function PagePreview({
                                   pageData.paymentcriteria_id
                                     ? {
                                         value: pageData.paymentcriteria_id,
-                                        label: pageData.paymentcriteria.name,
+                                        label: pageData.paymentCriteria.name,
                                       }
                                     : null
                                 }

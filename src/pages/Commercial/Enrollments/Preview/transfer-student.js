@@ -48,12 +48,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 
 export const InputContext = createContext({});
 
-export default function TransferOutside({
-  access = null,
-  handleOpened,
-  setOpened,
-  defaultFormType = "preview",
-}) {
+export default function TransferOutside({ access = null, handleOpened }) {
   const [searchparams, setSearchParams] = useSearchParams();
   const [pageData, setPageData] = useState({
     enrollmentemergencies: [
@@ -130,7 +125,6 @@ export default function TransferOutside({
             canceled_at,
           });
           setRegistry(registries);
-
           setPageData({
             ...data,
             documents,
@@ -142,7 +136,7 @@ export default function TransferOutside({
             lastActiveMenu: menus.find((menu) =>
               menu.name === searchparams.has("activeMenu")
                 ? searchparams.get("activeMenu")
-                : data.form_step
+                : menus.find((menu) => menu.name === data.form_step)
             ),
           });
         } catch (err) {
@@ -489,7 +483,9 @@ export default function TransferOutside({
                                 name="middle_name"
                                 grow
                                 title="Middle Name"
-                                defaultValue={pageData.students.middle_name}
+                                defaultValue={
+                                  pageData.students.middle_name || ""
+                                }
                                 InputContext={InputContext}
                               />
                               <Input
@@ -611,34 +607,36 @@ export default function TransferOutside({
                                     defaultValue={document.id}
                                     InputContext={InputContext}
                                   />
-                                  <InputLine title={document.title}>
-                                    {!document.multiple &&
-                                      pageData.enrollmentdocuments &&
-                                      pageData.enrollmentdocuments.filter(
-                                        (enrollmentdocument) =>
-                                          enrollmentdocument.document_id ===
-                                          document.id
-                                      ).length === 0 && (
-                                        <FileInput
+                                  {!pageData.signature && (
+                                    <InputLine title={document.title}>
+                                      {!document.multiple &&
+                                        pageData.enrollmentdocuments &&
+                                        pageData.enrollmentdocuments.filter(
+                                          (enrollmentdocument) =>
+                                            enrollmentdocument.document_id ===
+                                            document.id
+                                        ).length === 0 && (
+                                          <FileInput
+                                            type="file"
+                                            name="file_id"
+                                            title={"File"}
+                                            required={document.required}
+                                            grow
+                                            InputContext={InputContext}
+                                          />
+                                        )}
+                                      {document.multiple && (
+                                        <FileInputMultiple
                                           type="file"
                                           name="file_id"
-                                          title={"File"}
                                           required={document.required}
+                                          title={"Multiple Files"}
                                           grow
                                           InputContext={InputContext}
                                         />
                                       )}
-                                    {document.multiple && (
-                                      <FileInputMultiple
-                                        type="file"
-                                        name="file_id"
-                                        required={document.required}
-                                        title={"Multiple Files"}
-                                        grow
-                                        InputContext={InputContext}
-                                      />
-                                    )}
-                                  </InputLine>
+                                    </InputLine>
+                                  )}
                                   {pageData.enrollmentdocuments &&
                                     pageData.enrollmentdocuments.length > 0 && (
                                       <InputLine subtitle="Attached Files">
@@ -672,17 +670,23 @@ export default function TransferOutside({
                                                             }
                                                           </div>
                                                         </a>
-                                                        <button
-                                                          type="button"
-                                                          onClick={() =>
-                                                            handleDeleteDocument(
-                                                              enrollmentdocument.id
-                                                            )
-                                                          }
-                                                          className="text-xs text-red-700 cursor-pointer flex flex-row items-center justify-start gap-1 mt-1 px-2 py-1 rounded hover:bg-red-100"
-                                                        >
-                                                          <X size={12} /> Delete
-                                                        </button>
+                                                        {console.log(
+                                                          pageData.lastActiveMenu
+                                                        )}
+                                                        {!pageData.signature && (
+                                                          <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                              handleDeleteDocument(
+                                                                enrollmentdocument.id
+                                                              )
+                                                            }
+                                                            className="text-xs text-red-700 cursor-pointer flex flex-row items-center justify-start gap-1 mt-1 px-2 py-1 rounded hover:bg-red-100"
+                                                          >
+                                                            <X size={12} />{" "}
+                                                            Delete
+                                                          </button>
+                                                        )}
                                                       </div>
                                                     </>
                                                   );

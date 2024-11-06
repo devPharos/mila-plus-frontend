@@ -474,6 +474,63 @@ export default function SponsorOutside({
                               InputContext={InputContext}
                             />
                           </InputLine>
+                          <InputLine title="Legal Entity">
+                            <Input
+                              type="text"
+                              name="legal_entity_name"
+                              grow
+                              title="Name of the company"
+                              defaultValue={
+                                pageData.enrollmentsponsors[0].legal_entity_name
+                              }
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              type="text"
+                              name="legal_entity_email"
+                              grow
+                              title="E-mail"
+                              defaultValue={
+                                pageData.enrollmentsponsors[0]
+                                  .legal_entity_email
+                              }
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              type="text"
+                              name="legal_entity_phone"
+                              grow
+                              title="Phone Number"
+                              isPhoneNumber
+                              defaultValue={
+                                pageData.enrollmentsponsors[0]
+                                  .legal_entity_phone
+                              }
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              type="text"
+                              name="legal_entity_address"
+                              grow
+                              title="Address"
+                              defaultValue={
+                                pageData.enrollmentsponsors[0]
+                                  .legal_entity_address
+                              }
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              type="text"
+                              name="legal_entity_position"
+                              grow
+                              title="Position of the person who is signing this affidavit."
+                              defaultValue={
+                                pageData.enrollmentsponsors[0]
+                                  .legal_entity_position
+                              }
+                              InputContext={InputContext}
+                            />
+                          </InputLine>
                           <InputLine title="Address Information">
                             <Input
                               type="text"
@@ -653,34 +710,36 @@ export default function SponsorOutside({
                                     defaultValue={document.id}
                                     InputContext={InputContext}
                                   />
-                                  <InputLine title={document.title}>
-                                    {!document.multiple &&
-                                      pageData.enrollmentdocuments &&
-                                      pageData.enrollmentdocuments.filter(
-                                        (enrollmentdocument) =>
-                                          enrollmentdocument.document_id ===
-                                          document.id
-                                      ).length === 0 && (
-                                        <FileInput
+                                  {pageData.lastActiveMenu.order < 10 && (
+                                    <InputLine title={document.title}>
+                                      {!document.multiple &&
+                                        pageData.enrollmentdocuments &&
+                                        pageData.enrollmentdocuments.filter(
+                                          (enrollmentdocument) =>
+                                            enrollmentdocument.document_id ===
+                                            document.id
+                                        ).length === 0 && (
+                                          <FileInput
+                                            type="file"
+                                            name="file_id"
+                                            title={"File"}
+                                            required={document.required}
+                                            grow
+                                            InputContext={InputContext}
+                                          />
+                                        )}
+                                      {document.multiple && (
+                                        <FileInputMultiple
                                           type="file"
                                           name="file_id"
-                                          title={"File"}
                                           required={document.required}
+                                          title={"Multiple Files"}
                                           grow
                                           InputContext={InputContext}
                                         />
                                       )}
-                                    {document.multiple && (
-                                      <FileInputMultiple
-                                        type="file"
-                                        name="file_id"
-                                        required={document.required}
-                                        title={"Multiple Files"}
-                                        grow
-                                        InputContext={InputContext}
-                                      />
-                                    )}
-                                  </InputLine>
+                                    </InputLine>
+                                  )}
                                   {pageData.enrollmentdocuments &&
                                     pageData.enrollmentdocuments.length > 0 && (
                                       <InputLine subtitle="Attached Files">
@@ -714,17 +773,21 @@ export default function SponsorOutside({
                                                             }
                                                           </div>
                                                         </a>
-                                                        <button
-                                                          type="button"
-                                                          onClick={() =>
-                                                            handleDeleteDocument(
-                                                              enrollmentdocument.id
-                                                            )
-                                                          }
-                                                          className="text-xs text-red-700 cursor-pointer flex flex-row items-center justify-start gap-1 mt-1 px-2 py-1 rounded hover:bg-red-100"
-                                                        >
-                                                          <X size={12} /> Delete
-                                                        </button>
+                                                        {pageData.lastActiveMenu
+                                                          .order < 10 && (
+                                                          <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                              handleDeleteDocument(
+                                                                enrollmentdocument.id
+                                                              )
+                                                            }
+                                                            className="text-xs text-red-700 cursor-pointer flex flex-row items-center justify-start gap-1 mt-1 px-2 py-1 rounded hover:bg-red-100"
+                                                          >
+                                                            <X size={12} />{" "}
+                                                            Delete
+                                                          </button>
+                                                        )}
                                                       </div>
                                                     </>
                                                   );

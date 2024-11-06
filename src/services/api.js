@@ -40,8 +40,9 @@ api.interceptors.response.use(
     if (error.response.status === 401) {
       // window.location.href = "/401";
 
-      return <Navigate to="/login" />;
+      window.location.href = "/login";
 
+      store.dispatch(logout());
     }
     if (error.response.status === 404) {
       // window.location.href = "/404";

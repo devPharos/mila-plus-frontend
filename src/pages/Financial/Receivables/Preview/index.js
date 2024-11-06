@@ -67,8 +67,6 @@ export default function PagePreview({
   successfullyUpdated,
   setSuccessfullyUpdated,
 }) {
-  const { accesses } = useSelector((state) => state.auth);
-
   const [pageData, setPageData] = useState({
     loaded: false,
     filial_id: null,
@@ -82,7 +80,6 @@ export default function PagePreview({
     entry_date: null,
     due_date: null,
     amount: 0,
-    fee: 0,
     total: 0,
     memo: "",
     is_recurrency: false,
@@ -117,9 +114,6 @@ export default function PagePreview({
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
-  const [activeFilters, setActiveFilters] = useState([]);
-
-  const [stepCount, setStepCount] = useState(1);
 
   const [filialOptions, setFilialOptions] = useState([]);
   const [issuerOptions, setIssuerOptions] = useState([]);
@@ -127,22 +121,20 @@ export default function PagePreview({
   const [paymentCriteriaOptions, setPaymentCriteriaOptions] = useState([]);
   const [chartOfAccountOptions, setChartOfAccountOptions] = useState([]);
 
+  const [itensInstallmentsIsTemp, setItensInstallmentsIsTemp] = useState(false);
+  const [itensInstallments, setItensInstallments] = useState([]);
+
   const [orderBy, setOrderBy] = useState({ column: "Code", asc: true });
 
   const [gridData, setGridData] = useState();
   const [gridHeader, setGridHeader] = useState([
     {
       title: "Installment",
-      type: "text",
-      filter: false,
-    },
-    {
-      title: "Amount",
       type: "currency",
       filter: false,
     },
     {
-      title: "Fee",
+      title: "Amount",
       type: "currency",
       filter: false,
     },
@@ -157,7 +149,7 @@ export default function PagePreview({
       filter: false,
     },
     {
-      title: "Status Date",
+      title: "Due Date",
       type: "date",
       filter: false,
     },
@@ -166,17 +158,7 @@ export default function PagePreview({
   const auth = useSelector((state) => state.auth);
 
   const generalForm = useRef();
-
-  function handleFilters({ title = "", value = "" }) {
-    if (value || (title === "Active" && value !== "")) {
-      setActiveFilters([
-        ...activeFilters.filter((el) => el.title != title),
-        { title, value },
-      ]);
-    } else {
-      setActiveFilters([...activeFilters.filter((el) => el.title != title)]);
-    }
-  }
+  const filtersForm = useRef();
 
   function handleCloseForm() {
     if (!successfullyUpdated) {
@@ -187,6 +169,7 @@ export default function PagePreview({
         return;
       }
     }
+
     handleOpened(null);
   }
 
@@ -208,79 +191,112 @@ export default function PagePreview({
         console.log("response", response.data);
         setOpened(response.data.id);
 
-        // Navega para a aba de 'Installments'
-        setActiveMenu("installments");
+        if (response.data.created_by) {
+          const registries = await getRegistries({
+            created_by: response.data.created_by,
+            created_at: response.data.created_at,
+          });
+          setRegistry(registries);
+        }
 
-        id = response.data.id;
+        const installmentsItens = await api.post(
+          `/receivableinstallments/temp`,
+          response.data
+        );
 
-        toast("Created!", { autoClose: 1000 });
+        console.log("installmentsItens", installmentsItens);
 
-        // Atualiza os dados do grid com os 'receivableInstallmentsItems' retornados
-
-        if (response?.data?.installments) {
-          const gridDataValues = response.data.installments.map(
+        if (installmentsItens) {
+          const gridDataValues = installmentsItens.data.map(
             ({
-              id,
               canceled_at,
               installment,
               amount,
-              fee,
               total,
               status,
               status_date,
             }) => ({
               show: true,
-              id,
-              fields: [installment, amount, fee, total, status, status_date],
+              id: installment,
+              fields: [installment, amount,  total, status, status_date],
               canceled: canceled_at,
             })
           );
 
           setGridData(gridDataValues);
+          setItensInstallments(installmentsItens.data);
         }
 
-        setStepCount(2);
+        setItensInstallmentsIsTemp(true);
+
+        setActiveMenu("installments");
+        toast("Created!", { autoClose: 1000 });
       } catch (err) {
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     } else if (id !== "new") {
       const updated = handleUpdatedFields(data, pageData);
 
-      if (updated.length > 0) {
+      if (updated.length > 0 || itensInstallmentsIsTemp) {
         const objUpdated = Object.fromEntries(updated);
+
         try {
-          await api.put(`/receivables/${id}`, objUpdated);
+          const response = await api.put(`/receivables/${id}`, objUpdated);
           setPageData({ ...pageData, ...objUpdated });
           setSuccessfullyUpdated(true);
 
           // Atualiza os dados do grid com os 'receivableInstallmentsItems' retornados
-          const gridDataValues = response.data.installment.map(
-            ({
-              id,
-              canceled_at,
-              installment,
-              amount,
-              fee,
-              total,
-              status,
-              status_date,
-            }) => ({
-              show: true,
-              id,
-              fields: [installment, amount, fee, total, status, status_date],
-              canceled: canceled_at,
-            })
-          );
 
-          setGridData(gridDataValues);
+          if (
+            response?.data?.installments &&
+            response.data.installments.length > 0
+          ) {
+            const gridDataValues = response.data.installments.map(
+              ({
+                canceled_at,
+                installment,
+                amount,
+                total,
+                status,
+                status_date,
+              }) => ({
+                show: true,
+                id: installment,
+                fields: [installment, amount, total, status, status_date],
+                canceled: canceled_at,
+              })
+            );
+
+            // comparar para ver se o antigo gridData é diferente do novo gridData
+            // se for diferente, fazer um tost avisando que foi atualizado e atualizar a activeMenu para 'installments'
+
+            if (gridDataValues !== gridData) {
+              toast("Installments updated!", { autoClose: 1000 });
+              setActiveMenu("installments");
+
+              handleOpened(null);
+            }
+
+            setGridData(gridDataValues);
+            setItensInstallments(response.data.installments);
+          } else {
+            handleOpened(null);
+          }
+
           toast("Saved!", { autoClose: 1000 });
-          handleOpened(null);
         } catch (err) {
-          toast(err.response.data.error, { type: "error", autoClose: 3000 });
+          console.log(err);
+          toast(err, { type: "error", autoClose: 3000 });
         }
       } else {
         console.log("No changes to be saved!");
         console.log(updated);
+
+        toast("No changes to be saved!", {
+          autoClose: 1000,
+          type: "info",
+          transition: Zoom,
+        });
       }
     }
   }
@@ -289,7 +305,6 @@ export default function PagePreview({
     async function getPageData() {
       try {
         const { data } = await api.get(`/receivables/${id}`);
-
         setPageData({ ...data, loaded: true });
 
         const {
@@ -312,10 +327,8 @@ export default function PagePreview({
 
         setRegistry(registries);
 
-        // Atualiza os dados do grid com os 'receivableInstallmentsItems'
         const gridDataValues = data.installments.map(
           ({
-            id,
             canceled_at,
             installment,
             amount,
@@ -325,7 +338,7 @@ export default function PagePreview({
             status_date,
           }) => ({
             show: true,
-            id,
+            id: installment,
             fields: [installment, amount, fee, total, status, status_date],
             canceled: canceled_at,
           })
@@ -369,7 +382,12 @@ export default function PagePreview({
         const paymentCriteriaOptions = paymentCriteriaData.data
           .filter((f) => f.id !== id)
           .map((f) => {
-            return { value: f.id, label: f.description.slice(0, 20) };
+            return {
+              value: f.id,
+              label:
+                f.description.slice(0, 20) +
+                (f.recurring_metric ? " - " + f.recurring_metric : ""),
+            };
           });
 
         const chartOfAccountOptions = chartOfAccountData.data
@@ -441,14 +459,14 @@ export default function PagePreview({
               <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll">
                 {activeMenu === "installments" && (
                   <Form
-                    ref={generalForm}
+                    ref={filtersForm}
                     onSubmit={handleGeneralFormSubmit}
                     className="w-full pb-32"
                   >
                     <InputContext.Provider
                       value={{
                         id,
-                        generalForm,
+                        filtersForm,
                         setSuccessfullyUpdated,
                         fullscreen,
                         setFullscreen,
@@ -463,6 +481,11 @@ export default function PagePreview({
                             title={(pageData?.name || "") + " Installments"}
                             registry={registry}
                             InputContext={InputContext}
+                            saveText={
+                              itensInstallmentsIsTemp
+                                ? "Confirm Installments"
+                                : "Save changes"
+                            }
                           />
 
                           <Grid
@@ -503,6 +526,11 @@ export default function PagePreview({
                             title={pageData?.name}
                             registry={registry}
                             InputContext={InputContext}
+                            saveText={
+                              itensInstallmentsIsTemp
+                                ? "Confirm Installments"
+                                : "Save changes"
+                            }
                           />
 
                           <InputLineGroup
@@ -549,6 +577,90 @@ export default function PagePreview({
                                 title="Due Date"
                                 grow
                                 defaultValue={pageData.due_date}
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+
+                            <InputLine title="Issuer">
+                              <SelectPopover
+                                name="issuer_id"
+                                required
+                                title="Issuer"
+                                isSearchable
+                                grow
+                                defaultValue={
+                                  pageData.issuer_id
+                                    ? {
+                                        value: pageData.issuer_id,
+                                        label: pageData.issuer.name,
+                                      }
+                                    : null
+                                }
+                                options={issuerOptions}
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+
+                            <InputLine title="Contract Number">
+                              <Input
+                                type="text"
+                                name="contract_number"
+                                title="Contract Number"
+                                grow
+                                defaultValue={pageData.contract_number}
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+
+                            <InputLine title="Payment Method">
+                              <SelectPopover
+                                name="paymentmethod_id"
+                                title="Payment Method"
+                                isSearchable
+                                grow
+                                defaultValue={
+                                  pageData.paymentmethod_id
+                                    ? {
+                                        value: pageData.paymentmethod_id,
+                                        label:
+                                          pageData.paymentMethod.description.slice(
+                                            0,
+                                            20
+                                          ),
+                                      }
+                                    : null
+                                }
+                                options={paymentMethodOptions}
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+
+                            <InputLine title="Payment Criteria">
+                              <SelectPopover
+                                name="paymentcriteria_id"
+                                title="Payment Criteria"
+                                isSearchable
+                                grow
+                                required
+                                defaultValue={
+                                  pageData.paymentcriteria_id
+                                    ? {
+                                        value: pageData.paymentcriteria_id,
+                                        label:
+                                          pageData.paymentCriteria.description.slice(
+                                            0,
+                                            20
+                                          ) +
+                                          (pageData.paymentCriteria
+                                            .recurring_metric
+                                            ? " - " +
+                                              pageData.paymentCriteria
+                                                .recurring_metric
+                                            : ""),
+                                      }
+                                    : null
+                                }
+                                options={paymentCriteriaOptions}
                                 InputContext={InputContext}
                               />
                             </InputLine>
@@ -612,54 +724,6 @@ export default function PagePreview({
                                 options={yesOrNoOptions}
                                 InputContext={InputContext}
                               />
-                              <Input
-                                type="text"
-                                name="contract_number"
-                                title="Contract Number"
-                                grow
-                                defaultValue={pageData.contract_number}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-
-                            <InputLine title="Issuer">
-                              <SelectPopover
-                                name="issuer_id"
-                                required
-                                title="Issuer"
-                                isSearchable
-                                grow
-                                defaultValue={
-                                  pageData.issuer_id
-                                    ? {
-                                        value: pageData.issuer_id,
-                                        label: pageData.issuer.name,
-                                      }
-                                    : null
-                                }
-                                options={issuerOptions}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-
-                            <InputLine title="Payment Method">
-                              <SelectPopover
-                                name="paymentmethod_id"
-                                title="Payment Method"
-                                isSearchable
-                                grow
-                                defaultValue={
-                                  pageData.paymentmethod_id
-                                    ? {
-                                        value: pageData.paymentmethod_id,
-                                        label:
-                                          pageData.paymentMethod.description,
-                                      }
-                                    : null
-                                }
-                                options={paymentMethodOptions}
-                                InputContext={InputContext}
-                              />
                             </InputLine>
 
                             <InputLine title="Authorization Code">
@@ -688,25 +752,6 @@ export default function PagePreview({
                                     : null
                                 }
                                 options={chartOfAccountOptions}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-
-                            <InputLine title="Payment Criteria">
-                              <SelectPopover
-                                name="paymentcriteria_id"
-                                title="Payment Criteria"
-                                isSearchable
-                                grow
-                                defaultValue={
-                                  pageData.paymentcriteria_id
-                                    ? {
-                                        value: pageData.paymentcriteria_id,
-                                        label: pageData.paymentCriteria.name,
-                                      }
-                                    : null
-                                }
-                                options={paymentCriteriaOptions}
                                 InputContext={InputContext}
                               />
                             </InputLine>

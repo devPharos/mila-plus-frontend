@@ -141,6 +141,12 @@ function App() {
             path: '/Financial/Receivables',
             title: 'Receivables',
             icon: 'CreditCard',
+          },
+          {
+            alias: 'financial-payees',
+            path: '/Financial/Payees',
+            title: 'Payees',
+            icon: 'CreditCard',
           }
         ]
       },

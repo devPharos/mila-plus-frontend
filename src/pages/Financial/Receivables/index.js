@@ -57,7 +57,7 @@ export default function FinancialReceivables() {
       filter: false,
     },
     {
-      title: "Payment Method",
+      title: "Payment Criteria",
       type: "text",
       filter: false,
     },
@@ -91,7 +91,6 @@ export default function FinancialReceivables() {
   useEffect(() => {
     async function getBankAccounts() {
       const { data } = await api.get("/receivables");
-      console.log("data get all in receivables", data);
 
       const gridDataValues = data.map(
         ({
@@ -104,8 +103,8 @@ export default function FinancialReceivables() {
           amount,
           fee,
           total,
-          paymentMethod,
-          paymentMethod_id,
+          paymentcriteria_id,
+          paymentCriteria,
           status,
           status_date,
         }) => {
@@ -120,7 +119,8 @@ export default function FinancialReceivables() {
               amount,
               fee,
               total,
-              paymentMethod.description.slice(0, 20),
+              (paymentcriteria_id
+                ? paymentCriteria.description.slice(0, 20) : ""),
               status,
               status_date,
             ],

@@ -20,6 +20,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { saveAs } from "file-saver";
 import Input from "~/components/RegisterForm/Input";
 import RegisterFormMenu from "~/components/RegisterForm/Menu";
 import api from "~/services/api";
@@ -879,6 +880,30 @@ export default function EnrollmentOutside({
     }
   }
 
+  function handleGetAffidavitSupport(sponsorId = null) {
+    if (!sponsorId) {
+      return;
+    }
+    api
+      .get(`/pdf/affidavit-support/${sponsorId}`, {
+        responseType: "blob",
+      })
+      .then((res) => {
+        console.log(3);
+        const pdfBlob = new Blob([res.data], { type: "application/pdf" });
+        saveAs(
+          pdfBlob,
+          `affidavit_of_support_${"bc59904a-686e-4b05-b69f-64960af78565"}.pdf`
+        );
+      })
+      .catch((err) => {
+        toast("Affidavit not avaiable yet.", {
+          type: "error",
+          autoClose: 3000,
+        });
+      });
+  }
+
   return (
     <Preview formType={formType} fullscreen={fullscreen}>
       {!sent && pageData.loaded ? (
@@ -1529,6 +1554,9 @@ export default function EnrollmentOutside({
                                             required
                                             grow
                                             title="Full Name"
+                                            readOnly={
+                                              pageData.lastActiveMenu.order >= 7
+                                            }
                                             defaultValue={dependent.name}
                                             InputContext={InputContext}
                                           />
@@ -1537,6 +1565,9 @@ export default function EnrollmentOutside({
                                             required
                                             grow
                                             title="Gender"
+                                            readOnly={
+                                              pageData.lastActiveMenu.order >= 7
+                                            }
                                             options={genderOptions}
                                             isSearchable
                                             defaultValue={genderOptions.find(
@@ -1551,6 +1582,9 @@ export default function EnrollmentOutside({
                                             required
                                             grow
                                             title="Dept1 Type"
+                                            readOnly={
+                                              pageData.lastActiveMenu.order >= 7
+                                            }
                                             options={dept1TypeOptions}
                                             isSearchable
                                             defaultValue={dept1TypeOptions.find(
@@ -1565,6 +1599,9 @@ export default function EnrollmentOutside({
                                             required
                                             grow
                                             title="Relationship Type"
+                                            readOnly={
+                                              pageData.lastActiveMenu.order >= 7
+                                            }
                                             options={relationshipTypeOptions}
                                             isSearchable
                                             defaultValue={relationshipTypeOptions.find(
@@ -1580,6 +1617,9 @@ export default function EnrollmentOutside({
                                             required
                                             grow
                                             title="E-mail"
+                                            readOnly={
+                                              pageData.lastActiveMenu.order >= 7
+                                            }
                                             defaultValue={dependent.email}
                                             InputContext={InputContext}
                                           />
@@ -1589,6 +1629,9 @@ export default function EnrollmentOutside({
                                             required
                                             grow
                                             title="Phone Number"
+                                            readOnly={
+                                              pageData.lastActiveMenu.order >= 7
+                                            }
                                             isPhoneNumber
                                             defaultValue={dependent.phone}
                                             InputContext={InputContext}
@@ -1613,26 +1656,47 @@ export default function EnrollmentOutside({
                                                     }
                                                     InputContext={InputContext}
                                                   />
-                                                  <InputLine
-                                                    subtitle={
-                                                      dependentDocument.title
-                                                    }
-                                                  >
-                                                    {!dependentDocument.multiple &&
-                                                      pageData.dependentDocuments &&
-                                                      pageData.dependentDocuments.filter(
-                                                        (doc) =>
-                                                          doc.document_id ===
-                                                          dependentDocument.id
-                                                      ).length === 0 && (
-                                                        <FileInput
+                                                  {pageData.lastActiveMenu
+                                                    .order < 7 && (
+                                                    <InputLine
+                                                      subtitle={
+                                                        dependentDocument.title
+                                                      }
+                                                    >
+                                                      {!dependentDocument.multiple &&
+                                                        pageData.dependentDocuments &&
+                                                        pageData.dependentDocuments.filter(
+                                                          (doc) =>
+                                                            doc.document_id ===
+                                                            dependentDocument.id
+                                                        ).length === 0 && (
+                                                          <FileInput
+                                                            type="file"
+                                                            name="file_id"
+                                                            title={"File"}
+                                                            required={
+                                                              dependentDocument.required &&
+                                                              dependent
+                                                                .documents
+                                                                .length === 0
+                                                            }
+                                                            grow
+                                                            InputContext={
+                                                              InputContext
+                                                            }
+                                                          />
+                                                        )}
+                                                      {dependentDocument.multiple && (
+                                                        <FileInputMultiple
                                                           type="file"
                                                           name="file_id"
-                                                          title={"File"}
                                                           required={
                                                             dependentDocument.required &&
                                                             dependent.documents
                                                               .length === 0
+                                                          }
+                                                          title={
+                                                            "Multiple Files"
                                                           }
                                                           grow
                                                           InputContext={
@@ -1640,23 +1704,8 @@ export default function EnrollmentOutside({
                                                           }
                                                         />
                                                       )}
-                                                    {dependentDocument.multiple && (
-                                                      <FileInputMultiple
-                                                        type="file"
-                                                        name="file_id"
-                                                        required={
-                                                          dependentDocument.required &&
-                                                          dependent.documents
-                                                            .length === 0
-                                                        }
-                                                        title={"Multiple Files"}
-                                                        grow
-                                                        InputContext={
-                                                          InputContext
-                                                        }
-                                                      />
-                                                    )}
-                                                  </InputLine>
+                                                    </InputLine>
+                                                  )}
                                                   {dependent.documents &&
                                                     dependent.documents.length >
                                                       0 && (
@@ -1703,23 +1752,28 @@ export default function EnrollmentOutside({
                                                                           }
                                                                         </div>
                                                                       </a>
-                                                                      <button
-                                                                        type="button"
-                                                                        onClick={() =>
-                                                                          handleDeleteDependentDocument(
-                                                                            dependent.id,
-                                                                            doc.id
-                                                                          )
-                                                                        }
-                                                                        className="text-xs text-red-700 cursor-pointer flex flex-row items-center justify-start gap-1 mt-1 px-2 py-1 rounded hover:bg-red-100"
-                                                                      >
-                                                                        <X
-                                                                          size={
-                                                                            12
+                                                                      {pageData
+                                                                        .lastActiveMenu
+                                                                        .order <
+                                                                        7 && (
+                                                                        <button
+                                                                          type="button"
+                                                                          onClick={() =>
+                                                                            handleDeleteDependentDocument(
+                                                                              dependent.id,
+                                                                              doc.id
+                                                                            )
                                                                           }
-                                                                        />{" "}
-                                                                        Delete
-                                                                      </button>
+                                                                          className="text-xs text-red-700 cursor-pointer flex flex-row items-center justify-start gap-1 mt-1 px-2 py-1 rounded hover:bg-red-100"
+                                                                        >
+                                                                          <X
+                                                                            size={
+                                                                              12
+                                                                            }
+                                                                          />{" "}
+                                                                          Delete
+                                                                        </button>
+                                                                      )}
                                                                     </div>
                                                                   </>
                                                                 );
@@ -1826,6 +1880,19 @@ export default function EnrollmentOutside({
                                           <InputLine
                                             title={`Sponsor ${index + 1}`}
                                           >
+                                            {sponsor.signature && (
+                                              <button
+                                                type="button"
+                                                className="bg-mila_orange text-white p-2 rounded relative top-2"
+                                                onClick={() =>
+                                                  handleGetAffidavitSupport(
+                                                    sponsor.id
+                                                  )
+                                                }
+                                              >
+                                                Affidavit of Support
+                                              </button>
+                                            )}
                                             <Input
                                               type="hidden"
                                               name="id"
@@ -1860,6 +1927,10 @@ export default function EnrollmentOutside({
                                               required
                                               grow
                                               title="Full Name"
+                                              readOnly={
+                                                pageData.lastActiveMenu.order >=
+                                                7
+                                              }
                                               defaultValue={sponsor.name}
                                               InputContext={InputContext}
                                             />
@@ -1872,6 +1943,10 @@ export default function EnrollmentOutside({
                                                 sponsorRelationshipTypeOptions
                                               }
                                               isSearchable
+                                              readOnly={
+                                                pageData.lastActiveMenu.order >=
+                                                7
+                                              }
                                               defaultValue={sponsorRelationshipTypeOptions.find(
                                                 (relationshipType) =>
                                                   relationshipType.value ===
@@ -1879,14 +1954,16 @@ export default function EnrollmentOutside({
                                               )}
                                               InputContext={InputContext}
                                             />
-                                            {/* </InputLine>
-                                                        <InputLine> */}
                                             <Input
                                               type="text"
                                               name="email"
                                               required
                                               grow
                                               title="E-mail"
+                                              readOnly={
+                                                pageData.lastActiveMenu.order >=
+                                                7
+                                              }
                                               defaultValue={sponsor.email}
                                               InputContext={InputContext}
                                             />
@@ -1896,6 +1973,10 @@ export default function EnrollmentOutside({
                                               required
                                               grow
                                               title="Phone Number"
+                                              readOnly={
+                                                pageData.lastActiveMenu.order >=
+                                                7
+                                              }
                                               isPhoneNumber
                                               defaultValue={sponsor.phone}
                                               InputContext={InputContext}
@@ -1999,17 +2080,21 @@ export default function EnrollmentOutside({
                                                             }
                                                           </div>
                                                         </a>
-                                                        <button
-                                                          type="button"
-                                                          onClick={() =>
-                                                            handleDeleteDocument(
-                                                              enrollmentdocument.id
-                                                            )
-                                                          }
-                                                          className="text-xs text-red-700 cursor-pointer flex flex-row items-center justify-start gap-1 mt-1 px-2 py-1 rounded hover:bg-red-100"
-                                                        >
-                                                          <X size={12} /> Delete
-                                                        </button>
+                                                        {pageData.lastActiveMenu
+                                                          .order < 7 && (
+                                                          <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                              handleDeleteDocument(
+                                                                enrollmentdocument.id
+                                                              )
+                                                            }
+                                                            className="text-xs text-red-700 cursor-pointer flex flex-row items-center justify-start gap-1 mt-1 px-2 py-1 rounded hover:bg-red-100"
+                                                          >
+                                                            <X size={12} />{" "}
+                                                            Delete
+                                                          </button>
+                                                        )}
                                                       </div>
                                                     </>
                                                   );

@@ -48,8 +48,6 @@ import { format, parseISO } from "date-fns";
 import CountryList from "country-list-with-dial-code-and-flag";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
-import { AlertContext } from "~/App";
-import { NavLink } from "react-router-dom";
 import TransferEligibility from "./TransferEligibility";
 import EnrollmentProcess from "./EnrollmentProcess";
 import PlacementTest from "./PlacementTest";
@@ -72,7 +70,6 @@ export default function PagePreview({
   successfullyUpdated,
   setSuccessfullyUpdated,
 }) {
-  const { alertBox } = useContext(AlertContext);
   const [loading, setLoading] = useState(false);
   const [pageData, setPageData] = useState({
     name: "",
@@ -85,6 +82,11 @@ export default function PagePreview({
     status: "Waiting",
     date_of_birth: null,
     loaded: false,
+  });
+  const [searchFields, setSearchFields] = useState({
+    filial_id: null,
+    processtype_id: null,
+    processsubstatus_id: null,
   });
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
@@ -103,13 +105,14 @@ export default function PagePreview({
   const [priceLists, setPriceLists] = useState(null);
   const [discountLists, setDiscountLists] = useState(null);
   const [totalDiscount, setTotalDiscount] = useState(0);
+  const [activeDiscounts, setActiveDiscounts] = useState([]);
   const generalForm = useRef();
   const auth = useSelector((state) => state.auth);
 
   const genderOptions = [
-    { value: "male", label: "Male" },
-    { value: "female", label: "Female" },
-    { value: "not specified", label: "Not Specified" },
+    { value: "Male", label: "Male" },
+    { value: "Female", label: "Female" },
+    { value: "Not Specified", label: "Not Specified" },
   ];
 
   const yesOrNoOptions = [
@@ -162,6 +165,7 @@ export default function PagePreview({
         father_id: subStatus.processtype_id,
       };
     });
+    retSubStatusOptions.push({ value: 0, label: "Select..." });
     return retSubStatusOptions;
   }
 
@@ -195,6 +199,11 @@ export default function PagePreview({
           placementTest: data.enrollments.find(
             (enrollment) => enrollment.application === "Placement Test"
           ),
+        });
+        setSearchFields({
+          processtype_id: data.processtype_id,
+          processsubstatus_id: data.processsubstatus_id,
+          filial_id: data.filial_id,
         });
         const {
           created_by,
@@ -234,12 +243,16 @@ export default function PagePreview({
   }, []);
 
   useEffect(() => {
-    if (pageData.processtype_id && pageData.processsubstatus_id) {
-      api.get(`filials/${pageData.filial_id}`).then(({ data }) => {
+    if (
+      searchFields.filial_id &&
+      searchFields.processtype_id &&
+      searchFields.processsubstatus_id
+    ) {
+      api.get(`filials/${searchFields.filial_id}`).then(({ data }) => {
         setPriceLists(
           data.pricelists.find(
             (price) =>
-              price.processsubstatus_id === pageData.processsubstatus_id
+              price.processsubstatus_id === searchFields.processsubstatus_id
           )
         );
         setDiscountLists(
@@ -250,7 +263,11 @@ export default function PagePreview({
       setPriceLists(null);
       setDiscountLists(null);
     }
-  }, [pageData.processtype_id, pageData.processsubstatus_id]);
+  }, [
+    searchFields.filial_id,
+    searchFields.processtype_id,
+    searchFields.processsubstatus_id,
+  ]);
 
   async function handleGeneralFormSubmit(data) {
     if (
@@ -349,32 +366,6 @@ export default function PagePreview({
     }
   }
 
-  function handleOutsideMail() {
-    // alertBox({
-    //   title: "Attention!",
-    //   descriptionHTML:
-    //     "<p>Would you like to send the prospect a link to continue the process?</p>",
-    //   buttons: [
-    //     {
-    //       title: "No",
-    //       class: "cancel",
-    //     },
-    //     {
-    //       title: "Yes",
-    //       onPress: async () => {
-    //         try {
-    //           await api.post(`/prospects/formMail`, { crypt: id });
-    //           toast("E-mail sent!", { autoClose: 1000 });
-    //         } catch (err) {
-    //           toast("Error!", { autoClose: 1000 });
-    //           console.log(err);
-    //         }
-    //       },
-    //     },
-    //   ],
-    // });
-  }
-
   async function handleStartProcess(processType = "") {
     if (!processType) {
       return;
@@ -404,25 +395,43 @@ export default function PagePreview({
     }
   }
 
-  let emailButtonText = "";
+  function handleDiscount(id, el) {
+    const discount = discountLists.find((discount) => discount.id === id);
 
-  if (pageData.enrollments) {
-    const enrollment = pageData.enrollments;
-    const lastTimeline = pageData.enrollments.enrollmenttimelines
-      ? pageData.enrollments.enrollmenttimelines[
-          pageData.enrollments.enrollmenttimelines.length - 1
-        ]
-      : null;
-    const step = pageData.enrollments.form_step;
-    if (step === "transfer-request") {
-      if (lastTimeline) {
-        if (lastTimeline.status === "Waiting") {
-          emailButtonText = "";
-        }
+    if (!activeDiscounts.find((active) => active === discount.id) && el.value) {
+      setActiveDiscounts([...activeDiscounts, discount.id]);
+
+      let discountAmount = 0;
+
+      const total =
+        priceLists.registration_fee + priceLists.book + priceLists.tuition;
+
+      if (discount.percent) {
+        discountAmount = total * (discount.value / 100);
+      } else {
+        discountAmount = discount.value;
       }
-      emailButtonText = "Send Transfer Eligibility Form";
-    } else {
-      emailButtonText = "Send Enrollment Form";
+      setTotalDiscount(totalDiscount + discountAmount);
+    } else if (
+      activeDiscounts.find((active) => active === discount.id) &&
+      !el.value
+    ) {
+      setActiveDiscounts(
+        activeDiscounts.filter((active) => active !== discount.id)
+      );
+
+      let discountAmount = 0;
+
+      const total =
+        priceLists.registration_fee + priceLists.book + priceLists.tuition;
+
+      if (discount.percent) {
+        discountAmount = total * (discount.value / 100);
+      } else {
+        discountAmount = discount.value;
+      }
+      discountAmount = discountAmount * -1;
+      setTotalDiscount(totalDiscount + discountAmount);
     }
   }
 
@@ -566,7 +575,6 @@ export default function PagePreview({
                       registry={registry}
                       InputContext={InputContext}
                       disabled={!pageData.processtype_id}
-                      emailButtonText={emailButtonText}
                     />
                     {id === "new" || pageData.loaded ? (
                       <>
@@ -585,6 +593,12 @@ export default function PagePreview({
                                   (filial) =>
                                     filial.value === pageData.filial_id
                                 )}
+                                onChange={(el) => {
+                                  setSearchFields({
+                                    ...searchFields,
+                                    filial_id: el.value,
+                                  });
+                                }}
                                 options={filialOptions}
                                 InputContext={InputContext}
                               />
@@ -722,6 +736,11 @@ export default function PagePreview({
                                   "processsubstatus_id",
                                   null
                                 );
+                                setSearchFields({
+                                  ...searchFields,
+                                  processsubstatus_id: null,
+                                  processtype_id: el.value,
+                                });
                                 setSuccessfullyUpdated(false);
                               }}
                               defaultValue={
@@ -740,12 +759,16 @@ export default function PagePreview({
                               grow
                               required
                               title="Sub Status"
-                              onChange={(el) =>
+                              onChange={(el) => {
                                 setPageData({
                                   ...pageData,
                                   processsubstatus_id: el.value,
-                                })
-                              }
+                                });
+                                setSearchFields({
+                                  ...searchFields,
+                                  processsubstatus_id: el.value,
+                                });
+                              }}
                               isSearchable
                               defaultValue={
                                 pageData.processsubstatus_id
@@ -769,7 +792,7 @@ export default function PagePreview({
                             />
                           </InputLine>
                           {priceLists && (
-                            <InputLine title="Prices">
+                            <InputLine title="Prices Simulation">
                               <table className="table-auto w-full text-center">
                                 <thead className="bg-slate-100 rounded-lg overflow-hidden">
                                   <tr>
@@ -804,7 +827,8 @@ export default function PagePreview({
                                       {formatter.format(
                                         priceLists.registration_fee +
                                           priceLists.book +
-                                          priceLists.tuition
+                                          priceLists.tuition -
+                                          totalDiscount
                                       )}
                                     </td>
                                   </tr>
@@ -813,71 +837,89 @@ export default function PagePreview({
                             </InputLine>
                           )}
                           {discountLists &&
-                            discountLists.map((discount) => {
-                              return (
-                                <InputLine>
-                                  {console.log({ discount })}
-                                  <Input
-                                    readOnly={true}
-                                    type="text"
-                                    name="discount_id"
-                                    grow
-                                    title="Discount"
-                                    defaultValue={discount.name}
-                                    InputContext={InputContext}
-                                  />
-                                  <Input
-                                    readOnly={true}
-                                    type="text"
-                                    name="value"
-                                    grow
-                                    title="Discount"
-                                    defaultValue={
-                                      (discount.percent ? "%" : "$") +
-                                      " " +
-                                      discount.value
-                                    }
-                                    InputContext={InputContext}
-                                  />
-                                  <SelectPopover
-                                    readOnly={true}
-                                    name="all_installments"
-                                    title="All Installments?"
-                                    options={yesOrNoOptions}
-                                    defaultValue={yesOrNoOptions.find(
-                                      (option) =>
-                                        option.value ===
-                                        discount.all_installments
-                                    )}
-                                    InputContext={InputContext}
-                                  />
-                                  <SelectPopover
-                                    readOnly={true}
-                                    name="free_vacation"
-                                    title="Free Vacation?"
-                                    options={yesOrNoOptions}
-                                    defaultValue={yesOrNoOptions.find(
-                                      (option) =>
-                                        option.value === discount.free_vacation
-                                    )}
-                                    InputContext={InputContext}
-                                  />
-                                  <SelectPopover
-                                    name="apply"
-                                    title="Apply?"
-                                    options={yesOrNoOptions}
-                                    InputContext={InputContext}
-                                  />
-                                </InputLine>
-                              );
-                            })}
+                            discountLists
+                              .filter(
+                                (discount) => discount.type === "Admission"
+                              )
+                              .map((discount) => {
+                                return (
+                                  <InputLine>
+                                    <Input
+                                      readOnly={true}
+                                      type="text"
+                                      name="discount_id"
+                                      grow
+                                      title="Description"
+                                      defaultValue={discount.name}
+                                      InputContext={InputContext}
+                                    />
+                                    <Input
+                                      readOnly={true}
+                                      type="text"
+                                      name="value"
+                                      grow
+                                      title="Discount"
+                                      defaultValue={
+                                        (discount.percent ? "%" : "$") +
+                                        " " +
+                                        discount.value
+                                      }
+                                      InputContext={InputContext}
+                                    />
+                                    <SelectPopover
+                                      readOnly={true}
+                                      name="all_installments"
+                                      title="All Installments?"
+                                      options={yesOrNoOptions}
+                                      defaultValue={yesOrNoOptions.find(
+                                        (option) =>
+                                          option.value ===
+                                          discount.all_installments
+                                      )}
+                                      InputContext={InputContext}
+                                    />
+                                    <SelectPopover
+                                      readOnly={true}
+                                      name="free_vacation"
+                                      title="Free Vacation?"
+                                      options={yesOrNoOptions}
+                                      defaultValue={yesOrNoOptions.find(
+                                        (option) =>
+                                          option.value ===
+                                          discount.free_vacation
+                                      )}
+                                      InputContext={InputContext}
+                                    />
+                                    <SelectPopover
+                                      name="apply"
+                                      title="Apply?"
+                                      options={yesOrNoOptions}
+                                      InputContext={InputContext}
+                                      defaultValue={yesOrNoOptions.find(
+                                        (option) => option.value === false
+                                      )}
+                                      onChange={(el) =>
+                                        handleDiscount(discount.id, el)
+                                      }
+                                    />
+                                  </InputLine>
+                                );
+                              })}
                           <InputLine title="Location">
                             <Input
                               type="text"
-                              name="foreign_address"
+                              name="address"
                               title="Address"
                               grow
-                              defaultValue={pageData.foreign_address}
+                              defaultValue={pageData.address}
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              type="text"
+                              name="zip"
+                              grow
+                              title="Zip Code"
+                              defaultValue={pageData.zip}
                               InputContext={InputContext}
                             />
                             <SelectPopover
@@ -894,18 +936,18 @@ export default function PagePreview({
                             />
                             <Input
                               type="text"
-                              name="birth_state"
+                              name="state"
                               grow
                               title="State"
-                              defaultValue={pageData.birth_state}
+                              defaultValue={pageData.state}
                               InputContext={InputContext}
                             />
                             <Input
                               type="text"
-                              name="birth_city"
+                              name="city"
                               grow
                               title="City"
-                              defaultValue={pageData.birth_city}
+                              defaultValue={pageData.city}
                               InputContext={InputContext}
                             />
                           </InputLine>

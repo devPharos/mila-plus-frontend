@@ -1,6 +1,8 @@
-import { Edit, Loader2, Mail, PlayCircle } from "lucide-react";
+import { Edit, FileText, Loader2, Mail, PlayCircle } from "lucide-react";
 import React from "react";
 import { NavLink } from "react-router-dom";
+import api from "~/services/api";
+import { saveAs } from "file-saver";
 
 // import { Container } from './styles';
 
@@ -25,6 +27,24 @@ function TransferEligibility({
       .then(({ data }) => {
         setLoading(false);
         toast("Form mail sent!", { autoClose: 1000 });
+      });
+  }
+
+  function handleOpenTransferEligibility() {
+    setLoading(true);
+    api
+      .get(`/PDF/transfer-eligibility/${enrollment.id}`, {
+        responseType: "blob",
+      })
+      .then((res) => {
+        const pdfBlob = new Blob([res.data], { type: "application/pdf" });
+        saveAs(pdfBlob, `transfer_eligibility_${enrollment.id}.pdf`);
+      })
+      .catch((err) => {
+        toast("Transfer Eligibility not avaiable yet.", {
+          type: "error",
+          autoClose: 3000,
+        });
       });
   }
   if (!enrollment) {
@@ -76,6 +96,18 @@ function TransferEligibility({
           <Mail size={14} />
           <strong>Re-send form link to student</strong>
         </button>
+        {console.log(enrollment)}
+        {enrollment.form_step !== "transfer-request" && (
+          <button
+            type="button"
+            disabled={loading}
+            onClick={() => handleOpenTransferEligibility()}
+            className="bg-mila_orange text-white border border-gray-800 hover:bg-gray-600 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2"
+          >
+            <FileText size={14} />
+            <strong>Transfer Eligibility Form</strong>
+          </button>
+        )}
       </div>
       <p className="w-full text-xs text-gray-500 text-left px-2 border-t pt-4">
         {

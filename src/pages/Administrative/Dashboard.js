@@ -1,140 +1,95 @@
-import { Filter } from 'lucide-react';
-import React, { useState } from 'react';
-import Breadcrumbs from '~/components/Breadcrumbs';
-import Filters from '~/components/Filters';
-import FiltersBar from '~/components/FiltersBar';
-import Grid from '~/components/Grid';
-import PageHeader from '~/components/PageHeader';
+import { Filter } from "lucide-react";
+import React, { useState } from "react";
+import Breadcrumbs from "~/components/Breadcrumbs";
+import Filters from "~/components/Filters";
+import FiltersBar from "~/components/FiltersBar";
+import Grid from "~/components/Grid";
+import PageHeader from "~/components/PageHeader";
 // import 'rsuite/Calendar/styles/index.css';
 // import Calendar from 'rsuite/Calendar';
 
-import { BarChart, Bar, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { getCurrentPage } from '~/functions';
+import { saveAs } from "file-saver";
+
+import { getCurrentPage } from "~/functions";
+import api from "~/services/api";
 
 export default function AdministrativeDashboard() {
-  const [activeFilters, setActiveFilters] = useState([])
-  const [orderBy, setOrderBy] = useState({ column: 'Scheduled Date', asc: true })
+  const [activeFilters, setActiveFilters] = useState([]);
+  const [orderBy, setOrderBy] = useState({
+    column: "Scheduled Date",
+    asc: true,
+  });
   const currentPage = getCurrentPage();
-  const [gridHeader, setGridHeader] = useState(null)
-  const data = [
-    {
-      name: 'Page A',
-      uv: 4000,
-      pv: 2400,
-      amt: 2400,
-    },
-    {
-      name: 'Page B',
-      uv: 3000,
-      pv: 1398,
-      amt: 2210,
-    },
-    {
-      name: 'Page C',
-      uv: 2000,
-      pv: 9800,
-      amt: 2290,
-    },
-    {
-      name: 'Page D',
-      uv: 2780,
-      pv: 3908,
-      amt: 2000,
-    },
-    {
-      name: 'Page E',
-      uv: 1890,
-      pv: 4800,
-      amt: 2181,
-    },
-    {
-      name: 'Page F',
-      uv: 2390,
-      pv: 3800,
-      amt: 2500,
-    },
-    {
-      name: 'Page G',
-      uv: 3490,
-      pv: 4300,
-      amt: 2100,
-    },
-  ];
+  const [gridHeader, setGridHeader] = useState(null);
 
-  const data01 = [
-    { name: 'Group A', value: 400 },
-    { name: 'Group B', value: 300 },
-    { name: 'Group C', value: 300 },
-    { name: 'Group D', value: 200 },
-  ];
-  const data02 = [
-    { name: 'A1', value: 100 },
-    { name: 'A2', value: 300 },
-    { name: 'B1', value: 100 },
-    { name: 'B2', value: 80 },
-    { name: 'B3', value: 40 },
-    { name: 'B4', value: 30 },
-    { name: 'B5', value: 50 },
-    { name: 'C1', value: 100 },
-    { name: 'C2', value: 200 },
-    { name: 'D1', value: 150 },
-    { name: 'D2', value: 50 },
-  ];
+  const [gridData, setGridData] = useState([]);
 
-
-
-  const [gridData, setGridData] = useState([])
-
-  function handleFilters({ title = '', value = '' }) {
-    if (value || typeof value === 'boolean') {
-      setActiveFilters([...activeFilters.filter(el => el.title != title), { title, value }])
+  function handleFilters({ title = "", value = "" }) {
+    if (value || typeof value === "boolean") {
+      setActiveFilters([
+        ...activeFilters.filter((el) => el.title != title),
+        { title, value },
+      ]);
     } else {
-      setActiveFilters([...activeFilters.filter(el => el.title != title)])
+      setActiveFilters([...activeFilters.filter((el) => el.title != title)]);
     }
   }
 
-  return <div className='h-full bg-white flex flex-1 flex-col justify-start items-start rounded-tr-2xl px-4'>
-    <PageHeader>
-      <Breadcrumbs currentPage={currentPage} />
-      <FiltersBar>
-        <Filter size={14} /> Custom Filters
-      </FiltersBar>
-    </PageHeader>
-    <Filters search handleFilters={handleFilters} gridHeader={gridHeader} gridData={gridData} setGridHeader={setGridHeader} activeFilters={activeFilters} />
+  function handlePDF() {
+    api
+      // .get("/pdf/affidavit-support/bc59904a-686e-4b05-b69f-64960af78565", {
+      // .get("/pdf/transfer-eligibility/137a1ee0-3d8c-4122-b1bf-f41e9bf7def9", {
+      .get("/pdf/enrollment/ab21c173-f60c-4cc0-ad22-b3fb61857bcb", {
+        responseType: "blob",
+      })
+      .then((res) => {
+        const pdfBlob = new Blob([res.data], { type: "application/pdf" });
+        saveAs(
+          pdfBlob,
+          `enrollment_${"ab21c173-f60c-4cc0-ad22-b3fb61857bcb"}.pdf`
+        );
+      });
+  }
 
-    <Grid gridData={gridData} gridHeader={gridHeader} orderBy={orderBy} setOrderBy={setOrderBy} />
+  return (
+    <div className="h-full bg-white flex flex-1 flex-col justify-start items-start rounded-tr-2xl px-4">
+      <PageHeader>
+        <Breadcrumbs currentPage={currentPage} />
+        <FiltersBar>
+          <Filter size={14} /> Custom Filters
+        </FiltersBar>
+      </PageHeader>
+      <Filters
+        search
+        handleFilters={handleFilters}
+        gridHeader={gridHeader}
+        gridData={gridData}
+        setGridHeader={setGridHeader}
+        activeFilters={activeFilters}
+      />
 
-    <div style={{ flex: 1, width: '50%', display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'start', paddingTop: 24 }}>
-      {/* <Calendar compact bordered cellClassName={date => (date.getDay() % 2 ? 'bg-zinc-100' : undefined)} /> */}
-      {/* <ResponsiveContainer width="50%" height="55%">
-        <BarChart
-          width={500}
-          height={300}
-          data={data}
-          margin={{
-            top: 20,
-            right: 30,
-            left: 20,
-            bottom: 5,
-          }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="pv" stackId="a" fill="#8884d8" />
-          <Bar dataKey="amt" stackId="a" fill="#82ca9d" />
-          <Bar dataKey="uv" fill="#ffc658" />
-        </BarChart>
-      </ResponsiveContainer>
+      <Grid
+        gridData={gridData}
+        gridHeader={gridHeader}
+        orderBy={orderBy}
+        setOrderBy={setOrderBy}
+      />
 
-      <ResponsiveContainer width="50%" height="55%">
-        <PieChart width={400} height={400}>
-          <Pie data={data01} dataKey="value" cx="50%" cy="50%" outerRadius={60} fill="#8884d8" />
-          <Pie data={data02} dataKey="value" cx="50%" cy="50%" innerRadius={70} outerRadius={90} fill="#82ca9d" label />
-        </PieChart>
-      </ResponsiveContainer> */}
+      <div
+        style={{
+          flex: 1,
+          width: "50%",
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "start",
+          paddingTop: 24,
+        }}
+      >
+        <button type="button" onClick={handlePDF}>
+          PDF
+        </button>
+      </div>
     </div>
-  </div>;
+  );
 }

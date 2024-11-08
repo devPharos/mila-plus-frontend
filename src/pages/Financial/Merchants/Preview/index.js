@@ -1,5 +1,5 @@
 import { Form } from "@unform/web";
-import { Building, Pencil, X } from "lucide-react";
+import { Building, ChartGantt, Pencil, X } from "lucide-react";
 import React, {
   createContext,
   useContext,
@@ -20,6 +20,8 @@ import { getRegistries, handleUpdatedFields } from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
+import Grid from "~/components/Grid";
+
 
 export const InputContext = createContext({});
 
@@ -47,11 +49,11 @@ export default function PagePreview({
     bank_account: "",
     bank_routing_number: "",
     bank_name: "",
-
     filial_id: null,
     filial: {
       name: "",
     },
+    merchantxchartofaccounts: [],
   });
 
   const [registry, setRegistry] = useState({
@@ -66,10 +68,46 @@ export default function PagePreview({
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
   const [filialOptions, setFilialOptions] = useState([]);
+  const [chartOfAccountIsTemp, setChartOfAccountIsTemp] = useState(false);
+
+  const [orderBy, setOrderBy] = useState({ column: "Code", asc: true });
+
+  const [chartOfAccountOptions, setChartOfAccountOptions] = useState([]);
+  const [chartOfAccountData, setChartOfAccountData] = useState([]);
+
+  const [gridData, setGridData] = useState();
+  const [gridHeader, setGridHeader] = useState([
+    {
+      title: "Installment",
+      type: "currency",
+      filter: false,
+    },
+    {
+      title: "Amount",
+      type: "currency",
+      filter: false,
+    },
+    {
+      title: "Total",
+      type: "currency",
+      filter: false,
+    },
+    {
+      title: "Status",
+      type: "text",
+      filter: false,
+    },
+    {
+      title: "Due Date",
+      type: "date",
+      filter: false,
+    },
+  ]);
 
   const auth = useSelector((state) => state.auth);
 
   const generalForm = useRef();
+  const filtersForm = useRef();
 
   function handleCloseForm() {
     if (!successfullyUpdated) {
@@ -93,9 +131,18 @@ export default function PagePreview({
         setOpened(response.data.id);
         setPageData({ ...pageData, ...data });
 
-        setSuccessfullyUpdated(true);
+        if (response.data.created_at) {
+          const registries = await getRegistries({
+            created_by: response.data.created_by,
+            created_at: response.data.created_at,
+          });
+          setRegistry(registries);
+        }
+
+        setChartOfAccountIsTemp(true);
+
+        setActiveMenu("Chart of Accounts");
         toast("Saved!", { autoClose: 1000 });
-        handleOpened(null);
       } catch (err) {
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
@@ -105,16 +152,54 @@ export default function PagePreview({
       if (updated.length > 0) {
         const objUpdated = Object.fromEntries(updated);
         try {
-          await api.put(`/merchants/${id}`, objUpdated);
+          const response = await api.put(`/merchants/${id}`, objUpdated);
           setPageData({ ...pageData, ...objUpdated });
           setSuccessfullyUpdated(true);
+
+          if (
+            response.data?.merchantxchartofaccounts &&
+            response.data?.merchantxchartofaccounts.length > 0
+          ) {
+            setChartOfAccountIsTemp(true);
+
+            const gridDataValue = response.data?.merchantxchartofaccounts.map(
+              ({
+                canceled_at,
+                installment,
+                amount,
+                total,
+                status,
+                status_date,
+              }) => ({
+                show: true,
+                id: installment,
+                fields: [installment, amount, total, status, status_date],
+                canceled: canceled_at,
+              })
+            );
+
+            setGridData(gridDataValue);
+
+            if (gridDataValue !== gridData) {
+              toast("Saved Chart of Accounts!", { autoClose: 1000 });
+              setActiveMenu("Chart of Accounts");
+
+              handleOpened(null);
+            }
+
+            setGridData(gridDataValue);
+
+            setChartOfAccountData(response.data?.merchantxchartofaccounts);
+          } else {
+            handleOpened(null);
+          }
+
           toast("Saved!", { autoClose: 1000 });
-          handleOpened(null);
         } catch (err) {
           toast(err.response.data.error, { type: "error", autoClose: 3000 });
         }
       } else {
-        console.log(updated);
+        toast(err, { type: "error", autoClose: 3000 });
       }
     }
   }
@@ -134,6 +219,7 @@ export default function PagePreview({
           canceled_by,
           canceled_at,
         } = data;
+
         const registries = await getRegistries({
           created_by,
           created_at,
@@ -142,7 +228,26 @@ export default function PagePreview({
           canceled_by,
           canceled_at,
         });
+
         setRegistry(registries);
+
+        const gridDataValue = data?.merchantxchartofaccounts.map(
+          ({
+            canceled_at,
+            installment,
+            amount,
+            total,
+            status,
+            status_date,
+          }) => ({
+            show: true,
+            id: installment,
+            fields: [installment, amount, total, status, status_date],
+            canceled: canceled_at,
+          })
+        );
+
+        setGridData(gridDataValue);
       } catch (err) {
         console.log(err);
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
@@ -156,6 +261,15 @@ export default function PagePreview({
           .map((f) => {
             return { value: f.id, label: f.name };
           });
+
+        const chartOfAccountData = await api.get(`/chartofaccounts`);
+        const chartOfAccountOptions = chartOfAccountData.data
+          .filter((f) => f.id !== id)
+          .map((f) => {
+            return { value: f.id, label: f.name };
+          });
+
+        setChartOfAccountOptions(chartOfAccountOptions);
 
         setFilialOptions(filialOptions);
       } catch (err) {
@@ -202,204 +316,269 @@ export default function PagePreview({
               >
                 <Building size={16} /> General
               </RegisterFormMenu>
+              <RegisterFormMenu
+                setActiveMenu={setActiveMenu}
+                activeMenu={activeMenu}
+                name="Chart of Accounts"
+                messageOnDisabled="You need to save the merchant first"
+                disabled={id === "new"}
+              >
+                <ChartGantt size={16} /> Chart of Accounts
+              </RegisterFormMenu>
             </div>
             <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
               <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll">
-                <Form
-                  ref={generalForm}
-                  onSubmit={handleGeneralFormSubmit}
-                  className="w-full pb-32"
-                >
-                  <InputContext.Provider
-                    value={{
-                      id,
-                      generalForm,
-                      setSuccessfullyUpdated,
-                      fullscreen,
-                      setFullscreen,
-                      successfullyUpdated,
-                      handleCloseForm,
-                    }}
+                {activeMenu === "Chart of Accounts" ? (
+                  <Form
+                    ref={generalForm}
+                    onSubmit={handleGeneralFormSubmit}
+                    className="w-full pb-32"
                   >
-                    {id === "new" || pageData.loaded ? (
-                      <>
-                        <FormHeader
-                          access={access}
-                          title={pageData?.name}
-                          registry={registry}
-                          InputContext={InputContext}
-                        />
+                    <InputContext.Provider
+                      value={{
+                        id,
+                        generalForm,
+                        setSuccessfullyUpdated,
+                        fullscreen,
+                        setFullscreen,
+                        successfullyUpdated,
+                        handleCloseForm,
+                      }}
+                    >
+                      <FormHeader
+                        access={access}
+                        title={pageData?.name}
+                        registry={registry}
+                        InputContext={InputContext}
+                      />
 
-                        <InputLineGroup
-                          title="GENERAL"
-                          activeMenu={activeMenu === "general"}
-                        >
-                          {auth.filial.id === 1 && (
-                            <InputLine title="Filial">
-                              <SelectPopover
-                                name="filial_id"
+                      <InputLineGroup
+                        title="Chart of Accounts"
+                        activeMenu={activeMenu === "Chart of Accounts"}
+                      >
+                        <InputLine title="Chart of Accounts">
+                          <SelectPopover
+                            name="chartofaccount_id"
+                            required
+                            title="Chart of Account"
+                            isSearchable
+                            grow
+                            options={chartOfAccountOptions}
+                            InputContext={InputContext}
+                          />
+                        </InputLine>
+
+                        <InputLine title="Merchant x Chart of Accounts">
+                          <Grid
+                            gridData={gridData}
+                            gridHeader={gridHeader}
+                            orderBy={orderBy}
+                            setOrderBy={setOrderBy}
+                            handleOpened={handleOpened}
+                          />
+                        </InputLine>
+                      </InputLineGroup>
+                    </InputContext.Provider>
+                  </Form>
+                ) : null}
+
+                {activeMenu === "general" ? (
+                  <Form
+                    ref={generalForm}
+                    onSubmit={handleGeneralFormSubmit}
+                    className="w-full pb-32"
+                  >
+                    <InputContext.Provider
+                      value={{
+                        id,
+                        generalForm,
+                        setSuccessfullyUpdated,
+                        fullscreen,
+                        setFullscreen,
+                        successfullyUpdated,
+                        handleCloseForm,
+                      }}
+                    >
+                      {id === "new" || pageData.loaded ? (
+                        <>
+                          <FormHeader
+                            access={access}
+                            title={pageData?.name}
+                            registry={registry}
+                            InputContext={InputContext}
+                          />
+
+                          <InputLineGroup
+                            title="GENERAL"
+                            activeMenu={activeMenu === "general"}
+                          >
+                            {auth.filial.id === 1 && (
+                              <InputLine title="Filial">
+                                <SelectPopover
+                                  name="filial_id"
+                                  required
+                                  title="Filial"
+                                  isSearchable
+                                  grow
+                                  defaultValue={
+                                    pageData.filial_id
+                                      ? {
+                                          value: pageData.filial_id,
+                                          label: pageData.filial.name,
+                                        }
+                                      : null
+                                  }
+                                  options={filialOptions}
+                                  InputContext={InputContext}
+                                />
+                              </InputLine>
+                            )}
+                            <InputLine title="General data">
+                              <Input
+                                type="text"
+                                name="name"
                                 required
-                                title="Filial"
-                                isSearchable
+                                title="Merchant Name"
                                 grow
-                                defaultValue={
-                                  pageData.filial_id
-                                    ? {
-                                        value: pageData.filial_id,
-                                        label: pageData.filial.name,
-                                      }
-                                    : null
-                                }
-                                options={filialOptions}
+                                defaultValue={pageData?.name}
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="text"
+                                name="alias"
+                                title="Alias"
+                                grow
+                                defaultValue={pageData.alias}
                                 InputContext={InputContext}
                               />
                             </InputLine>
-                          )}
-                          <InputLine title="General data">
-                            <Input
-                              type="text"
-                              name="name"
-                              required
-                              title="Merchant Name"
-                              grow
-                              defaultValue={pageData?.name}
-                              InputContext={InputContext}
-                            />
-                            <Input
-                              type="text"
-                              name="alias"
-                              title="Alias"
-                              grow
-                              defaultValue={pageData.alias}
-                              InputContext={InputContext}
-                            />
-                          </InputLine>
 
-                          <InputLine title="Address">
-                            <Input
-                              type="text"
-                              name="address"
-                              title="Address"
-                              grow
-                              defaultValue={pageData.address}
-                              InputContext={InputContext}
-                            />
-                            <Input
-                              type="text"
-                              name="city"
-                              title="City"
-                              grow
-                              defaultValue={pageData.city}
-                              InputContext={InputContext}
-                            />
-                            <Input
-                              type="text"
-                              name="state"
-                              title="State"
-                              grow
-                              defaultValue={pageData.state}
-                              InputContext={InputContext}
-                            />
+                            <InputLine title="Address">
+                              <Input
+                                type="text"
+                                name="address"
+                                title="Address"
+                                grow
+                                defaultValue={pageData.address}
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="text"
+                                name="city"
+                                title="City"
+                                grow
+                                defaultValue={pageData.city}
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="text"
+                                name="state"
+                                title="State"
+                                grow
+                                defaultValue={pageData.state}
+                                InputContext={InputContext}
+                              />
 
-                            <Input
-                              type="text"
-                              name="zip"
-                              title="Zip"
-                              grow
-                              defaultValue={pageData.zip}
-                              InputContext={InputContext}
-                            />
+                              <Input
+                                type="text"
+                                name="zip"
+                                title="Zip"
+                                grow
+                                defaultValue={pageData.zip}
+                                InputContext={InputContext}
+                              />
 
-                            <Input
-                              type="text"
-                              name="country"
-                              title="Country"
-                              grow
-                              defaultValue={pageData.country}
-                              InputContext={InputContext}
-                            />
+                              <Input
+                                type="text"
+                                name="country"
+                                title="Country"
+                                grow
+                                defaultValue={pageData.country}
+                                InputContext={InputContext}
+                              />
 
-                            <Input
-                              type="Number"
-                              name="ein"
-                              title="EIN"
-                              grow
-                              defaultValue={pageData.ein}
-                              InputContext={InputContext}
-                            />
-                          </InputLine>
+                              <Input
+                                type="Number"
+                                name="ein"
+                                title="EIN"
+                                grow
+                                defaultValue={pageData.ein}
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
 
-                          <InputLine title="Contact">
-                            <Input
-                              type="text"
-                              name="email"
-                              title="Email"
-                              grow
-                              defaultValue={pageData.email}
-                              InputContext={InputContext}
-                            />
-                            <Input
-                              type="text"
-                              name="phone_number"
-                              title="Phone Number"
-                              grow
-                              defaultValue={pageData.phone_number}
-                              InputContext={InputContext}
-                            />
-                          </InputLine>
+                            <InputLine title="Contact">
+                              <Input
+                                type="text"
+                                name="email"
+                                title="Email"
+                                grow
+                                defaultValue={pageData.email}
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="text"
+                                name="phone_number"
+                                title="Phone Number"
+                                grow
+                                defaultValue={pageData.phone_number}
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
 
-                          <InputLine title="Bank Information">
-                            <Input
-                              type="text"
-                              name="bank_name"
-                              title="Bank Name"
-                              grow
-                              defaultValue={pageData.bank_name}
-                              InputContext={InputContext}
-                            />
-                            <Input
-                              type="text"
-                              name="bank_account"
-                              title="Bank Account"
-                              grow
-                              defaultValue={pageData.bank_account}
-                              InputContext={InputContext}
-                            />
-                            <Input
-                              type="text"
-                              name="bank_routing_number"
-                              title="Bank Routing Number"
-                              grow
-                              defaultValue={pageData.bank_routing_number}
-                              InputContext={InputContext}
-                            />
-                          </InputLine>
+                            <InputLine title="Bank Information">
+                              <Input
+                                type="text"
+                                name="bank_name"
+                                title="Bank Name"
+                                grow
+                                defaultValue={pageData.bank_name}
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="text"
+                                name="bank_account"
+                                title="Bank Account"
+                                grow
+                                defaultValue={pageData.bank_account}
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="text"
+                                name="bank_routing_number"
+                                title="Bank Routing Number"
+                                grow
+                                defaultValue={pageData.bank_routing_number}
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
 
-                          <InputLine title="Payees">
-                            <Input
-                              type="number"
-                              name="late_payees"
-                              title="Late Payees"
-                              grow
-                              defaultValue={pageData.late_payees}
-                              InputContext={InputContext}
-                            />
-                            <Input
-                              type="number"
-                              name="balance_payees"
-                              title="Balance Payees"
-                              grow
-                              defaultValue={pageData.balance_payees}
-                              InputContext={InputContext}
-                            />
-                          </InputLine>
-                        </InputLineGroup>
-                      </>
-                    ) : (
-                      <FormLoading />
-                    )}
-                  </InputContext.Provider>
-                </Form>
+                            <InputLine title="Payees">
+                              <Input
+                                type="number"
+                                name="late_payees"
+                                title="Late Payees"
+                                grow
+                                defaultValue={pageData.late_payees}
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="number"
+                                name="balance_payees"
+                                title="Balance Payees"
+                                grow
+                                defaultValue={pageData.balance_payees}
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+                          </InputLineGroup>
+                        </>
+                      ) : (
+                        <FormLoading />
+                      )}
+                    </InputContext.Provider>
+                  </Form>
+                ) : null}
               </div>
             </div>
           </div>

@@ -38,6 +38,9 @@ export default function PagePreview({
     bankaccount_id: null,
     bankAccount: {
       account: "",
+      bank: {
+        bank_name: "",
+      },
     },
     filial_id: null,
     filial: {
@@ -116,8 +119,6 @@ export default function PagePreview({
       try {
         const { data } = await api.get(`/paymentmethods/${id}`);
         setPageData({ ...data, loaded: true });
-
-        console.log(data);
         const {
           created_by,
           created_at,
@@ -155,7 +156,7 @@ export default function PagePreview({
         const bankaccountOptionsValue = bankAccountData.data
           .filter((f) => f.id !== id)
           .map((f) => {
-            return { value: f.id, label: f.account };
+            return { value: f.id, label: f.account + " - " + f.bank.bank_name };
           });
 
         setBankAccountOptions(bankaccountOptionsValue);
@@ -171,7 +172,6 @@ export default function PagePreview({
     }
     getDefaultOptions();
   }, []);
-
 
   return (
     <Preview formType={formType} fullscreen={fullscreen}>
@@ -268,7 +268,7 @@ export default function PagePreview({
                                 pageData.bankaccount_id ?
                                 {
                                   value: pageData.bankaccount_id,
-                                  label: pageData.bankAccount.account
+                                  label: pageData.bankAccount.account + " - " + pageData.bankAccount.bank.bank_name,
                                 } : null
                               }
                               options={bankAccountOptions}

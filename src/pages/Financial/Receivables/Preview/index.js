@@ -127,7 +127,7 @@ export default function PagePreview({
   const [orderBy, setOrderBy] = useState({ column: "Code", asc: true });
 
   const [gridData, setGridData] = useState();
-  const [gridHeader, setGridHeader] = useState([
+  const [gridHeader] = useState([
     {
       title: "Installment",
       type: "currency",

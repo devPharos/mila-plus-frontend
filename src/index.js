@@ -222,6 +222,10 @@ const router = createBrowserRouter([
             element: <FinancialMerchantsChartOfAccounts />,
           },
           {
+            path: '/Financial/ChartOfAccounts',
+            element: <AdministrativeChartOfAccounts />,
+          },
+          {
             path: '/Financial/Issuer',
             element: <FinancialIssuers />,
           },

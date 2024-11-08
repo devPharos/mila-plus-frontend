@@ -86,9 +86,9 @@ export default function AdministrativeDashboard() {
           paddingTop: 24,
         }}
       >
-        <button type="button" onClick={handlePDF}>
+        {/* <button type="button" onClick={handlePDF}>
           PDF
-        </button>
+        </button> */}
       </div>
     </div>
   );

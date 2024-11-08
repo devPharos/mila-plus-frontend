@@ -70,7 +70,8 @@ export default function FinancialPaymentMethods() {
             fields: [
               description.slice(0, 50) + "...",
               filial.name,
-              bankAccount.account],
+              bankAccount.account + " - " + bankAccount.bank.bank_name,
+            ],
           };
         }
       );

@@ -24,6 +24,10 @@ export default function Sidebar({ main = null, pages = [] }) {
       "p-2 bg-transparent rounded flex flex-row hover:bg-gray-300 justify-center items-center cursor-pointer text-xs gap-2",
     color: "#6b7280",
   };
+
+  console.log(accesses);
+  console.log(main);
+
   return (
     <div
       className={`h-full bg-secondary flex flex-col justify-start items-start rounded-tl-2xl p-4 overflow-y-scroll`}

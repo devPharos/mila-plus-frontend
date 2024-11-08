@@ -119,12 +119,6 @@ function App() {
             icon: 'Store',
           },
           {
-            alias: 'financial-merchants-x-chart-of-accounts',
-            path: '/Financial/MerchantsXChartOfAccounts',
-            title: 'Merchants X Chart of Accounts',
-            icon: 'SquareChartGantt',
-          },
-          {
             alias: 'chart-of-accounts',
             path: '/Financial/ChartOfAccounts',
             title: 'Chart of Accounts',
@@ -140,13 +134,13 @@ function App() {
             alias: 'financial-receivables',
             path: '/Financial/Receivables',
             title: 'Receivables',
-            icon: 'CreditCard',
+            icon: 'HandCoins',
           },
           {
             alias: 'financial-payees',
             path: '/Financial/Payees',
             title: 'Payees',
-            icon: 'CreditCard',
+            icon: 'BadgeDollarSign',
           }
         ]
       },

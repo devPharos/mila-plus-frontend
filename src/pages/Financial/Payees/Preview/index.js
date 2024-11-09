@@ -116,7 +116,7 @@ export default function PagePreview({
 
   const [orderBy, setOrderBy] = useState({ column: "Code", asc: true });
 
-  const [gridData, setGridData] = useState();
+  const [gridData, setGridData] = useState([]);
   const [gridHeader] = useState([
     {
       title: "Installment",
@@ -179,6 +179,8 @@ export default function PagePreview({
         setPageData({ ...pageData, ...response.data });
         setOpened(response.data.id);
 
+        console.log(response.data);
+
         if (response.data.created_by) {
           const registries = await getRegistries({
             created_by: response.data.created_by,
@@ -192,6 +194,8 @@ export default function PagePreview({
             `/payeeinstallments/temp`,
             response.data
           );
+
+          console.log(installmentsItens);
 
           if (installmentsItens) {
             const gridDataValues = installmentsItens.data.map(

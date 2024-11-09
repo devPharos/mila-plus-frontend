@@ -25,9 +25,6 @@ export default function Sidebar({ main = null, pages = [] }) {
     color: "#6b7280",
   };
 
-  console.log(accesses);
-  console.log(main);
-
   return (
     <div
       className={`h-full bg-secondary flex flex-col justify-start items-start rounded-tl-2xl p-4 overflow-y-scroll`}

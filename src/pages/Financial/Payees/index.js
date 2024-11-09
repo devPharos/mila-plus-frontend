@@ -37,6 +37,11 @@ export default function FinancialPayees() {
       filter: false,
     },
     {
+      title: "First Due Date",
+      type: "date",
+      filter: false,
+    },
+    {
       title: "Due Date",
       type: "date",
       filter: false,
@@ -97,9 +102,9 @@ export default function FinancialPayees() {
           id,
           canceled_at,
           filial,
-          issuer_id,
           issuer,
           entry_date,
+          first_due_date,
           due_date,
           amount,
           fee,
@@ -113,9 +118,10 @@ export default function FinancialPayees() {
             show: true,
             id,
             fields: [
-              issuer?.name,
-              filial?.name,
+              issuer.name,
+              filial.name,
               entry_date,
+              first_due_date,
               due_date,
               amount,
               fee,
@@ -139,8 +145,6 @@ export default function FinancialPayees() {
     if (!id) {
       setSuccessfullyUpdated(true);
     }
-
-    console.log("handle opened", id);
     setOpened(id);
   }
 

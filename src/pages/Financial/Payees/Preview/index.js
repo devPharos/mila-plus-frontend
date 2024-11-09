@@ -1,12 +1,6 @@
-// receivables preview page
 import { Form } from "@unform/web";
 import { Building, Pencil, X, ListMinus } from "lucide-react";
-import React, {
-  createContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { createContext, useEffect, useRef, useState } from "react";
 
 import Input from "~/components/RegisterForm/Input";
 
@@ -74,9 +68,9 @@ export default function PagePreview({
       name: "",
     },
     entry_date: null,
+    first_due_date: null,
     due_date: null,
     amount: 0,
-    fee: 0,
     total: 0,
     memo: "",
     is_recurrency: false,
@@ -119,24 +113,23 @@ export default function PagePreview({
   const [chartOfAccountOptions, setChartOfAccountOptions] = useState([]);
 
   const [itensInstallmentsIsTemp, setItensInstallmentsIsTemp] = useState(false);
-  const [itensInstallments, setItensInstallments] = useState([]);
 
   const [orderBy, setOrderBy] = useState({ column: "Code", asc: true });
 
   const [gridData, setGridData] = useState();
-  const [gridHeader, setGridHeader] = useState([
+  const [gridHeader] = useState([
     {
       title: "Installment",
       type: "currency",
       filter: false,
     },
     {
-      title: "Amount",
-      type: "currency",
+      title: "Due Date",
+      type: "date",
       filter: false,
     },
     {
-      title: "Fee",
+      title: "Amount",
       type: "currency",
       filter: false,
     },
@@ -148,11 +141,6 @@ export default function PagePreview({
     {
       title: "Status",
       type: "text",
-      filter: false,
-    },
-    {
-      title: "Status Date",
-      type: "date",
       filter: false,
     },
   ]);
@@ -189,7 +177,6 @@ export default function PagePreview({
       try {
         const response = await api.post(`/payee`, data);
         setPageData({ ...pageData, ...response.data });
-
         setOpened(response.data.id);
 
         if (response.data.created_by) {
@@ -200,37 +187,41 @@ export default function PagePreview({
           setRegistry(registries);
         }
 
-        const installmentsItens = await api.post(
-          `/payeeinstallments/temp`,
-          response.data
-        );
-
-
-        if (installmentsItens) {
-          const gridDataValues = installmentsItens.data.map(
-            ({
-              canceled_at,
-              installment,
-              amount,
-              fee,
-              total,
-              status,
-              status_date,
-            }) => ({
-              show: true,
-              id: installment,
-              fields: [installment, amount, fee, total, status, status_date],
-              canceled: canceled_at,
-            })
+        if (response.data.is_recurrency && response.data.is_recurrency == true) {
+          const installmentsItens = await api.post(
+            `/payeeinstallments/temp`,
+            response.data
           );
 
-          setGridData(gridDataValues);
-          setItensInstallments(installmentsItens.data);
+          if (installmentsItens) {
+            const gridDataValues = installmentsItens.data.map(
+              ({
+                canceled_at,
+                installment,
+                amount,
+                total,
+                status,
+                due_date,
+              }) => ({
+                show: true,
+                id: installment,
+                fields: [installment, due_date, amount, total, status],
+                canceled: canceled_at,
+              })
+            );
+
+            setGridData(gridDataValues);
+          }
+
+          setItensInstallmentsIsTemp(true);
+
+          setActiveMenu("installments");
+        } else {
+          handleOpened(null);
+
+          setSuccessfullyUpdated(true);
         }
 
-        setItensInstallmentsIsTemp(true);
-
-        setActiveMenu("installments");
         toast("Created!", { autoClose: 1000 });
       } catch (err) {
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
@@ -247,6 +238,8 @@ export default function PagePreview({
           setSuccessfullyUpdated(true);
 
           if (
+            response?.data?.is_recurrency &&
+            response?.data?.is_recurrency == true &&
             response?.data?.installments &&
             response.data.installments.length > 0
           ) {
@@ -255,18 +248,16 @@ export default function PagePreview({
                 canceled_at,
                 installment,
                 amount,
-                fee,
                 total,
                 status,
-                status_date,
+                due_date,
               }) => ({
                 show: true,
                 id: installment,
-                fields: [installment, amount, fee, total, status, status_date],
+                fields: [installment, due_date, amount, total, status],
                 canceled: canceled_at,
               })
             );
-
             if (gridDataValues !== gridData) {
               toast("Installments updated!", { autoClose: 1000 });
               setActiveMenu("installments");
@@ -275,7 +266,6 @@ export default function PagePreview({
             }
 
             setGridData(gridDataValues);
-            setItensInstallments(response.data.installments);
           } else {
             handleOpened(null);
           }
@@ -286,9 +276,6 @@ export default function PagePreview({
           toast(err, { type: "error", autoClose: 3000 });
         }
       } else {
-        console.log("No changes to be saved!");
-        console.log(updated);
-
         toast("No changes to be saved!", {
           autoClose: 1000,
           type: "info",
@@ -324,26 +311,25 @@ export default function PagePreview({
 
         setRegistry(registries);
 
-        const gridDataValues = data.installments.map(
-          ({
-            canceled_at,
-            installment,
-            amount,
-            fee,
-            total,
-            status,
-            status_date,
-          }) => ({
-            show: true,
-            id: installment,
-            fields: [installment, amount, fee, total, status, status_date],
-            canceled: canceled_at,
-          })
-        );
+        if (data.is_recurrency && data.is_recurrency === true) {
+          const gridDataValues = data.installments.map(
+            ({
+              canceled_at,
+              installment,
+              amount,
+              total,
+              status,
+              due_date,
+            }) => ({
+              show: true,
+              id: installment,
+              fields: [installment, due_date, amount, total, status],
+              canceled: canceled_at,
+            })
+          );
 
-
-
-        setGridData(gridDataValues);
+          setGridData(gridDataValues);
+        }
       } catch (err) {
         console.log(err);
         toast(err || err.response.data.error, {
@@ -358,7 +344,7 @@ export default function PagePreview({
         const issuerData = await api.get(`/issuers`);
         const paymentMethodData = await api.get(`/paymentmethods`);
         const paymentCriteriaData = await api.get(`/paymentcriterias`);
-        const chartOfAccountData = await api.get(`/chartofaccounts`);
+        const chartOfAccountData = await api.get(`/chartofaccounts?type=expenses`);
 
         const filialOptions = filialData.data
           .filter((f) => f.id !== id)
@@ -445,14 +431,17 @@ export default function PagePreview({
                 <Building size={16} /> General
               </RegisterFormMenu>
 
-              <RegisterFormMenu
-                setActiveMenu={setActiveMenu}
-                activeMenu={activeMenu}
-                disabled={id === "new"}
-                name="installments"
-              >
-                <ListMinus size={16} /> Installments
-              </RegisterFormMenu>
+
+              {pageData.is_recurrency && pageData.is_recurrency === true ? (
+                  <RegisterFormMenu
+                  setActiveMenu={setActiveMenu}
+                  activeMenu={activeMenu}
+                  disabled={id === "new"}
+                  name="installments"
+                >
+                  <ListMinus size={16} /> Installments
+                </RegisterFormMenu>
+                ) : null}
             </div>
             <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
               <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll">
@@ -571,80 +560,21 @@ export default function PagePreview({
 
                               <Input
                                 type="date"
+                                name="first_due_date"
+                                required
+                                title="First Due Date"
+                                grow
+                                defaultValue={pageData.first_due_date}
+                                InputContext={InputContext}
+                              />
+
+                              <Input
+                                type="date"
                                 name="due_date"
                                 required
                                 title="Due Date"
                                 grow
                                 defaultValue={pageData.due_date}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-
-                            <InputLine title=" Memo">
-                              <Textarea
-                                name="memo"
-                                title="Memo"
-                                grow
-                                defaultValue={pageData.memo}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-
-                            <InputLine title="Amount">
-                              <Input
-                                type="number"
-                                name="amount"
-                                required
-                                title="Amount"
-                                grow
-                                defaultValue={pageData.amount}
-                                InputContext={InputContext}
-                              />
-                              <Input
-                                type="number"
-                                name="fee"
-                                required
-                                title="Fee"
-                                grow
-                                defaultValue={pageData.fee}
-                                InputContext={InputContext}
-                              />
-                              <Input
-                                type="number"
-                                name="total"
-                                required
-                                title="Total"
-                                grow
-                                defaultValue={pageData.total}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-
-                            <InputLine title="Recurrency Information">
-                              <SelectPopover
-                                name="is_recurrency"
-                                title="Is Recurrency?"
-                                grow
-                                defaultValue={
-                                  pageData.is_recurrency
-                                    ? {
-                                        value: pageData.is_recurrency,
-                                        label: "Yes",
-                                      }
-                                    : {
-                                        value: pageData.is_recurrency,
-                                        label: "No",
-                                      }
-                                }
-                                options={yesOrNoOptions}
-                                InputContext={InputContext}
-                              />
-                              <Input
-                                type="text"
-                                name="contract_number"
-                                title="Contract Number"
-                                grow
-                                defaultValue={pageData.contract_number}
                                 InputContext={InputContext}
                               />
                             </InputLine>
@@ -669,6 +599,17 @@ export default function PagePreview({
                               />
                             </InputLine>
 
+                            <InputLine title="Contract Number">
+                              <Input
+                                type="text"
+                                name="contract_number"
+                                title="Contract Number"
+                                grow
+                                defaultValue={pageData.contract_number}
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+
                             <InputLine title="Payment Method">
                               <SelectPopover
                                 name="paymentmethod_id"
@@ -688,36 +629,6 @@ export default function PagePreview({
                                     : null
                                 }
                                 options={paymentMethodOptions}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-
-                            <InputLine title="Authorization Code">
-                              <Input
-                                type="text"
-                                name="authorization_code"
-                                title="Authorization Code"
-                                grow
-                                defaultValue={pageData.authorization_code}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-
-                            <InputLine title="Chart of Account">
-                              <SelectPopover
-                                name="chartofaccount_id"
-                                title="Chart of Account"
-                                isSearchable
-                                grow
-                                defaultValue={
-                                  pageData.chartofaccount_id
-                                    ? {
-                                        value: pageData.chartofaccount_id,
-                                        label: pageData.chartOfAccount.name,
-                                      }
-                                    : null
-                                }
-                                options={chartOfAccountOptions}
                                 InputContext={InputContext}
                               />
                             </InputLine>
@@ -748,6 +659,76 @@ export default function PagePreview({
                                     : null
                                 }
                                 options={paymentCriteriaOptions}
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+
+                            <InputLine title=" Memo">
+                              <Textarea
+                                name="memo"
+                                title="Memo"
+                                grow
+                                defaultValue={pageData.memo}
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+
+                            <InputLine title="Amount">
+                              <Input
+                                type="number"
+                                name="amount"
+                                required
+                                title="Amount"
+                                grow
+                                defaultValue={pageData.amount}
+                                InputContext={InputContext}
+                              />
+                              <SelectPopover
+                                name="is_recurrency"
+                                title="Is Recurrency?"
+                                grow
+                                defaultValue={
+                                  pageData.is_recurrency == true
+                                    ? {
+                                        value: true,
+                                        label: "Yes",
+                                      }
+                                    : {
+                                        value: false,
+                                        label: "No",
+                                      }
+                                }
+                                options={yesOrNoOptions}
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+
+                            <InputLine title="Authorization Code">
+                              <Input
+                                type="text"
+                                name="authorization_code"
+                                title="Authorization Code"
+                                grow
+                                defaultValue={pageData.authorization_code}
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+
+                            <InputLine title="Chart of Account">
+                              <SelectPopover
+                                name="chartofaccount_id"
+                                title="Chart of Account"
+                                isSearchable
+                                grow
+                                defaultValue={
+                                  pageData.chartofaccount_id
+                                    ? {
+                                        value: pageData.chartofaccount_id,
+                                        label: pageData.chartOfAccount.name,
+                                      }
+                                    : null
+                                }
+                                options={chartOfAccountOptions}
                                 InputContext={InputContext}
                               />
                             </InputLine>

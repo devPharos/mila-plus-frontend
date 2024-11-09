@@ -97,6 +97,7 @@ export default function FinancialReceivables() {
     async function getBankAccounts() {
       const { data } = await api.get("/receivables");
 
+      console.log(data);
       const gridDataValues = data.map(
         ({
           id,

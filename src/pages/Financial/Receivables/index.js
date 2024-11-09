@@ -37,6 +37,11 @@ export default function FinancialReceivables() {
       filter: false,
     },
     {
+      title: "First Due Date",
+      type: "date",
+      filter: false,
+    },
+    {
       title: "Due Date",
       type: "date",
       filter: false,
@@ -99,6 +104,7 @@ export default function FinancialReceivables() {
           filial,
           issuer,
           entry_date,
+          first_due_date,
           due_date,
           amount,
           fee,
@@ -115,6 +121,7 @@ export default function FinancialReceivables() {
               issuer.name,
               filial.name,
               entry_date,
+              first_due_date,
               due_date,
               amount,
               fee,
@@ -138,8 +145,6 @@ export default function FinancialReceivables() {
     if (!id) {
       setSuccessfullyUpdated(true);
     }
-
-    console.log("handle opened", id);
     setOpened(id);
   }
 

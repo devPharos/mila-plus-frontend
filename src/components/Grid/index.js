@@ -43,7 +43,12 @@ export default function Grid({ children, gridHeader = null, gridData = null, ord
                 if (gridHeader[index]?.type === 'date') {
                   return <td className={`px-4`} key={index}>
                     <div className={`flex flex-row items-center justify-start gap-2`}>
-                      <span>{new Date(field).toLocaleDateString()}</span>
+                      <span>{new Date(field).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                        timeZone: "UTC",
+                      })}</span>
                     </div>
                   </td>
                 }

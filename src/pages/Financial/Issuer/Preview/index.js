@@ -16,7 +16,11 @@ import FormHeader from "~/components/RegisterForm/FormHeader";
 import Preview from "~/components/Preview";
 import { Zoom, toast } from "react-toastify";
 import api from "~/services/api";
-import { getRegistries, handleUpdatedFields } from "~/functions";
+import {
+  getRegistries,
+  handleUpdatedFields,
+  countries_list,
+} from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
@@ -77,6 +81,10 @@ export default function PagePreview({
   const auth = useSelector((state) => state.auth);
 
   const generalForm = useRef();
+
+  const countriesOptions = countries_list.map((country) => {
+    return { value: country, label: country };
+  });
 
   function handleCloseForm() {
     if (!successfullyUpdated) {
@@ -170,7 +178,7 @@ export default function PagePreview({
 
         const merchantOptions = merchantData.data.map((m) => {
           return { value: m.id, label: m.name };
-        } );
+        });
 
         const studentOptions = studentData.data.map((s) => {
           return { value: s.id, label: s.name };
@@ -362,12 +370,20 @@ export default function PagePreview({
                               InputContext={InputContext}
                             />
 
-                            <Input
-                              type="text"
+                            <SelectPopover
                               name="country"
-                              title="Country"
                               grow
-                              defaultValue={pageData.country}
+                              title="Country"
+                              options={countriesOptions}
+                              isSearchable
+                              defaultValue={
+                                pageData.country
+                                  ? {
+                                      value: pageData.country,
+                                      label: pageData.country,
+                                    }
+                                  : null
+                              }
                               InputContext={InputContext}
                             />
                           </InputLine>
@@ -417,7 +433,6 @@ export default function PagePreview({
                               InputContext={InputContext}
                             />
                           </InputLine>
-
                         </InputLineGroup>
                       </>
                     ) : (

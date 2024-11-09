@@ -17,7 +17,11 @@ import FormHeader from "~/components/RegisterForm/FormHeader";
 import Preview from "~/components/Preview";
 import { Zoom, toast } from "react-toastify";
 import api from "~/services/api";
-import { getRegistries, handleUpdatedFields } from "~/functions";
+import {
+  getRegistries,
+  handleUpdatedFields,
+  countries_list,
+} from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
@@ -79,7 +83,7 @@ export default function PagePreview({
   const [newMerchantxchartofaccounts, setNewMerchantxchartofaccounts] =
     useState([]);
 
-  const [gridData, setGridData] = useState();
+  const [gridData, setGridData] = useState([]);
   const [gridHeader] = useState([
     {
       title: "Code",
@@ -118,6 +122,10 @@ export default function PagePreview({
   const auth = useSelector((state) => state.auth);
 
   const generalForm = useRef();
+
+  const countriesOptions = countries_list.map((country) => {
+    return { value: country, label: country };
+  });
 
   function handleCloseForm() {
     if (!successfullyUpdated) {
@@ -288,9 +296,6 @@ export default function PagePreview({
             return { value: f.id, label: f.name };
           });
 
-
-
-
         setChartOfAccountOptions(chartOfAccountOptions);
         setChartOfAccountData(chartOfAccountData?.data);
 
@@ -318,10 +323,8 @@ export default function PagePreview({
       console.log(newChartOfAccountOptions);
 
       setChartOfAccountOptions(newChartOfAccountOptions);
-
     }
   }, []);
-
 
   useEffect(() => {
     if (newMerchantxchartofaccounts.length > 0) {
@@ -335,9 +338,8 @@ export default function PagePreview({
       console.log(newChartOfAccountOptions);
 
       setChartOfAccountOptions(newChartOfAccountOptions);
-
     }
-  } , [newMerchantxchartofaccounts]);
+  }, [newMerchantxchartofaccounts]);
 
   return (
     <Preview formType={formType} fullscreen={fullscreen}>
@@ -444,7 +446,8 @@ export default function PagePreview({
                                       el.id === chartOfAccountSelected.value
                                   );
 
-                                  const chartOfAccountDataValueExists = newMerchantxchartofaccounts.find(
+                                const chartOfAccountDataValueExists =
+                                  newMerchantxchartofaccounts.find(
                                     (el) =>
                                       el.chartofaccount_id ===
                                       chartOfAccountDataValue.id
@@ -457,16 +460,20 @@ export default function PagePreview({
                                     transition: Zoom,
                                   });
 
-                                  const newChartOfAccountOptions = chartOfAccountOptions.filter(
-                                    (el) =>
-                                      !newMerchantxchartofaccounts.find(
-                                        (el2) => el2.chartofaccount_id === el.value
-                                      )
-                                  );
+                                  const newChartOfAccountOptions =
+                                    chartOfAccountOptions.filter(
+                                      (el) =>
+                                        !newMerchantxchartofaccounts.find(
+                                          (el2) =>
+                                            el2.chartofaccount_id === el.value
+                                        )
+                                    );
 
                                   console.log(newChartOfAccountOptions);
 
-                                  setChartOfAccountOptions(newChartOfAccountOptions);
+                                  setChartOfAccountOptions(
+                                    newChartOfAccountOptions
+                                  );
 
                                   setChartOfAccountSelected(null);
                                 } else if (chartOfAccountDataValue) {
@@ -477,7 +484,7 @@ export default function PagePreview({
                                   });
 
                                   // validar se o valor ja esta no grid e se estiver nao adicionar
-                                  const gridDataValue = gridData.find(
+                                  const gridDataValue = gridData?.find(
                                     (el) =>
                                       el.id === chartOfAccountSelected.value
                                   );
@@ -694,12 +701,20 @@ export default function PagePreview({
                                 InputContext={InputContext}
                               />
 
-                              <Input
-                                type="text"
+                              <SelectPopover
                                 name="country"
-                                title="Country"
                                 grow
-                                defaultValue={pageData.country}
+                                title="Country"
+                                options={countriesOptions}
+                                isSearchable
+                                defaultValue={
+                                  pageData.country
+                                    ? {
+                                        value: pageData.country,
+                                        label: pageData.country,
+                                      }
+                                    : null
+                                }
                                 InputContext={InputContext}
                               />
 

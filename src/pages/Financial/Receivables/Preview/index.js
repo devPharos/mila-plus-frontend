@@ -1,17 +1,7 @@
-// receivables preview page
 import { Form } from "@unform/web";
-import { Building, Pencil, X, ListMinus, Filter } from "lucide-react";
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import { applyFilters, getCurrentPage, hasAccessTo } from "~/functions";
+import { Building, Pencil, X, ListMinus } from "lucide-react";
+import React, { createContext, useEffect, useRef, useState } from "react";
 
-import Filters from "~/components/Filters";
-import FiltersBar from "~/components/FiltersBar";
 import Input from "~/components/RegisterForm/Input";
 
 import RegisterFormMenu from "~/components/RegisterForm/Menu";
@@ -78,6 +68,7 @@ export default function PagePreview({
       name: "",
     },
     entry_date: null,
+    first_due_date: null,
     due_date: null,
     amount: 0,
     total: 0,
@@ -122,7 +113,6 @@ export default function PagePreview({
   const [chartOfAccountOptions, setChartOfAccountOptions] = useState([]);
 
   const [itensInstallmentsIsTemp, setItensInstallmentsIsTemp] = useState(false);
-  const [itensInstallments, setItensInstallments] = useState([]);
 
   const [orderBy, setOrderBy] = useState({ column: "Code", asc: true });
 
@@ -131,6 +121,11 @@ export default function PagePreview({
     {
       title: "Installment",
       type: "currency",
+      filter: false,
+    },
+    {
+      title: "Due Date",
+      type: "date",
       filter: false,
     },
     {
@@ -146,11 +141,6 @@ export default function PagePreview({
     {
       title: "Status",
       type: "text",
-      filter: false,
-    },
-    {
-      title: "Due Date",
-      type: "date",
       filter: false,
     },
   ]);
@@ -187,8 +177,6 @@ export default function PagePreview({
       try {
         const response = await api.post(`/receivables`, data);
         setPageData({ ...pageData, ...response.data });
-
-        console.log("response", response.data);
         setOpened(response.data.id);
 
         if (response.data.created_by) {
@@ -199,37 +187,41 @@ export default function PagePreview({
           setRegistry(registries);
         }
 
-        const installmentsItens = await api.post(
-          `/receivableinstallments/temp`,
-          response.data
-        );
-
-        console.log("installmentsItens", installmentsItens);
-
-        if (installmentsItens) {
-          const gridDataValues = installmentsItens.data.map(
-            ({
-              canceled_at,
-              installment,
-              amount,
-              total,
-              status,
-              status_date,
-            }) => ({
-              show: true,
-              id: installment,
-              fields: [installment, amount,  total, status, status_date],
-              canceled: canceled_at,
-            })
+        if (response.data.is_recurrency && response.data.is_recurrency == true) {
+          const installmentsItens = await api.post(
+            `/receivableinstallments/temp`,
+            response.data
           );
 
-          setGridData(gridDataValues);
-          setItensInstallments(installmentsItens.data);
+          if (installmentsItens) {
+            const gridDataValues = installmentsItens.data.map(
+              ({
+                canceled_at,
+                installment,
+                amount,
+                total,
+                status,
+                due_date,
+              }) => ({
+                show: true,
+                id: installment,
+                fields: [installment, due_date, amount, total, status],
+                canceled: canceled_at,
+              })
+            );
+
+            setGridData(gridDataValues);
+          }
+
+          setItensInstallmentsIsTemp(true);
+
+          setActiveMenu("installments");
+        } else {
+          handleOpened(null);
+
+          setSuccessfullyUpdated(true);
         }
 
-        setItensInstallmentsIsTemp(true);
-
-        setActiveMenu("installments");
         toast("Created!", { autoClose: 1000 });
       } catch (err) {
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
@@ -245,9 +237,9 @@ export default function PagePreview({
           setPageData({ ...pageData, ...objUpdated });
           setSuccessfullyUpdated(true);
 
-          // Atualiza os dados do grid com os 'receivableInstallmentsItems' retornados
-
           if (
+            response?.data?.is_recurrency &&
+            response?.data?.is_recurrency == true &&
             response?.data?.installments &&
             response.data.installments.length > 0
           ) {
@@ -258,18 +250,14 @@ export default function PagePreview({
                 amount,
                 total,
                 status,
-                status_date,
+                due_date,
               }) => ({
                 show: true,
                 id: installment,
-                fields: [installment, amount, total, status, status_date],
+                fields: [installment, due_date, amount, total, status],
                 canceled: canceled_at,
               })
             );
-
-            // comparar para ver se o antigo gridData é diferente do novo gridData
-            // se for diferente, fazer um tost avisando que foi atualizado e atualizar a activeMenu para 'installments'
-
             if (gridDataValues !== gridData) {
               toast("Installments updated!", { autoClose: 1000 });
               setActiveMenu("installments");
@@ -278,7 +266,6 @@ export default function PagePreview({
             }
 
             setGridData(gridDataValues);
-            setItensInstallments(response.data.installments);
           } else {
             handleOpened(null);
           }
@@ -289,9 +276,6 @@ export default function PagePreview({
           toast(err, { type: "error", autoClose: 3000 });
         }
       } else {
-        console.log("No changes to be saved!");
-        console.log(updated);
-
         toast("No changes to be saved!", {
           autoClose: 1000,
           type: "info",
@@ -327,24 +311,25 @@ export default function PagePreview({
 
         setRegistry(registries);
 
-        const gridDataValues = data.installments.map(
-          ({
-            canceled_at,
-            installment,
-            amount,
-            fee,
-            total,
-            status,
-            status_date,
-          }) => ({
-            show: true,
-            id: installment,
-            fields: [installment, amount, fee, total, status, status_date],
-            canceled: canceled_at,
-          })
-        );
+        if (data.is_recurrency && data.is_recurrency === true) {
+          const gridDataValues = data.installments.map(
+            ({
+              canceled_at,
+              installment,
+              amount,
+              total,
+              status,
+              due_date,
+            }) => ({
+              show: true,
+              id: installment,
+              fields: [installment, due_date, amount, total, status],
+              canceled: canceled_at,
+            })
+          );
 
-        setGridData(gridDataValues);
+          setGridData(gridDataValues);
+        }
       } catch (err) {
         console.log(err);
         toast(err || err.response.data.error, {
@@ -359,7 +344,7 @@ export default function PagePreview({
         const issuerData = await api.get(`/issuers`);
         const paymentMethodData = await api.get(`/paymentmethods`);
         const paymentCriteriaData = await api.get(`/paymentcriterias`);
-        const chartOfAccountData = await api.get(`/chartofaccounts`);
+        const chartOfAccountData = await api.get(`/chartofaccounts?type=receipts`);
 
         const filialOptions = filialData.data
           .filter((f) => f.id !== id)
@@ -446,14 +431,17 @@ export default function PagePreview({
                 <Building size={16} /> General
               </RegisterFormMenu>
 
-              <RegisterFormMenu
-                setActiveMenu={setActiveMenu}
-                activeMenu={activeMenu}
-                disabled={id === "new"}
-                name="installments"
-              >
-                <ListMinus size={16} /> Installments
-              </RegisterFormMenu>
+
+              {pageData.is_recurrency && pageData.is_recurrency === true ? (
+                  <RegisterFormMenu
+                  setActiveMenu={setActiveMenu}
+                  activeMenu={activeMenu}
+                  disabled={id === "new"}
+                  name="installments"
+                >
+                  <ListMinus size={16} /> Installments
+                </RegisterFormMenu>
+                ) : null}
             </div>
             <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
               <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll">
@@ -572,6 +560,16 @@ export default function PagePreview({
 
                               <Input
                                 type="date"
+                                name="first_due_date"
+                                required
+                                title="First Due Date"
+                                grow
+                                defaultValue={pageData.first_due_date}
+                                InputContext={InputContext}
+                              />
+
+                              <Input
+                                type="date"
                                 name="due_date"
                                 required
                                 title="Due Date"
@@ -685,39 +683,18 @@ export default function PagePreview({
                                 defaultValue={pageData.amount}
                                 InputContext={InputContext}
                               />
-                              <Input
-                                type="number"
-                                name="fee"
-                                required
-                                title="Fee"
-                                grow
-                                defaultValue={pageData.fee}
-                                InputContext={InputContext}
-                              />
-                              <Input
-                                type="number"
-                                name="total"
-                                required
-                                title="Total"
-                                grow
-                                defaultValue={pageData.total}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-
-                            <InputLine title="Recurrency Information">
                               <SelectPopover
                                 name="is_recurrency"
                                 title="Is Recurrency?"
                                 grow
                                 defaultValue={
-                                  pageData.is_recurrency
+                                  pageData.is_recurrency == true
                                     ? {
-                                        value: pageData.is_recurrency,
+                                        value: true,
                                         label: "Yes",
                                       }
                                     : {
-                                        value: pageData.is_recurrency,
+                                        value: false,
                                         label: "No",
                                       }
                                 }

@@ -227,7 +227,7 @@ export default function PagePreview({
                       <>
                         <FormHeader
                           access={access}
-                          title={pageData.name}
+                          title={pageData.bank.bank_name || pageData.account ? pageData.bank.bank_name + " - " + pageData.account : ""}
                           registry={registry}
                           InputContext={InputContext}
                         />
@@ -244,10 +244,14 @@ export default function PagePreview({
                                 title="Filial"
                                 isSearchable
                                 grow
-                                defaultValue={filialOptions.filter(
-                                  (filial) =>
-                                    filial.value === pageData.filial_id
-                                )}
+                                defaultValue={
+                                  pageData.filial_id
+                                    ? {
+                                        value: pageData.filial_id,
+                                        label: pageData.filial.name,
+                                      }
+                                    : null
+                                }
                                 options={filialOptions}
                                 InputContext={InputContext}
                               />

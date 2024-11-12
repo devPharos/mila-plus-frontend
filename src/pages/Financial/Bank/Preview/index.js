@@ -185,7 +185,7 @@ export default function PagePreview({
                       <>
                         <FormHeader
                           access={access}
-                          title={pageData.name}
+                          title={pageData.bank_name}
                           registry={registry}
                           InputContext={InputContext}
                         />

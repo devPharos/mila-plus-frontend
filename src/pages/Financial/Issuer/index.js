@@ -85,7 +85,7 @@ export default function FinancialIssuers() {
             id,
             fields: [
               name,
-              `${address}, ${city}, ${state}, ${zip}, ${country} `,
+              address || city || state || zip || country ? `${address}, ${city}, ${state}, ${zip}, ${country}` : "",
               email,
               phone_number,
               bank_name,

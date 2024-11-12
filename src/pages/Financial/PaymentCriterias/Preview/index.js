@@ -227,7 +227,7 @@ export default function PagePreview({
                       <>
                         <FormHeader
                           access={access}
-                          title={pageData.name}
+                          title={pageData.description.slice(0, 30)}
                           registry={registry}
                           InputContext={InputContext}
                         />

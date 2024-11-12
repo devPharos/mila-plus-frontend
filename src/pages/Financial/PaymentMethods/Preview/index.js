@@ -156,7 +156,7 @@ export default function PagePreview({
         const bankaccountOptionsValue = bankAccountData.data
           .filter((f) => f.id !== id)
           .map((f) => {
-            return { value: f.id, label: f.account + " - " + f.bank.bank_name };
+            return { value: f.id, label: f.bank.bank_name + " - " + f.account };
           });
 
         setBankAccountOptions(bankaccountOptionsValue);
@@ -227,7 +227,7 @@ export default function PagePreview({
                       <>
                         <FormHeader
                           access={access}
-                          title={pageData.name}
+                          title={pageData.description.slice(0, 30)}
                           registry={registry}
                           InputContext={InputContext}
                         />
@@ -265,11 +265,15 @@ export default function PagePreview({
                               isSearchable
                               grow
                               defaultValue={
-                                pageData.bankaccount_id ?
-                                {
-                                  value: pageData.bankaccount_id,
-                                  label: pageData.bankAccount.account + " - " + pageData.bankAccount.bank.bank_name,
-                                } : null
+                                pageData.bankaccount_id
+                                  ? {
+                                      value: pageData.bankaccount_id,
+                                      label:
+                                        pageData.bankAccount.bank.bank_name +
+                                        " - " +
+                                        pageData.bankAccount.account,
+                                    }
+                                  : null
                               }
                               options={bankAccountOptions}
                               InputContext={InputContext}

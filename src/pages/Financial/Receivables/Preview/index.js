@@ -466,7 +466,7 @@ export default function PagePreview({
                         <>
                           <FormHeader
                             access={access}
-                            title={(pageData?.name || "") + " Installments"}
+                            title={(pageData?.memo.slice(0, 30) || "") + " Installments"}
                             registry={registry}
                             InputContext={InputContext}
                             saveText={

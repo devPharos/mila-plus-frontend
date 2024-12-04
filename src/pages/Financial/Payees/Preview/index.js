@@ -189,42 +189,44 @@ export default function PagePreview({
           setRegistry(registries);
         }
 
-        if (response.data.is_recurrency && response.data.is_recurrency == true) {
-          const installmentsItens = await api.post(
-            `/payeeinstallments/temp`,
-            response.data
-          );
+        // if (response.data.is_recurrency && response.data.is_recurrency == true) {
+        //   const installmentsItens = await api.post(
+        //     `/payeeinstallments/temp`,
+        //     response.data
+        //   );
 
-          console.log(installmentsItens);
+        //   console.log(installmentsItens);
 
-          if (installmentsItens) {
-            const gridDataValues = installmentsItens.data.map(
-              ({
-                canceled_at,
-                installment,
-                amount,
-                total,
-                status,
-                due_date,
-              }) => ({
-                show: true,
-                id: installment,
-                fields: [installment, due_date, amount, total, status],
-                canceled: canceled_at,
-              })
-            );
+        //   if (installmentsItens) {
+        //     const gridDataValues = installmentsItens.data.map(
+        //       ({
+        //         canceled_at,
+        //         installment,
+        //         amount,
+        //         total,
+        //         status,
+        //         due_date,
+        //       }) => ({
+        //         show: true,
+        //         id: installment,
+        //         fields: [installment, due_date, amount, total, status],
+        //         canceled: canceled_at,
+        //       })
+        //     );
 
-            setGridData(gridDataValues);
-          }
+        //     setGridData(gridDataValues);
+        //   }
 
-          setItensInstallmentsIsTemp(true);
+        //   setItensInstallmentsIsTemp(true);
 
-          setActiveMenu("installments");
-        } else {
-          handleOpened(null);
+        //   setActiveMenu("installments");
+        // } else {
+        //
 
-          setSuccessfullyUpdated(true);
-        }
+        // }
+
+        handleOpened(null);
+        setSuccessfullyUpdated(true);
 
         toast("Created!", { autoClose: 1000 });
       } catch (err) {
@@ -241,38 +243,39 @@ export default function PagePreview({
           setPageData({ ...pageData, ...objUpdated });
           setSuccessfullyUpdated(true);
 
-          if (
-            response?.data?.is_recurrency &&
-            response?.data?.is_recurrency == true &&
-            response?.data?.installments &&
-            response.data.installments.length > 0
-          ) {
-            const gridDataValues = response.data.installments.map(
-              ({
-                canceled_at,
-                installment,
-                amount,
-                total,
-                status,
-                due_date,
-              }) => ({
-                show: true,
-                id: installment,
-                fields: [installment, due_date, amount, total, status],
-                canceled: canceled_at,
-              })
-            );
-            if (gridDataValues !== gridData) {
-              toast("Installments updated!", { autoClose: 1000 });
-              setActiveMenu("installments");
+          // if (
+          //   response?.data?.is_recurrency &&
+          //   response?.data?.is_recurrency == true &&
+          //   response?.data?.installments &&
+          //   response.data.installments.length > 0
+          // ) {
+          //   const gridDataValues = response.data.installments.map(
+          //     ({
+          //       canceled_at,
+          //       installment,
+          //       amount,
+          //       total,
+          //       status,
+          //       due_date,
+          //     }) => ({
+          //       show: true,
+          //       id: installment,
+          //       fields: [installment, due_date, amount, total, status],
+          //       canceled: canceled_at,
+          //     })
+          //   );
+          //   if (gridDataValues !== gridData) {
+          //     toast("Installments updated!", { autoClose: 1000 });
+          //     setActiveMenu("installments");
 
-              handleOpened(null);
-            }
+          //     handleOpened(null);
+          //   }
 
-            setGridData(gridDataValues);
-          } else {
-            handleOpened(null);
-          }
+          //   setGridData(gridDataValues);
+          // } else {
+
+          // }
+          handleOpened(null);
 
           toast("Saved!", { autoClose: 1000 });
         } catch (err) {
@@ -315,25 +318,25 @@ export default function PagePreview({
 
         setRegistry(registries);
 
-        if (data.is_recurrency && data.is_recurrency === true) {
-          const gridDataValues = data.installments.map(
-            ({
-              canceled_at,
-              installment,
-              amount,
-              total,
-              status,
-              due_date,
-            }) => ({
-              show: true,
-              id: installment,
-              fields: [installment, due_date, amount, total, status],
-              canceled: canceled_at,
-            })
-          );
+        // if (data.is_recurrency && data.is_recurrency === true) {
+        //   const gridDataValues = data.installments.map(
+        //     ({
+        //       canceled_at,
+        //       installment,
+        //       amount,
+        //       total,
+        //       status,
+        //       due_date,
+        //     }) => ({
+        //       show: true,
+        //       id: installment,
+        //       fields: [installment, due_date, amount, total, status],
+        //       canceled: canceled_at,
+        //     })
+        //   );
 
-          setGridData(gridDataValues);
-        }
+        //   setGridData(gridDataValues);
+        // }
       } catch (err) {
         console.log(err);
         toast(err || err.response.data.error, {
@@ -342,13 +345,26 @@ export default function PagePreview({
         });
       }
     }
+
+
+    if (id === "new") {
+      setFormType("full");
+    } else if (id) {
+      getPageData();
+    }
+
+  }, [id]);
+
+  useEffect(() => {
     async function getDefaultOptions() {
       try {
         const filialData = await api.get(`/filials`);
         const issuerData = await api.get(`/issuers`);
         const paymentMethodData = await api.get(`/paymentmethods`);
         const paymentCriteriaData = await api.get(`/paymentcriterias`);
-        const chartOfAccountData = await api.get(`/chartofaccounts?type=expenses`);
+        const chartOfAccountData = await api.get(
+          `/chartofaccounts?issuer=${pageData.issuer_id}`
+        );
 
         const filialOptions = filialData.data
           .filter((f) => f.id !== id)
@@ -382,7 +398,7 @@ export default function PagePreview({
         const chartOfAccountOptions = chartOfAccountData.data
           .filter((f) => f.id !== id)
           .map((f) => {
-            return { value: f.id, label: f.name };
+            return { value: f.id, label: `${f.Father?.Father?.Father?.name ? `${f.Father?.Father?.Father?.name} > ` : ""}${f.Father?.Father?.name ? `${f.Father?.Father?.name} > ` : ""}${f.Father?.name ? `${f.Father?.name} > ` : ""}${f.name}` };
           });
 
         setFilialOptions(filialOptions);
@@ -394,14 +410,9 @@ export default function PagePreview({
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     }
-
-    if (id === "new") {
-      setFormType("full");
-    } else if (id) {
-      getPageData();
-    }
     getDefaultOptions();
-  }, [id]);
+
+  }, [pageData.issuer_id, id]);
 
   return (
     <Preview formType={formType} fullscreen={fullscreen}>
@@ -434,66 +445,9 @@ export default function PagePreview({
               >
                 <Building size={16} /> General
               </RegisterFormMenu>
-
-
-              {pageData.is_recurrency && pageData.is_recurrency === true ? (
-                  <RegisterFormMenu
-                  setActiveMenu={setActiveMenu}
-                  activeMenu={activeMenu}
-                  disabled={id === "new"}
-                  name="installments"
-                >
-                  <ListMinus size={16} /> Installments
-                </RegisterFormMenu>
-                ) : null}
             </div>
             <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
               <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll">
-                {activeMenu === "installments" && (
-                  <Form
-                    ref={filtersForm}
-                    onSubmit={handleGeneralFormSubmit}
-                    className="w-full pb-32"
-                  >
-                    <InputContext.Provider
-                      value={{
-                        id,
-                        filtersForm,
-                        setSuccessfullyUpdated,
-                        fullscreen,
-                        setFullscreen,
-                        successfullyUpdated,
-                        handleCloseForm,
-                      }}
-                    >
-                      {id === "new" || pageData.loaded ? (
-                        <>
-                          <FormHeader
-                            access={access}
-                            title={(pageData?.name || "") + " Installments"}
-                            registry={registry}
-                            InputContext={InputContext}
-                            saveText={
-                              itensInstallmentsIsTemp
-                                ? "Confirm Installments"
-                                : "Save changes"
-                            }
-                          />
-
-                          <Grid
-                            gridData={gridData}
-                            gridHeader={gridHeader}
-                            orderBy={orderBy}
-                            setOrderBy={setOrderBy}
-                            handleOpened={handleOpened}
-                          />
-                        </>
-                      ) : (
-                        <FormLoading />
-                      )}
-                    </InputContext.Provider>
-                  </Form>
-                )}
                 {activeMenu === "general" && (
                   <Form
                     ref={generalForm}
@@ -583,6 +537,36 @@ export default function PagePreview({
                               />
                             </InputLine>
 
+                            <InputLine title="Amount">
+                              <Input
+                                type="number"
+                                name="amount"
+                                required
+                                title="Amount"
+                                grow
+                                defaultValue={pageData.amount}
+                                InputContext={InputContext}
+                              />
+                              <SelectPopover
+                                name="is_recurrency"
+                                title="Is Recurrency?"
+                                grow
+                                defaultValue={
+                                  pageData.is_recurrency == true
+                                    ? {
+                                        value: true,
+                                        label: "Yes",
+                                      }
+                                    : {
+                                        value: false,
+                                        label: "No",
+                                      }
+                                }
+                                options={yesOrNoOptions}
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+
                             <InputLine title="Issuer">
                               <SelectPopover
                                 name="issuer_id"
@@ -599,17 +583,6 @@ export default function PagePreview({
                                     : null
                                 }
                                 options={issuerOptions}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-
-                            <InputLine title="Contract Number">
-                              <Input
-                                type="text"
-                                name="contract_number"
-                                title="Contract Number"
-                                grow
-                                defaultValue={pageData.contract_number}
                                 InputContext={InputContext}
                               />
                             </InputLine>
@@ -677,32 +650,13 @@ export default function PagePreview({
                               />
                             </InputLine>
 
-                            <InputLine title="Amount">
+                            <InputLine title="Contract Number">
                               <Input
-                                type="number"
-                                name="amount"
-                                required
-                                title="Amount"
+                                type="text"
+                                name="contract_number"
+                                title="Contract Number"
                                 grow
-                                defaultValue={pageData.amount}
-                                InputContext={InputContext}
-                              />
-                              <SelectPopover
-                                name="is_recurrency"
-                                title="Is Recurrency?"
-                                grow
-                                defaultValue={
-                                  pageData.is_recurrency == true
-                                    ? {
-                                        value: true,
-                                        label: "Yes",
-                                      }
-                                    : {
-                                        value: false,
-                                        label: "No",
-                                      }
-                                }
-                                options={yesOrNoOptions}
+                                defaultValue={pageData.contract_number}
                                 InputContext={InputContext}
                               />
                             </InputLine>

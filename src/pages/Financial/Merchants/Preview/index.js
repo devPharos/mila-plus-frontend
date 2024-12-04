@@ -289,11 +289,12 @@ export default function PagePreview({
             return { value: f.id, label: f.name };
           });
 
-        const chartOfAccountData = await api.get(`/chartofaccounts`);
+        const chartOfAccountData = await api.get(`/chartofaccounts?type=expenses`);
+
         const chartOfAccountOptions = chartOfAccountData.data
           .filter((f) => f.id !== id)
           .map((f) => {
-            return { value: f.id, label: f.name };
+            return { value: f.id, label: `${f.Father?.Father?.Father?.name ? `${f.Father?.Father?.Father?.name} > ` : ""}${f.Father?.Father?.name ? `${f.Father?.Father?.name} > ` : ""}${f.Father?.name ? `${f.Father?.name} > ` : ""}${f.name}` };
           });
 
         setChartOfAccountOptions(chartOfAccountOptions);

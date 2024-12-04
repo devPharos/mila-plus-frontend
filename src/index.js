@@ -69,7 +69,6 @@ import FinancialBankAccounts from './pages/Financial/BankAccount';
 import FinancialPaymentMethods from './pages/Financial/PaymentMethods';
 import FinancialPaymentCriteria from './pages/Financial/PaymentCriterias';
 import FinancialMerchants from './pages/Financial/Merchants';
-import FinancialMerchantsChartOfAccounts from './pages/Financial/MerchantsXChartOfAccounts';
 import FinancialIssuers from './pages/Financial/Issuer';
 import FinancialReceivables from './pages/Financial/Receivables';
 import FinancialPayees from './pages/Financial/Payees';
@@ -216,10 +215,6 @@ const router = createBrowserRouter([
           {
             path: '/Financial/Merchants',
             element: <FinancialMerchants />,
-          },
-          {
-            path: '/Financial/MerchantsXChartOfAccounts',
-            element: <FinancialMerchantsChartOfAccounts />,
           },
           {
             path: '/Financial/ChartOfAccounts',

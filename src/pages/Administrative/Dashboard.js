@@ -75,7 +75,7 @@ export default function AdministrativeDashboard() {
         setOrderBy={setOrderBy}
       />
 
-      <div
+      {/* <div
         style={{
           flex: 1,
           width: "50%",
@@ -89,7 +89,7 @@ export default function AdministrativeDashboard() {
         <button type="button" onClick={handlePDF}>
           PDF
         </button>
-      </div>
+      </div> */}
     </div>
   );
 }

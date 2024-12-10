@@ -1,4 +1,11 @@
-import { Edit, FileText, Loader2, Mail, PlayCircle } from "lucide-react";
+import {
+  Download,
+  Edit,
+  FileText,
+  Loader2,
+  Mail,
+  PlayCircle,
+} from "lucide-react";
 import React from "react";
 import { NavLink } from "react-router-dom";
 import api from "~/services/api";
@@ -104,7 +111,7 @@ function TransferEligibility({
             onClick={() => handleOpenTransferEligibility()}
             className="bg-mila_orange text-white border border-gray-800 hover:bg-gray-600 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2"
           >
-            <FileText size={14} />
+            <Download size={14} />
             <strong>Transfer Eligibility Form</strong>
           </button>
         )}

@@ -27,7 +27,9 @@ export default function Sidebar({ main = null, pages = [] }) {
 
   return (
     <div
-      className={`h-full bg-secondary flex flex-col justify-start items-start rounded-tl-2xl p-4 overflow-y-scroll`}
+      className={`${
+        oppened ? "min-w-[140px]" : "min-w-[70px]"
+      } h-full bg-secondary flex flex-col justify-start items-start rounded-tl-2xl p-4 overflow-y-scroll`}
     >
       <div className="flex flex-row justify-center items-center">
         <button

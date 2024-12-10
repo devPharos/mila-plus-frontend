@@ -39,14 +39,14 @@ export default function AdministrativeDashboard() {
     api
       // .get("/pdf/affidavit-support/bc59904a-686e-4b05-b69f-64960af78565", {
       // .get("/pdf/transfer-eligibility/137a1ee0-3d8c-4122-b1bf-f41e9bf7def9", {
-      .get("/pdf/enrollment/ab21c173-f60c-4cc0-ad22-b3fb61857bcb", {
+      .get("/pdf/enrollment/aba4de24-1a28-455e-a845-c96ae074b8f3", {
         responseType: "blob",
       })
       .then((res) => {
         const pdfBlob = new Blob([res.data], { type: "application/pdf" });
         saveAs(
           pdfBlob,
-          `enrollment_${"ab21c173-f60c-4cc0-ad22-b3fb61857bcb"}.pdf`
+          `enrollment_${"aba4de24-1a28-455e-a845-c96ae074b8f3"}.pdf`
         );
       });
   }
@@ -86,9 +86,9 @@ export default function AdministrativeDashboard() {
           paddingTop: 24,
         }}
       >
-        {/* <button type="button" onClick={handlePDF}>
+        <button type="button" onClick={handlePDF}>
           PDF
-        </button> */}
+        </button>
       </div>
     </div>
   );

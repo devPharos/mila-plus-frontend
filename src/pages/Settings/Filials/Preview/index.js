@@ -65,6 +65,7 @@ export default function PagePreview({
     pricelists: [],
     discountlists: [],
     loaded: false,
+    parking_spot_image: null,
   });
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
@@ -192,6 +193,20 @@ export default function PagePreview({
       });
       setLoading(false);
       return;
+    }
+    if (data.parking_spot_image) {
+      // console.log(data.parking_spot_image);
+      const allPromises = organizeMultiAndSingleFiles(
+        [{ file_id: data.parking_spot_image, document_id: null }],
+        "Branches/Parking Spot"
+      );
+      Promise.all(allPromises).then(async (files) => {
+        console.log(files);
+        const response = await api.put(`/filials/${id}`, {
+          parking_spot_image: files[0],
+        });
+      });
+      delete data.parking_spot_image;
     }
     if (id === "new") {
       try {
@@ -668,12 +683,38 @@ export default function PagePreview({
                             <Textarea
                               type="text"
                               required
+                              grow
                               name="address"
                               title="Address"
                               rows={5}
                               defaultValue={pageData.address}
                               InputContext={InputContext}
                             />
+                          </InputLine>
+
+                          <InputLine>
+                            <FileInput
+                              type="file"
+                              name="parking_spot_image"
+                              title="Parking Spot Image"
+                              InputContext={InputContext}
+                              grow
+                            />
+                            {pageData.parking_spot_image_file && (
+                              <a
+                                href={pageData.parking_spot_image_file.url}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                <img
+                                  src={pageData.parking_spot_image_file.url}
+                                  alt="Parking Spot Image"
+                                  style={{
+                                    maxHeight: "150px",
+                                  }}
+                                />
+                              </a>
+                            )}
                           </InputLine>
 
                           <InputLine title="Contact / On the web">
@@ -748,6 +789,7 @@ export default function PagePreview({
                               type="text"
                               name="observations"
                               rows={3}
+                              grow
                               defaultValue={pageData.observations}
                               InputContext={InputContext}
                             />

@@ -1,6 +1,6 @@
 import React, { createContext, useState } from "react";
 import Popover from "./components/Popover";
-import { BellRing, Inbox, MapPin, User } from "lucide-react";
+import { BellRing, Inbox, MapPin, Menu, User } from "lucide-react";
 import PopoverNotifications from "./components/Popover/PopoverNotifications";
 import PopoverInbox from "./components/Popover/PopoverInbox";
 import PopoverProfile from "./components/Popover/PopoverProfile";
@@ -17,6 +17,7 @@ export default function Header() {
   const { signed } = useSelector((state) => state.auth);
   const [activePopover, setActivePopover] = useState("");
   const { profile } = useSelector((state) => state.user);
+  const [openBurger, setOpenBurger] = useState(false);
   const auth = useSelector((state) => state.auth);
   const defaultModules = [
     {
@@ -49,14 +50,21 @@ export default function Header() {
   return (
     <HeaderContext.Provider value={{ activePopover, setActivePopover }}>
       <header className="z-50 sticky top-0 bg-white min-h-16 h-16 border-b flex w-full">
-        <div className=" flex flex-row justify-between items-center w-screen">
-          <div className="px-4 h-12 flex flex-row justify-between items-center border-r">
+        <div className="flex flex-row justify-between items-center w-screen">
+          <button
+            type="button"
+            onClick={() => setOpenBurger(!openBurger)}
+            className="flex md:hidden px-2 flex-row justify-between items-center"
+          >
+            <Menu size={24} color="#000" />
+          </button>
+          <div className="min-w-[70px] px-2 md:px-4 h-12 flex flex-row justify-between items-center md:border-r">
             <Link to="/">
               <img alt="MILA" src={logo} style={{ height: 32 }} />
             </Link>
           </div>
           {signed && (
-            <div className="px-4 h-12 flex flex-1 flex-row justify-between items-center">
+            <div className="px-2 md:px-4 h-12 flex flex-1 flex-row justify-between items-center">
               <div className="flex flex-row justify-between items-center gap-x-2">
                 <Popover
                   Content={PopoverLocation}
@@ -80,7 +88,7 @@ export default function Header() {
                 </div>
               </div>
 
-              <div className="flex flex-row justify-between items-center gap-x-8 text-xl">
+              <div className="hidden md:flex flex flex-row justify-between items-center gap-x-8 text-xl">
                 {modules.map((module, index) => {
                   if (hasAccessTo(auth.accesses, null, module.alias).view) {
                     return (
@@ -103,7 +111,7 @@ export default function Header() {
                 })}
               </div>
 
-              <div className="leading-none text-xs text-right">
+              <div className="hidden md:block leading-none text-xs text-right">
                 Welcome,
                 <br />
                 <strong className="text-gray-700">{profile.name}</strong>
@@ -111,7 +119,7 @@ export default function Header() {
             </div>
           )}
           {signed && (
-            <div className="px-4 h-12 border-l flex flex-row justify-between items-center gap-x-4">
+            <div className="px-2 md:px-4 h-12 md:border-l flex flex-row justify-between items-center gap-x-2 md:gap-x-4">
               <Popover
                 Content={PopoverNotifications}
                 name="notifications"
@@ -155,6 +163,37 @@ export default function Header() {
           )}
         </div>
       </header>
+      {openBurger && (
+        <>
+          <div className="fixed inset-0 z-50 mt-[64px] w-full backdrop-blur-sm"></div>
+          <div className="fixed inset-0 z-50 mt-[64px] w-4/5 backdrop-blur-sm">
+            <div className="fixed inset-0 z-50 flex flex-col justify-between flex-start gap-8 p-4 bg-white shadow-lg">
+              <div className="flex flex-col flex-start flex-start gap-y-4 text-xl">
+                {modules.map((module, index) => {
+                  if (hasAccessTo(auth.accesses, null, module.alias).view) {
+                    return (
+                      <NavLink
+                        key={index}
+                        to={`/${module.alias}`}
+                        className={`relative text-gray-400 text-sm`}
+                      >
+                        {({ isActive }) => {
+                          return (
+                            <HeaderLink
+                              isActive={isActive}
+                              title={module.title}
+                            />
+                          );
+                        }}
+                      </NavLink>
+                    );
+                  }
+                })}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </HeaderContext.Provider>
   );
 }

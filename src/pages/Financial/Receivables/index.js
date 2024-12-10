@@ -11,6 +11,7 @@ import PagePreview from "./Preview";
 import { useSelector } from "react-redux";
 import PreviewController from "~/components/PreviewController";
 import { createContext } from "react";
+import { format, parseISO } from "date-fns";
 
 export const PreviewContext = createContext({});
 
@@ -121,14 +122,15 @@ export default function FinancialReceivables() {
             fields: [
               issuer.name,
               filial.name,
-              entry_date,
-              first_due_date,
-              due_date,
+              format(parseISO(entry_date), "yyyy-MM-dd"),
+              format(parseISO(first_due_date), "yyyy-MM-dd"),
+              format(parseISO(due_date), "yyyy-MM-dd"),
               amount,
               fee,
               total,
-              (paymentcriteria_id
-                ? paymentCriteria.description.slice(0, 20) : ""),
+              paymentcriteria_id
+                ? paymentCriteria.description.slice(0, 20)
+                : "",
               status,
               status_date,
             ],

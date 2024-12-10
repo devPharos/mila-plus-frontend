@@ -1841,8 +1841,6 @@ export default function EnrollmentOutside({
                                 (Estimate)
                               </div>
                             )}
-                            {/* </InputLine>
-                                            <InputLine title='Affidavit of Support'> */}
                             <SelectPopover
                               name="need_sponsorship"
                               onChange={(el) =>

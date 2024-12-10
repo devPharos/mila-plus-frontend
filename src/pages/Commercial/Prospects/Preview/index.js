@@ -726,6 +726,7 @@ export default function PagePreview({
                               grow
                               required
                               title="Type"
+                              disabled={pageData.enrollmentProcess}
                               onChange={(el) => {
                                 setPageData({
                                   ...pageData,
@@ -758,6 +759,7 @@ export default function PagePreview({
                               name="processsubstatus_id"
                               grow
                               required
+                              disabled={pageData.enrollmentProcess}
                               title="Sub Status"
                               onChange={(el) => {
                                 setPageData({

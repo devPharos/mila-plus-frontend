@@ -17,6 +17,7 @@ import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
 import Textarea from "~/components/RegisterForm/Textarea";
 import Grid from "~/components/Grid";
+import { format, parseISO } from "date-fns";
 
 export const InputContext = createContext({});
 
@@ -392,7 +393,16 @@ export default function PagePreview({
         const chartOfAccountOptions = chartOfAccountData.data
           .filter((f) => f.id !== id)
           .map((f) => {
-            return { value: f.id, label: `${f.Father?.Father?.Father?.name ? `${f.Father?.Father?.Father?.name} > ` : ""}${f.Father?.Father?.name ? `${f.Father?.Father?.name} > ` : ""}${f.Father?.name ? `${f.Father?.name} > ` : ""}${f.name}` };
+            return {
+              value: f.id,
+              label: `${
+                f.Father?.Father?.Father?.name
+                  ? `${f.Father?.Father?.Father?.name} > `
+                  : ""
+              }${f.Father?.Father?.name ? `${f.Father?.Father?.name} > ` : ""}${
+                f.Father?.name ? `${f.Father?.name} > ` : ""
+              }${f.name}`,
+            };
           });
 
         setFilialOptions(filialOptions);
@@ -405,7 +415,6 @@ export default function PagePreview({
       }
     }
     getDefaultOptions();
-
   }, [pageData.issuer_id, id]);
 
   return (
@@ -506,7 +515,10 @@ export default function PagePreview({
                                 required
                                 title="Entry Date"
                                 grow
-                                defaultValue={pageData.entry_date}
+                                defaultValue={format(
+                                  parseISO(pageData.entry_date),
+                                  "yyyy-MM-dd"
+                                )}
                                 InputContext={InputContext}
                               />
 
@@ -516,7 +528,10 @@ export default function PagePreview({
                                 required
                                 title="First Due Date"
                                 grow
-                                defaultValue={pageData.first_due_date}
+                                defaultValue={format(
+                                  parseISO(pageData.first_due_date),
+                                  "yyyy-MM-dd"
+                                )}
                                 InputContext={InputContext}
                               />
 
@@ -526,7 +541,10 @@ export default function PagePreview({
                                 required
                                 title="Due Date"
                                 grow
-                                defaultValue={pageData.due_date}
+                                defaultValue={format(
+                                  parseISO(pageData.due_date),
+                                  "yyyy-MM-dd"
+                                )}
                                 InputContext={InputContext}
                               />
                             </InputLine>
@@ -561,7 +579,6 @@ export default function PagePreview({
                               />
                             </InputLine>
 
-
                             <InputLine title="Issuer">
                               <SelectPopover
                                 name="issuer_id"
@@ -581,8 +598,6 @@ export default function PagePreview({
                                 InputContext={InputContext}
                               />
                             </InputLine>
-
-
 
                             <InputLine title="Payment Method">
                               <SelectPopover

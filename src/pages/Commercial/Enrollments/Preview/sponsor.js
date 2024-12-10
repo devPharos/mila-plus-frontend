@@ -138,7 +138,7 @@ export default function SponsorOutside({
               : data.form_step === "transfer-agent"
               ? "sponsor-signature"
               : data.form_step,
-            lastActiveMenu: data.form_step,
+            lastActiveMenu: menus.find((menu) => menu.name === data.form_step),
           });
         } catch (err) {
           if (err.response && err.response.data && err.response.data.error) {

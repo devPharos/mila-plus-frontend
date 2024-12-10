@@ -34,7 +34,7 @@ export default function PagePreview({
 }) {
   // bank.bank_name, company.name, account, routing_number
   const [pageData, setPageData] = useState({
-    name : "",
+    name: "",
     loaded: false,
     description: "",
     recurring_qt: null,
@@ -63,14 +63,14 @@ export default function PagePreview({
 
   //Percentage / Flat Fee
   const [feeTypeOptions] = useState([
-    { value: "percentage", label: "Percentage" },
-    { value: "flat_fee", label: "Flat Fee" },
+    { value: "Percentage", label: "Percentage" },
+    { value: "Flat Fee", label: "Flat Fee" },
   ]);
 
   const [metricsOptions] = useState([
-    { value: "day", label: "Day" },
-    { value: "week", label: "Week" },
-    { value: "month", label: "Month" },
+    { value: "Day", label: "Day" },
+    { value: "Week", label: "Week" },
+    { value: "Month", label: "Month" },
   ]);
 
   const auth = useSelector((state) => state.auth);
@@ -245,11 +245,12 @@ export default function PagePreview({
                                 isSearchable
                                 grow
                                 defaultValue={
-                                  pageData.filial_id ?
-                                  {
-                                    value: pageData.filial_id,
-                                    label: pageData.filial.name,
-                                  } : null
+                                  pageData.filial_id
+                                    ? {
+                                        value: pageData.filial_id,
+                                        label: pageData.filial.name,
+                                      }
+                                    : null
                                 }
                                 options={filialOptions}
                                 InputContext={InputContext}
@@ -279,18 +280,18 @@ export default function PagePreview({
                               InputContext={InputContext}
                             />
                             <SelectPopover
-                                type="text"
-                                name="recurring_metric"
-                                required
-                                title="Recurring Metric"
-                                grow
-                                defaultValue={metricsOptions.filter(
-                                  (metric) => metric.value === pageData.recurring_metric
-                                )}
-                                options={metricsOptions}
-                                InputContext={InputContext}
+                              type="text"
+                              name="recurring_metric"
+                              required
+                              title="Recurring Metric"
+                              grow
+                              defaultValue={metricsOptions.filter(
+                                (metric) =>
+                                  metric.value === pageData.recurring_metric
+                              )}
+                              options={metricsOptions}
+                              InputContext={InputContext}
                             />
-
                           </InputLine>
                           <InputLine title="Fee">
                             <Input

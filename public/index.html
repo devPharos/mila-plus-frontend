@@ -65,8 +65,10 @@
                       // (optional) Callback function that gets called after a successful transaction
                       onTransactionSuccess: function(approvalData) {
                           console.log("Approval Data", approvalData);
-                          emergepay.close();
-                          location = "https://gravitypayments.com";
+                          setTimeout(() => {
+                            emergepay.close();
+                            // location = "";
+                          }, 2000)
                       },
                       // (optional) Callback function that gets called after a failure occurs during the transaction (such as a declined card)
                       onTransactionFailure: function(failureData) {

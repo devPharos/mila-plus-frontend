@@ -1,81 +1,48 @@
-import { Filter } from "lucide-react";
-import React, { useState } from "react";
-import Breadcrumbs from "~/components/Breadcrumbs";
-import Filters from "~/components/Filters";
-import FiltersBar from "~/components/FiltersBar";
-import Grid from "~/components/Grid";
-import PageHeader from "~/components/PageHeader";
-// import 'rsuite/Calendar/styles/index.css';
-// import Calendar from 'rsuite/Calendar';
-
-import { saveAs } from "file-saver";
-
-import { getCurrentPage } from "~/functions";
-import api from "~/services/api";
+import { emergepaySdk } from "emergepay-sdk";
+import React from "react";
 
 export default function AdministrativeDashboard() {
-  const [activeFilters, setActiveFilters] = useState([]);
-  const [orderBy, setOrderBy] = useState({
-    column: "Scheduled Date",
-    asc: true,
-  });
-  const currentPage = getCurrentPage();
-  const [gridHeader, setGridHeader] = useState(null);
-
-  const [gridData, setGridData] = useState([]);
-
-  function handleFilters({ title = "", value = "" }) {
-    if (value || typeof value === "boolean") {
-      setActiveFilters([
-        ...activeFilters.filter((el) => el.title != title),
-        { title, value },
-      ]);
-    } else {
-      setActiveFilters([...activeFilters.filter((el) => el.title != title)]);
-    }
-  }
-
-  function handlePDF() {
-    api
-      // .get("/pdf/affidavit-support/bc59904a-686e-4b05-b69f-64960af78565", {
-      // .get("/pdf/transfer-eligibility/137a1ee0-3d8c-4122-b1bf-f41e9bf7def9", {
-      .get("/pdf/enrollment/aba4de24-1a28-455e-a845-c96ae074b8f3", {
-        responseType: "blob",
-      })
-      .then((res) => {
-        const pdfBlob = new Blob([res.data], { type: "application/pdf" });
-        saveAs(
-          pdfBlob,
-          `enrollment_${"aba4de24-1a28-455e-a845-c96ae074b8f3"}.pdf`
-        );
+  async function handleEmergePay() {
+    try {
+      const emergepay = new emergepaySdk({
+        oid: oid,
+        authToken: authToken,
+        environmentUrl: environmentUrl,
       });
+      var amount = "0.01";
+      var config = {
+        transactionType: TransactionType.CreditSale,
+        method: "modal",
+        fields: [
+          {
+            id: "base_amount",
+            value: amount,
+          },
+          {
+            id: "external_tran_id",
+            value: emergepay.getExternalTransactionId(),
+          },
+        ],
+      };
+
+      emergepay
+        .startTransaction(config)
+        .then(function (transactionToken) {
+          res.send({
+            transactionToken: transactionToken,
+          });
+        })
+        .catch(function (err) {
+          res.send(err.message);
+        });
+    } catch (err) {
+      console.log({ err });
+    }
   }
 
   return (
     <div className="h-full bg-white flex flex-1 flex-col justify-start items-start rounded-tr-2xl px-4">
-      <PageHeader>
-        <Breadcrumbs currentPage={currentPage} />
-        <FiltersBar>
-          <Filter size={14} /> Custom Filters
-        </FiltersBar>
-      </PageHeader>
-      <Filters
-        search
-        handleFilters={handleFilters}
-        gridHeader={gridHeader}
-        gridData={gridData}
-        setGridHeader={setGridHeader}
-        activeFilters={activeFilters}
-      />
-
-      <Grid
-        gridData={gridData}
-        gridHeader={gridHeader}
-        orderBy={orderBy}
-        setOrderBy={setOrderBy}
-      />
-
-      {/* <div
+      <div
         style={{
           flex: 1,
           width: "50%",
@@ -85,11 +52,12 @@ export default function AdministrativeDashboard() {
           alignItems: "start",
           paddingTop: 24,
         }}
+        id="parent"
       >
-        <button type="button" onClick={handlePDF}>
-          PDF
+        <button type="button" id="cip-pay-btn">
+          Emerge Pay
         </button>
-      </div> */}
+      </div>
     </div>
   );
 }

@@ -67,10 +67,10 @@ function EnrollmentProcess({
     );
   }
 
-  function handleCreateIssuer() {
+  function handleGenerateFees() {
     setLoading(true);
     api
-      .post(`/prospect_payments/issuer`, {
+      .post(`/prospect_payments/generateFees`, {
         filial_id: enrollment.filial_id,
         enrollment_id: enrollment.id,
         student_id,
@@ -79,7 +79,8 @@ function EnrollmentProcess({
         api
           .post(`prospect_payments/payment_link`, {
             issuer_id: data.issuer.id,
-            receivable_id: data.receivable.id,
+            registrationFee_id: data.registrationFee.id,
+            tuitionFee_id: data.tuitionFee.id,
             enrollment_id: enrollment.id,
             student_id,
           })
@@ -151,7 +152,7 @@ function EnrollmentProcess({
             <button
               type="button"
               disabled={loading}
-              onClick={handleCreateIssuer}
+              onClick={handleGenerateFees}
               className={`bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2`}
             >
               <Send size={14} />

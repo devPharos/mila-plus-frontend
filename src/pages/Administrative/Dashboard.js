@@ -6,7 +6,26 @@ export default function AdministrativeDashboard() {
   async function handleEmergePay() {
     try {
       api
-        .post(`/emergepay/text-to-pay`)
+        .post(`/emergepay/text-to-pay`, {
+          receivable_id: "teste-id",
+          amount: 498,
+          pageDescription: "Teste de mensagem para o pagamento.",
+        })
+        .then((response) => {
+          console.log(response);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } catch (err) {
+      console.log({ err });
+    }
+  }
+
+  async function handleRefund() {
+    try {
+      api
+        .post(`/emergepay/refund`)
         .then((response) => {
           console.log(response);
         })
@@ -20,7 +39,7 @@ export default function AdministrativeDashboard() {
 
   return (
     <div className="h-full bg-white flex flex-1 flex-row justify-start items-start rounded-tr-2xl px-4">
-      <div
+      {/* <div
         style={{
           flex: 1,
           width: "50%",
@@ -52,6 +71,22 @@ export default function AdministrativeDashboard() {
           Text to Pay
         </button>
       </div>
+      <div
+        style={{
+          flex: 1,
+          width: "50%",
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "start",
+          paddingTop: 24,
+        }}
+        id="parent"
+      >
+        <button type="button" onClick={() => handleRefund()}>
+          Refund
+        </button>
+      </div> */}
     </div>
   );
 }

@@ -52,7 +52,8 @@
           emergepay.init();
 
           // Set up event listener on Pay With Card button
-          document.getElementById('cip-pay-btn').addEventListener('click', function(e) {
+          if(document.getElementById('cip-pay-btn')) {
+            document.getElementById('cip-pay-btn').addEventListener('click', function(e) {
               e.preventDefault();
 
               // Get a transactionToken serverside
@@ -81,6 +82,7 @@
                   });
               });
           });
+        }
       };
 
       // This function makes a call to your server to get a transaction token

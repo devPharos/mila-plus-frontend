@@ -170,7 +170,7 @@ export default function AdministrativeStudent() {
         activeFilters={activeFilters}
       />
 
-      {gridData && gridData.length > 9999 ? (
+      {gridData && gridData.length > 0 ? (
         <Grid
           gridData={gridData}
           page={page}

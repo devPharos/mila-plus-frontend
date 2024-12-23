@@ -4,11 +4,20 @@ import { useLocation } from "react-router-dom";
 import { PageContext } from "~/App";
 import api from "~/services/api";
 
-export function hasAccessTo(accesses = null, main_menu = null, menu_alias = null) {
-  const defaultFalse = { view: false, edit: false, create: false, inactivate: false };
+export function hasAccessTo(
+  accesses = null,
+  main_menu = null,
+  menu_alias = null
+) {
+  const defaultFalse = {
+    view: false,
+    edit: false,
+    create: false,
+    inactivate: false,
+  };
   if (!accesses || !accesses.hierarchy || !menu_alias) {
-    console.log(accesses, accesses.hierarchy, menu_alias)
-    return defaultFalse
+    console.log(accesses, accesses.hierarchy, menu_alias);
+    return defaultFalse;
   }
 
   if (accesses.children) {
@@ -16,9 +25,11 @@ export function hasAccessTo(accesses = null, main_menu = null, menu_alias = null
   }
   let current = null;
   if (main_menu) {
-    current = accesses.hierarchy.find(access => access.alias === main_menu.toLowerCase()).children.find(access => access.alias === menu_alias);
+    current = accesses.hierarchy
+      .find((access) => access.alias === main_menu.toLowerCase())
+      .children.find((access) => access.alias === menu_alias);
   } else {
-    current = accesses.hierarchy.find(access => access.alias === menu_alias);
+    current = accesses.hierarchy.find((access) => access.alias === menu_alias);
   }
 
   if (!current || !current.MenuHierarchyXGroup) {
@@ -30,21 +41,23 @@ export function hasAccessTo(accesses = null, main_menu = null, menu_alias = null
 }
 
 export function getCurrentPage() {
-  const { signed } = useSelector(state => state.auth)
-  const { pages } = useContext(PageContext)
+  const { signed } = useSelector((state) => state.auth);
+  const { pages } = useContext(PageContext);
   const { pathname } = useLocation();
-  const paths = pathname.substring(1).split('/');
+  const paths = pathname.substring(1).split("/");
   let currentModule = null;
   if (signed) {
-    currentModule = pages.filter(module => module.name === paths[0])[0];
+    currentModule = pages.filter((module) => module.name === paths[0])[0];
   } else {
     currentModule = pages[pages.length - 1];
   }
   let currentPage = null;
   if (currentModule) {
-    currentPage = currentModule.children.filter(page => page.path === pathname)[0];
+    currentPage = currentModule.children.filter(
+      (page) => page.path === pathname
+    )[0];
   }
-  return currentPage
+  return currentPage;
 }
 
 export const countries_list = [
@@ -242,112 +255,148 @@ export const countries_list = [
   `Vietnam`,
   `Yemen`,
   `Zambia`,
-  `Zimbabwe`
-]
+  `Zimbabwe`,
+];
 
-export function applyFilters(activeFilters, gridData, gridHeader, orderBy, setGridData) {
-
-  const search = activeFilters.filter(el => el.title === 'search');
-  const filters = activeFilters.filter(el => el.title !== 'search');
+export function applyFilters(
+  activeFilters = [],
+  gridData = [],
+  gridHeader = [],
+  orderBy = null,
+  setGridData = () => null
+) {
+  const search = activeFilters.filter((el) => el.title === "search");
+  const filters = activeFilters.filter((el) => el.title !== "search");
 
   const newData = gridData.map((line) => {
     line.show = true;
-    filters.forEach(filter => {
+    filters.forEach((filter) => {
       const fieldPos = gridHeader.findIndex((el) => el.title === filter.title);
       if (fieldPos > -1) {
         if (Array.isArray(filter.value)) {
-        } else if (typeof filter.value === 'boolean') {
-          if (line.fields[fieldPos].toString().search(filter.value.toString()) === -1) {
+        } else if (typeof filter.value === "boolean") {
+          if (
+            line.fields[fieldPos].toString().search(filter.value.toString()) ===
+            -1
+          ) {
             line.show = false;
           }
         } else {
-          if (!line.fields[fieldPos] || line.fields[fieldPos].toUpperCase() !== filter.value.toUpperCase()) {
+          if (
+            !line.fields[fieldPos] ||
+            line.fields[fieldPos].toUpperCase() !== filter.value.toUpperCase()
+          ) {
             line.show = false;
           }
         }
       }
-    })
+    });
 
     if (search.length > 0 && line.show) {
       line.show = false;
       line.fields.map((field) => {
-        if (typeof field === 'boolean') {
+        if (typeof field === "boolean") {
           // console.log(line.fields[fieldPos].toString(), filter.value.toString())
           // if (line.fields[fieldPos].toString().search(filter.value.toString()) === -1) {
           //   line.show = false;
           // }
         } else {
-          if (field && field.toUpperCase().search(search[0].value.toUpperCase()) > -1) {
+          if (
+            field &&
+            field.toUpperCase().search(search[0].value.toUpperCase()) > -1
+          ) {
             line.show = true;
           }
         }
-      })
+      });
     }
 
+    return line;
+  });
 
-    return line
-  })
-
-  if (orderBy.column) {
+  if (orderBy && orderBy.column) {
     const fieldPos = gridHeader.findIndex((el) => el.title === orderBy.column);
-    newData.sort((a, b) => orderBy.asc ? a.fields[fieldPos] > b.fields[fieldPos] : a.fields[fieldPos] < b.fields[fieldPos])
+    newData.sort((a, b) =>
+      orderBy.asc
+        ? a.fields[fieldPos] > b.fields[fieldPos]
+        : a.fields[fieldPos] < b.fields[fieldPos]
+    );
   }
 
-  setGridData(newData)
-
+  setGridData(newData);
 }
 
-export async function getRegistries({ canceled_by = null, canceled_at = null, updated_by = null, updated_at = null, created_by = null, created_at = null }) {
+export async function getRegistries({
+  canceled_by = null,
+  canceled_at = null,
+  updated_by = null,
+  updated_at = null,
+  created_by = null,
+  created_at = null,
+}) {
   // console.log({ created_by, created_at, updated_by, updated_at, canceled_by, canceled_at })
   let registryBy = null;
   let registryAt = null;
   let registryStatus = null;
   if (canceled_by) {
-    const { data: userRet } = await api.get(`users_short_info/${canceled_by}`)
-    registryBy = userRet.name
+    const { data: userRet } = await api.get(`users_short_info/${canceled_by}`);
+    registryBy = userRet.name;
     registryAt = canceled_at;
-    registryStatus = 'Canceled';
+    registryStatus = "Canceled";
   } else if (updated_by) {
-    const { data: userRet } = await api.get(`users_short_info/${updated_by}`)
-    registryBy = userRet.name
+    const { data: userRet } = await api.get(`users_short_info/${updated_by}`);
+    registryBy = userRet.name;
     registryAt = updated_at;
-    registryStatus = 'Updated';
+    registryStatus = "Updated";
   } else if (created_by) {
-    const { data: userRet } = await api.get(`users_short_info/${created_by}`)
-    registryBy = userRet.name
+    const { data: userRet } = await api.get(`users_short_info/${created_by}`);
+    registryBy = userRet.name;
     registryAt = created_at;
-    registryStatus = 'Created';
+    registryStatus = "Created";
   }
-  return { registryBy, registryAt, registryStatus }
+  return { registryBy, registryAt, registryStatus };
 }
 
 export function handleUpdatedFields(data, pageData) {
-  const dataInArray = Object.keys(data).map((key) => [key, data[key]])
-  const pageDataInArray = Object.keys(pageData).map((key) => [key, pageData[key]]);
+  const dataInArray = Object.keys(data).map((key) => [key, data[key]]);
+  const pageDataInArray = Object.keys(pageData).map((key) => [
+    key,
+    pageData[key],
+  ]);
 
-  return dataInArray && dataInArray.filter((field) => {
-    let x = field[1] === 'Yes' || field[1] === 'true' ? true : field[1] === 'No' || field[1] === 'false' ? false : field[1];
-    const y = pageDataInArray.length > 0 ? pageDataInArray.find(pageField => pageField[0] === field[0])[1] : null;
+  return (
+    dataInArray &&
+    dataInArray.filter((field) => {
+      let x =
+        field[1] === "Yes" || field[1] === "true"
+          ? true
+          : field[1] === "No" || field[1] === "false"
+          ? false
+          : field[1];
+      const y =
+        pageDataInArray.length > 0
+          ? pageDataInArray.find((pageField) => pageField[0] === field[0])[1]
+          : null;
 
-    if (typeof y === 'number') {
-      x = parseFloat(field[1]);
-    }
+      if (typeof y === "number") {
+        x = parseFloat(field[1]);
+      }
 
-    if (field[0] === 'file_id') {
-      return field;
-    }
+      if (field[0] === "file_id") {
+        return field;
+      }
 
-    if ((x != y && (x || y)) || typeof y === 'boolean') {
-      field[1] = x;
-      return field;
-    }
-  })
-
+      if ((x != y && (x || y)) || typeof y === "boolean") {
+        field[1] = x;
+        return field;
+      }
+    })
+  );
 }
 
-export const formatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
+export const formatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
 
   // These options can be used to round to whole numbers.
   // trailingZeroDisplay: 'stripIfInteger' // This is probably what most people
@@ -361,3 +410,12 @@ export const formatter = new Intl.NumberFormat('en-US', {
   // print 2500.10 as $2,500.1
   maximumFractionDigits: 2, // Causes 2500.99 to be printed as $2,501
 });
+
+export function capitalizeFirstLetter(val) {
+  let vals = String(val).split(" ");
+  vals.forEach((v, i) => {
+    vals[i] = v.charAt(0).toUpperCase() + v.slice(1).toLowerCase();
+  });
+
+  return vals.join(" ");
+}

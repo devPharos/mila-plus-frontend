@@ -23,14 +23,16 @@ export default function FinancialBank() {
   const [gridHeader, setGridHeader] = useState([
     {
       title: "Bank Name",
+      name: "bank_name",
       type: "text",
       filter: true,
     },
     {
       title: "Bank Alias",
+      name: "bank_alias",
       type: "text",
       filter: false,
-    }
+    },
   ]);
   const [successfullyUpdated, setSuccessfullyUpdated] = useState(true);
 
@@ -50,18 +52,13 @@ export default function FinancialBank() {
   useEffect(() => {
     async function getFilials() {
       const { data } = await api.get("/bank");
-      const gridDataValues = data.map(
-        ({ id, bank_alias, bank_name}) => {
-          return {
-            show: true,
-            id,
-            fields: [
-              bank_name,
-              bank_alias,
-            ]
-          };
-        },
-      );
+      const gridDataValues = data.map(({ id, bank_alias, bank_name }) => {
+        return {
+          show: true,
+          id,
+          fields: [bank_name, bank_alias],
+        };
+      });
       setGridData(gridDataValues);
     }
     getFilials();
@@ -92,7 +89,7 @@ export default function FinancialBank() {
         access={hasAccessTo(
           accesses,
           currentPage.path.split("/")[1],
-          currentPage.alias,
+          currentPage.alias
         )}
         handleNew={() => setOpened("new")}
         search
@@ -126,7 +123,7 @@ export default function FinancialBank() {
                 access={hasAccessTo(
                   accesses,
                   currentPage.path.split("/")[1],
-                  currentPage.alias,
+                  currentPage.alias
                 )}
                 id={opened}
                 handleOpened={handleOpened}

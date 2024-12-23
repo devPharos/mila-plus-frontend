@@ -1,30 +1,98 @@
-import React, { useContext, useEffect } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../Sidebar";
 import { PageContext } from "~/App";
+import { runFilter } from "~/functions/gridFunctions";
+import { capitalizeFirstLetter } from "~/functions";
+
+export const FullGridContext = createContext();
 
 export default function Administrative() {
+  const { pages } = useContext(PageContext);
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const [activeFilters, setActiveFilters] = useState([]);
+  const [opened, setOpened] = useState(false);
+  const [orderBy, setOrderBy] = useState(null);
+  const [gridHeader, setGridHeader] = useState([]);
+  const [gridData, setGridData] = useState([]);
+  const [successfullyUpdated, setSuccessfullyUpdated] = useState(true);
+  const [page, setPage] = useState(1);
+  const [pagesNo, setPages] = useState(1);
+  const [limit, setLimit] = useState(50);
+  const [search, setSearch] = useState("");
+  let delayDebounceFn = null;
+  const paths = pathname.split("/");
+  const routeName = capitalizeFirstLetter(paths[1]);
+  const finalRouteName = capitalizeFirstLetter(
+    paths.length > 2 ? paths[2] : "Students"
+  );
 
-  const { pages } = useContext(PageContext);
+  function handleFilters({ title = "", value = "" }) {
+    if (title === "search") {
+      clearTimeout(delayDebounceFn);
+      delayDebounceFn = setTimeout(() => {
+        setActiveFilters([]);
+        setSearch(value);
+      }, 700);
+
+      return;
+    } else {
+      runFilter(title, value);
+    }
+  }
+
+  function handleOpened(id) {
+    if (!id) {
+      setSuccessfullyUpdated(true);
+    }
+    setOpened(id);
+  }
 
   useEffect(() => {
     if (
-      pathname.toUpperCase() === "/Administrative".toUpperCase() ||
-      pathname.toUpperCase() === "/Administrative/".toUpperCase()
+      pathname.toUpperCase() === `/${routeName}`.toUpperCase() ||
+      pathname.toUpperCase() === `/${routeName}/`.toUpperCase()
     ) {
-      navigate("/Administrative/Calendar");
+      navigate(`/${routeName}/${finalRouteName}`);
     }
   }, [pathname]);
 
   return (
     <div className="w-full bg-gradient-to-br from-gray-300 via-indigo-300 to-mila_orange flex flex-1 flex-row justify-between items-center px-4 pt-8 shadow-lg overflow-y-scroll">
       <Sidebar
-        main="administrative"
-        pages={pages.find((page) => page.name === "Administrative").children}
+        main={routeName.toLowerCase()}
+        pages={pages && pages.find((page) => page.name === routeName).children}
       />
-      <Outlet />
+
+      <FullGridContext.Provider
+        value={{
+          activeFilters,
+          setActiveFilters,
+          opened,
+          setOpened,
+          orderBy,
+          setOrderBy,
+          gridHeader,
+          setGridHeader,
+          gridData,
+          setGridData,
+          successfullyUpdated,
+          setSuccessfullyUpdated,
+          page,
+          setPage,
+          pages: pagesNo,
+          setPages,
+          limit,
+          setLimit,
+          search,
+          setSearch,
+          handleFilters,
+          handleOpened,
+        }}
+      >
+        <Outlet />
+      </FullGridContext.Provider>
     </div>
   );
 }

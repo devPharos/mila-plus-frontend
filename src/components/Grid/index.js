@@ -33,10 +33,15 @@ export default function Grid({
                     <button
                       type="button"
                       onClick={() =>
-                        setOrderBy({ column: head.title, asc: !orderBy.asc })
+                        setOrderBy({
+                          column: head.name,
+                          asc: orderBy ? !orderBy.asc : true,
+                        })
                       }
                       className={`flex flex-row items-center justify-between w-full ${
-                        orderBy.column === head.title && "text-primary"
+                        orderBy &&
+                        orderBy.column === head.title &&
+                        "text-primary"
                       }`}
                     >
                       <div className="flex flex-row items-center gap-2">
@@ -48,7 +53,7 @@ export default function Grid({
                           />
                         )}
                       </div>{" "}
-                      {orderBy.column === head.title && (
+                      {orderBy && orderBy.column === head.name && (
                         <ArrowUpDown size={12} color="#0B2870" />
                       )}
                     </button>

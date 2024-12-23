@@ -19,6 +19,9 @@ export default function Filters({
   page = null,
   setPage = () => null,
   setGridHeader = () => null,
+  limit = null,
+  setLimit = () => null,
+  orderBy = null,
   gridData = null,
   activeFilters = null,
 }) {
@@ -127,6 +130,7 @@ export default function Filters({
                   <option
                     key={index}
                     onClick={() => setPage(retPage + 1)}
+                    selected={page === retPage + 1}
                     className={`${
                       page === retPage + 1 ? "bg-primary text-white" : ""
                     } hover:bg-primary hover:text-white px-2 py-1 rounded text-left whitespace-nowrap`}
@@ -137,6 +141,29 @@ export default function Filters({
               })}
             </select>{" "}
             of <span className="font-bold text-primary">{pages}</span>
+          </p>
+          <p className="text-xs pl-1 text-gray-500">
+            -
+            <select
+              className="bg-secondary rounded h-8 px-2 gap-2 m-1"
+              onChange={(el) => setLimit(el.target.value)}
+            >
+              {[10, 20, 50, 100, 200].map((retPage, index) => {
+                return (
+                  <option
+                    key={index}
+                    onClick={() => setLimit(retPage)}
+                    selected={limit === retPage}
+                    className={`${
+                      limit === retPage ? "bg-primary text-white" : ""
+                    } hover:bg-primary hover:text-white px-2 py-1 rounded text-left whitespace-nowrap`}
+                  >
+                    {retPage}
+                  </option>
+                );
+              })}
+            </select>
+            per page
           </p>
         </div>
       )}

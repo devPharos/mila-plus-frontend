@@ -55,6 +55,7 @@ export default function PagePreview({
     address: "",
     loaded: false,
   });
+  const [countriesList, setCountriesList] = useState([]);
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
@@ -76,13 +77,18 @@ export default function PagePreview({
     { value: "Not Specified", label: "Not Specified" },
   ];
 
+  const yesOrNoOptions = [
+    { value: true, label: "Yes" },
+    { value: false, label: "No" },
+  ];
+
   const countriesOptions = countries_list.map((country) => {
     return { value: country, label: country };
   });
 
   useEffect(() => {
     async function getCountriesList() {
-      const countriesList = CountryList.getAll().map((country) => {
+      const getList = CountryList.getAll().map((country) => {
         return {
           value: country.dial_code,
           label: country.flag + " " + country.dial_code + " " + country.name,
@@ -90,8 +96,7 @@ export default function PagePreview({
           name: country.name,
         };
       });
-
-      return countriesList;
+      setCountriesList(getList);
     }
     async function getDefaultFilialOptions() {
       const { data } = await api.get("/filials");
@@ -292,12 +297,27 @@ export default function PagePreview({
                                   (filial) =>
                                     filial.value === pageData.filial_id
                                 )}
+                                onChange={(el) => {
+                                  setSearchFields({
+                                    ...searchFields,
+                                    filial_id: el.value,
+                                  });
+                                }}
                                 options={filialOptions}
                                 InputContext={InputContext}
                               />
                             </InputLine>
                           )}
                           <InputLine title="General Data">
+                            <Input
+                              type="hidden"
+                              name="category"
+                              required
+                              grow
+                              title="Category"
+                              defaultValue="prospect"
+                              InputContext={InputContext}
+                            />
                             <Input
                               type="text"
                               name="name"
@@ -324,9 +344,12 @@ export default function PagePreview({
                               defaultValue={pageData.last_name}
                               InputContext={InputContext}
                             />
+                          </InputLine>
+                          <InputLine>
                             <SelectPopover
                               name="gender"
                               required
+                              grow
                               title="Gender"
                               isSearchable
                               defaultValue={genderOptions.find(
@@ -347,8 +370,6 @@ export default function PagePreview({
                               placeholderText="MM/DD/YYYY"
                               InputContext={InputContext}
                             />
-                          </InputLine>
-                          <InputLine>
                             <Input
                               type="text"
                               name="passport_number"
@@ -358,6 +379,8 @@ export default function PagePreview({
                               defaultValue={pageData.passport_number}
                               InputContext={InputContext}
                             />
+                          </InputLine>
+                          <InputLine>
                             <Input
                               type="text"
                               name="visa_number"
@@ -388,6 +411,52 @@ export default function PagePreview({
                               InputContext={InputContext}
                             />
                           </InputLine>
+                          <InputLine title="Location">
+                            <Input
+                              type="text"
+                              name="address"
+                              title="Address"
+                              grow
+                              defaultValue={pageData.address}
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              type="text"
+                              name="zip"
+                              grow
+                              title="Zip Code"
+                              defaultValue={pageData.zip}
+                              InputContext={InputContext}
+                            />
+                            <SelectPopover
+                              name="birth_country"
+                              grow
+                              title="Country"
+                              options={countriesOptions}
+                              isSearchable
+                              defaultValue={countriesOptions.find(
+                                (country) =>
+                                  country.value === pageData.birth_country
+                              )}
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              type="text"
+                              name="state"
+                              grow
+                              title="State"
+                              defaultValue={pageData.state}
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              type="text"
+                              name="city"
+                              grow
+                              title="City"
+                              defaultValue={pageData.city}
+                              InputContext={InputContext}
+                            />
+                          </InputLine>
                           <InputLine title="Contact">
                             <Input
                               type="text"
@@ -401,8 +470,8 @@ export default function PagePreview({
                             <SelectCountry
                               name="whatsapp_ddi"
                               title="DDI"
-                              options={pageData.ddiOptions}
-                              defaultValue={pageData.ddiOptions.find(
+                              options={countriesList}
+                              defaultValue={countriesList.find(
                                 (ddi) => ddi.value === pageData.whatsapp_ddi
                               )}
                               InputContext={InputContext}
@@ -421,7 +490,6 @@ export default function PagePreview({
                               type="text"
                               grow
                               name="home_country_phone"
-                              hasDDI
                               title="Home Country Phone"
                               isPhoneNumber
                               defaultValue={pageData.home_country_phone}
@@ -435,47 +503,6 @@ export default function PagePreview({
                               grow
                               title="Preferred Contact Form"
                               defaultValue={pageData.preferred_contact_form}
-                              InputContext={InputContext}
-                            />
-                          </InputLine>
-                          <InputLine title="Location">
-                            <SelectPopover
-                              name="birth_country"
-                              grow
-                              title="Country"
-                              options={countriesOptions}
-                              isSearchable
-                              defaultValue={countriesOptions.find(
-                                (country) =>
-                                  country.value === pageData.birth_country
-                              )}
-                              InputContext={InputContext}
-                            />
-                            <Input
-                              type="text"
-                              name="birth_state"
-                              grow
-                              title="State"
-                              defaultValue={pageData.birth_state}
-                              InputContext={InputContext}
-                            />
-                            <Input
-                              type="text"
-                              name="birth_city"
-                              grow
-                              title="City"
-                              defaultValue={pageData.birth_city}
-                              InputContext={InputContext}
-                            />
-                          </InputLine>
-
-                          <InputLine>
-                            <Textarea
-                              type="text"
-                              name="foreign_address"
-                              title="Address"
-                              rows={5}
-                              defaultValue={pageData.foreign_address}
                               InputContext={InputContext}
                             />
                           </InputLine>

@@ -23,31 +23,37 @@ export default function CommercialProspects() {
   const [gridHeader, setGridHeader] = useState([
     {
       title: "Name",
+      name: "name",
       type: "text",
       filter: false,
     },
     {
       title: "Last Name",
+      name: "last_name",
       type: "text",
       filter: false,
     },
     {
       title: "E-mail",
+      name: "email",
       type: "text",
       filter: false,
     },
     {
       title: "Type",
+      name: "processtypes",
       type: "text",
       filter: true,
     },
     {
       title: "Sub Status",
+      name: "processsubstatuses",
       type: "text",
       filter: true,
     },
     {
       title: "Responsible Agent",
+      name: "agent",
       type: "text",
       filter: true,
     },

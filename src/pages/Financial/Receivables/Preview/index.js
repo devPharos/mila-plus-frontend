@@ -485,6 +485,26 @@ export default function PagePreview({
                                 InputContext={InputContext}
                               />
                             </InputLine>
+
+                            <InputLine>
+                              <SelectPopover
+                                name="issuer_id"
+                                required
+                                title="Issuer"
+                                isSearchable
+                                grow
+                                defaultValue={
+                                  pageData.issuer_id
+                                    ? pageData.issuerOptions.find(
+                                        (issuer) =>
+                                          issuer.value === pageData.issuer_id
+                                      )
+                                    : null
+                                }
+                                options={pageData.issuerOptions}
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
                             <InputLine>
                               <Input
                                 type="date"
@@ -538,7 +558,7 @@ export default function PagePreview({
                               />
                             </InputLine>
 
-                            <InputLine title="Amount">
+                            <InputLine>
                               <Input
                                 type="number"
                                 name="amount"
@@ -566,32 +586,13 @@ export default function PagePreview({
                               />
                             </InputLine>
 
-                            <InputLine title="Issuer">
-                              <SelectPopover
-                                name="issuer_id"
-                                required
-                                title="Issuer"
-                                isSearchable
-                                grow
-                                defaultValue={
-                                  pageData.issuer_id
-                                    ? pageData.issuerOptions.find(
-                                        (issuer) =>
-                                          issuer.value === pageData.issuer_id
-                                      )
-                                    : null
-                                }
-                                options={pageData.issuerOptions}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-
-                            <InputLine title="Payment Method">
+                            <InputLine>
                               <SelectPopover
                                 name="paymentmethod_id"
                                 title="Payment Method"
                                 isSearchable
                                 grow
+                                required
                                 defaultValue={
                                   pageData.paymentmethod_id
                                     ? pageData.paymentMethodOptions.find(
@@ -604,9 +605,6 @@ export default function PagePreview({
                                 options={pageData.paymentMethodOptions}
                                 InputContext={InputContext}
                               />
-                            </InputLine>
-
-                            <InputLine title="Payment Criteria">
                               <SelectPopover
                                 name="paymentcriteria_id"
                                 title="Payment Criteria"
@@ -627,18 +625,19 @@ export default function PagePreview({
                               />
                             </InputLine>
 
-                            <InputLine title=" Memo">
+                            <InputLine>
                               <Textarea
                                 name="memo"
-                                title="Memo"
+                                title="Observations"
                                 readOnly={pageData.is_recurrence}
+                                rows={3}
                                 grow
                                 defaultValue={pageData.memo}
                                 InputContext={InputContext}
                               />
                             </InputLine>
 
-                            <InputLine title="Contract Number">
+                            <InputLine>
                               <Input
                                 type="text"
                                 name="contract_number"
@@ -647,9 +646,6 @@ export default function PagePreview({
                                 defaultValue={pageData.contract_number}
                                 InputContext={InputContext}
                               />
-                            </InputLine>
-
-                            <InputLine title="Authorization Code">
                               <Input
                                 type="text"
                                 name="authorization_code"
@@ -660,11 +656,12 @@ export default function PagePreview({
                               />
                             </InputLine>
 
-                            <InputLine title="Chart of Account">
+                            <InputLine>
                               <SelectPopover
                                 name="chartofaccount_id"
                                 title="Chart of Account"
                                 isSearchable
+                                required
                                 grow
                                 defaultValue={
                                   pageData.chartofaccount_id

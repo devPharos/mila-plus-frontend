@@ -11,7 +11,7 @@ import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import { Form } from "@unform/web";
 import PagePreview from "./Preview";
 import Icon from "~/components/Icon";
-import { PreviewContext } from "~/pages/Commercial/Enrollments";
+import { PreviewContext } from "~/pages/Commercial/Enrollments/index2";
 import PreviewController from "~/components/PreviewController";
 
 export const InputContext = createContext({});

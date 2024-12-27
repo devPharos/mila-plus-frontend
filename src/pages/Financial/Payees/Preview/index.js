@@ -1,6 +1,12 @@
 import { Form } from "@unform/web";
 import { Building, Pencil, X, ListMinus } from "lucide-react";
-import React, { createContext, useEffect, useRef, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import Input from "~/components/RegisterForm/Input";
 
@@ -17,6 +23,7 @@ import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
 import Textarea from "~/components/RegisterForm/Textarea";
 import Grid from "~/components/Grid";
+import { FullGridContext } from "../..";
 
 export const InputContext = createContext({});
 
@@ -51,12 +58,14 @@ export const subStatusOptions = [
 export default function PagePreview({
   access,
   id,
-  handleOpened,
-  setOpened,
   defaultFormType = "preview",
-  successfullyUpdated,
-  setSuccessfullyUpdated,
 }) {
+  const {
+    handleOpened,
+    setOpened,
+    successfullyUpdated,
+    setSuccessfullyUpdated,
+  } = useContext(FullGridContext);
   const [pageData, setPageData] = useState({
     loaded: false,
     filial_id: null,
@@ -346,13 +355,11 @@ export default function PagePreview({
       }
     }
 
-
     if (id === "new") {
       setFormType("full");
     } else if (id) {
       getPageData();
     }
-
   }, [id]);
 
   useEffect(() => {
@@ -398,7 +405,16 @@ export default function PagePreview({
         const chartOfAccountOptions = chartOfAccountData.data
           .filter((f) => f.id !== id)
           .map((f) => {
-            return { value: f.id, label: `${f.Father?.Father?.Father?.name ? `${f.Father?.Father?.Father?.name} > ` : ""}${f.Father?.Father?.name ? `${f.Father?.Father?.name} > ` : ""}${f.Father?.name ? `${f.Father?.name} > ` : ""}${f.name}` };
+            return {
+              value: f.id,
+              label: `${
+                f.Father?.Father?.Father?.name
+                  ? `${f.Father?.Father?.Father?.name} > `
+                  : ""
+              }${f.Father?.Father?.name ? `${f.Father?.Father?.name} > ` : ""}${
+                f.Father?.name ? `${f.Father?.name} > ` : ""
+              }${f.name}`,
+            };
           });
 
         setFilialOptions(filialOptions);
@@ -411,7 +427,6 @@ export default function PagePreview({
       }
     }
     getDefaultOptions();
-
   }, [pageData.issuer_id, id]);
 
   return (

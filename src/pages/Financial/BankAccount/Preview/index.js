@@ -19,19 +19,21 @@ import { getRegistries, handleUpdatedFields } from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
+import { FullGridContext } from "../..";
 
 export const InputContext = createContext({});
 
 export default function PagePreview({
   access,
   id,
-  handleOpened,
-  setOpened,
   defaultFormType = "preview",
-  successfullyUpdated,
-  setSuccessfullyUpdated,
 }) {
-  // bank.bank_name, company.name, account, routing_number
+  const {
+    handleOpened,
+    setOpened,
+    successfullyUpdated,
+    setSuccessfullyUpdated,
+  } = useContext(FullGridContext);
   const [pageData, setPageData] = useState({
     loaded: false,
     account: "",
@@ -227,7 +229,13 @@ export default function PagePreview({
                       <>
                         <FormHeader
                           access={access}
-                          title={pageData.bank.bank_name || pageData.account ? pageData.bank.bank_name + " - " + pageData.account : ""}
+                          title={
+                            pageData.bank.bank_name || pageData.account
+                              ? pageData.bank.bank_name +
+                                " - " +
+                                pageData.account
+                              : ""
+                          }
                           registry={registry}
                           InputContext={InputContext}
                         />

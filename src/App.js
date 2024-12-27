@@ -130,6 +130,12 @@ function App() {
           icon: "SatelliteDish",
         },
         {
+          alias: "financial-recurrence",
+          path: "/Financial/Recurrence",
+          title: "Recurrence",
+          icon: "CalendarSync",
+        },
+        {
           alias: "financial-receivables",
           path: "/Financial/Receivables",
           title: "Receivables",

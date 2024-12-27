@@ -1,28 +1,14 @@
-import { Filter, History } from "lucide-react";
-import React, { createContext, useEffect, useState } from "react";
-import Breadcrumbs from "~/components/Breadcrumbs";
-import Filters from "~/components/Filters";
-import FiltersBar from "~/components/FiltersBar";
-import Grid from "~/components/Grid";
-import api from "~/services/api";
-import { applyFilters, getCurrentPage, hasAccessTo } from "~/functions";
+import React, { useContext, useEffect } from "react";
 import PagePreview from "./Preview";
 import { useSelector } from "react-redux";
-import PageHeader from "~/components/PageHeader";
-import { format, parseISO } from "date-fns";
-import PreviewController from "~/components/PreviewController";
+import { getData } from "~/functions/gridFunctions";
+import PageContainer from "~/components/PageContainer";
+import { FullGridContext } from "..";
 
-export const PreviewContext = createContext({});
-
-export default function Enrollments() {
-  const [activeFilters, setActiveFilters] = useState([]);
-  const [opened, setOpened] = useState(false);
-  const [orderBy, setOrderBy] = useState({ column: "Name", asc: true });
-  const accesses = useSelector((state) => state.auth.accesses);
+export default function CommercialEnrollments() {
   const filial = useSelector((state) => state.auth.filial);
-  const currentPage = getCurrentPage();
-  const [refresh, setRefresh] = useState(true);
-  const [gridHeader, setGridHeader] = useState([
+  const defaultOrderBy = { column: "name", asc: true };
+  const defaultGridHeader = [
     {
       title: "Enroll. Start",
       type: "text",
@@ -68,31 +54,33 @@ export default function Enrollments() {
       type: "text",
       filter: false,
     },
-  ]);
-  const [successfullyUpdated, setSuccessfullyUpdated] = useState(true);
+  ];
 
-  const [gridData, setGridData] = useState();
-
-  function handleFilters({ title = "", value = "" }) {
-    if (value) {
-      setActiveFilters([
-        ...activeFilters.filter((el) => el.title != title),
-        { title, value },
-      ]);
-    } else {
-      setActiveFilters([...activeFilters.filter((el) => el.title != title)]);
-    }
-  }
+  const { opened, orderBy, setGridData, page, setPages, limit, search } =
+    useContext(FullGridContext);
 
   useEffect(() => {
-    async function getData() {
-      const { data } = await api.get(`/enrollments`);
+    async function loader() {
+      const data = await getData("enrollments", {
+        limit,
+        page,
+        orderBy,
+        setPages,
+        setGridData,
+        search,
+        defaultGridHeader,
+        defaultOrderBy,
+      });
+      if (!data) {
+        return;
+      }
       const gridDataValues = data.map(
-        ({ id, students, enrollmenttimelines, canceled_at, application }) => {
+        (
+          { id, students, enrollmenttimelines, canceled_at, application },
+          index
+        ) => {
           const { name, processtypes, processsubstatuses } = students;
           const type = processtypes ? processtypes.name : "";
-          console.log(students);
-          // const { application } = enrollments[0];
           const sub_status = processsubstatuses ? processsubstatuses.name : "";
           const {
             phase,
@@ -133,90 +121,21 @@ export default function Enrollments() {
               ),
             ],
             canceled: canceled_at,
+            page: Math.ceil((index + 1) / limit),
           };
           return ret;
         }
       );
-      setRefresh(false);
       setGridData(gridDataValues);
     }
-    if (!opened && filial && refresh) {
-      getData();
-    }
-  }, [opened, filial, refresh]);
-
-  function handleOpened(id) {
-    if (!id) {
-      setSuccessfullyUpdated(true);
-    }
-    setOpened(id);
-  }
-
-  useEffect(() => {
-    if (gridData && gridHeader) {
-      applyFilters(activeFilters, gridData, gridHeader, orderBy, setGridData);
-    }
-  }, [activeFilters, orderBy]);
+    loader();
+  }, [opened, filial, orderBy, search, limit]);
 
   return (
-    <div className="h-full bg-white flex flex-1 flex-col justify-start items-start rounded-tr-2xl px-4">
-      <PageHeader>
-        <Breadcrumbs currentPage={currentPage} />
-        <FiltersBar>
-          <Filter size={14} /> Custom Filters
-        </FiltersBar>
-      </PageHeader>
-      <Filters
-        access={hasAccessTo(
-          accesses,
-          currentPage.path.split("/")[1],
-          currentPage.alias
-        )}
-        handleNew={null}
-        search
-        handleFilters={handleFilters}
-        gridHeader={gridHeader}
-        gridData={gridData}
-        setGridHeader={setGridHeader}
-        activeFilters={activeFilters}
-      />
-
-      <Grid
-        gridData={gridData}
-        gridHeader={gridHeader}
-        orderBy={orderBy}
-        setOrderBy={setOrderBy}
-        handleOpened={handleOpened}
-        opened={opened}
-      >
-        {opened && (
-          <div
-            className="fixed left-0 top-0 z-40 w-full h-full"
-            style={{ background: "rgba(0,0,0,.2)" }}
-          ></div>
-        )}
-        {opened && (
-          <PreviewContext.Provider
-            value={{ successfullyUpdated, handleOpened }}
-          >
-            <PreviewController>
-              <PagePreview
-                access={hasAccessTo(
-                  accesses,
-                  currentPage.path.split("/")[1],
-                  currentPage.alias
-                )}
-                id={opened}
-                handleOpened={handleOpened}
-                setOpened={setOpened}
-                defaultFormType="full"
-                successfullyUpdated={successfullyUpdated}
-                setSuccessfullyUpdated={setSuccessfullyUpdated}
-              />
-            </PreviewController>
-          </PreviewContext.Provider>
-        )}
-      </Grid>
-    </div>
+    <PageContainer
+      FullGridContext={FullGridContext}
+      PagePreview={PagePreview}
+      defaultGridHeader={defaultGridHeader}
+    />
   );
 }

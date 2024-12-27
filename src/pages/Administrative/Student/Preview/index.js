@@ -1,6 +1,12 @@
 import { Form } from "@unform/web";
 import { Building, Loader2, Pencil, X } from "lucide-react";
-import React, { createContext, useEffect, useRef, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import Input from "~/components/RegisterForm/Input";
 import RegisterFormMenu from "~/components/RegisterForm/Menu";
 import api from "~/services/api";
@@ -22,18 +28,21 @@ import { format, parseISO } from "date-fns";
 import CountryList from "country-list-with-dial-code-and-flag";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
+import { FullGridContext } from "../..";
 
 export const InputContext = createContext({});
 
 export default function PagePreview({
   access,
   id,
-  handleOpened,
-  setOpened,
   defaultFormType = "preview",
-  successfullyUpdated,
-  setSuccessfullyUpdated,
 }) {
+  const {
+    handleOpened,
+    setOpened,
+    successfullyUpdated,
+    setSuccessfullyUpdated,
+  } = useContext(FullGridContext);
   const [pageData, setPageData] = useState({
     name: "",
     last_name: "",

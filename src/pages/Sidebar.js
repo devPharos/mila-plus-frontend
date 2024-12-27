@@ -107,8 +107,8 @@ export default function Sidebar({ main = null, pages = [] }) {
                 )}
               </NavLink>
             );
-          } else {
-            console.log("no access", page);
+            // } else {
+            //   console.log("no access", page);
           }
         })}
       </div>

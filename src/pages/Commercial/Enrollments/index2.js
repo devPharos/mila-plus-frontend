@@ -1,26 +1,70 @@
-import { Filter } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import { Filter, History } from "lucide-react";
+import React, { createContext, useEffect, useState } from "react";
 import Breadcrumbs from "~/components/Breadcrumbs";
 import Filters from "~/components/Filters";
 import FiltersBar from "~/components/FiltersBar";
 import Grid from "~/components/Grid";
 import api from "~/services/api";
 import { applyFilters, getCurrentPage, hasAccessTo } from "~/functions";
-import PageHeader from "~/components/PageHeader";
 import PagePreview from "./Preview";
 import { useSelector } from "react-redux";
+import PageHeader from "~/components/PageHeader";
+import { format, parseISO } from "date-fns";
 import PreviewController from "~/components/PreviewController";
-import { PreviewContext } from "~/pages/Commercial/Enrollments/index2";
 
-export default function Languages() {
+export const PreviewContext = createContext({});
+
+export default function Enrollments() {
   const [activeFilters, setActiveFilters] = useState([]);
   const [opened, setOpened] = useState(false);
   const [orderBy, setOrderBy] = useState({ column: "Name", asc: true });
-  const { accesses } = useSelector((state) => state.auth);
+  const accesses = useSelector((state) => state.auth.accesses);
+  const filial = useSelector((state) => state.auth.filial);
   const currentPage = getCurrentPage();
+  const [refresh, setRefresh] = useState(true);
   const [gridHeader, setGridHeader] = useState([
     {
-      title: "Name",
+      title: "Enroll. Start",
+      type: "text",
+      filter: false,
+    },
+    {
+      title: "Prospect",
+      type: "text",
+      filter: true,
+    },
+    {
+      title: "Type",
+      type: "text",
+      filter: true,
+    },
+    {
+      title: "Sub Status",
+      type: "text",
+      filter: true,
+    },
+    {
+      title: "Application",
+      type: "text",
+      filter: true,
+    },
+    {
+      title: "Phase Step",
+      type: "text",
+      filter: false,
+    },
+    {
+      title: "Step Date",
+      type: "text",
+      filter: false,
+    },
+    {
+      title: "Step Status",
+      type: "text",
+      filter: false,
+    },
+    {
+      title: "Expected Date",
       type: "text",
       filter: false,
     },
@@ -30,7 +74,7 @@ export default function Languages() {
   const [gridData, setGridData] = useState();
 
   function handleFilters({ title = "", value = "" }) {
-    if (value || (title === "Active" && value !== "")) {
+    if (value) {
       setActiveFilters([
         ...activeFilters.filter((el) => el.title != title),
         { title, value },
@@ -41,18 +85,70 @@ export default function Languages() {
   }
 
   useEffect(() => {
-    async function getFilials() {
-      const { data } = await api.get("/languages");
+    async function getData() {
+      const { data } = await api.get(`/enrollments`);
       if (!data) {
         return;
       }
-      const gridDataValues = data.map(({ id, name }) => {
-        return { show: true, id, fields: [name] };
-      });
+      const gridDataValues = data.map(
+        (
+          { id, students, enrollmenttimelines, canceled_at, application },
+          index
+        ) => {
+          const { name, processtypes, processsubstatuses } = students;
+          const type = processtypes ? processtypes.name : "";
+          const sub_status = processsubstatuses ? processsubstatuses.name : "";
+          const {
+            phase,
+            phase_step,
+            created_at: stepCreatedAt,
+            step_status,
+            expected_date,
+          } = enrollmenttimelines[enrollmenttimelines.length - 1];
+          const exptected = expected_date
+            ? format(parseISO(expected_date), "MM/dd/yyyy")
+            : "-";
+          const enroll_start =
+            enrollmenttimelines.length > 0
+              ? format(
+                  parseISO(enrollmenttimelines[0].created_at),
+                  "MM/dd/yyyy"
+                )
+              : "-";
+          const ret = {
+            show: true,
+            id,
+            fields: [
+              enroll_start,
+              name,
+              type,
+              sub_status,
+              application,
+              phase_step,
+              format(stepCreatedAt, "MM/dd/yyyy @ HH:mm"),
+              step_status,
+              expected_date &&
+              expected_date <= format(new Date(), "yyyyMMdd") ? (
+                <div className="flex flex-row gap-2 items-center text-red-500">
+                  {exptected} <History size={12} color="#f00" />
+                </div>
+              ) : (
+                exptected
+              ),
+            ],
+            canceled: canceled_at,
+            page: Math.ceil((index + 1) / limit),
+          };
+          return ret;
+        }
+      );
+      setRefresh(false);
       setGridData(gridDataValues);
     }
-    getFilials();
-  }, [opened]);
+    if (!opened && filial && refresh) {
+      getData();
+    }
+  }, [opened, filial, refresh]);
 
   function handleOpened(id) {
     if (!id) {
@@ -81,7 +177,7 @@ export default function Languages() {
           currentPage.path.split("/")[1],
           currentPage.alias
         )}
-        handleNew={() => setOpened("new")}
+        handleNew={null}
         search
         handleFilters={handleFilters}
         gridHeader={gridHeader}

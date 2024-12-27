@@ -2,7 +2,6 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../Sidebar";
 import { PageContext } from "~/App";
-import { runFilter } from "~/functions/gridFunctions";
 import { capitalizeFirstLetter } from "~/functions";
 
 export const FullGridContext = createContext();
@@ -38,7 +37,14 @@ export default function Administrative() {
 
       return;
     } else {
-      runFilter(title, value);
+      if (value) {
+        setActiveFilters([
+          ...activeFilters.filter((el) => el.title != title),
+          { title, value },
+        ]);
+      } else {
+        setActiveFilters([...activeFilters.filter((el) => el.title != title)]);
+      }
     }
   }
 

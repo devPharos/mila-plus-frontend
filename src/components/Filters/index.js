@@ -5,35 +5,37 @@ import {
   Search,
   SlidersHorizontal,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import Popover from "../Popover";
 import PopoverAddFilter from "../Popover/PopoverAddFilter";
 
 export default function Filters({
   access = { view: false, edit: false, create: false, inactivate: false },
+  Context = null,
   handleNew = null,
-  search,
-  handleFilters = null,
-  gridHeader = null,
-  pages = null,
-  page = null,
-  setPage = () => null,
-  setGridHeader = () => null,
-  limit = null,
-  setLimit = () => null,
-  orderBy = null,
-  gridData = null,
-  activeFilters = null,
 }) {
+  if (!Context) {
+    return null;
+  }
+  const {
+    activeFilters,
+    gridHeader,
+    setGridHeader,
+    gridData,
+    page,
+    setPage,
+    pages,
+    limit,
+    setLimit,
+    handleFilters,
+  } = useContext(Context);
+  const [activePopover, setActivePopover] = useState("");
+  const results = gridData.filter((data) => data.show === true).length;
   if (!gridHeader || !gridData) {
     return null;
   }
-  const [activePopover, setActivePopover] = useState("");
-  const results = gridData.filter((data) => data.show === true).length;
 
   function handleAddFilter(filter) {
-    // filter.filter = !filter.filter;
-
     const newFilter =
       gridHeader &&
       [...gridHeader].map((item) => {
@@ -167,7 +169,7 @@ export default function Filters({
           </p>
         </div>
       )}
-      {search && (
+      {
         <div className="flex flex-row flex-1 justify-start items-center bg-secondary rounded h-8 px-2 gap-2 m-2">
           <Search size={16} />
           <input
@@ -180,7 +182,7 @@ export default function Filters({
             placeholder="Search..."
           />
         </div>
-      )}
+      }
       <div className="flex flex-row justify-end items-center">
         {gridHeader &&
           gridHeader.map((head, index) => {

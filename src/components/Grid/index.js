@@ -1,20 +1,23 @@
 import { ArrowUpDown } from "lucide-react";
-import React, { useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import Icon from "../Icon";
 
 // import { Container } from './styles';
 
-export default function Grid({
-  children,
-  gridHeader = null,
-  gridData = null,
-  page = null,
-  orderBy = null,
-  activeFilters = [],
-  setOrderBy = () => null,
-  handleOpened = () => null,
-  opened = null,
-}) {
+export default function Grid({ children, Context = null }) {
+  if (!Context) {
+    return null;
+  }
+  const {
+    activeFilters,
+    gridHeader,
+    gridData,
+    page,
+    orderBy,
+    setOrderBy,
+    opened,
+    handleOpened,
+  } = useContext(Context);
   if (!gridHeader || !gridData) {
     return null;
   }
@@ -23,9 +26,6 @@ export default function Grid({
       <table className="bg-secondary-50 rounded-xl p-4 w-full table-auto text-xs overflow-hidden text-left">
         <thead className="sticky top-0 border-md">
           <tr className="bg-secondary h-8 sticky">
-            {/* <th className='px-4'>
-            <div className='flex flex-row items-center gap-2'>Actions</div>
-          </th> */}
             {gridHeader.length > 0 &&
               gridHeader.map((head, index) => {
                 return (
@@ -148,7 +148,16 @@ export default function Grid({
           </tr>
         </tbody>
       </table>
-      {children}
+      {opened ? (
+        <div
+          className="fixed left-0 top-0 z-40 w-full h-full"
+          style={{ background: "rgba(0,0,0,.2)" }}
+        >
+          {children}
+        </div>
+      ) : (
+        children
+      )}
     </div>
   );
 }

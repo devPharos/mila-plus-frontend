@@ -47,14 +47,12 @@ import Operational from "./pages/Operational";
 import Settings from "./pages/Settings";
 import FinancialDashboard from "./pages/Financial/Dashboard";
 import OperationalDashboard from "./pages/Operational/Dashboard";
-import SettingsDashboard from "./pages/Settings/Dashboard";
 import AdministrativeStaffs from "./pages/Administrative/Staffs";
 import AdministrativeAgents from "./pages/Commercial/Agents";
 import AdministrativeCalendar from "./pages/Administrative/Calendar";
 import AcademicCalendar from "./pages/Academic/Calendar";
 import Documents from "./pages/Settings/Documents";
 import Outside from "./pages/Outside";
-import PagePreview from "./pages/Administrative/Staffs/Preview";
 import PagePreviewOutside from "./pages/Administrative/Staffs/Preview/outside";
 import Enrollments from "./pages/Commercial/Enrollments";
 import EnrollmentOutside from "./pages/Commercial/Enrollments/Preview/enrollment";
@@ -73,6 +71,7 @@ import FinancialIssuers from "./pages/Financial/Issuer";
 import FinancialReceivables from "./pages/Financial/Receivables";
 import FinancialPayees from "./pages/Financial/Payees";
 import DataSync from "./pages/Settings/Data Sync";
+import FinancialRecurrence from "./pages/Financial/Recurrence";
 
 injectStore(store);
 
@@ -254,6 +253,10 @@ const router = createBrowserRouter([
           {
             path: "/Financial/Issuer",
             element: <FinancialIssuers />,
+          },
+          {
+            path: "/Financial/Recurrence",
+            element: <FinancialRecurrence />,
           },
           {
             path: "/Financial/Receivables",

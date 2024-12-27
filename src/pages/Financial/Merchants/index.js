@@ -1,192 +1,125 @@
-import { Filter } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import Breadcrumbs from "~/components/Breadcrumbs";
-import Filters from "~/components/Filters";
-import FiltersBar from "~/components/FiltersBar";
-import Grid from "~/components/Grid";
-import api from "~/services/api";
-import { applyFilters, getCurrentPage, hasAccessTo } from "~/functions";
-import PageHeader from "~/components/PageHeader";
+import React, { useContext, useEffect } from "react";
 import PagePreview from "./Preview";
 import { useSelector } from "react-redux";
-import PreviewController from "~/components/PreviewController";
-import { createContext } from "react";
-
-export const PreviewContext = createContext({});
+import { getData } from "~/functions/gridFunctions";
+import PageContainer from "~/components/PageContainer";
+import { FullGridContext } from "..";
 
 export default function FinancialMerchants() {
-  const [activeFilters, setActiveFilters] = useState([]);
-  const [opened, setOpened] = useState(false);
-  const [orderBy, setOrderBy] = useState({ column: "Code", asc: true });
-  const { accesses } = useSelector((state) => state.auth);
-  const currentPage = getCurrentPage();
-  const [gridHeader, setGridHeader] = useState([
+  const filial = useSelector((state) => state.auth.filial);
+  const defaultOrderBy = { column: "description", asc: true };
+  const defaultGridHeader = [
     {
       title: "Merchant Name",
+      name: "merchant_name",
       type: "text",
       filter: true,
     },
     {
       title: "Full Address",
+      name: "full_address",
       type: "text",
       filter: false,
     },
     {
       title: "Email",
+      name: "email",
       type: "text",
       filter: false,
     },
     {
       title: "Phone Number",
+      name: "phone_number",
       type: "text",
       filter: false,
     },
     {
       title: "Bank Name",
+      name: "bank_name",
       type: "text",
       filter: true,
     },
     {
       title: "Late Payees",
+      name: "late_payees",
       type: "number",
       filter: false,
     },
     {
       title: "Balance Payees",
+      name: "balance_payees",
       type: "number",
       filter: false,
     },
-  ]);
-  const [successfullyUpdated, setSuccessfullyUpdated] = useState(true);
+  ];
 
-  const [gridData, setGridData] = useState();
-
-  function handleFilters({ title = "", value = "" }) {
-    if (value || (title === "Active" && value !== "")) {
-      setActiveFilters([
-        ...activeFilters.filter((el) => el.title != title),
-        { title, value },
-      ]);
-    } else {
-      setActiveFilters([...activeFilters.filter((el) => el.title != title)]);
-    }
-  }
+  const { opened, orderBy, setGridData, page, setPages, limit, search } =
+    useContext(FullGridContext);
 
   useEffect(() => {
-    async function getBankAccounts() {
-      const { data } = await api.get("/merchants");
+    async function loader() {
+      const data = await getData("merchants", {
+        limit,
+        page,
+        orderBy,
+        setPages,
+        setGridData,
+        search,
+        defaultGridHeader,
+        defaultOrderBy,
+      });
+      if (!data) {
+        return;
+      }
       const gridDataValues = data.map(
-        ({
-          id,
-          name,
-          address,
-          city,
-          state,
-          zip,
-          country,
-          ein,
-          email,
-          phone_number,
-          bank_name,
-          late_payees,
-          balance_payees,
-          filial_id,
-          filial,
-        }) => {
+        (
+          {
+            id,
+            name,
+            address,
+            city,
+            state,
+            zip,
+            country,
+            ein,
+            email,
+            phone_number,
+            bank_name,
+            late_payees,
+            balance_payees,
+            filial_id,
+            filial,
+          },
+          index
+        ) => {
           return {
             show: true,
             id,
             fields: [
               name,
-              address || city || state || zip || country ? `${address}, ${city}, ${state}, ${zip}, ${country} ` : "",
+              address || city || state || zip || country
+                ? `${address}, ${city}, ${state}, ${zip}, ${country} `
+                : "",
               email,
               phone_number,
               bank_name,
               late_payees,
               balance_payees,
             ],
+            page: Math.ceil((index + 1) / limit),
           };
         }
       );
       setGridData(gridDataValues);
     }
-    getBankAccounts();
-  }, [opened]);
-
-  function handleOpened(id) {
-    if (!id) {
-      setSuccessfullyUpdated(true);
-    }
-
-    console.log("handle opened", id);
-    setOpened(id);
-  }
-
-  useEffect(() => {
-    if (gridData && gridHeader) {
-      applyFilters(activeFilters, gridData, gridHeader, orderBy, setGridData);
-    }
-  }, [activeFilters, orderBy]);
+    loader();
+  }, [opened, filial, orderBy, search, limit]);
 
   return (
-    <div className="h-full bg-white flex flex-1 flex-col justify-start items-start rounded-tr-2xl px-4">
-      <PageHeader>
-        <Breadcrumbs currentPage={currentPage} />
-        <FiltersBar>
-          <Filter size={14} /> Custom Filters
-        </FiltersBar>
-      </PageHeader>
-      <Filters
-        access={hasAccessTo(
-          accesses,
-          currentPage.path.split("/")[1],
-          currentPage.alias
-        )}
-        handleNew={() => setOpened("new")}
-        search
-        handleFilters={handleFilters}
-        gridHeader={gridHeader}
-        gridData={gridData}
-        setGridHeader={setGridHeader}
-        activeFilters={activeFilters}
-      />
-
-      <Grid
-        gridData={gridData}
-        gridHeader={gridHeader}
-        orderBy={orderBy}
-        setOrderBy={setOrderBy}
-        handleOpened={handleOpened}
-        opened={opened}
-      >
-        {opened && (
-          <div
-            className="fixed left-0 top-0 z-40 w-full h-full"
-            style={{ background: "rgba(0,0,0,.2)" }}
-          ></div>
-        )}
-        {opened && (
-          <PreviewContext.Provider
-            value={{ successfullyUpdated, handleOpened }}
-          >
-            <PreviewController>
-              <PagePreview
-                access={hasAccessTo(
-                  accesses,
-                  currentPage.path.split("/")[1],
-                  currentPage.alias
-                )}
-                id={opened}
-                handleOpened={handleOpened}
-                setOpened={setOpened}
-                defaultFormType="full"
-                successfullyUpdated={successfullyUpdated}
-                setSuccessfullyUpdated={setSuccessfullyUpdated}
-              />
-            </PreviewController>
-          </PreviewContext.Provider>
-        )}
-      </Grid>
-    </div>
+    <PageContainer
+      FullGridContext={FullGridContext}
+      PagePreview={PagePreview}
+      defaultGridHeader={defaultGridHeader}
+    />
   );
 }

@@ -26,18 +26,21 @@ import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
 import Grid from "~/components/Grid";
+import { FullGridContext } from "../..";
 
 export const InputContext = createContext({});
 
 export default function PagePreview({
   access,
   id,
-  handleOpened,
-  setOpened,
   defaultFormType = "preview",
-  successfullyUpdated,
-  setSuccessfullyUpdated,
 }) {
+  const {
+    handleOpened,
+    setOpened,
+    successfullyUpdated,
+    setSuccessfullyUpdated,
+  } = useContext(FullGridContext);
   const [pageData, setPageData] = useState({
     loaded: false,
     name: "",
@@ -289,12 +292,23 @@ export default function PagePreview({
             return { value: f.id, label: f.name };
           });
 
-        const chartOfAccountData = await api.get(`/chartofaccounts?type=expenses`);
+        const chartOfAccountData = await api.get(
+          `/chartofaccounts?type=expenses`
+        );
 
         const chartOfAccountOptions = chartOfAccountData.data
           .filter((f) => f.id !== id)
           .map((f) => {
-            return { value: f.id, label: `${f.Father?.Father?.Father?.name ? `${f.Father?.Father?.Father?.name} > ` : ""}${f.Father?.Father?.name ? `${f.Father?.Father?.name} > ` : ""}${f.Father?.name ? `${f.Father?.name} > ` : ""}${f.name}` };
+            return {
+              value: f.id,
+              label: `${
+                f.Father?.Father?.Father?.name
+                  ? `${f.Father?.Father?.Father?.name} > `
+                  : ""
+              }${f.Father?.Father?.name ? `${f.Father?.Father?.name} > ` : ""}${
+                f.Father?.name ? `${f.Father?.name} > ` : ""
+              }${f.name}`,
+            };
           });
 
         setChartOfAccountOptions(chartOfAccountOptions);

@@ -6,31 +6,39 @@ import FiltersBar from "~/components/FiltersBar";
 import Grid from "~/components/Grid";
 import api from "~/services/api";
 import { applyFilters, getCurrentPage, hasAccessTo } from "~/functions";
-import PageHeader from "~/components/PageHeader";
 import PagePreview from "./Preview";
 import { useSelector } from "react-redux";
+import PageHeader from "~/components/PageHeader";
 import PreviewController from "~/components/PreviewController";
 import { PreviewContext } from "~/pages/Commercial/Enrollments/index2";
 
-export default function Languages() {
+export default function AdministrativeAgents() {
   const [activeFilters, setActiveFilters] = useState([]);
   const [opened, setOpened] = useState(false);
   const [orderBy, setOrderBy] = useState({ column: "Name", asc: true });
-  const { accesses } = useSelector((state) => state.auth);
+  const [successfullyUpdated, setSuccessfullyUpdated] = useState(true);
+  const accesses = useSelector((state) => state.auth.accesses);
+  const filial = useSelector((state) => state.auth.filial);
   const currentPage = getCurrentPage();
   const [gridHeader, setGridHeader] = useState([
     {
       title: "Name",
+      name: "name",
+      type: "text",
+      filter: false,
+    },
+    {
+      title: "E-mail",
+      name: "email",
       type: "text",
       filter: false,
     },
   ]);
-  const [successfullyUpdated, setSuccessfullyUpdated] = useState(true);
 
   const [gridData, setGridData] = useState();
 
   function handleFilters({ title = "", value = "" }) {
-    if (value || (title === "Active" && value !== "")) {
+    if (value) {
       setActiveFilters([
         ...activeFilters.filter((el) => el.title != title),
         { title, value },
@@ -41,18 +49,30 @@ export default function Languages() {
   }
 
   useEffect(() => {
-    async function getFilials() {
-      const { data } = await api.get("/languages");
+    if (!opened) {
+      setSuccessfullyUpdated(true);
+    }
+  }, [opened]);
+
+  useEffect(() => {
+    async function getData() {
+      const { data } = await api.get(`/agents`);
       if (!data) {
         return;
       }
-      const gridDataValues = data.map(({ id, name }) => {
-        return { show: true, id, fields: [name] };
+      const gridDataValues = data.map(({ id, name, email, canceled_at }) => {
+        const ret = {
+          show: true,
+          id,
+          fields: [name, email],
+          canceled: canceled_at,
+        };
+        return ret;
       });
       setGridData(gridDataValues);
     }
-    getFilials();
-  }, [opened]);
+    getData();
+  }, [opened, filial]);
 
   function handleOpened(id) {
     if (!id) {

@@ -10,21 +10,74 @@ import PageHeader from "~/components/PageHeader";
 import PagePreview from "./Preview";
 import { useSelector } from "react-redux";
 import PreviewController from "~/components/PreviewController";
-import { PreviewContext } from "~/pages/Commercial/Enrollments/index2";
+import { createContext } from "react";
 
-export default function Languages() {
+export const PreviewContext = createContext({});
+
+export default function FinancialPayees() {
   const [activeFilters, setActiveFilters] = useState([]);
   const [opened, setOpened] = useState(false);
-  const [orderBy, setOrderBy] = useState({ column: "Name", asc: true });
+  const [orderBy, setOrderBy] = useState({ column: "Code", asc: true });
   const { accesses } = useSelector((state) => state.auth);
   const currentPage = getCurrentPage();
   const [gridHeader, setGridHeader] = useState([
     {
-      title: "Name",
+      title: "Issuer Name",
+      type: "text",
+      filter: true,
+    },
+    {
+      title: "Filial Name",
+      type: "text",
+      filter: true,
+    },
+    {
+      title: "Entry Date",
+      type: "date",
+      filter: false,
+    },
+    {
+      title: "First Due Date",
+      type: "date",
+      filter: false,
+    },
+    {
+      title: "Due Date",
+      type: "date",
+      filter: false,
+    },
+    {
+      title: "Amount",
+      type: "currency",
+      filter: false,
+    },
+    {
+      title: "Fee",
+      type: "currency",
+      filter: false,
+    },
+    {
+      title: "Total",
+      type: "currency",
+      filter: false,
+    },
+    {
+      title: "Payment Criteria",
       type: "text",
       filter: false,
     },
+    {
+      title: "Status",
+      type: "text",
+      filter: false,
+    },
+    {
+      title: "Status Date",
+      type: "date",
+      filter: false,
+    },
   ]);
+
   const [successfullyUpdated, setSuccessfullyUpdated] = useState(true);
 
   const [gridData, setGridData] = useState();
@@ -41,17 +94,55 @@ export default function Languages() {
   }
 
   useEffect(() => {
-    async function getFilials() {
-      const { data } = await api.get("/languages");
+    async function getBankAccounts() {
+      const { data } = await api.get("/payee");
+
       if (!data) {
         return;
       }
-      const gridDataValues = data.map(({ id, name }) => {
-        return { show: true, id, fields: [name] };
-      });
+      const gridDataValues = data.map(
+        ({
+          id,
+          canceled_at,
+          filial,
+          issuer,
+          entry_date,
+          first_due_date,
+          due_date,
+          amount,
+          fee,
+          total,
+          paymentcriteria_id,
+          paymentCriteria,
+          status,
+          status_date,
+        }) => {
+          const ret = {
+            show: true,
+            id,
+            fields: [
+              issuer.name,
+              filial.name,
+              entry_date,
+              first_due_date,
+              due_date,
+              amount,
+              fee,
+              total,
+              paymentcriteria_id
+                ? paymentCriteria.description.slice(0, 20)
+                : "",
+              status,
+              status_date,
+            ],
+            canceled: canceled_at,
+          };
+          return ret;
+        }
+      );
       setGridData(gridDataValues);
     }
-    getFilials();
+    getBankAccounts();
   }, [opened]);
 
   function handleOpened(id) {

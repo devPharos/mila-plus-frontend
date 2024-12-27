@@ -1,6 +1,12 @@
 import { Form } from "@unform/web";
 import { Building, Pencil, X, ListMinus } from "lucide-react";
-import React, { createContext, useEffect, useRef, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import Input from "~/components/RegisterForm/Input";
 
@@ -18,6 +24,7 @@ import { useSelector } from "react-redux";
 import Textarea from "~/components/RegisterForm/Textarea";
 import Grid from "~/components/Grid";
 import { format, parseISO } from "date-fns";
+import { FullGridContext } from "../..";
 
 export const InputContext = createContext({});
 
@@ -52,12 +59,14 @@ export const subStatusOptions = [
 export default function PagePreview({
   access,
   id,
-  handleOpened,
-  setOpened,
   defaultFormType = "preview",
-  successfullyUpdated,
-  setSuccessfullyUpdated,
 }) {
+  const {
+    handleOpened,
+    setOpened,
+    successfullyUpdated,
+    setSuccessfullyUpdated,
+  } = useContext(FullGridContext);
   const [pageData, setPageData] = useState({
     loaded: false,
     filial_id: null,

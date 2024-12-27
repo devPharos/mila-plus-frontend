@@ -51,6 +51,7 @@ import { useSelector } from "react-redux";
 import TransferEligibility from "./TransferEligibility";
 import EnrollmentProcess from "./EnrollmentProcess";
 import PlacementTest from "./PlacementTest";
+import { FullGridContext } from "../..";
 
 export const InputContext = createContext({});
 
@@ -64,12 +65,14 @@ export const statusesOptions = [
 export default function PagePreview({
   access,
   id,
-  handleOpened,
-  setOpened,
   defaultFormType = "preview",
-  successfullyUpdated,
-  setSuccessfullyUpdated,
 }) {
+  const {
+    handleOpened,
+    setOpened,
+    successfullyUpdated,
+    setSuccessfullyUpdated,
+  } = useContext(FullGridContext);
   const [loading, setLoading] = useState(false);
   const [pageData, setPageData] = useState({
     name: "",

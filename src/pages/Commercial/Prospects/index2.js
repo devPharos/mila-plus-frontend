@@ -1,3 +1,4 @@
+// prospect
 import { Filter } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import Breadcrumbs from "~/components/Breadcrumbs";
@@ -6,23 +7,55 @@ import FiltersBar from "~/components/FiltersBar";
 import Grid from "~/components/Grid";
 import api from "~/services/api";
 import { applyFilters, getCurrentPage, hasAccessTo } from "~/functions";
-import PageHeader from "~/components/PageHeader";
 import PagePreview from "./Preview";
 import { useSelector } from "react-redux";
+import PageHeader from "~/components/PageHeader";
 import PreviewController from "~/components/PreviewController";
-import { PreviewContext } from "~/pages/Commercial/Enrollments/index2";
+import { PreviewContext } from "../Enrollments/index2";
 
-export default function Languages() {
+export default function CommercialProspects() {
   const [activeFilters, setActiveFilters] = useState([]);
   const [opened, setOpened] = useState(false);
   const [orderBy, setOrderBy] = useState({ column: "Name", asc: true });
-  const { accesses } = useSelector((state) => state.auth);
+  const accesses = useSelector((state) => state.auth.accesses);
+  const filial = useSelector((state) => state.auth.filial);
   const currentPage = getCurrentPage();
   const [gridHeader, setGridHeader] = useState([
     {
       title: "Name",
+      name: "name",
       type: "text",
       filter: false,
+    },
+    {
+      title: "Last Name",
+      name: "last_name",
+      type: "text",
+      filter: false,
+    },
+    {
+      title: "E-mail",
+      name: "email",
+      type: "text",
+      filter: false,
+    },
+    {
+      title: "Type",
+      name: "processtypes",
+      type: "text",
+      filter: true,
+    },
+    {
+      title: "Sub Status",
+      name: "processsubstatuses",
+      type: "text",
+      filter: true,
+    },
+    {
+      title: "Responsible Agent",
+      name: "agent",
+      type: "text",
+      filter: true,
     },
   ]);
   const [successfullyUpdated, setSuccessfullyUpdated] = useState(true);
@@ -30,7 +63,7 @@ export default function Languages() {
   const [gridData, setGridData] = useState();
 
   function handleFilters({ title = "", value = "" }) {
-    if (value || (title === "Active" && value !== "")) {
+    if (value) {
       setActiveFilters([
         ...activeFilters.filter((el) => el.title != title),
         { title, value },
@@ -41,18 +74,42 @@ export default function Languages() {
   }
 
   useEffect(() => {
-    async function getFilials() {
-      const { data } = await api.get("/languages");
+    async function getData() {
+      const { data } = await api.get(`/prospects`);
       if (!data) {
         return;
       }
-      const gridDataValues = data.map(({ id, name }) => {
-        return { show: true, id, fields: [name] };
-      });
+      const gridDataValues = data.map(
+        ({
+          id,
+          name,
+          last_name,
+          email,
+          canceled_at,
+          agent,
+          processtypes,
+          processsubstatuses,
+        }) => {
+          const ret = {
+            show: true,
+            id,
+            fields: [
+              name,
+              last_name,
+              email,
+              processtypes.name,
+              processsubstatuses.name,
+              agent.name,
+            ],
+            canceled: canceled_at,
+          };
+          return ret;
+        }
+      );
       setGridData(gridDataValues);
     }
-    getFilials();
-  }, [opened]);
+    getData();
+  }, [opened, filial]);
 
   function handleOpened(id) {
     if (!id) {
@@ -89,7 +146,6 @@ export default function Languages() {
         setGridHeader={setGridHeader}
         activeFilters={activeFilters}
       />
-
       <Grid
         gridData={gridData}
         gridHeader={gridHeader}

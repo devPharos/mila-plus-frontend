@@ -1,8 +1,7 @@
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import AlertBoxContainer from "./components/AlertBox/AlertBoxContainer";
-import { useSelector } from "react-redux";
 
 export const AlertContext = createContext();
 
@@ -10,7 +9,6 @@ export const PageContext = createContext();
 
 function App() {
   const [alertData, setAlertData] = useState({ open: false, title: false });
-  const auth = useSelector((state) => state.auth);
   function alertBox(content) {
     setAlertData({ open: true, ...content });
   }

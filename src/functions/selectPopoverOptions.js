@@ -105,3 +105,21 @@ export const subStatusOptions = [
     label: "Late",
   },
 ];
+
+export const invoiceTypesOptions = [
+  {
+    value: "Invoice",
+    label: "Invoice",
+  },
+  {
+    value: "Credit Note",
+    label: "Credit Note",
+  },
+];
+
+export const invoiceTypeDetailsOptions = [
+  {
+    value: "Tuition fee",
+    label: "Tuition fee",
+  },
+];

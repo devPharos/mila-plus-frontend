@@ -66,6 +66,7 @@ export default function PagePreview({
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [paymentCriterias, setPaymentCriterias] = useState([]);
   const [chartOfAccountOptions, setChartOfAccountOptions] = useState([]);
+  const [isAutoPay, setIsAutoPay] = useState(false);
 
   const auth = useSelector((state) => state.auth);
 
@@ -371,6 +372,9 @@ export default function PagePreview({
                             name="is_autopay"
                             title="Is Autopay?"
                             grow
+                            onChange={(el) => {
+                              setIsAutoPay(el.value);
+                            }}
                             defaultValue={
                               pageData?.issuer?.issuer_x_recurrence?.is_autopay
                                 ? {
@@ -386,7 +390,7 @@ export default function PagePreview({
                             InputContext={InputContext}
                           />
                         </InputLine>
-                        {pageData?.issuer?.issuer_x_recurrence?.is_autopay && (
+                        {isAutoPay && (
                           <>
                             <InputLine>
                               <Input
@@ -394,6 +398,7 @@ export default function PagePreview({
                                 name="card_number"
                                 title="Card Number"
                                 grow
+                                required
                                 defaultValue={
                                   pageData?.issuer?.issuer_x_recurrence
                                     ?.card_number
@@ -405,6 +410,7 @@ export default function PagePreview({
                                 name="card_expiration_date"
                                 title="Card Expiration Date"
                                 grow
+                                required
                                 defaultValue={
                                   pageData?.issuer?.issuer_x_recurrence
                                     ?.card_expiration_date
@@ -416,6 +422,7 @@ export default function PagePreview({
                                 name="card_holder_name"
                                 title="Card Holder Name"
                                 grow
+                                required
                                 defaultValue={
                                   pageData?.issuer?.issuer_x_recurrence
                                     ?.card_holder_name
@@ -430,6 +437,7 @@ export default function PagePreview({
                                 name="card_address"
                                 title="Card Address"
                                 grow
+                                required
                                 defaultValue={
                                   pageData?.issuer?.issuer_x_recurrence
                                     ?.card_address
@@ -441,6 +449,7 @@ export default function PagePreview({
                                 name="card_zip"
                                 title="Card Zip"
                                 grow
+                                required
                                 defaultValue={
                                   pageData?.issuer?.issuer_x_recurrence
                                     ?.card_zip

@@ -25,6 +25,10 @@ import Textarea from "~/components/RegisterForm/Textarea";
 import Grid from "~/components/Grid";
 import { format, parseISO } from "date-fns";
 import { FullGridContext } from "../..";
+import {
+  invoiceTypeDetailsOptions,
+  invoiceTypesOptions,
+} from "~/functions/selectPopoverOptions";
 
 export const InputContext = createContext({});
 
@@ -73,6 +77,11 @@ export default function PagePreview({
     filial: {
       name: "",
     },
+    filialOptions: [],
+    issuerOptions: [],
+    paymentMethodOptions: [],
+    paymentCriteriaOptions: [],
+    chartOfAccountOptions: [],
     issuer_id: null,
     issuer: {
       name: "",
@@ -116,11 +125,11 @@ export default function PagePreview({
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
 
-  const [filialOptions, setFilialOptions] = useState([]);
-  const [issuerOptions, setIssuerOptions] = useState([]);
-  const [paymentMethodOptions, setPaymentMethodOptions] = useState([]);
-  const [paymentCriteriaOptions, setPaymentCriteriaOptions] = useState([]);
-  const [chartOfAccountOptions, setChartOfAccountOptions] = useState([]);
+  // const [filialOptions, setFilialOptions] = useState([]);
+  // const [issuerOptions, setIssuerOptions] = useState([]);
+  // const [paymentMethodOptions, setPaymentMethodOptions] = useState([]);
+  // const [paymentCriteriaOptions, setPaymentCriteriaOptions] = useState([]);
+  // const [chartOfAccountOptions, setChartOfAccountOptions] = useState([]);
 
   const [itensInstallmentsIsTemp, setItensInstallmentsIsTemp] = useState(false);
 
@@ -197,39 +206,6 @@ export default function PagePreview({
           setRegistry(registries);
         }
 
-        // if (response.data.is_recurrence && response.data.is_recurrence == true) {
-        //   const installmentsItens = await api.post(
-        //     `/receivableinstallments/temp`,
-        //     response.data
-        //   );
-
-        //   if (installmentsItens) {
-        //     const gridDataValues = installmentsItens.data.map(
-        //       ({
-        //         canceled_at,
-        //         installment,
-        //         amount,
-        //         total,
-        //         status,
-        //         due_date,
-        //       }) => ({
-        //         show: true,
-        //         id: installment,
-        //         fields: [installment, due_date, amount, total, status],
-        //         canceled: canceled_at,
-        //       })
-        //     );
-
-        //     setGridData(gridDataValues);
-        //   }
-
-        //   setItensInstallmentsIsTemp(true);
-
-        //   setActiveMenu("installments");
-        // } else {
-
-        // }
-
         handleOpened(null);
 
         setSuccessfullyUpdated(true);
@@ -247,39 +223,6 @@ export default function PagePreview({
           await api.put(`/receivables/${id}`, objUpdated);
           setPageData({ ...pageData, ...objUpdated });
           setSuccessfullyUpdated(true);
-
-          // if (
-          //   response?.data?.is_recurrence &&
-          //   response?.data?.is_recurrence == true &&
-          //   response?.data?.installments &&
-          //   response.data.installments.length > 0
-          // ) {
-          //   const gridDataValues = response.data.installments.map(
-          //     ({
-          //       canceled_at,
-          //       installment,
-          //       amount,
-          //       total,
-          //       status,
-          //       due_date,
-          //     }) => ({
-          //       show: true,
-          //       id: installment,
-          //       fields: [installment, due_date, amount, total, status],
-          //       canceled: canceled_at,
-          //     })
-          //   );
-          //   if (gridDataValues !== gridData) {
-          //     toast("Installments updated!", { autoClose: 1000 });
-          //     setActiveMenu("installments");
-
-          //     handleOpened(null);
-          //   }
-
-          //   setGridData(gridDataValues);
-          // } else {
-
-          // }
 
           handleOpened(null);
 
@@ -302,66 +245,7 @@ export default function PagePreview({
     async function getPageData() {
       try {
         const { data } = await api.get(`/receivables/${id}`);
-        setPageData({ ...data, loaded: true });
 
-        const {
-          created_by,
-          created_at,
-          updated_by,
-          updated_at,
-          canceled_by,
-          canceled_at,
-        } = data;
-
-        const registries = await getRegistries({
-          created_by,
-          created_at,
-          updated_by,
-          updated_at,
-          canceled_by,
-          canceled_at,
-        });
-
-        setRegistry(registries);
-
-        // if (data.is_recurrence && data.is_recurrence === true) {
-        //   const gridDataValues = data.installments.map(
-        //     ({
-        //       canceled_at,
-        //       installment,
-        //       amount,
-        //       total,
-        //       status,
-        //       due_date,
-        //     }) => ({
-        //       show: true,
-        //       id: installment,
-        //       fields: [installment, due_date, amount, total, status],
-        //       canceled: canceled_at,
-        //     })
-        //   );
-
-        //   setGridData(gridDataValues);
-        // }
-      } catch (err) {
-        console.log(err);
-        toast(err || err.response.data.error, {
-          type: "error",
-          autoClose: 3000,
-        });
-      }
-    }
-
-    if (id === "new") {
-      setFormType("full");
-    } else if (id) {
-      getPageData();
-    }
-  }, [id]);
-
-  useEffect(() => {
-    async function getDefaultOptions() {
-      try {
         const filialData = await api.get(`/filials`);
         const issuerData = await api.get(`/issuers`);
         const paymentMethodData = await api.get(`/paymentmethods`);
@@ -414,17 +298,50 @@ export default function PagePreview({
             };
           });
 
-        setFilialOptions(filialOptions);
-        setIssuerOptions(issuerOptions);
-        setPaymentMethodOptions(paymentMethodOptions);
-        setPaymentCriteriaOptions(paymentCriteriaOptions);
-        setChartOfAccountOptions(chartOfAccountOptions);
+        setPageData({
+          ...data,
+          filialOptions,
+          issuerOptions,
+          paymentMethodOptions,
+          paymentCriteriaOptions,
+          chartOfAccountOptions,
+          loaded: true,
+        });
+
+        const {
+          created_by,
+          created_at,
+          updated_by,
+          updated_at,
+          canceled_by,
+          canceled_at,
+        } = data;
+
+        const registries = await getRegistries({
+          created_by,
+          created_at,
+          updated_by,
+          updated_at,
+          canceled_by,
+          canceled_at,
+        });
+
+        setRegistry(registries);
       } catch (err) {
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
+        console.log(err);
+        toast(err || err.response.data.error, {
+          type: "error",
+          autoClose: 3000,
+        });
       }
     }
-    getDefaultOptions();
-  }, [pageData.issuer_id, id]);
+
+    if (id === "new") {
+      setFormType("full");
+    } else if (id) {
+      getPageData();
+    }
+  }, [id]);
 
   return (
     <Preview formType={formType} fullscreen={fullscreen}>
@@ -495,8 +412,10 @@ export default function PagePreview({
                             title="GENERAL"
                             activeMenu={activeMenu === "general"}
                           >
+                            {console.log(pageData)}
                             {auth.filial.id === 1 && (
                               <InputLine title="Filial">
+                                {console.log(pageData)}
                                 <SelectPopover
                                   name="filial_id"
                                   required
@@ -505,19 +424,68 @@ export default function PagePreview({
                                   grow
                                   defaultValue={
                                     pageData.filial_id
-                                      ? {
-                                          value: pageData.filial_id,
-                                          label: pageData.filial.name,
-                                        }
+                                      ? pageData.filialOptions.find(
+                                          (filial) =>
+                                            filial.value === pageData.filial_id
+                                        )
                                       : null
                                   }
-                                  options={filialOptions}
+                                  options={pageData.filialOptions}
                                   InputContext={InputContext}
                                 />
                               </InputLine>
                             )}
 
-                            <InputLine title=" ">
+                            <InputLine title="Details">
+                              <SelectPopover
+                                name="invoice_type"
+                                required
+                                grow
+                                title="Type"
+                                options={invoiceTypesOptions}
+                                defaultValue={
+                                  pageData.type
+                                    ? invoiceTypesOptions.find(
+                                        (invoiceType) =>
+                                          invoiceType.value === pageData.type
+                                      )
+                                    : null
+                                }
+                                InputContext={InputContext}
+                              />
+                              <SelectPopover
+                                name="invoice_type_detail"
+                                required
+                                grow
+                                title="Type Detail"
+                                options={invoiceTypeDetailsOptions}
+                                defaultValue={
+                                  pageData.type_detail
+                                    ? invoiceTypeDetailsOptions.find(
+                                        (invoiceTypeDetail) =>
+                                          invoiceTypeDetail.value ===
+                                          pageData.type_detail
+                                      )
+                                    : null
+                                }
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="text"
+                                name="invoice_number"
+                                required
+                                readOnly
+                                title="Invoice Number"
+                                grow
+                                defaultValue={
+                                  pageData.invoice_number
+                                    ? pageData.invoice_number
+                                    : ""
+                                }
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+                            <InputLine>
                               <Input
                                 type="date"
                                 name="entry_date"
@@ -583,17 +551,15 @@ export default function PagePreview({
                               <SelectPopover
                                 name="is_recurrence"
                                 title="Is Recurrence?"
+                                readOnly
                                 grow
                                 defaultValue={
-                                  pageData.is_recurrence == true
-                                    ? {
-                                        value: true,
-                                        label: "Yes",
-                                      }
-                                    : {
-                                        value: false,
-                                        label: "No",
-                                      }
+                                  pageData.is_recurrence
+                                    ? yesOrNoOptions.find(
+                                        (type) =>
+                                          type.value === pageData.is_recurrence
+                                      )
+                                    : null
                                 }
                                 options={yesOrNoOptions}
                                 InputContext={InputContext}
@@ -609,13 +575,13 @@ export default function PagePreview({
                                 grow
                                 defaultValue={
                                   pageData.issuer_id
-                                    ? {
-                                        value: pageData.issuer_id,
-                                        label: pageData.issuer.name,
-                                      }
+                                    ? pageData.issuerOptions.find(
+                                        (issuer) =>
+                                          issuer.value === pageData.issuer_id
+                                      )
                                     : null
                                 }
-                                options={issuerOptions}
+                                options={pageData.issuerOptions}
                                 InputContext={InputContext}
                               />
                             </InputLine>
@@ -628,17 +594,14 @@ export default function PagePreview({
                                 grow
                                 defaultValue={
                                   pageData.paymentmethod_id
-                                    ? {
-                                        value: pageData.paymentmethod_id,
-                                        label:
-                                          pageData.paymentMethod.description.slice(
-                                            0,
-                                            20
-                                          ),
-                                      }
+                                    ? pageData.paymentMethodOptions.find(
+                                        (paymentMethod) =>
+                                          paymentMethod.value ===
+                                          pageData.paymentmethod_id
+                                      )
                                     : null
                                 }
-                                options={paymentMethodOptions}
+                                options={pageData.paymentMethodOptions}
                                 InputContext={InputContext}
                               />
                             </InputLine>
@@ -652,23 +615,14 @@ export default function PagePreview({
                                 required
                                 defaultValue={
                                   pageData.paymentcriteria_id
-                                    ? {
-                                        value: pageData.paymentcriteria_id,
-                                        label:
-                                          pageData.paymentCriteria.description.slice(
-                                            0,
-                                            20
-                                          ) +
-                                          (pageData.paymentCriteria
-                                            .recurring_metric
-                                            ? " - " +
-                                              pageData.paymentCriteria
-                                                .recurring_metric
-                                            : ""),
-                                      }
+                                    ? pageData.paymentCriteriaOptions.find(
+                                        (paymentCriteria) =>
+                                          paymentCriteria.value ===
+                                          pageData.paymentcriteria_id
+                                      )
                                     : null
                                 }
-                                options={paymentCriteriaOptions}
+                                options={pageData.paymentCriteriaOptions}
                                 InputContext={InputContext}
                               />
                             </InputLine>
@@ -677,6 +631,7 @@ export default function PagePreview({
                               <Textarea
                                 name="memo"
                                 title="Memo"
+                                readOnly={pageData.is_recurrence}
                                 grow
                                 defaultValue={pageData.memo}
                                 InputContext={InputContext}
@@ -713,13 +668,14 @@ export default function PagePreview({
                                 grow
                                 defaultValue={
                                   pageData.chartofaccount_id
-                                    ? {
-                                        value: pageData.chartofaccount_id,
-                                        label: pageData.chartOfAccount.name,
-                                      }
+                                    ? pageData.chartOfAccountOptions.find(
+                                        (chartOfAccount) =>
+                                          chartOfAccount.value ===
+                                          pageData.chartofaccount_id
+                                      )
                                     : null
                                 }
-                                options={chartOfAccountOptions}
+                                options={pageData.chartOfAccountOptions}
                                 InputContext={InputContext}
                               />
                             </InputLine>

@@ -72,7 +72,6 @@ export default function Sidebar({ main = null, pages = [] }) {
         className={`my-12 flex flex-1 flex-col justify-start items-start gap-6 w-full`}
       >
         {pages.map((page, index) => {
-          console.log(accesses.hierarchy.find((h) => h.alias === main));
           if (
             accesses.hierarchy
               .find((h) => h.alias === main)

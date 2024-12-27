@@ -82,7 +82,7 @@ export default function PagePreview({
     amount: 0,
     total: 0,
     memo: "",
-    is_recurrency: false,
+    is_recurrence: false,
     contract_number: "",
     paymentmethod_id: null,
     paymentMethod: {
@@ -198,7 +198,7 @@ export default function PagePreview({
           setRegistry(registries);
         }
 
-        // if (response.data.is_recurrency && response.data.is_recurrency == true) {
+        // if (response.data.is_recurrence && response.data.is_recurrence == true) {
         //   const installmentsItens = await api.post(
         //     `/payeeinstallments/temp`,
         //     response.data
@@ -253,8 +253,8 @@ export default function PagePreview({
           setSuccessfullyUpdated(true);
 
           // if (
-          //   response?.data?.is_recurrency &&
-          //   response?.data?.is_recurrency == true &&
+          //   response?.data?.is_recurrence &&
+          //   response?.data?.is_recurrence == true &&
           //   response?.data?.installments &&
           //   response.data.installments.length > 0
           // ) {
@@ -327,7 +327,7 @@ export default function PagePreview({
 
         setRegistry(registries);
 
-        // if (data.is_recurrency && data.is_recurrency === true) {
+        // if (data.is_recurrence && data.is_recurrence === true) {
         //   const gridDataValues = data.installments.map(
         //     ({
         //       canceled_at,
@@ -563,11 +563,11 @@ export default function PagePreview({
                                 InputContext={InputContext}
                               />
                               <SelectPopover
-                                name="is_recurrency"
-                                title="Is Recurrency?"
+                                name="is_recurrence"
+                                title="Is Recurrence?"
                                 grow
                                 defaultValue={
-                                  pageData.is_recurrency == true
+                                  pageData.is_recurrence == true
                                     ? {
                                         value: true,
                                         label: "Yes",

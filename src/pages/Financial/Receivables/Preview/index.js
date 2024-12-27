@@ -398,24 +398,24 @@ export default function PagePreview({
                         <>
                           <FormHeader
                             access={access}
-                            title={pageData?.name}
+                            title={
+                              pageData.issuer_id
+                                ? pageData.issuerOptions.find(
+                                    (issuer) =>
+                                      issuer.value === pageData.issuer_id
+                                  ).label
+                                : null
+                            }
                             registry={registry}
                             InputContext={InputContext}
-                            saveText={
-                              itensInstallmentsIsTemp
-                                ? "Confirm Installments"
-                                : "Save changes"
-                            }
                           />
 
                           <InputLineGroup
                             title="GENERAL"
                             activeMenu={activeMenu === "general"}
                           >
-                            {console.log(pageData)}
                             {auth.filial.id === 1 && (
                               <InputLine title="Filial">
-                                {console.log(pageData)}
                                 <SelectPopover
                                   name="filial_id"
                                   required

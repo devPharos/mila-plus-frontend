@@ -24,36 +24,9 @@ import { useSelector } from "react-redux";
 import Textarea from "~/components/RegisterForm/Textarea";
 import Grid from "~/components/Grid";
 import { FullGridContext } from "../..";
+import { yesOrNoOptions } from "~/functions/selectPopoverOptions";
 
 export const InputContext = createContext({});
-
-const yesOrNoOptions = [
-  { value: true, label: "Yes" },
-  { value: false, label: "No" },
-];
-
-export const subStatusOptions = [
-  {
-    value: "open",
-    label: "Open",
-  },
-  {
-    value: "parcial_paid",
-    label: "Parcial Paid",
-  },
-  {
-    value: "paid",
-    label: "Paid",
-  },
-  {
-    value: "cancelled",
-    label: "Cancelled",
-  },
-  {
-    value: "late",
-    label: "Late",
-  },
-];
 
 export default function PagePreview({
   access,

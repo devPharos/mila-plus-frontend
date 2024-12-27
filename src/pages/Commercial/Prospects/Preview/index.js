@@ -52,15 +52,9 @@ import TransferEligibility from "./TransferEligibility";
 import EnrollmentProcess from "./EnrollmentProcess";
 import PlacementTest from "./PlacementTest";
 import { FullGridContext } from "../..";
+import { yesOrNoOptions } from "~/functions/selectPopoverOptions";
 
 export const InputContext = createContext({});
-
-export const statusesOptions = [
-  { value: "In Class", label: "In Class" },
-  { value: "School Waiting List", label: "School Waiting List" },
-  { value: "Waiting", label: "Waiting" },
-  { value: "Inactive", label: "Inactive" },
-];
 
 export default function PagePreview({
   access,
@@ -111,17 +105,6 @@ export default function PagePreview({
   const [activeDiscounts, setActiveDiscounts] = useState([]);
   const generalForm = useRef();
   const auth = useSelector((state) => state.auth);
-
-  const genderOptions = [
-    { value: "Male", label: "Male" },
-    { value: "Female", label: "Female" },
-    { value: "Not Specified", label: "Not Specified" },
-  ];
-
-  const yesOrNoOptions = [
-    { value: true, label: "Yes" },
-    { value: false, label: "No" },
-  ];
 
   const countriesOptions = countries_list.map((country) => {
     return { value: country, label: country };

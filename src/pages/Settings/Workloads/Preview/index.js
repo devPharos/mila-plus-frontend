@@ -30,18 +30,21 @@ import { AlertContext } from "~/App";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import FileInput from "~/components/RegisterForm/FileInput";
 import uploadFile from "~/functions/uploadFile";
+import { FullGridContext } from "../..";
 
 export const InputContext = createContext({});
 
 export default function PagePreview({
   access,
   id,
-  handleOpened,
-  setOpened,
   defaultFormType = "preview",
-  successfullyUpdated,
-  setSuccessfullyUpdated,
 }) {
+  const {
+    handleOpened,
+    setOpened,
+    successfullyUpdated,
+    setSuccessfullyUpdated,
+  } = useContext(FullGridContext);
   const [pageData, setPageData] = useState({
     name: "",
     paceGuides: [],

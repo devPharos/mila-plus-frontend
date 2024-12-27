@@ -29,6 +29,7 @@ import CountryList from "country-list-with-dial-code-and-flag";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
 import { FullGridContext } from "../..";
+import { genderOptions } from "~/functions/selectPopoverOptions";
 
 export const InputContext = createContext({});
 
@@ -79,17 +80,6 @@ export default function PagePreview({
   const [filialOptions, setFilialOptions] = useState([]);
   const generalForm = useRef();
   const auth = useSelector((state) => state.auth);
-
-  const genderOptions = [
-    { value: "Male", label: "Male" },
-    { value: "Female", label: "Female" },
-    { value: "Not Specified", label: "Not Specified" },
-  ];
-
-  const yesOrNoOptions = [
-    { value: true, label: "Yes" },
-    { value: false, label: "No" },
-  ];
 
   const countriesOptions = countries_list.map((country) => {
     return { value: country, label: country };

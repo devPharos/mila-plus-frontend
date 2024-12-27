@@ -43,6 +43,7 @@ import { pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import Textarea from "~/components/RegisterForm/Textarea";
+import { yesOrNoOptions } from "~/functions/selectPopoverOptions";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -86,10 +87,6 @@ export default function TransferDSOOutside({
   const id = searchparams.get("crypt");
   const { alertBox } = useContext(AlertContext);
   const signatureRef = useRef();
-  const yesOrNoOptions = [
-    { value: true, label: "Yes" },
-    { value: false, label: "No" },
-  ];
 
   const menus = [
     { order: 1, name: "transfer-dso" },

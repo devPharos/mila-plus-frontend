@@ -61,6 +61,16 @@ import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import PDFViewer from "~/components/PDFViewer";
 import CheckboxInput from "~/components/RegisterForm/CheckboxInput";
+import {
+  addressOptions,
+  dept1TypeOptions,
+  genderOptions,
+  maritalStatusOptions,
+  relationshipTypeOptions,
+  scheduleOptions,
+  sponsorRelationshipTypeOptions,
+  yesOrNoOptions,
+} from "~/functions/selectPopoverOptions";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -101,65 +111,10 @@ export default function EnrollmentOutside({
   const generalForm = useRef();
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
-  const genderOptions = [
-    { value: "Male", label: "Male" },
-    { value: "Female", label: "Female" },
-    { value: "Not Specified", label: "Not Specified" },
-  ];
-  const maritalStatusOptions = [
-    { value: "Single", label: "Single" },
-    { value: "Married", label: "Married" },
-    { value: "Widowed", label: "Widowed" },
-    { value: "Divorced", label: "Divorced" },
-    { value: "Separated", label: "Separated" },
-  ];
-  const relationshipTypeOptions = [
-    { value: "Parents", label: "Parents" },
-    { value: "Grand Parents", label: "Grand Parents" },
-    { value: "Brother or Sister", label: "Brother/Sister" },
-    { value: "Friend", label: "Friend" },
-    { value: "Husband or Wife", label: "Husband/Wife" },
-    { value: "Other", label: "Other" },
-  ];
-  const sponsorRelationshipTypeOptions = [
-    { value: "Parents", label: "Parents" },
-    { value: "Family", label: "Family" },
-    { value: "Student Loan", label: "Student Loan" },
-    {
-      value: "Government Scholarship or Loan",
-      label: "Government Scholarship or Loan",
-    },
-    { value: "Other", label: "Other" },
-  ];
-  const scheduleOptions = [
-    {
-      value: "4 days - Morning - 08:30 to 01:00",
-      label: "4 days - Morning - 08:30 to 01:00",
-    },
-    {
-      value: "4 days - Evening - 06:00 to 10:30",
-      label: "4 days - Evening - 06:00 to 10:30",
-    },
-    {
-      value: "2 days - Full Time (Wed - Thu) - 08:30 to 18:00",
-      label: "2 days - Full Time (Wed - Thu) - 08:30 to 18:00",
-    },
-  ];
-  const dept1TypeOptions = [
-    { value: "Wholly Dependent", label: "Wholly Dependent" },
-    { value: "Partially Dependent", label: "Partially Dependent" },
-  ];
-  const addressOptions = [
-    { value: "Address in USA", label: "Address in USA" },
-    { value: "Address in Home Country", label: "Address in Home Country" },
-  ];
+
   const id = searchparams.get("crypt");
   const { alertBox } = useContext(AlertContext);
   const signatureRef = useRef();
-  const yesOrNoOptions = [
-    { value: true, label: "Yes" },
-    { value: false, label: "No" },
-  ];
   const sponsorshipOptions = [
     { value: true, label: "Yes" },
     { value: false, label: "No (Self Financial Resource)" },

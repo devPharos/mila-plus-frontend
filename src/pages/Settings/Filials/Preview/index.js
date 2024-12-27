@@ -37,18 +37,26 @@ import FormLoading from "~/components/RegisterForm/FormLoading";
 import FileInput from "~/components/RegisterForm/FileInput";
 import { organizeMultiAndSingleFiles } from "~/functions/uploadFile";
 import { AlertContext } from "~/App";
+import {
+  discountOptions,
+  discountTypesOptions,
+  yesOrNoOptions,
+} from "~/functions/selectPopoverOptions";
+import { FullGridContext } from "../..";
 
 export const InputContext = createContext({});
 
 export default function PagePreview({
   access,
   id,
-  handleOpened,
-  setOpened,
   defaultFormType = "preview",
-  successfullyUpdated,
-  setSuccessfullyUpdated,
 }) {
+  const {
+    handleOpened,
+    setOpened,
+    successfullyUpdated,
+    setSuccessfullyUpdated,
+  } = useContext(FullGridContext);
   const [pageData, setPageData] = useState({
     active: false,
     alias: "",
@@ -83,18 +91,6 @@ export default function PagePreview({
   const generalForm = useRef();
   const { alertBox } = useContext(AlertContext);
   const [loading, setLoading] = useState(false);
-  const discountOptions = [
-    { value: true, label: "Percent %" },
-    { value: false, label: "Value $" },
-  ];
-  const discountTypesOptions = [
-    { value: "Admission", label: "Admission" },
-    { value: "Financial", label: "Financial" },
-  ];
-  const yesOrNoOptions = [
-    { value: true, label: "Yes" },
-    { value: false, label: "No" },
-  ];
 
   const countriesOptions = countries_list.map((country) => {
     return { value: country, label: country };

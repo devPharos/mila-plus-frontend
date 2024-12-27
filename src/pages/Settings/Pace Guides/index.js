@@ -1,142 +1,73 @@
-import { Filter } from "lucide-react";
-import React, { useEffect, useState } from "react";
-import Breadcrumbs from "~/components/Breadcrumbs";
-import Filters from "~/components/Filters";
-import FiltersBar from "~/components/FiltersBar";
-import Grid from "~/components/Grid";
-import api from "~/services/api";
-import { applyFilters, getCurrentPage, hasAccessTo } from "~/functions";
-import PageHeader from "~/components/PageHeader";
+import React, { useContext, useEffect } from "react";
 import PagePreview from "./Preview";
 import { useSelector } from "react-redux";
-import { PreviewContext } from "~/pages/Commercial/Enrollments/index2";
-import PreviewController from "~/components/PreviewController";
+import { getData } from "~/functions/gridFunctions";
+import PageContainer from "~/components/PageContainer";
+import { FullGridContext } from "..";
 
 export default function PaceGuides() {
-  const [activeFilters, setActiveFilters] = useState([]);
-  const [opened, setOpened] = useState(false);
-  const [orderBy, setOrderBy] = useState({ column: "Name", asc: true });
-  const { accesses } = useSelector((state) => state.auth);
-  const currentPage = getCurrentPage();
-  const [gridHeader, setGridHeader] = useState([
+  const filial = useSelector((state) => state.auth.filial);
+  const defaultOrderBy = { column: "bank_name", asc: true };
+  const defaultGridHeader = [
     {
       title: "Workload",
+      name: "workload_name",
       type: "text",
       filter: true,
     },
     {
       title: "Type",
+      name: "type",
       type: "text",
       filter: true,
     },
     {
       title: "Description",
+      name: "description",
       type: "text",
       filter: true,
     },
-  ]);
-  const [successfullyUpdated, setSuccessfullyUpdated] = useState(true);
+  ];
 
-  const [gridData, setGridData] = useState();
-
-  function handleFilters({ title = "", value = "" }) {
-    if (value || (title === "Active" && value !== "")) {
-      setActiveFilters([
-        ...activeFilters.filter((el) => el.title != title),
-        { title, value },
-      ]);
-    } else {
-      setActiveFilters([...activeFilters.filter((el) => el.title != title)]);
-    }
-  }
+  const { opened, orderBy, setGridData, page, setPages, limit, search } =
+    useContext(FullGridContext);
 
   useEffect(() => {
-    async function getData() {
-      const { data } = await api.get("/paceguides");
+    async function loader() {
+      const data = await getData("paceguides", {
+        limit,
+        page,
+        orderBy,
+        setPages,
+        setGridData,
+        search,
+        defaultGridHeader,
+        defaultOrderBy,
+      });
       if (!data) {
         return;
       }
-      const gridDataValues = data.map(({ id, Workload, type, description }) => {
-        const workload_name = Workload.name;
-        return { show: true, id, fields: [workload_name, type, description] };
-      });
+      const gridDataValues = data.map(
+        ({ id, Workload, type, description }, index) => {
+          const workload_name = Workload.name;
+          return {
+            show: true,
+            id,
+            fields: [workload_name, type, description],
+            page: Math.ceil((index + 1) / limit),
+          };
+        }
+      );
       setGridData(gridDataValues);
     }
-    getData();
-  }, [opened]);
-
-  function handleOpened(id) {
-    if (!id) {
-      setSuccessfullyUpdated(true);
-    }
-    setOpened(id);
-  }
-
-  useEffect(() => {
-    if (gridData && gridHeader) {
-      applyFilters(activeFilters, gridData, gridHeader, orderBy, setGridData);
-    }
-  }, [activeFilters, orderBy]);
+    loader();
+  }, [opened, filial, orderBy, search, limit]);
 
   return (
-    <div className="h-full bg-white flex flex-1 flex-col justify-start items-start rounded-tr-2xl px-4">
-      <PageHeader>
-        <Breadcrumbs currentPage={currentPage} />
-        <FiltersBar>
-          <Filter size={14} /> Custom Filters
-        </FiltersBar>
-      </PageHeader>
-      <Filters
-        access={hasAccessTo(
-          accesses,
-          currentPage.path.split("/")[1],
-          currentPage.alias
-        )}
-        handleNew={() => setOpened("new")}
-        search
-        handleFilters={handleFilters}
-        gridHeader={gridHeader}
-        gridData={gridData}
-        setGridHeader={setGridHeader}
-        activeFilters={activeFilters}
-      />
-
-      <Grid
-        gridData={gridData}
-        gridHeader={gridHeader}
-        orderBy={orderBy}
-        setOrderBy={setOrderBy}
-        handleOpened={handleOpened}
-        opened={opened}
-      >
-        {opened && (
-          <div
-            className="fixed left-0 top-0 z-40 w-full h-full"
-            style={{ background: "rgba(0,0,0,.2)" }}
-          ></div>
-        )}
-        {opened && (
-          <PreviewContext.Provider
-            value={{ successfullyUpdated, handleOpened }}
-          >
-            <PreviewController>
-              <PagePreview
-                access={hasAccessTo(
-                  accesses,
-                  currentPage.path.split("/")[1],
-                  currentPage.alias
-                )}
-                id={opened}
-                handleOpened={handleOpened}
-                setOpened={setOpened}
-                defaultFormType="full"
-                successfullyUpdated={successfullyUpdated}
-                setSuccessfullyUpdated={setSuccessfullyUpdated}
-              />
-            </PreviewController>
-          </PreviewContext.Provider>
-        )}
-      </Grid>
-    </div>
+    <PageContainer
+      FullGridContext={FullGridContext}
+      PagePreview={PagePreview}
+      defaultGridHeader={defaultGridHeader}
+    />
   );
 }

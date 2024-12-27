@@ -27,6 +27,7 @@ import { useSelector } from "react-redux";
 import DatePicker from "~/components/RegisterForm/DatePicker";
 import { Scope } from "@unform/core";
 import { format, parseISO } from "date-fns";
+import { yesOrNoOptions } from "~/functions/selectPopoverOptions";
 
 export const InputContext = createContext({});
 
@@ -365,64 +366,90 @@ export default function PagePreview({
                           />
                         </InputLine>
 
-                        <InputLine title="Card Information">
-                          <Input
-                            type="text"
-                            name="card_number"
-                            title="Card Number"
+                        <InputLine title="Autopay">
+                          <SelectPopover
+                            name="is_autopay"
+                            title="Is Autopay?"
                             grow
                             defaultValue={
-                              pageData?.issuer?.issuer_x_recurrence?.card_number
+                              pageData?.issuer?.issuer_x_recurrence?.is_autopay
+                                ? {
+                                    value: true,
+                                    label: "Yes",
+                                  }
+                                : {
+                                    value: false,
+                                    label: "No",
+                                  }
                             }
-                            InputContext={InputContext}
-                          />
-                          <Input
-                            type="text"
-                            name="card_expiration_date"
-                            title="Card Expiration Date"
-                            grow
-                            defaultValue={
-                              pageData?.issuer?.issuer_x_recurrence
-                                ?.card_expiration_date
-                            }
-                            InputContext={InputContext}
-                          />
-                          <Input
-                            type="text"
-                            name="card_holder_name"
-                            title="Card Holder Name"
-                            grow
-                            defaultValue={
-                              pageData?.issuer?.issuer_x_recurrence
-                                ?.card_holder_name
-                            }
+                            options={yesOrNoOptions}
                             InputContext={InputContext}
                           />
                         </InputLine>
+                        {pageData?.issuer?.issuer_x_recurrence?.is_autopay && (
+                          <>
+                            <InputLine>
+                              <Input
+                                type="text"
+                                name="card_number"
+                                title="Card Number"
+                                grow
+                                defaultValue={
+                                  pageData?.issuer?.issuer_x_recurrence
+                                    ?.card_number
+                                }
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="text"
+                                name="card_expiration_date"
+                                title="Card Expiration Date"
+                                grow
+                                defaultValue={
+                                  pageData?.issuer?.issuer_x_recurrence
+                                    ?.card_expiration_date
+                                }
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="text"
+                                name="card_holder_name"
+                                title="Card Holder Name"
+                                grow
+                                defaultValue={
+                                  pageData?.issuer?.issuer_x_recurrence
+                                    ?.card_holder_name
+                                }
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
 
-                        <InputLine>
-                          <Input
-                            type="text"
-                            name="card_address"
-                            title="Card Address"
-                            grow
-                            defaultValue={
-                              pageData?.issuer?.issuer_x_recurrence
-                                ?.card_address
-                            }
-                            InputContext={InputContext}
-                          />
-                          <Input
-                            type="text"
-                            name="card_zip"
-                            title="Card Zip"
-                            grow
-                            defaultValue={
-                              pageData?.issuer?.issuer_x_recurrence?.card_zip
-                            }
-                            InputContext={InputContext}
-                          />
-                        </InputLine>
+                            <InputLine>
+                              <Input
+                                type="text"
+                                name="card_address"
+                                title="Card Address"
+                                grow
+                                defaultValue={
+                                  pageData?.issuer?.issuer_x_recurrence
+                                    ?.card_address
+                                }
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="text"
+                                name="card_zip"
+                                title="Card Zip"
+                                grow
+                                defaultValue={
+                                  pageData?.issuer?.issuer_x_recurrence
+                                    ?.card_zip
+                                }
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+                          </>
+                        )}
                       </InputLineGroup>
                     </>
                   ) : (

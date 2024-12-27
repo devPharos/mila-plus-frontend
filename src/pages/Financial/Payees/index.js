@@ -121,9 +121,9 @@ export default function FinancialPayees() {
             fields: [
               issuer.name,
               filial.name,
-              entry_date,
-              first_due_date,
-              due_date,
+              format(parseISO(entry_date), "yyyy-MM-dd"),
+              format(parseISO(first_due_date), "yyyy-MM-dd"),
+              format(parseISO(due_date), "yyyy-MM-dd"),
               amount,
               fee,
               total,
@@ -131,7 +131,7 @@ export default function FinancialPayees() {
                 ? paymentCriteria.description.slice(0, 20)
                 : "",
               status,
-              status_date,
+              format(parseISO(status_date), "yyyy-MM-dd"),
             ],
             canceled: canceled_at,
             page: Math.ceil((index + 1) / limit),

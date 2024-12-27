@@ -524,10 +524,14 @@ export default function PagePreview({
                                 required
                                 title="Entry Date"
                                 grow
-                                defaultValue={format(
-                                  parseISO(pageData.entry_date),
-                                  "yyyy-MM-dd"
-                                )}
+                                defaultValue={
+                                  pageData.entry_date
+                                    ? format(
+                                        parseISO(pageData.entry_date),
+                                        "yyyy-MM-dd"
+                                      )
+                                    : ""
+                                }
                                 InputContext={InputContext}
                               />
 
@@ -537,10 +541,14 @@ export default function PagePreview({
                                 required
                                 title="First Due Date"
                                 grow
-                                defaultValue={format(
-                                  parseISO(pageData.first_due_date),
-                                  "yyyy-MM-dd"
-                                )}
+                                defaultValue={
+                                  pageData.first_due_date
+                                    ? format(
+                                        parseISO(pageData.first_due_date),
+                                        "yyyy-MM-dd"
+                                      )
+                                    : ""
+                                }
                                 InputContext={InputContext}
                               />
 
@@ -550,10 +558,14 @@ export default function PagePreview({
                                 required
                                 title="Due Date"
                                 grow
-                                defaultValue={format(
-                                  parseISO(pageData.due_date),
-                                  "yyyy-MM-dd"
-                                )}
+                                defaultValue={
+                                  pageData?.due_date
+                                    ? format(
+                                        parseISO(pageData.due_date),
+                                        "yyyy-MM-dd"
+                                      )
+                                    : ""
+                                }
                                 InputContext={InputContext}
                               />
                             </InputLine>

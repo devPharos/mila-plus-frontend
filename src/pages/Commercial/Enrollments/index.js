@@ -122,14 +122,7 @@ export default function CommercialEnrollments() {
               phase_step,
               format(stepCreatedAt, "MM/dd/yyyy @ HH:mm"),
               step_status,
-              expected_date &&
-              expected_date <= format(new Date(), "yyyyMMdd") ? (
-                <div className="flex flex-row gap-2 items-center text-red-500">
-                  {exptected} <History size={12} color="#f00" />
-                </div>
-              ) : (
-                exptected
-              ),
+              format(parseISO(expected_date), "MM/dd/yyyy"),
             ],
             canceled: canceled_at,
             page: Math.ceil((index + 1) / limit),
@@ -137,6 +130,7 @@ export default function CommercialEnrollments() {
           return ret;
         }
       );
+      // console.log(gridDataValues);
       setGridData(gridDataValues);
     }
     loader();

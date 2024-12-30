@@ -29,12 +29,6 @@ export default function FinancialReceivables() {
       filter: false,
     },
     {
-      title: "First Due Date",
-      name: "first_due_date",
-      type: "date",
-      filter: false,
-    },
-    {
       title: "Due Date",
       name: "due_date",
       type: "date",
@@ -104,7 +98,6 @@ export default function FinancialReceivables() {
             filial,
             issuer,
             entry_date,
-            first_due_date,
             due_date,
             amount,
             fee,
@@ -123,7 +116,6 @@ export default function FinancialReceivables() {
               issuer.name,
               filial.name,
               format(parseISO(entry_date), "yyyy-MM-dd"),
-              format(parseISO(first_due_date), "yyyy-MM-dd"),
               format(parseISO(due_date), "yyyy-MM-dd"),
               amount,
               fee,

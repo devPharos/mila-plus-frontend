@@ -115,16 +115,37 @@ export default function PagePreview({
             });
             setActiveMenu("receivables");
             if (data.is_autopay) {
-              openPaymentModal(receivables[0]).then((approvalData) => {
+              openPaymentModal(
+                receivables
+                  .filter((receivable) => receivable.status === "Open")
+                  .sort((a, b) => a.due_date - b.due_date)[0]
+              ).then((approvalData) => {
                 const { accountCardType, accountExpiryDate, maskedAccount } =
                   approvalData;
-                api.post(`/recurrence//fill-autopay-data${id}`, {
-                  autopay_fields: {
-                    accountCardType,
-                    accountExpiryDate,
-                    maskedAccount,
-                  },
-                });
+                api
+                  .post(
+                    `/recurrence/fill-autopay-data/${pageData.issuer.issuer_x_recurrence.id}`,
+                    {
+                      autopay_fields: {
+                        accountCardType,
+                        accountExpiryDate,
+                        maskedAccount,
+                        billingName,
+                      },
+                    }
+                  )
+                  .then(({ data }) => {
+                    setPageData({
+                      ...pageData,
+                      ...recurrenceData,
+                      card_expiration_date: accountExpiryDate,
+                      card_number: maskedAccount,
+                      card_type: accountCardType,
+                      card_holder_name: billingName,
+                      receivables,
+                      loaded: true,
+                    });
+                  });
               });
             }
           });
@@ -554,48 +575,50 @@ export default function PagePreview({
                             InputContext={InputContext}
                           />
                         </InputLine>
-                        {isAutoPay && (
-                          <>
-                            <InputLine>
-                              <Input
-                                type="text"
-                                name="card_number"
-                                title="Card Number"
-                                grow
-                                readOnly
-                                defaultValue={
-                                  pageData?.issuer?.issuer_x_recurrence
-                                    ?.card_number
-                                }
-                                InputContext={InputContext}
-                              />
-                              <Input
-                                type="text"
-                                name="card_expiration_date"
-                                title="Card Expiration Date"
-                                grow
-                                readOnly
-                                defaultValue={
-                                  pageData?.issuer?.issuer_x_recurrence
-                                    ?.card_expiration_date
-                                }
-                                InputContext={InputContext}
-                              />
-                              <Input
-                                type="text"
-                                name="card_holder_name"
-                                title="Card Holder Name"
-                                grow
-                                readOnly
-                                defaultValue={
-                                  pageData?.issuer?.issuer_x_recurrence
-                                    ?.card_holder_name
-                                }
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-                          </>
-                        )}
+                        {isAutoPay ||
+                          (pageData?.issuer?.issuer_x_recurrence
+                            ?.is_autopay && (
+                            <>
+                              <InputLine>
+                                <Input
+                                  type="text"
+                                  name="card_number"
+                                  title="Card Number"
+                                  grow
+                                  readOnly
+                                  defaultValue={
+                                    pageData?.issuer?.issuer_x_recurrence
+                                      ?.card_number
+                                  }
+                                  InputContext={InputContext}
+                                />
+                                <Input
+                                  type="text"
+                                  name="card_expiration_date"
+                                  title="Card Expiration Date"
+                                  grow
+                                  readOnly
+                                  defaultValue={
+                                    pageData?.issuer?.issuer_x_recurrence
+                                      ?.card_expiration_date
+                                  }
+                                  InputContext={InputContext}
+                                />
+                                <Input
+                                  type="text"
+                                  name="card_holder_name"
+                                  title="Card Holder Name"
+                                  grow
+                                  readOnly
+                                  defaultValue={
+                                    pageData?.issuer?.issuer_x_recurrence
+                                      ?.card_holder_name
+                                  }
+                                  InputContext={InputContext}
+                                />
+                              </InputLine>
+                            </>
+                          ))}
                       </InputLineGroup>
                       <InputLineGroup
                         title="RECEIVABLES"

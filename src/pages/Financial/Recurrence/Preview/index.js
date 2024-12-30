@@ -597,6 +597,18 @@ export default function PagePreview({
                               <InputLine>
                                 <Input
                                   type="text"
+                                  name="card_type"
+                                  title="Card Type"
+                                  grow
+                                  readOnly
+                                  defaultValue={
+                                    pageData?.issuer?.issuer_x_recurrence
+                                      ?.card_type
+                                  }
+                                  InputContext={InputContext}
+                                />
+                                <Input
+                                  type="text"
                                   name="card_number"
                                   title="Card Number"
                                   grow

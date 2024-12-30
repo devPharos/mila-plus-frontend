@@ -8,7 +8,15 @@ export async function getData(
     const response = await api.get(
       `/${route}?limit=${limit}&page=${page}&orderBy=${
         orderBy ? orderBy.column : defaultOrderBy.column
-      }&orderASC=${orderBy && orderBy.asc ? "ASC" : "DESC"}&search=${search}`
+      }&orderASC=${
+        orderBy
+          ? orderBy.asc
+            ? "ASC"
+            : "DESC"
+          : defaultOrderBy.asc
+          ? "ASC"
+          : "DESC"
+      }&search=${search}`
     );
     let pages = Math.ceil(response.data.length / limit);
     setPages(pages);

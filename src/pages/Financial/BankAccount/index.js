@@ -7,7 +7,7 @@ import { FullGridContext } from "..";
 
 export default function FinancialBankAccounts() {
   const filial = useSelector((state) => state.auth.filial);
-  const defaultOrderBy = { column: "bank_name", asc: true };
+  const defaultOrderBy = { column: "account", asc: true };
   const defaultGridHeader = [
     {
       title: "Account",

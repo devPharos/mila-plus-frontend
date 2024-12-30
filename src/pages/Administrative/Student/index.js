@@ -58,7 +58,7 @@ export default function AdministrativeStudent() {
 
   useEffect(() => {
     async function loader() {
-      const data = await getData("recurrence", {
+      const data = await getData("students", {
         limit,
         page,
         orderBy,

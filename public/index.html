@@ -24,7 +24,7 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
   <title>MILA Plus</title>
-  <link href="./output.css" rel="stylesheet">
+  <link href="./output.css" rel="stylesheet" type="text/css">
   <style>
     canvas {
       cursor: crosshair;
@@ -53,9 +53,7 @@
 
           // Set up event listener on Pay With Card button
           if(document.getElementById('cip-pay-btn')) {
-            console.log("tem botao");
             document.getElementById('cip-pay-btn').addEventListener('click', function(e) {
-              console.log("teste");
               e.preventDefault();
 
               // Get a transactionToken serverside
@@ -84,9 +82,6 @@
                   });
               });
           });
-        } else {
-
-          console.log("não tem botao");
         }
       };
 

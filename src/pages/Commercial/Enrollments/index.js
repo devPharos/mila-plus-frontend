@@ -8,50 +8,59 @@ import { format, parseISO } from "date-fns";
 
 export default function CommercialEnrollments() {
   const filial = useSelector((state) => state.auth.filial);
-  const defaultOrderBy = { column: "name", asc: true };
+  const defaultOrderBy = { column: "application", asc: true };
   const defaultGridHeader = [
     {
       title: "Enroll. Start",
+      name: "start_date",
       type: "text",
       filter: false,
     },
     {
       title: "Prospect",
+      name: "prospect",
       type: "text",
       filter: true,
     },
     {
       title: "Type",
+      name: "type",
       type: "text",
       filter: true,
     },
     {
       title: "Sub Status",
+      name: "sub_status",
       type: "text",
       filter: true,
     },
     {
       title: "Application",
+      name: "application",
       type: "text",
       filter: true,
     },
     {
       title: "Phase Step",
+      name: "phase_step",
       type: "text",
       filter: false,
     },
     {
       title: "Step Date",
+      name: "step_date",
       type: "text",
       filter: false,
     },
     {
       title: "Step Status",
+      name: "step_status",
       type: "text",
       filter: false,
     },
     {
       title: "Expected Date",
+      name: "expected_date",
       type: "text",
       filter: false,
     },

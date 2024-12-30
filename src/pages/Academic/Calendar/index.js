@@ -9,10 +9,9 @@ import { Badge, Calendar } from "rsuite";
 import { format, parseISO } from "date-fns";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import { Form } from "@unform/web";
-import PagePreview from "./Preview";
 import Icon from "~/components/Icon";
-import { PreviewContext } from "~/pages/Commercial/Enrollments/index2";
 import PreviewController from "~/components/PreviewController";
+import PagePreview from "./Preview";
 
 export const InputContext = createContext({});
 
@@ -201,25 +200,21 @@ export default function AcademicCalendar() {
           ></div>
         )}
         {opened && (
-          <PreviewContext.Provider
-            value={{ successfullyUpdated, handleOpened }}
-          >
-            <PreviewController>
-              <PagePreview
-                access={hasAccessTo(
-                  accesses,
-                  currentPage.path.split("/")[1],
-                  currentPage.alias
-                )}
-                id={opened}
-                handleOpened={handleOpened}
-                setOpened={setOpened}
-                defaultFormType="full"
-                successfullyUpdated={successfullyUpdated}
-                setSuccessfullyUpdated={setSuccessfullyUpdated}
-              />
-            </PreviewController>
-          </PreviewContext.Provider>
+          <PreviewController>
+            <PagePreview
+              access={hasAccessTo(
+                accesses,
+                currentPage.path.split("/")[1],
+                currentPage.alias
+              )}
+              id={opened}
+              handleOpened={handleOpened}
+              setOpened={setOpened}
+              defaultFormType="full"
+              successfullyUpdated={successfullyUpdated}
+              setSuccessfullyUpdated={setSuccessfullyUpdated}
+            />
+          </PreviewController>
         )}
       </div>
     </div>

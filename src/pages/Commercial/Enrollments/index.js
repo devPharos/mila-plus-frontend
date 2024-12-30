@@ -1,10 +1,11 @@
 import React, { useContext, useEffect } from "react";
-import PagePreview from "./Preview";
+
 import { useSelector } from "react-redux";
 import { getData } from "~/functions/gridFunctions";
 import PageContainer from "~/components/PageContainer";
 import { FullGridContext } from "..";
 import { format, parseISO } from "date-fns";
+import PagePreview from "./Preview/index.js";
 
 export default function CommercialEnrollments() {
   const filial = useSelector((state) => state.auth.filial);

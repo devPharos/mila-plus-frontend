@@ -103,10 +103,16 @@ export default function PagePreview({
     }
     try {
       const { entry_date, in_class_date } = data;
+      console.log(data);
       const { data: postedData } = await api.post(`/recurrence/`, {
         ...data,
-        entry_date: entry_date ? format(entry_date, "yyyy-MM-dd") : null,
-        in_class_date: entry_date ? format(entry_date, "yyyy-MM-dd") : null,
+        entry_date: entry_date ? format(entry_date, "yyyyMMdd") : null,
+        in_class_date: in_class_date ? format(in_class_date, "yyyyMMdd") : null,
+      });
+      console.log({
+        ...data,
+        entry_date: entry_date ? format(entry_date, "yyyyMMdd") : null,
+        in_class_date: in_class_date ? format(in_class_date, "yyyyMMdd") : null,
       });
       setPageData({ ...pageData, ...data, loaded: false });
       toast("Saved!", { autoClose: 1000 });
@@ -661,14 +667,14 @@ export default function PagePreview({
                               >
                                 <Input
                                   type="hidden"
-                                  name="receivable_id"
+                                  name="grid_receivable_id"
                                   readOnly={true}
                                   grow
                                   defaultValue={receivable.id}
                                   InputContext={InputContext}
                                 />
                                 <DatePicker
-                                  name="entry_date"
+                                  name="grid_entry_date"
                                   disabled
                                   shrink
                                   title="Entry Date "
@@ -680,7 +686,7 @@ export default function PagePreview({
                                   InputContext={InputContext}
                                 />
                                 <DatePicker
-                                  name="due_date"
+                                  name="grid_due_date"
                                   disabled
                                   shrink
                                   title="Due Date "
@@ -693,7 +699,7 @@ export default function PagePreview({
                                 />
                                 <Input
                                   type="text"
-                                  name="receivable_amount"
+                                  name="grid_receivable_amount"
                                   readOnly={true}
                                   grow
                                   title="Amount"
@@ -704,7 +710,7 @@ export default function PagePreview({
                                 />
                                 <Input
                                   type="text"
-                                  name="fee"
+                                  name="grid_fee"
                                   readOnly={true}
                                   grow
                                   title="Fee"
@@ -715,7 +721,7 @@ export default function PagePreview({
                                 />
                                 <Input
                                   type="text"
-                                  name="receivable_total"
+                                  name="grid_receivable_total"
                                   readOnly={true}
                                   grow
                                   title="Total"
@@ -726,7 +732,7 @@ export default function PagePreview({
                                 />
                                 <Input
                                   type="text"
-                                  name="status"
+                                  name="grid_status"
                                   readOnly={true}
                                   grow
                                   title="Status"

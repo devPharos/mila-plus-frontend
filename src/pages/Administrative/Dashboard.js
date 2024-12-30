@@ -39,7 +39,7 @@ export default function AdministrativeDashboard() {
 
   return (
     <div className="h-full bg-white flex flex-1 flex-row justify-start items-start rounded-tr-2xl px-4">
-      <div
+      {/* <div
         style={{
           flex: 1,
           width: "50%",
@@ -86,7 +86,7 @@ export default function AdministrativeDashboard() {
         <button type="button" onClick={() => handleRefund()}>
           Refund
         </button>
-      </div>
+      </div> */}
     </div>
   );
 }

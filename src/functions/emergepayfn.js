@@ -1,9 +1,6 @@
 import api from "~/services/api";
 
-export async function openPaymentModal(
-  receivable = null,
-  recurrence_id = null
-) {
+export async function openPaymentModal(receivable = null) {
   await api
     .post(`/emergepay/simple-form`, {
       receivable_id: receivable.id,
@@ -21,21 +18,6 @@ export async function openPaymentModal(
           await api
             .post(`/emergepay/post-back-listener`, approvalData)
             .then(() => {
-              console.log("post-back-listener");
-              const {
-                accountCardType,
-                accountExpiryDate,
-                maskedAccount,
-                billingName,
-              } = approvalData;
-              api.post(`/recurrence/fill-autopay-data/${recurrence_id}`, {
-                autopay_fields: {
-                  accountCardType,
-                  accountExpiryDate,
-                  maskedAccount,
-                  billingName,
-                },
-              });
               return approvalData;
             })
             .catch((err) => {

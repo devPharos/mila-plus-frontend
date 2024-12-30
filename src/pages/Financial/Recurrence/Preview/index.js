@@ -115,11 +115,28 @@ export default function PagePreview({
             });
             setActiveMenu("receivables");
             if (data.is_autopay) {
-              await openPaymentModal(
+              const approvalData = await openPaymentModal(
                 receivables
                   .filter((receivable) => receivable.status === "Open")
-                  .sort((a, b) => a.due_date - b.due_date)[0],
-                pageData.issuer.issuer_x_recurrence.id
+                  .sort((a, b) => a.due_date - b.due_date)[0]
+              );
+
+              const {
+                accountCardType,
+                accountExpiryDate,
+                maskedAccount,
+                billingName,
+              } = approvalData;
+              api.post(
+                `/recurrence/fill-autopay-data/${pageData.issuer.issuer_x_recurrence.id}`,
+                {
+                  autopay_fields: {
+                    accountCardType,
+                    accountExpiryDate,
+                    maskedAccount,
+                    billingName,
+                  },
+                }
               );
             }
           });

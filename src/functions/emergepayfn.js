@@ -21,21 +21,22 @@ export async function openPaymentModal(
           await api
             .post(`/emergepay/post-back-listener`, approvalData)
             .then(() => {
-              console.log("post-back-listener");
-              const {
-                accountCardType,
-                accountExpiryDate,
-                maskedAccount,
-                billingName,
-              } = approvalData;
-              api.post(`/recurrence/fill-autopay-data/${recurrence_id}`, {
-                autopay_fields: {
+              if (recurrence_id) {
+                const {
                   accountCardType,
                   accountExpiryDate,
                   maskedAccount,
                   billingName,
-                },
-              });
+                } = approvalData;
+                api.post(`/recurrence/fill-autopay-data/${recurrence_id}`, {
+                  autopay_fields: {
+                    accountCardType,
+                    accountExpiryDate,
+                    maskedAccount,
+                    billingName,
+                  },
+                });
+              }
               return approvalData;
             })
             .catch((err) => {

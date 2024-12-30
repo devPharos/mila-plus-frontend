@@ -21,8 +21,10 @@ export async function openPaymentModal(
           await api
             .post(`/emergepay/post-back-listener`, approvalData)
             .then(() => {
+              console.log("post-back-listener");
               const { accountCardType, accountExpiryDate, maskedAccount } =
                 approvalData;
+              console.log(approvalData);
               api.post(`/recurrence/fill-autopay-data/${recurrence_id}`, {
                 autopay_fields: {
                   accountCardType,
@@ -32,6 +34,9 @@ export async function openPaymentModal(
                 },
               });
               return approvalData;
+            })
+            .catch((err) => {
+              console.log(err);
             });
           setTimeout(() => {
             emergepay.close();

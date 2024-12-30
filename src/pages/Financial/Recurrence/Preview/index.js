@@ -106,7 +106,7 @@ export default function PagePreview({
         const { data: recurrenceData } = await api.get(`/recurrence/${id}`);
         api
           .get(`/receivables?search=${recurrenceData.name}`)
-          .then(({ data: receivables }) => {
+          .then(async ({ data: receivables }) => {
             setPageData({
               ...pageData,
               ...recurrenceData,
@@ -115,11 +115,12 @@ export default function PagePreview({
             });
             setActiveMenu("receivables");
             if (data.is_autopay) {
-              openPaymentModal(
+              const approvalData = await openPaymentModal(
                 receivables
                   .filter((receivable) => receivable.status === "Open")
                   .sort((a, b) => a.due_date - b.due_date)[0]
-              ).then((approvalData) => {
+              );
+              if (approvalData) {
                 const { accountCardType, accountExpiryDate, maskedAccount } =
                   approvalData;
                 api
@@ -146,7 +147,9 @@ export default function PagePreview({
                       loaded: true,
                     });
                   });
-              });
+              } else {
+                console.log("Error", approvalData);
+              }
             }
           });
       }, 2000);

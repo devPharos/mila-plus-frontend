@@ -1,7 +1,7 @@
 import api from "~/services/api";
 
-export function openPaymentModal(receivable = null) {
-  api
+export async function openPaymentModal(receivable = null) {
+  await api
     .post(`/emergepay/simple-form`, {
       receivable_id: receivable.id,
       amount: receivable.amount,
@@ -13,14 +13,15 @@ export function openPaymentModal(receivable = null) {
         // (required) Used to set up the modal
         transactionToken: transactionToken,
         // (optional) Callback function that gets called after a successful transaction
-        onTransactionSuccess: function (approvalData) {
+        onTransactionSuccess: async function (approvalData) {
           //   console.log("Approval Data", approvalData);
-          api.post(`/emergepay/post-back-listener`, approvalData).then(() => {
-            return approvalData;
-          });
+          await api
+            .post(`/emergepay/post-back-listener`, approvalData)
+            .then(() => {
+              return approvalData;
+            });
           setTimeout(() => {
             emergepay.close();
-            // location = "";
           }, 2000);
         },
         // (optional) Callback function that gets called after a failure occurs during the transaction (such as a declined card)

@@ -1,3 +1,4 @@
+// eslint-disable-next-line
 import "rsuite/Calendar/styles/index.css";
 import React, { createContext, useEffect, useState } from "react";
 import Breadcrumbs from "~/components/Breadcrumbs";

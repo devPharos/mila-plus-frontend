@@ -8,13 +8,13 @@ import { format, parseISO } from "date-fns";
 
 export default function FinancialReceivables() {
   const filial = useSelector((state) => state.auth.filial);
-  const defaultOrderBy = { column: "code", asc: true };
+  const defaultOrderBy = { column: "due_date", asc: false };
   const defaultGridHeader = [
     {
       title: "Issuer Name",
-      name: "name",
+      name: "issuer_name",
       type: "text",
-      filter: true,
+      filter: false,
     },
     {
       title: "Filial Name",
@@ -62,13 +62,13 @@ export default function FinancialReceivables() {
       title: "Payment Criteria",
       name: "paymentcriteria_id",
       type: "text",
-      filter: false,
+      filter: true,
     },
     {
       title: "Status",
       name: "status",
       type: "text",
-      filter: false,
+      filter: true,
     },
     {
       title: "Status Date",

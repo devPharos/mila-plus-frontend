@@ -28,6 +28,7 @@ import { FullGridContext } from "../..";
 import {
   invoiceTypeDetailsOptions,
   invoiceTypesOptions,
+  receivableStatusesOptions,
 } from "~/functions/selectPopoverOptions";
 
 export const InputContext = createContext({});
@@ -86,6 +87,7 @@ export default function PagePreview({
     issuer: {
       name: "",
     },
+    status: "Open",
     entry_date: null,
     first_due_date: null,
     due_date: null,
@@ -436,9 +438,29 @@ export default function PagePreview({
                               </InputLine>
                             )}
 
+                            <InputLine title="Status">
+                              <SelectPopover
+                                name="status"
+                                required
+                                grow
+                                title="Status"
+                                options={receivableStatusesOptions}
+                                defaultValue={
+                                  pageData.status
+                                    ? receivableStatusesOptions.find(
+                                        (status) =>
+                                          status.value === pageData.status
+                                      )
+                                    : null
+                                }
+                                InputContext={InputContext}
+                                isSearchable
+                              />
+                            </InputLine>
+
                             <InputLine title="Details">
                               <SelectPopover
-                                name="invoice_type"
+                                name="type"
                                 required
                                 grow
                                 title="Type"
@@ -454,7 +476,7 @@ export default function PagePreview({
                                 InputContext={InputContext}
                               />
                               <SelectPopover
-                                name="invoice_type_detail"
+                                name="type_detail"
                                 required
                                 grow
                                 title="Type Detail"

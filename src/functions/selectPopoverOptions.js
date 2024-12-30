@@ -123,3 +123,14 @@ export const invoiceTypeDetailsOptions = [
     label: "Tuition fee",
   },
 ];
+
+export const receivableStatusesOptions = [
+  {
+    value: "Open",
+    label: "Open",
+  },
+  {
+    value: "Paid",
+    label: "Paid",
+  },
+];

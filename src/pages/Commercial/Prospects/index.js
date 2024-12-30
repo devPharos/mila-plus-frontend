@@ -67,16 +67,19 @@ export default function CommercialProspects() {
         return;
       }
       const gridDataValues = data.map(
-        ({
-          id,
-          name,
-          last_name,
-          email,
-          canceled_at,
-          agent,
-          processtypes,
-          processsubstatuses,
-        }) => {
+        (
+          {
+            id,
+            name,
+            last_name,
+            email,
+            canceled_at,
+            agent,
+            processtypes,
+            processsubstatuses,
+          },
+          index
+        ) => {
           const ret = {
             show: true,
             id,
@@ -89,6 +92,7 @@ export default function CommercialProspects() {
               agent.name,
             ],
             canceled: canceled_at,
+            page: Math.ceil((index + 1) / limit),
           };
           return ret;
         }

@@ -52,7 +52,10 @@ import TransferEligibility from "./TransferEligibility";
 import EnrollmentProcess from "./EnrollmentProcess";
 import PlacementTest from "./PlacementTest";
 import { FullGridContext } from "../..";
-import { yesOrNoOptions } from "~/functions/selectPopoverOptions";
+import {
+  genderOptions,
+  yesOrNoOptions,
+} from "~/functions/selectPopoverOptions";
 
 export const InputContext = createContext({});
 

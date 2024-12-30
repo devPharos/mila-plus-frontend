@@ -1,13 +1,15 @@
 import { Form } from "@unform/web";
-import { Building, Pencil, X } from "lucide-react";
+import { Building, HandCoins, Pencil, X } from "lucide-react";
 import React, {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useRef,
   useState,
 } from "react";
 import Input from "~/components/RegisterForm/Input";
+// import { emergepay } from "~/services/emergepay.js";
 
 import RegisterFormMenu from "~/components/RegisterForm/Menu";
 import InputLine from "~/components/RegisterForm/InputLine";
@@ -16,18 +18,14 @@ import FormHeader from "~/components/RegisterForm/FormHeader";
 import Preview from "~/components/Preview";
 import { Zoom, toast } from "react-toastify";
 import api from "~/services/api";
-import {
-  getRegistries,
-  handleUpdatedFields,
-  countries_list,
-} from "~/functions";
+import { formatter, getRegistries } from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
 import DatePicker from "~/components/RegisterForm/DatePicker";
-import { Scope } from "@unform/core";
 import { format, parseISO } from "date-fns";
 import { yesOrNoOptions } from "~/functions/selectPopoverOptions";
+import { openPaymentModal } from "~/functions/emergepayfn";
 
 export const InputContext = createContext({});
 
@@ -49,7 +47,9 @@ export default function PagePreview({
     filial: {
       name: "",
     },
+    receivables: [],
   });
+  const buttonRef = useRef(null);
 
   const [registry, setRegistry] = useState({
     created_by: null,
@@ -67,6 +67,9 @@ export default function PagePreview({
   const [paymentCriterias, setPaymentCriterias] = useState([]);
   const [chartOfAccountOptions, setChartOfAccountOptions] = useState([]);
   const [isAutoPay, setIsAutoPay] = useState(false);
+  const [priceLists, setPriceLists] = useState(null);
+  const [discountLists, setDiscountLists] = useState(null);
+  const [totalDiscount, setTotalDiscount] = useState(0);
 
   const auth = useSelector((state) => state.auth);
 
@@ -95,10 +98,28 @@ export default function PagePreview({
         entry_date: entry_date ? format(entry_date, "yyyy-MM-dd") : null,
         in_class_date: entry_date ? format(entry_date, "yyyy-MM-dd") : null,
       });
+      setPageData({ ...pageData, ...data, loaded: false });
       toast("Saved!", { autoClose: 1000 });
-      handleOpened(null);
       setSuccessfullyUpdated(true);
-      setPageData({ ...pageData, ...data });
+
+      setTimeout(async () => {
+        const { data: recurrenceData } = await api.get(`/recurrence/${id}`);
+        api
+          .get(`/receivables?search=${recurrenceData.name}`)
+          .then(({ data: receivables }) => {
+            setPageData({
+              ...pageData,
+              ...recurrenceData,
+              receivables,
+              loaded: true,
+            });
+            setActiveMenu("receivables");
+            if (data.is_autopay) {
+              console.log("is autopay");
+              openPaymentModal(receivables[0]);
+            }
+          });
+      }, 2000);
     } catch (err) {
       console.log(err);
     }
@@ -148,7 +169,23 @@ export default function PagePreview({
       await getAllChartOfAccountsByIssuer();
       try {
         const { data } = await api.get(`/recurrence/${id}`);
-        setPageData({ ...pageData, ...data, loaded: true });
+
+        api
+          .get(`/receivables?search=${data.name}`)
+          .then(({ data: receivables }) => {
+            setPageData({ ...pageData, ...data, receivables, loaded: true });
+          });
+
+        api.get(`filials/${data.filial_id}`).then(({ data: filialData }) => {
+          setPriceLists(
+            filialData.pricelists.find(
+              (price) => price.processsubstatus_id === data.processsubstatus_id
+            )
+          );
+          setDiscountLists(
+            filialData.discountlists.filter((discount) => discount.active)
+          );
+        });
 
         const {
           created_by,
@@ -172,7 +209,6 @@ export default function PagePreview({
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     }
-
     getPageData();
   }, []);
 
@@ -187,6 +223,14 @@ export default function PagePreview({
               name="general"
             >
               <Building size={16} /> General
+            </RegisterFormMenu>
+
+            <RegisterFormMenu
+              setActiveMenu={setActiveMenu}
+              activeMenu={activeMenu}
+              name="receivables"
+            >
+              <HandCoins size={16} /> Receivables
             </RegisterFormMenu>
           </div>
           <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
@@ -271,6 +315,117 @@ export default function PagePreview({
                           defaultValue={pageData?.issuer?.id}
                           InputContext={InputContext}
                         />
+
+                        {priceLists && (
+                          <InputLine title="Prices Simulation">
+                            <table className="table-auto w-full text-center">
+                              <thead className="bg-slate-100 rounded-lg overflow-hidden">
+                                <tr>
+                                  <th className="w-1/6">Registration Fee</th>
+                                  <th className="w-1/6">Books</th>
+                                  <th className="w-1/6">Tuition</th>
+                                  <th className="w-1/6">Tuition in Advanced</th>
+                                  <th className="w-1/6">Discount</th>
+                                  <th className="w-1/6">Total</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td>
+                                    {formatter.format(
+                                      priceLists.registration_fee
+                                    )}
+                                  </td>
+                                  <td>{formatter.format(priceLists.book)}</td>
+                                  <td>
+                                    {formatter.format(priceLists.tuition)}
+                                  </td>
+                                  <td>
+                                    {priceLists.tuition_in_advance
+                                      ? "Yes"
+                                      : "No"}
+                                  </td>
+                                  <td>{formatter.format(totalDiscount)}</td>
+                                  <td>
+                                    {formatter.format(
+                                      priceLists.registration_fee +
+                                        priceLists.book +
+                                        priceLists.tuition -
+                                        totalDiscount
+                                    )}
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </InputLine>
+                        )}
+                        {discountLists &&
+                          discountLists
+                            .filter((discount) => discount.type === "Admission")
+                            .map((discount) => {
+                              return (
+                                <InputLine>
+                                  <Input
+                                    readOnly={true}
+                                    type="text"
+                                    name="discount_id"
+                                    grow
+                                    title="Description"
+                                    defaultValue={discount.name}
+                                    InputContext={InputContext}
+                                  />
+                                  <Input
+                                    readOnly={true}
+                                    type="text"
+                                    name="value"
+                                    grow
+                                    title="Discount"
+                                    defaultValue={
+                                      (discount.percent ? "%" : "$") +
+                                      " " +
+                                      discount.value
+                                    }
+                                    InputContext={InputContext}
+                                  />
+                                  <SelectPopover
+                                    readOnly={true}
+                                    name="all_installments"
+                                    title="All Installments?"
+                                    options={yesOrNoOptions}
+                                    defaultValue={yesOrNoOptions.find(
+                                      (option) =>
+                                        option.value ===
+                                        discount.all_installments
+                                    )}
+                                    InputContext={InputContext}
+                                  />
+                                  <SelectPopover
+                                    readOnly={true}
+                                    name="free_vacation"
+                                    title="Free Vacation?"
+                                    options={yesOrNoOptions}
+                                    defaultValue={yesOrNoOptions.find(
+                                      (option) =>
+                                        option.value === discount.free_vacation
+                                    )}
+                                    InputContext={InputContext}
+                                  />
+                                  <SelectPopover
+                                    name="apply"
+                                    title="Apply?"
+                                    options={yesOrNoOptions}
+                                    InputContext={InputContext}
+                                    defaultValue={yesOrNoOptions.find(
+                                      (option) => option.value === false
+                                    )}
+                                    onChange={(el) =>
+                                      handleDiscount(discount.id, el)
+                                    }
+                                  />
+                                </InputLine>
+                              );
+                            })}
+
                         <InputLine title="Recurrence Information">
                           <DatePicker
                             name="entry_date"
@@ -398,7 +553,7 @@ export default function PagePreview({
                                 name="card_number"
                                 title="Card Number"
                                 grow
-                                required
+                                readOnly
                                 defaultValue={
                                   pageData?.issuer?.issuer_x_recurrence
                                     ?.card_number
@@ -410,7 +565,7 @@ export default function PagePreview({
                                 name="card_expiration_date"
                                 title="Card Expiration Date"
                                 grow
-                                required
+                                readOnly
                                 defaultValue={
                                   pageData?.issuer?.issuer_x_recurrence
                                     ?.card_expiration_date
@@ -422,7 +577,7 @@ export default function PagePreview({
                                 name="card_holder_name"
                                 title="Card Holder Name"
                                 grow
-                                required
+                                readOnly
                                 defaultValue={
                                   pageData?.issuer?.issuer_x_recurrence
                                     ?.card_holder_name
@@ -430,35 +585,97 @@ export default function PagePreview({
                                 InputContext={InputContext}
                               />
                             </InputLine>
-
-                            <InputLine>
-                              <Input
-                                type="text"
-                                name="card_address"
-                                title="Card Address"
-                                grow
-                                required
-                                defaultValue={
-                                  pageData?.issuer?.issuer_x_recurrence
-                                    ?.card_address
-                                }
-                                InputContext={InputContext}
-                              />
-                              <Input
-                                type="text"
-                                name="card_zip"
-                                title="Card Zip"
-                                grow
-                                required
-                                defaultValue={
-                                  pageData?.issuer?.issuer_x_recurrence
-                                    ?.card_zip
-                                }
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
                           </>
                         )}
+                      </InputLineGroup>
+                      <InputLineGroup
+                        title="RECEIVABLES"
+                        activeMenu={activeMenu === "receivables"}
+                      >
+                        {pageData.receivables
+                          .sort((a, b) => a.invoice_number - b.invoice_number)
+                          .map((receivable, index) => {
+                            return (
+                              <InputLine
+                                title={index === 0 ? "Receivables" : ""}
+                              >
+                                <Input
+                                  type="hidden"
+                                  name="receivable_id"
+                                  readOnly={true}
+                                  grow
+                                  defaultValue={receivable.id}
+                                  InputContext={InputContext}
+                                />
+                                <Input
+                                  type="text"
+                                  name="entry_date"
+                                  readOnly={true}
+                                  grow
+                                  title="Entry Date"
+                                  defaultValue={format(
+                                    parseISO(receivable.entry_date),
+                                    "yyyy-MM-dd"
+                                  )}
+                                  InputContext={InputContext}
+                                />
+                                <Input
+                                  type="text"
+                                  name="due_date"
+                                  readOnly={true}
+                                  grow
+                                  title="Due Date"
+                                  defaultValue={format(
+                                    parseISO(receivable.due_date),
+                                    "yyyy-MM-dd"
+                                  )}
+                                  InputContext={InputContext}
+                                />
+                                <Input
+                                  type="text"
+                                  name="receivable_amount"
+                                  readOnly={true}
+                                  grow
+                                  title="Amount"
+                                  defaultValue={formatter.format(
+                                    receivable.amount
+                                  )}
+                                  InputContext={InputContext}
+                                />
+                                <Input
+                                  type="text"
+                                  name="fee"
+                                  readOnly={true}
+                                  grow
+                                  title="Fee"
+                                  defaultValue={formatter.format(
+                                    receivable.fee
+                                  )}
+                                  InputContext={InputContext}
+                                />
+                                <Input
+                                  type="text"
+                                  name="receivable_total"
+                                  readOnly={true}
+                                  grow
+                                  title="Total"
+                                  defaultValue={formatter.format(
+                                    receivable.total
+                                  )}
+                                  InputContext={InputContext}
+                                />
+                                <Input
+                                  type="text"
+                                  name="status"
+                                  readOnly={true}
+                                  grow
+                                  title="Status"
+                                  defaultValue={receivable.status}
+                                  InputContext={InputContext}
+                                />
+                              </InputLine>
+                            );
+                          })}
                       </InputLineGroup>
                     </>
                   ) : (

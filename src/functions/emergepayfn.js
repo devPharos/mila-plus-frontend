@@ -15,7 +15,9 @@ export function openPaymentModal(receivable = null) {
         // (optional) Callback function that gets called after a successful transaction
         onTransactionSuccess: function (approvalData) {
           //   console.log("Approval Data", approvalData);
-          api.post(`/emergepay/post-back-listener`, approvalData);
+          api.post(`/emergepay/post-back-listener`, approvalData).then(() => {
+            return approvalData;
+          });
           setTimeout(() => {
             emergepay.close();
             // location = "";

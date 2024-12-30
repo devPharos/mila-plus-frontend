@@ -115,8 +115,17 @@ export default function PagePreview({
             });
             setActiveMenu("receivables");
             if (data.is_autopay) {
-              console.log("is autopay");
-              openPaymentModal(receivables[0]);
+              openPaymentModal(receivables[0]).then((approvalData) => {
+                const { accountCardType, accountExpiryDate, maskedAccount } =
+                  approvalData;
+                api.post(`/recurrence//fill-autopay-data${id}`, {
+                  autopay_fields: {
+                    accountCardType,
+                    accountExpiryDate,
+                    maskedAccount,
+                  },
+                });
+              });
             }
           });
       }, 2000);

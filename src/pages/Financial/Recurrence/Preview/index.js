@@ -1,5 +1,13 @@
 import { Form } from "@unform/web";
-import { Building, HandCoins, Pencil, X } from "lucide-react";
+import {
+  BadgeDollarSign,
+  Building,
+  DollarSign,
+  HandCoins,
+  Pencil,
+  Settings,
+  X,
+} from "lucide-react";
 import React, {
   createContext,
   useCallback,
@@ -26,6 +34,7 @@ import DatePicker from "~/components/RegisterForm/DatePicker";
 import { format, parseISO } from "date-fns";
 import { yesOrNoOptions } from "~/functions/selectPopoverOptions";
 import { openPaymentModal } from "~/functions/emergepayfn";
+import { AlertContext } from "~/App";
 
 export const InputContext = createContext({});
 
@@ -35,6 +44,7 @@ export default function PagePreview({
   defaultFormType = "preview",
   Context = null,
 }) {
+  const { alertBox } = useContext(AlertContext);
   const {
     handleOpened,
     setOpened,
@@ -115,12 +125,25 @@ export default function PagePreview({
             });
             setActiveMenu("receivables");
             if (data.is_autopay) {
-              await openPaymentModal(
-                receivables
-                  .filter((receivable) => receivable.status === "Open")
-                  .sort((a, b) => a.due_date - b.due_date)[0],
-                postedData.id
-              );
+              alertBox({
+                title: "Attention!",
+                descriptionHTML: `<p>Do you want to configure the payment method for this recurrence?</p>`,
+                buttons: [
+                  {
+                    title: "No",
+                    class: "cancel",
+                  },
+                  {
+                    title: "Yes",
+                    onPress: async () => {
+                      const receivable = receivables
+                        .filter((receivable) => receivable.status === "Open")
+                        .sort((a, b) => a.due_date - b.due_date)[0];
+                      await openPaymentModal(receivable, postedData.id);
+                    },
+                  },
+                ],
+              });
             }
           });
       }, 2000);
@@ -542,6 +565,29 @@ export default function PagePreview({
                             options={yesOrNoOptions}
                             InputContext={InputContext}
                           />
+                          {pageData?.receivables.length > 0 &&
+                            pageData?.issuer?.issuer_x_recurrence
+                              ?.is_autopay && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  openPaymentModal(
+                                    pageData?.receivables
+                                      .filter(
+                                        (receivable) =>
+                                          receivable.status === "Open"
+                                      )
+                                      .sort(
+                                        (a, b) => a.due_date - b.due_date
+                                      )[0],
+                                    pageData?.issuer?.issuer_x_recurrence?.id
+                                  );
+                                }}
+                                className="text-xs bg-gray-100 px-6 py-3 mt-3 rounded-md border cursor-pointer flex flex-row items-center justify-center gap-2 hover:bg-gray-200"
+                              >
+                                <Settings size={16} /> Payment Config.
+                              </button>
+                            )}
                         </InputLine>
 
                         {isAutoPay ||
@@ -609,28 +655,28 @@ export default function PagePreview({
                                   defaultValue={receivable.id}
                                   InputContext={InputContext}
                                 />
-                                <Input
-                                  type="text"
+                                <DatePicker
                                   name="entry_date"
-                                  readOnly={true}
-                                  grow
-                                  title="Entry Date"
+                                  disabled
+                                  shrink
+                                  title="Entry Date "
                                   defaultValue={format(
                                     parseISO(receivable.entry_date),
                                     "yyyy-MM-dd"
                                   )}
+                                  placeholderText="MM/DD/YYYY"
                                   InputContext={InputContext}
                                 />
-                                <Input
-                                  type="text"
+                                <DatePicker
                                   name="due_date"
-                                  readOnly={true}
-                                  grow
-                                  title="Due Date"
+                                  disabled
+                                  shrink
+                                  title="Due Date "
                                   defaultValue={format(
                                     parseISO(receivable.due_date),
                                     "yyyy-MM-dd"
                                   )}
+                                  placeholderText="MM/DD/YYYY"
                                   InputContext={InputContext}
                                 />
                                 <Input
@@ -675,6 +721,25 @@ export default function PagePreview({
                                   defaultValue={receivable.status}
                                   InputContext={InputContext}
                                 />
+                                {receivable.status === "Open" ? (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      openPaymentModal(
+                                        receivable,
+                                        pageData?.issuer?.issuer_x_recurrence
+                                          ?.id
+                                      )
+                                    }
+                                    className="text-xs bg-gray-800 font-bold text-white px-3 py-2 mt-3 rounded-md border cursor-pointer flex flex-row items-center justify-center gap-2 hover:bg-gray-900"
+                                  >
+                                    <DollarSign size={14} /> Pay
+                                  </button>
+                                ) : (
+                                  <div className="text-xs bg-green-800 font-bold text-white px-3 py-2 mt-3 rounded-md border cursor-pointer flex flex-row items-center justify-center gap-2">
+                                    <BadgeDollarSign size={14} /> Payed
+                                  </div>
+                                )}
                               </InputLine>
                             );
                           })}

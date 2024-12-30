@@ -37,7 +37,7 @@ const CheckboxInput = ({
     <div
       className={`${
         type === "hidden" ? "hidden" : "flex"
-      } flex-col justify-center items-start relative ${shrink ? "w-34" : ""} ${
+      } flex-col justify-center items-start relative ${shrink ? "w-32" : ""} ${
         grow ? "grow" : "max-w-48"
       } `}
     >

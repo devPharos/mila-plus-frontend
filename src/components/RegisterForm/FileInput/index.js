@@ -63,7 +63,7 @@ const FileInput = ({
     setSuccessfullyUpdated(false);
   }, []);
 
-  const width = shrink ? "w-34" : "w-full md:w-auto";
+  const width = shrink ? "w-32" : "w-full md:w-auto";
   return (
     <div
       className={`${

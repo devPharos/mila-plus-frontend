@@ -93,7 +93,7 @@ export default function PagePreview({
     }
     try {
       const { entry_date, in_class_date } = data;
-      await api.post(`/recurrence/`, {
+      const { data: postedData } = await api.post(`/recurrence/`, {
         ...data,
         entry_date: entry_date ? format(entry_date, "yyyy-MM-dd") : null,
         in_class_date: entry_date ? format(entry_date, "yyyy-MM-dd") : null,
@@ -119,7 +119,7 @@ export default function PagePreview({
                 receivables
                   .filter((receivable) => receivable.status === "Open")
                   .sort((a, b) => a.due_date - b.due_date)[0],
-                pageData.issuer.issuer_x_recurrence.id
+                postedData.id
               );
             }
           });
@@ -489,7 +489,7 @@ export default function PagePreview({
                               (paymentMethod) =>
                                 paymentMethod.value ===
                                 pageData?.issuer?.issuer_x_recurrence
-                                  .paymentmethod_id
+                                  ?.paymentmethod_id
                             )}
                             options={paymentMethods}
                             InputContext={InputContext}
@@ -504,7 +504,7 @@ export default function PagePreview({
                               (paymentMethod) =>
                                 paymentMethod.value ===
                                 pageData?.issuer?.issuer_x_recurrence
-                                  .paymentcriteria_id
+                                  ?.paymentcriteria_id
                             )}
                             options={paymentCriterias}
                             InputContext={InputContext}
@@ -525,7 +525,6 @@ export default function PagePreview({
                             InputContext={InputContext}
                           />
                         </InputLine>
-
                         <InputLine title="Autopay">
                           <SelectPopover
                             name="is_autopay"
@@ -534,21 +533,17 @@ export default function PagePreview({
                             onChange={(el) => {
                               setIsAutoPay(el.value);
                             }}
-                            defaultValue={
-                              pageData?.issuer?.issuer_x_recurrence?.is_autopay
-                                ? {
-                                    value: true,
-                                    label: "Yes",
-                                  }
-                                : {
-                                    value: false,
-                                    label: "No",
-                                  }
-                            }
+                            defaultValue={yesOrNoOptions.find(
+                              (option) =>
+                                option.value ===
+                                pageData?.issuer?.issuer_x_recurrence
+                                  ?.is_autopay
+                            )}
                             options={yesOrNoOptions}
                             InputContext={InputContext}
                           />
                         </InputLine>
+
                         {isAutoPay ||
                           (pageData?.issuer?.issuer_x_recurrence
                             ?.is_autopay && (
@@ -594,6 +589,7 @@ export default function PagePreview({
                             </>
                           ))}
                       </InputLineGroup>
+
                       <InputLineGroup
                         title="RECEIVABLES"
                         activeMenu={activeMenu === "receivables"}

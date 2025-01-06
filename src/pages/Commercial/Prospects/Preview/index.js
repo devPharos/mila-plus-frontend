@@ -38,6 +38,7 @@ import Preview from "~/components/Preview";
 import {
   countries_list,
   formatter,
+  getPriceLists,
   getRegistries,
   handleUpdatedFields,
 } from "~/functions";
@@ -112,8 +113,6 @@ export default function PagePreview({
   const [countriesList, setCountriesList] = useState([]);
   const [filialOptions, setFilialOptions] = useState([]);
   const [agentOptions, setAgentOptions] = useState([]);
-  const [priceLists, setPriceLists] = useState(null);
-  const [discountLists, setDiscountLists] = useState(null);
   const [totalDiscount, setTotalDiscount] = useState(0);
   const [activeDiscounts, setActiveDiscounts] = useState([]);
   const generalForm = useRef();
@@ -166,23 +165,6 @@ export default function PagePreview({
     });
     retSubStatusOptions.push({ value: 0, label: "Select..." });
     return retSubStatusOptions;
-  }
-  async function getPriceLists(searchFields = null) {
-    let priceLists = null;
-    let discountLists = null;
-
-    if (!searchFields) {
-      return { priceLists: null, discountLists: null };
-    }
-
-    await api.get(`filials/${searchFields.filial_id}`).then(({ data }) => {
-      priceLists = data.pricelists.find(
-        (price) =>
-          price.processsubstatus_id === searchFields.processsubstatus_id
-      );
-      discountLists = data.discountlists.filter((discount) => discount.active);
-    });
-    return { priceLists, discountLists };
   }
 
   async function getPageData(prospectId = null) {
@@ -327,9 +309,6 @@ export default function PagePreview({
       pageData.searchFields.processsubstatus_id
     ) {
       updatePriceLists();
-    } else {
-      setPriceLists(null);
-      setDiscountLists(null);
     }
   }, [
     pageData.searchFields.filial_id,
@@ -371,7 +350,7 @@ export default function PagePreview({
           visa_expiration: visa_expiration
             ? format(visa_expiration, "yyyy-MM-dd")
             : null,
-          discount_id: discount_id === "" ? null : discount_id,
+          discount_id: activeDiscounts.length > 0 ? activeDiscounts[0] : null,
         });
         setOpened(response.data.id);
         // setPageData({ ...pageData, ...data });
@@ -388,7 +367,7 @@ export default function PagePreview({
 
       if (updated.length > 0) {
         const objUpdated = Object.fromEntries(updated);
-        const { date_of_birth, visa_expiration, discount_id } = objUpdated;
+        const { date_of_birth, visa_expiration } = objUpdated;
         try {
           await api.put(`/students/${id}`, {
             ...objUpdated,
@@ -398,7 +377,18 @@ export default function PagePreview({
             visa_expiration: visa_expiration
               ? format(visa_expiration, "yyyy-MM-dd")
               : null,
-            discount_id: discount_id === "" ? null : discount_id,
+            discount_id: activeDiscounts.length > 0 ? activeDiscounts[0] : null,
+          });
+          console.log(objUpdated);
+          console.log({
+            ...objUpdated,
+            date_of_birth: date_of_birth
+              ? format(date_of_birth, "yyyy-MM-dd")
+              : null,
+            visa_expiration: visa_expiration
+              ? format(visa_expiration, "yyyy-MM-dd")
+              : null,
+            discount_id: activeDiscounts.length > 0 ? activeDiscounts[0] : null,
           });
           setPageData({ ...pageData, ...objUpdated });
           setSuccessfullyUpdated(true);
@@ -977,104 +967,95 @@ export default function PagePreview({
                               </table>
                             </InputLine>
                           )}
-                          {activeDiscounts.length > 0 ? (
-                            <Input
-                              type="hidden"
-                              name="discount_id"
-                              value={activeDiscounts[0]}
-                              InputContext={InputContext}
-                            />
-                          ) : (
-                            index === 0 && (
-                              <Input
-                                type="hidden"
-                                name="discount_id"
-                                value={null}
-                                InputContext={InputContext}
-                              />
-                            )
-                          )}
+                          <Input
+                            type="hidden"
+                            name="discount_id"
+                            value={
+                              activeDiscounts.length > 0
+                                ? activeDiscounts[0]
+                                : null
+                            }
+                            InputContext={InputContext}
+                          />
                           {pageData.discountLists &&
-                            pageData.discountLists
-                              .filter(
-                                (discount) => discount.type === "Admission"
-                              )
-                              .map((discount, index) => {
-                                return (
-                                  <>
-                                    <InputLine
-                                      key={index}
-                                      title={
-                                        index === 0 ? "Admission Discounts" : ""
+                            pageData.discountLists.map((discount, index) => {
+                              return (
+                                <>
+                                  <InputLine
+                                    key={index}
+                                    title={
+                                      index === 0
+                                        ? "Avaiable Admission Discounts"
+                                        : ""
+                                    }
+                                  >
+                                    <Input
+                                      readOnly={true}
+                                      type="text"
+                                      name="discount"
+                                      grow
+                                      title="Description"
+                                      defaultValue={discount.name}
+                                      InputContext={InputContext}
+                                    />
+                                    <Input
+                                      readOnly={true}
+                                      type="text"
+                                      name="value"
+                                      grow
+                                      title="Discount"
+                                      defaultValue={
+                                        (discount.percent ? "%" : "$") +
+                                        " " +
+                                        discount.value
                                       }
-                                    >
-                                      <Input
-                                        readOnly={true}
-                                        type="text"
-                                        name="discount"
-                                        grow
-                                        title="Description"
-                                        defaultValue={discount.name}
-                                        InputContext={InputContext}
-                                      />
-                                      <Input
-                                        readOnly={true}
-                                        type="text"
-                                        name="value"
-                                        grow
-                                        title="Discount"
-                                        defaultValue={
-                                          (discount.percent ? "%" : "$") +
-                                          " " +
-                                          discount.value
-                                        }
-                                        InputContext={InputContext}
-                                      />
-                                      <SelectPopover
-                                        readOnly={true}
-                                        name="all_installments"
-                                        title="All Installments?"
-                                        options={yesOrNoOptions}
-                                        defaultValue={yesOrNoOptions.find(
-                                          (option) =>
-                                            option.value ===
-                                            discount.all_installments
-                                        )}
-                                        InputContext={InputContext}
-                                      />
-                                      <SelectPopover
-                                        readOnly={true}
-                                        name="free_vacation"
-                                        title="Free Vacation?"
-                                        options={yesOrNoOptions}
-                                        defaultValue={yesOrNoOptions.find(
-                                          (option) =>
-                                            option.value ===
-                                            discount.free_vacation
-                                        )}
-                                        InputContext={InputContext}
-                                      />
-                                      <SelectPopover
-                                        name="apply"
-                                        title="Apply?"
-                                        options={yesOrNoOptions}
-                                        InputContext={InputContext}
-                                        value={yesOrNoOptions.find(
-                                          (option) =>
-                                            option.value ===
-                                            (activeDiscounts.length > 0 &&
-                                            activeDiscounts[0] === discount.id
-                                              ? true
-                                              : false)
-                                        )}
-                                        onChange={(el) =>
-                                          handleDiscount(discount.id, el)
-                                        }
-                                      />
-                                    </InputLine>
-                                  </>
-                                );
-                              })}
+                                      InputContext={InputContext}
+                                    />
+                                    <SelectPopover
+                                      readOnly={true}
+                                      name="all_installments"
+                                      title="All Installments?"
+                                      options={yesOrNoOptions}
+                                      defaultValue={yesOrNoOptions.find(
+                                        (option) =>
+                                          option.value ===
+                                          discount.all_installments
+                                      )}
+                                      InputContext={InputContext}
+                                    />
+                                    <SelectPopover
+                                      readOnly={true}
+                                      name="free_vacation"
+                                      title="Free Vacation?"
+                                      options={yesOrNoOptions}
+                                      defaultValue={yesOrNoOptions.find(
+                                        (option) =>
+                                          option.value ===
+                                          discount.free_vacation
+                                      )}
+                                      InputContext={InputContext}
+                                    />
+                                    <SelectPopover
+                                      name="apply"
+                                      title="Apply?"
+                                      options={yesOrNoOptions}
+                                      InputContext={InputContext}
+                                      value={yesOrNoOptions.find(
+                                        (option) =>
+                                          option.value ===
+                                          (activeDiscounts.length > 0 &&
+                                          activeDiscounts[0] === discount.id
+                                            ? true
+                                            : false)
+                                      )}
+                                      onChange={(el) =>
+                                        handleDiscount(discount.id, el)
+                                      }
+                                    />
+                                  </InputLine>
+                                </>
+                              );
+                            })}
                           <InputLine title="Location">
                             <Input
                               type="text"
@@ -1200,10 +1181,7 @@ export default function PagePreview({
                                                   target="_blank"
                                                   className="text-xs"
                                                 >
-                                                  <div
-                                                    className="flex flex-row items-center border px-4 py-2 gap-1 rounded-md bg-gray-100 hover:border-gray-300"
-                                                    key={index}
-                                                  >
+                                                  <div className="flex flex-row items-center border px-4 py-2 gap-1 rounded-md bg-gray-100 hover:border-gray-300">
                                                     <Files size={16} />
                                                     {
                                                       enrollmentdocument.file

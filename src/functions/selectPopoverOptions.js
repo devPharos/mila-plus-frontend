@@ -128,6 +128,12 @@ export const invoiceTypeDetailsOptions = [
   {
     value: "Tuition fee",
     label: "Tuition fee",
+    type: "Invoice",
+  },
+  {
+    value: "Other",
+    label: "Other",
+    type: "Credit Note",
   },
 ];
 

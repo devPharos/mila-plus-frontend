@@ -26,7 +26,7 @@ import FormHeader from "~/components/RegisterForm/FormHeader";
 import Preview from "~/components/Preview";
 import { Zoom, toast } from "react-toastify";
 import api from "~/services/api";
-import { formatter, getRegistries } from "~/functions";
+import { formatter, getPriceLists, getRegistries } from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
@@ -77,9 +77,8 @@ export default function PagePreview({
   const [paymentCriterias, setPaymentCriterias] = useState([]);
   const [chartOfAccountOptions, setChartOfAccountOptions] = useState([]);
   const [isAutoPay, setIsAutoPay] = useState(false);
-  const [priceLists, setPriceLists] = useState(null);
-  const [discountLists, setDiscountLists] = useState(null);
   const [totalDiscount, setTotalDiscount] = useState(0);
+  const [activeDiscounts, setActiveDiscounts] = useState([]);
 
   const auth = useSelector((state) => state.auth);
 
@@ -103,7 +102,6 @@ export default function PagePreview({
     }
     try {
       const { entry_date, in_class_date } = data;
-      console.log(data);
       const { data: postedData } = await api.post(`/recurrence/`, {
         ...data,
         entry_date: entry_date ? format(entry_date, "yyyyMMdd") : null,
@@ -202,23 +200,33 @@ export default function PagePreview({
       await getAllChartOfAccountsByIssuer();
       try {
         const { data } = await api.get(`/recurrence/${id}`);
+        const { priceLists, discountLists } = await getPriceLists({
+          filial_id: data.filial_id,
+          processtype_id: data.processtype_id,
+          processsubstatus_id: data.processsubstatus_id,
+        });
 
         api
           .get(`/receivables?search=${data.name}`)
           .then(({ data: receivables }) => {
-            setPageData({ ...pageData, ...data, receivables, loaded: true });
+            setPageData({
+              ...pageData,
+              ...data,
+              receivables,
+              loaded: true,
+              priceLists,
+              discountLists,
+            });
+            if (data.discount_id) {
+              handleDiscount(
+                data.discount_id,
+                { value: true },
+                true,
+                priceLists,
+                discountLists
+              );
+            }
           });
-
-        api.get(`filials/${data.filial_id}`).then(({ data: filialData }) => {
-          setPriceLists(
-            filialData.pricelists.find(
-              (price) => price.processsubstatus_id === data.processsubstatus_id
-            )
-          );
-          setDiscountLists(
-            filialData.discountlists.filter((discount) => discount.active)
-          );
-        });
 
         const {
           created_by,
@@ -244,6 +252,61 @@ export default function PagePreview({
     }
     getPageData();
   }, []);
+
+  function handleDiscount(
+    id,
+    el,
+    force = false,
+    priceLists = null,
+    discountLists = null
+  ) {
+    if (!force) {
+      priceLists = pageData.priceLists;
+      discountLists = pageData.discountLists;
+      setSuccessfullyUpdated(false);
+    }
+
+    const discount = discountLists.find((discount) => discount.id === id);
+    if (
+      // !activeDiscounts.find((active) => active === discount.id) &&
+      el.value
+    ) {
+      setActiveDiscounts([discount.id]);
+
+      let discountAmount = 0;
+
+      const total =
+        priceLists.registration_fee + priceLists.book + priceLists.tuition;
+
+      if (discount.percent) {
+        discountAmount = total * (discount.value / 100);
+      } else {
+        discountAmount = discount.value;
+      }
+      setTotalDiscount(discountAmount);
+    } else if (
+      // activeDiscounts.find((active) => active === discount.id) &&
+      !el.value
+    ) {
+      // setActiveDiscounts(
+      //   activeDiscounts.filter((active) => active !== discount.id)
+      // );
+      setActiveDiscounts([]);
+
+      let discountAmount = 0;
+
+      const total =
+        priceLists.registration_fee + priceLists.book + priceLists.tuition;
+
+      if (discount.percent) {
+        discountAmount = total * (discount.value / 100);
+      } else {
+        discountAmount = discount.value;
+      }
+      discountAmount = discountAmount * -1;
+      setTotalDiscount(0);
+    }
+  }
 
   return (
     <Preview formType={formType} fullscreen={fullscreen}>
@@ -349,7 +412,7 @@ export default function PagePreview({
                           InputContext={InputContext}
                         />
 
-                        {priceLists && (
+                        {pageData.priceLists && (
                           <InputLine title="Prices Simulation">
                             <table className="table-auto w-full text-center">
                               <thead className="bg-slate-100 rounded-lg overflow-hidden">
@@ -365,43 +428,111 @@ export default function PagePreview({
                               <tbody>
                                 <tr>
                                   <td>
-                                    {formatter.format(
-                                      priceLists.registration_fee
-                                    )}
+                                    <Input
+                                      type="text"
+                                      name="registration_fee"
+                                      value={pageData.priceLists.registration_fee.toFixed(
+                                        2
+                                      )}
+                                      centeredText={true}
+                                      placeholder="$ 0.00"
+                                      className="text-center"
+                                      readOnly={true}
+                                      InputContext={InputContext}
+                                    />
                                   </td>
-                                  <td>{formatter.format(priceLists.book)}</td>
                                   <td>
-                                    {formatter.format(priceLists.tuition)}
+                                    <Input
+                                      type="text"
+                                      name="books"
+                                      value={pageData.priceLists.book.toFixed(
+                                        2
+                                      )}
+                                      centeredText={true}
+                                      placeholder="$ 0.00"
+                                      className="text-center"
+                                      readOnly={true}
+                                      InputContext={InputContext}
+                                    />
                                   </td>
                                   <td>
-                                    {priceLists.tuition_in_advance
-                                      ? "Yes"
-                                      : "No"}
+                                    <Input
+                                      type="text"
+                                      name="tuition_original_price"
+                                      value={pageData.priceLists.tuition.toFixed(
+                                        2
+                                      )}
+                                      centeredText={true}
+                                      placeholder="$ 0.00"
+                                      className="text-center"
+                                      readOnly={true}
+                                      InputContext={InputContext}
+                                    />
                                   </td>
-                                  <td>{formatter.format(totalDiscount)}</td>
                                   <td>
-                                    {formatter.format(
-                                      priceLists.registration_fee +
-                                        priceLists.book +
-                                        priceLists.tuition -
+                                    <SelectPopover
+                                      name="tuition_in_advance"
+                                      defaultValue={yesOrNoOptions.find(
+                                        (option) =>
+                                          option.value ===
+                                          pageData.priceLists.tuition_in_advance
+                                      )}
+                                      centeredText={true}
+                                      readOnly={true}
+                                      options={yesOrNoOptions}
+                                      InputContext={InputContext}
+                                    />
+                                  </td>
+                                  <td>
+                                    <Input
+                                      type="text"
+                                      name="total_discount"
+                                      value={totalDiscount.toFixed(2)}
+                                      centeredText={true}
+                                      placeholder="$ 0.00"
+                                      className="text-center"
+                                      readOnly={true}
+                                      InputContext={InputContext}
+                                    />
+                                  </td>
+                                  <td>
+                                    <Input
+                                      type="text"
+                                      name="total_tuition"
+                                      value={(
+                                        pageData.priceLists.registration_fee +
+                                        pageData.priceLists.book +
+                                        pageData.priceLists.tuition -
                                         totalDiscount
-                                    )}
+                                      ).toFixed(2)}
+                                      centeredText={true}
+                                      placeholder="$ 0.00"
+                                      className="text-center"
+                                      readOnly={true}
+                                      InputContext={InputContext}
+                                    />
                                   </td>
                                 </tr>
                               </tbody>
                             </table>
                           </InputLine>
                         )}
-                        {discountLists &&
-                          discountLists
-                            .filter((discount) => discount.type === "Admission")
-                            .map((discount) => {
-                              return (
-                                <InputLine>
+                        {pageData.discountLists &&
+                          pageData.discountLists.map((discount, index) => {
+                            return (
+                              <>
+                                <InputLine
+                                  key={index}
+                                  title={
+                                    index === 0
+                                      ? "Avaiable Admission Discounts"
+                                      : ""
+                                  }
+                                >
                                   <Input
                                     readOnly={true}
                                     type="text"
-                                    name="discount_id"
+                                    name="discount"
                                     grow
                                     title="Description"
                                     defaultValue={discount.name}
@@ -448,16 +579,19 @@ export default function PagePreview({
                                     title="Apply?"
                                     options={yesOrNoOptions}
                                     InputContext={InputContext}
-                                    defaultValue={yesOrNoOptions.find(
-                                      (option) => option.value === false
+                                    readOnly={true}
+                                    value={yesOrNoOptions.find(
+                                      (option) =>
+                                        option.value ===
+                                        (pageData.discount_id !== null
+                                          ? true
+                                          : false)
                                     )}
-                                    onChange={(el) =>
-                                      handleDiscount(discount.id, el)
-                                    }
                                   />
                                 </InputLine>
-                              );
-                            })}
+                              </>
+                            );
+                          })}
 
                         <InputLine title="Recurrence Information">
                           <DatePicker
@@ -755,7 +889,7 @@ export default function PagePreview({
                                   </button>
                                 ) : (
                                   <div className="text-xs bg-green-800 font-bold text-white px-3 py-2 mt-3 rounded-md border cursor-pointer flex flex-row items-center justify-center gap-2">
-                                    <BadgeDollarSign size={14} /> Payed
+                                    <BadgeDollarSign size={14} /> Paid
                                   </div>
                                 )}
                               </InputLine>

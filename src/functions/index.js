@@ -420,3 +420,22 @@ export function capitalizeFirstLetter(val) {
 
   return vals.join(" ");
 }
+
+export async function getPriceLists(searchFields = null) {
+  let priceLists = null;
+  let discountLists = null;
+
+  if (!searchFields) {
+    return { priceLists: null, discountLists: null };
+  }
+
+  await api.get(`filials/${searchFields.filial_id}`).then(({ data }) => {
+    priceLists = data.pricelists.find(
+      (price) => price.processsubstatus_id === searchFields.processsubstatus_id
+    );
+    discountLists = data.discountlists.filter(
+      (discount) => discount.active === true && discount.type === "Financial"
+    );
+  });
+  return { priceLists, discountLists };
+}

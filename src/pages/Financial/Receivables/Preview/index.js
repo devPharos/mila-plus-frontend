@@ -81,7 +81,7 @@ export default function PagePreview({
     filialOptions: [],
     issuerOptions: [],
     paymentMethodOptions: [],
-    paymentCriteriaOptions: [],
+    // paymentCriteriaOptions: [],
     chartOfAccountOptions: [],
     issuer_id: null,
     issuer: {
@@ -89,7 +89,6 @@ export default function PagePreview({
     },
     status: "Open",
     entry_date: null,
-    first_due_date: null,
     due_date: null,
     amount: 0,
     total: 0,
@@ -100,7 +99,6 @@ export default function PagePreview({
     paymentMethod: {
       description: "",
     },
-    status: "open",
     status_date: null,
     authorization_code: "",
     chartofaccount_id: null,
@@ -112,6 +110,8 @@ export default function PagePreview({
       description: "",
     },
     installment: [],
+    type: "Credit Note",
+    type_detail: "Other",
   });
 
   const [registry, setRegistry] = useState({
@@ -127,49 +127,9 @@ export default function PagePreview({
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
 
-  // const [filialOptions, setFilialOptions] = useState([]);
-  // const [issuerOptions, setIssuerOptions] = useState([]);
-  // const [paymentMethodOptions, setPaymentMethodOptions] = useState([]);
-  // const [paymentCriteriaOptions, setPaymentCriteriaOptions] = useState([]);
-  // const [chartOfAccountOptions, setChartOfAccountOptions] = useState([]);
-
-  const [itensInstallmentsIsTemp, setItensInstallmentsIsTemp] = useState(false);
-
-  const [orderBy, setOrderBy] = useState({ column: "Code", asc: true });
-
-  const [gridData, setGridData] = useState();
-  const [gridHeader] = useState([
-    {
-      title: "Installment",
-      type: "currency",
-      filter: false,
-    },
-    {
-      title: "Due Date",
-      type: "date",
-      filter: false,
-    },
-    {
-      title: "Amount",
-      type: "currency",
-      filter: false,
-    },
-    {
-      title: "Total",
-      type: "currency",
-      filter: false,
-    },
-    {
-      title: "Status",
-      type: "text",
-      filter: false,
-    },
-  ]);
-
   const auth = useSelector((state) => state.auth);
 
   const generalForm = useRef();
-  const filtersForm = useRef();
 
   function handleCloseForm() {
     if (!successfullyUpdated) {
@@ -218,7 +178,7 @@ export default function PagePreview({
     } else if (id !== "new") {
       const updated = handleUpdatedFields(data, pageData);
 
-      if (updated.length > 0 || itensInstallmentsIsTemp) {
+      if (updated.length > 0) {
         const objUpdated = Object.fromEntries(updated);
 
         try {
@@ -244,16 +204,21 @@ export default function PagePreview({
   }
 
   useEffect(() => {
-    async function getPageData() {
+    async function getPageData(id) {
       try {
-        const { data } = await api.get(`/receivables/${id}`);
+        let data = pageData;
+
+        if (id !== "new") {
+          const { data: receivableData } = await api.get(`/receivables/${id}`);
+          data = receivableData;
+        }
 
         const filialData = await api.get(`/filials`);
         const issuerData = await api.get(`/issuers`);
         const paymentMethodData = await api.get(`/paymentmethods`);
-        const paymentCriteriaData = await api.get(`/paymentcriterias`);
+        // const paymentCriteriaData = await api.get(`/paymentcriterias`);
         const chartOfAccountData = await api.get(
-          `/chartofaccounts?issuer=${pageData.issuer_id}`
+          `/chartofaccounts?issuer=${data.issuer_id}`
         );
 
         const filialOptions = filialData.data
@@ -274,16 +239,16 @@ export default function PagePreview({
             return { value: f.id, label: f.description.slice(0, 20) };
           });
 
-        const paymentCriteriaOptions = paymentCriteriaData.data
-          .filter((f) => f.id !== id)
-          .map((f) => {
-            return {
-              value: f.id,
-              label:
-                f.description.slice(0, 20) +
-                (f.recurring_metric ? " - " + f.recurring_metric : ""),
-            };
-          });
+        // const paymentCriteriaOptions = paymentCriteriaData.data
+        //   .filter((f) => f.id !== id)
+        //   .map((f) => {
+        //     return {
+        //       value: f.id,
+        //       label:
+        //         f.description.slice(0, 20) +
+        //         (f.recurring_metric ? " - " + f.recurring_metric : ""),
+        //     };
+        //   });
 
         const chartOfAccountOptions = chartOfAccountData.data
           .filter((f) => f.id !== id)
@@ -305,7 +270,7 @@ export default function PagePreview({
           filialOptions,
           issuerOptions,
           paymentMethodOptions,
-          paymentCriteriaOptions,
+          // paymentCriteriaOptions,
           chartOfAccountOptions,
           loaded: true,
         });
@@ -338,11 +303,7 @@ export default function PagePreview({
       }
     }
 
-    if (id === "new") {
-      setFormType("full");
-    } else if (id) {
-      getPageData();
-    }
+    getPageData(id);
   }, [id]);
 
   return (
@@ -445,14 +406,9 @@ export default function PagePreview({
                                 grow
                                 title="Status"
                                 options={receivableStatusesOptions}
-                                defaultValue={
-                                  pageData.status
-                                    ? receivableStatusesOptions.find(
-                                        (status) =>
-                                          status.value === pageData.status
-                                      )
-                                    : null
-                                }
+                                defaultValue={receivableStatusesOptions.find(
+                                  (status) => status.value === pageData.status
+                                )}
                                 InputContext={InputContext}
                                 isSearchable
                               />
@@ -465,14 +421,16 @@ export default function PagePreview({
                                 grow
                                 title="Type"
                                 options={invoiceTypesOptions}
-                                defaultValue={
-                                  pageData.type
-                                    ? invoiceTypesOptions.find(
-                                        (invoiceType) =>
-                                          invoiceType.value === pageData.type
-                                      )
-                                    : null
-                                }
+                                defaultValue={invoiceTypesOptions.find(
+                                  (invoiceType) =>
+                                    invoiceType.value === pageData.type
+                                )}
+                                onChange={(el) => {
+                                  setPageData({
+                                    ...pageData,
+                                    type: el.value,
+                                  });
+                                }}
                                 InputContext={InputContext}
                               />
                               <SelectPopover
@@ -480,7 +438,10 @@ export default function PagePreview({
                                 required
                                 grow
                                 title="Type Detail"
-                                options={invoiceTypeDetailsOptions}
+                                options={invoiceTypeDetailsOptions.filter(
+                                  (typeDetail) =>
+                                    typeDetail.type === pageData.type
+                                )}
                                 defaultValue={
                                   pageData.type_detail
                                     ? invoiceTypeDetailsOptions.find(
@@ -547,23 +508,6 @@ export default function PagePreview({
 
                               <Input
                                 type="date"
-                                name="first_due_date"
-                                required
-                                title="First Due Date"
-                                grow
-                                defaultValue={
-                                  pageData.first_due_date
-                                    ? format(
-                                        parseISO(pageData.first_due_date),
-                                        "yyyy-MM-dd"
-                                      )
-                                    : ""
-                                }
-                                InputContext={InputContext}
-                              />
-
-                              <Input
-                                type="date"
                                 name="due_date"
                                 required
                                 title="Due Date"
@@ -581,6 +525,24 @@ export default function PagePreview({
                             </InputLine>
 
                             <InputLine>
+                              <SelectPopover
+                                name="paymentmethod_id"
+                                title="Payment Method"
+                                isSearchable
+                                grow
+                                required
+                                defaultValue={
+                                  pageData.paymentmethod_id
+                                    ? pageData.paymentMethodOptions.find(
+                                        (paymentMethod) =>
+                                          paymentMethod.value ===
+                                          pageData.paymentmethod_id
+                                      )
+                                    : null
+                                }
+                                options={pageData.paymentMethodOptions}
+                                InputContext={InputContext}
+                              />
                               <Input
                                 type="number"
                                 name="amount"
@@ -608,25 +570,7 @@ export default function PagePreview({
                               />
                             </InputLine>
 
-                            <InputLine>
-                              <SelectPopover
-                                name="paymentmethod_id"
-                                title="Payment Method"
-                                isSearchable
-                                grow
-                                required
-                                defaultValue={
-                                  pageData.paymentmethod_id
-                                    ? pageData.paymentMethodOptions.find(
-                                        (paymentMethod) =>
-                                          paymentMethod.value ===
-                                          pageData.paymentmethod_id
-                                      )
-                                    : null
-                                }
-                                options={pageData.paymentMethodOptions}
-                                InputContext={InputContext}
-                              />
+                            {/* <InputLine>
                               <SelectPopover
                                 name="paymentcriteria_id"
                                 title="Payment Criteria"
@@ -645,7 +589,7 @@ export default function PagePreview({
                                 options={pageData.paymentCriteriaOptions}
                                 InputContext={InputContext}
                               />
-                            </InputLine>
+                            </InputLine> */}
 
                             <InputLine>
                               <Textarea

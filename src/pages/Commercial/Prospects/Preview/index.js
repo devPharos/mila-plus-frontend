@@ -210,32 +210,6 @@ export default function PagePreview({
             (enrollment) => enrollment.application === "Placement Test"
           ),
         });
-        console.log({
-          ...data,
-          searchFields: {
-            processtype_id: data.processtype_id,
-            processsubstatus_id: data.processsubstatus_id,
-            filial_id: data.filial_id,
-          },
-          find_processtype_id: data.processtype_id,
-          loaded: true,
-          ddiOptions,
-          filialOptions,
-          agentOptions,
-          typesOptions,
-          subStatusOptions,
-          priceLists,
-          discountLists,
-          transferEligibility: data.enrollments.find(
-            (enrollment) => enrollment.application === "Transfer Eligibility"
-          ),
-          enrollmentProcess: data.enrollments.find(
-            (enrollment) => enrollment.application === "Enrollment Process"
-          ),
-          placementTest: data.enrollments.find(
-            (enrollment) => enrollment.application === "Placement Test"
-          ),
-        });
         if (data.discount_id) {
           handleDiscount(
             data.discount_id,
@@ -809,7 +783,7 @@ export default function PagePreview({
                               disabled={pageData.enrollmentProcess}
                               onChange={(el) => {
                                 setPageData({
-                                  ...data,
+                                  ...pageData,
                                   searchFields: {
                                     ...pageData.searchFields,
                                     processsubstatus_id: null,

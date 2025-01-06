@@ -958,9 +958,7 @@ export default function PagePreview({
                                   <InputLine
                                     key={index}
                                     title={
-                                      index === 0
-                                        ? "Avaiable Admission Discounts"
-                                        : ""
+                                      index === 0 ? "Available Discounts" : ""
                                     }
                                   >
                                     <Input

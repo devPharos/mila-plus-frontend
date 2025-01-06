@@ -434,7 +434,7 @@ export async function getPriceLists(searchFields = null) {
       (price) => price.processsubstatus_id === searchFields.processsubstatus_id
     );
     discountLists = data.discountlists.filter(
-      (discount) => discount.active === true && discount.type === "Financial"
+      (discount) => discount.active === true && discount.type === "Admission"
     );
   });
   return { priceLists, discountLists };

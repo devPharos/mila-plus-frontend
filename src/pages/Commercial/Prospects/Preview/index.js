@@ -54,8 +54,10 @@ import PlacementTest from "./PlacementTest";
 import { FullGridContext } from "../..";
 import {
   genderOptions,
+  optionsSubStatus,
   yesOrNoOptions,
 } from "~/functions/selectPopoverOptions";
+import { Scope } from "@unform/core";
 
 export const InputContext = createContext({});
 
@@ -82,11 +84,19 @@ export default function PagePreview({
     status: "Waiting",
     date_of_birth: null,
     loaded: false,
-  });
-  const [searchFields, setSearchFields] = useState({
-    filial_id: null,
-    processtype_id: null,
-    processsubstatus_id: null,
+    discount_id: null,
+    discount: null,
+    total_tuition: 0,
+    total_discount: 0,
+    registration_fee: 0,
+    books: 0,
+    tuition_original_price: 0,
+    tuition_in_advance: false,
+    searchFields: {
+      filial_id: null,
+      processtype_id: null,
+      processsubstatus_id: null,
+    },
   });
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
@@ -157,6 +167,23 @@ export default function PagePreview({
     retSubStatusOptions.push({ value: 0, label: "Select..." });
     return retSubStatusOptions;
   }
+  async function getPriceLists(searchFields = null) {
+    let priceLists = null;
+    let discountLists = null;
+
+    if (!searchFields) {
+      return { priceLists: null, discountLists: null };
+    }
+
+    await api.get(`filials/${searchFields.filial_id}`).then(({ data }) => {
+      priceLists = data.pricelists.find(
+        (price) =>
+          price.processsubstatus_id === searchFields.processsubstatus_id
+      );
+      discountLists = data.discountlists.filter((discount) => discount.active);
+    });
+    return { priceLists, discountLists };
+  }
 
   async function getPageData(prospectId = null) {
     const filialOptions = await getDefaultFilialOptions();
@@ -170,8 +197,18 @@ export default function PagePreview({
     if (prospectId !== "new") {
       try {
         const { data } = await api.get(`/prospects/${prospectId}`);
+        const { priceLists, discountLists } = await getPriceLists({
+          filial_id: data.filial_id,
+          processtype_id: data.processtype_id,
+          processsubstatus_id: data.processsubstatus_id,
+        });
         setPageData({
           ...data,
+          searchFields: {
+            processtype_id: data.processtype_id,
+            processsubstatus_id: data.processsubstatus_id,
+            filial_id: data.filial_id,
+          },
           find_processtype_id: data.processtype_id,
           loaded: true,
           ddiOptions,
@@ -179,6 +216,8 @@ export default function PagePreview({
           agentOptions,
           typesOptions,
           subStatusOptions,
+          priceLists,
+          discountLists,
           transferEligibility: data.enrollments.find(
             (enrollment) => enrollment.application === "Transfer Eligibility"
           ),
@@ -189,11 +228,41 @@ export default function PagePreview({
             (enrollment) => enrollment.application === "Placement Test"
           ),
         });
-        setSearchFields({
-          processtype_id: data.processtype_id,
-          processsubstatus_id: data.processsubstatus_id,
-          filial_id: data.filial_id,
+        console.log({
+          ...data,
+          searchFields: {
+            processtype_id: data.processtype_id,
+            processsubstatus_id: data.processsubstatus_id,
+            filial_id: data.filial_id,
+          },
+          find_processtype_id: data.processtype_id,
+          loaded: true,
+          ddiOptions,
+          filialOptions,
+          agentOptions,
+          typesOptions,
+          subStatusOptions,
+          priceLists,
+          discountLists,
+          transferEligibility: data.enrollments.find(
+            (enrollment) => enrollment.application === "Transfer Eligibility"
+          ),
+          enrollmentProcess: data.enrollments.find(
+            (enrollment) => enrollment.application === "Enrollment Process"
+          ),
+          placementTest: data.enrollments.find(
+            (enrollment) => enrollment.application === "Placement Test"
+          ),
         });
+        if (data.discount_id) {
+          handleDiscount(
+            data.discount_id,
+            { value: true },
+            true,
+            priceLists,
+            discountLists
+          );
+        }
         const {
           created_by,
           created_at,
@@ -212,7 +281,8 @@ export default function PagePreview({
         });
         setRegistry(registries);
       } catch (err) {
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
+        console.log(err);
+        // toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     } else {
       setPageData({
@@ -232,38 +302,47 @@ export default function PagePreview({
   }, []);
 
   useEffect(() => {
-    if (
-      searchFields.filial_id &&
-      searchFields.processtype_id &&
-      searchFields.processsubstatus_id
-    ) {
-      api.get(`filials/${searchFields.filial_id}`).then(({ data }) => {
-        setPriceLists(
-          data.pricelists.find(
-            (price) =>
-              price.processsubstatus_id === searchFields.processsubstatus_id
-          )
-        );
-        setDiscountLists(
-          data.discountlists.filter((discount) => discount.active)
-        );
+    async function updatePriceLists() {
+      const { priceLists, discountLists } = await getPriceLists(
+        pageData.searchFields
+      );
+      setPageData({
+        ...pageData,
+        priceLists,
+        discountLists,
       });
+      if (pageData.discount_id) {
+        handleDiscount(
+          pageData.discount_id,
+          { value: pageData.discount_id ? true : false },
+          true,
+          priceLists,
+          discountLists
+        );
+      }
+    }
+    if (
+      pageData.searchFields.filial_id &&
+      pageData.searchFields.processtype_id &&
+      pageData.searchFields.processsubstatus_id
+    ) {
+      updatePriceLists();
     } else {
       setPriceLists(null);
       setDiscountLists(null);
     }
   }, [
-    searchFields.filial_id,
-    searchFields.processtype_id,
-    searchFields.processsubstatus_id,
+    pageData.searchFields.filial_id,
+    pageData.searchFields.processtype_id,
+    pageData.searchFields.processsubstatus_id,
   ]);
 
   async function handleGeneralFormSubmit(data) {
     if (
       data.processsubstatus_id &&
-      pageData.subStatusOptions.find(
+      optionsSubStatus.find(
         (subStatus) => subStatus.value === data.processsubstatus_id
-      ).father_id !== data.processtype_id
+      ).type_id !== data.processtype_id
     ) {
       toast("Sub Status is not valid for this Type!", {
         autoClose: 1000,
@@ -283,7 +362,7 @@ export default function PagePreview({
     delete data.status;
     if (id === "new") {
       try {
-        const { date_of_birth, visa_expiration } = data;
+        const { date_of_birth, visa_expiration, discount_id } = data;
         const response = await api.post(`/prospects`, {
           ...data,
           date_of_birth: date_of_birth
@@ -292,6 +371,7 @@ export default function PagePreview({
           visa_expiration: visa_expiration
             ? format(visa_expiration, "yyyy-MM-dd")
             : null,
+          discount_id: discount_id === "" ? null : discount_id,
         });
         setOpened(response.data.id);
         // setPageData({ ...pageData, ...data });
@@ -300,14 +380,15 @@ export default function PagePreview({
         toast("Saved!", { autoClose: 1000 });
         // handleOpened(null);
       } catch (err) {
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
+        console.log(err);
+        // toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     } else if (id !== "new") {
       const updated = handleUpdatedFields(data, pageData);
 
       if (updated.length > 0) {
         const objUpdated = Object.fromEntries(updated);
-        const { date_of_birth, visa_expiration } = objUpdated;
+        const { date_of_birth, visa_expiration, discount_id } = objUpdated;
         try {
           await api.put(`/students/${id}`, {
             ...objUpdated,
@@ -317,6 +398,7 @@ export default function PagePreview({
             visa_expiration: visa_expiration
               ? format(visa_expiration, "yyyy-MM-dd")
               : null,
+            discount_id: discount_id === "" ? null : discount_id,
           });
           setPageData({ ...pageData, ...objUpdated });
           setSuccessfullyUpdated(true);
@@ -324,7 +406,7 @@ export default function PagePreview({
           handleOpened(null);
         } catch (err) {
           console.log(err);
-          toast(err.response.data.error, { type: "error", autoClose: 3000 });
+          // toast(err.response.data.error, { type: "error", autoClose: 3000 });
         }
       } else {
         toast("No need to be saved!", {
@@ -384,11 +466,26 @@ export default function PagePreview({
     }
   }
 
-  function handleDiscount(id, el) {
+  function handleDiscount(
+    id,
+    el,
+    force = false,
+    priceLists = null,
+    discountLists = null
+  ) {
+    if (!force) {
+      priceLists = pageData.priceLists;
+      discountLists = pageData.discountLists;
+      setSuccessfullyUpdated(false);
+    }
+
     const discount = discountLists.find((discount) => discount.id === id);
 
-    if (!activeDiscounts.find((active) => active === discount.id) && el.value) {
-      setActiveDiscounts([...activeDiscounts, discount.id]);
+    if (
+      // !activeDiscounts.find((active) => active === discount.id) &&
+      el.value
+    ) {
+      setActiveDiscounts([discount.id]);
 
       let discountAmount = 0;
 
@@ -400,14 +497,15 @@ export default function PagePreview({
       } else {
         discountAmount = discount.value;
       }
-      setTotalDiscount(totalDiscount + discountAmount);
+      setTotalDiscount(discountAmount);
     } else if (
-      activeDiscounts.find((active) => active === discount.id) &&
+      // activeDiscounts.find((active) => active === discount.id) &&
       !el.value
     ) {
-      setActiveDiscounts(
-        activeDiscounts.filter((active) => active !== discount.id)
-      );
+      // setActiveDiscounts(
+      //   activeDiscounts.filter((active) => active !== discount.id)
+      // );
+      setActiveDiscounts([]);
 
       let discountAmount = 0;
 
@@ -420,7 +518,7 @@ export default function PagePreview({
         discountAmount = discount.value;
       }
       discountAmount = discountAmount * -1;
-      setTotalDiscount(totalDiscount + discountAmount);
+      setTotalDiscount(0);
     }
   }
 
@@ -583,9 +681,12 @@ export default function PagePreview({
                                     filial.value === pageData.filial_id
                                 )}
                                 onChange={(el) => {
-                                  setSearchFields({
-                                    ...searchFields,
-                                    filial_id: el.value,
+                                  setPageData({
+                                    ...data,
+                                    searchFields: {
+                                      ...pageData.searchFields,
+                                      filial_id: el.value,
+                                    },
                                   });
                                 }}
                                 options={filialOptions}
@@ -613,7 +714,7 @@ export default function PagePreview({
                               required
                               grow
                               title="Category"
-                              defaultValue="prospect"
+                              defaultValue="Prospect"
                               InputContext={InputContext}
                             />
                             <Input
@@ -718,18 +819,12 @@ export default function PagePreview({
                               disabled={pageData.enrollmentProcess}
                               onChange={(el) => {
                                 setPageData({
-                                  ...pageData,
-                                  find_processtype_id: el.value,
-                                  processsubstatus_id: null,
-                                });
-                                generalForm.current.setFieldValue(
-                                  "processsubstatus_id",
-                                  null
-                                );
-                                setSearchFields({
-                                  ...searchFields,
-                                  processsubstatus_id: null,
-                                  processtype_id: el.value,
+                                  ...data,
+                                  searchFields: {
+                                    ...pageData.searchFields,
+                                    processsubstatus_id: null,
+                                    processtype_id: el.value,
+                                  },
                                 });
                                 setSuccessfullyUpdated(false);
                               }}
@@ -751,38 +846,30 @@ export default function PagePreview({
                               disabled={pageData.enrollmentProcess}
                               title="Sub Status"
                               onChange={(el) => {
+                                setSuccessfullyUpdated(false);
                                 setPageData({
                                   ...pageData,
-                                  processsubstatus_id: el.value,
-                                });
-                                setSearchFields({
-                                  ...searchFields,
-                                  processsubstatus_id: el.value,
+                                  searchFields: {
+                                    ...pageData.searchFields,
+                                    processsubstatus_id: el.value,
+                                  },
                                 });
                               }}
                               isSearchable
-                              defaultValue={
-                                pageData.processsubstatus_id
-                                  ? pageData.subStatusOptions.find(
-                                      (substatus) =>
-                                        substatus.value ===
-                                        pageData.processsubstatus_id
-                                    )
-                                  : null
-                              }
-                              options={
-                                pageData.find_processtype_id
-                                  ? pageData.subStatusOptions.filter(
-                                      (type) =>
-                                        type.father_id ===
-                                        pageData.find_processtype_id
-                                    )
-                                  : []
-                              }
+                              defaultValue={optionsSubStatus.find(
+                                (substatus) =>
+                                  substatus.value ===
+                                  pageData.processsubstatus_id
+                              )}
+                              options={optionsSubStatus.filter(
+                                (type) =>
+                                  type.type_id ===
+                                  pageData.searchFields.processtype_id
+                              )}
                               InputContext={InputContext}
                             />
                           </InputLine>
-                          {priceLists && (
+                          {pageData.priceLists && (
                             <InputLine title="Prices Simulation">
                               <table className="table-auto w-full text-center">
                                 <thead className="bg-slate-100 rounded-lg overflow-hidden">
@@ -800,100 +887,192 @@ export default function PagePreview({
                                 <tbody>
                                   <tr>
                                     <td>
-                                      {formatter.format(
-                                        priceLists.registration_fee
-                                      )}
+                                      <Input
+                                        type="text"
+                                        name="registration_fee"
+                                        value={pageData.priceLists.registration_fee.toFixed(
+                                          2
+                                        )}
+                                        centeredText={true}
+                                        placeholder="$ 0.00"
+                                        className="text-center"
+                                        readOnly={true}
+                                        InputContext={InputContext}
+                                      />
                                     </td>
-                                    <td>{formatter.format(priceLists.book)}</td>
                                     <td>
-                                      {formatter.format(priceLists.tuition)}
+                                      <Input
+                                        type="text"
+                                        name="books"
+                                        value={pageData.priceLists.book.toFixed(
+                                          2
+                                        )}
+                                        centeredText={true}
+                                        placeholder="$ 0.00"
+                                        className="text-center"
+                                        readOnly={true}
+                                        InputContext={InputContext}
+                                      />
                                     </td>
                                     <td>
-                                      {priceLists.tuition_in_advance
-                                        ? "Yes"
-                                        : "No"}
+                                      <Input
+                                        type="text"
+                                        name="tuition_original_price"
+                                        value={pageData.priceLists.tuition.toFixed(
+                                          2
+                                        )}
+                                        centeredText={true}
+                                        placeholder="$ 0.00"
+                                        className="text-center"
+                                        readOnly={true}
+                                        InputContext={InputContext}
+                                      />
                                     </td>
-                                    <td>{formatter.format(totalDiscount)}</td>
                                     <td>
-                                      {formatter.format(
-                                        priceLists.registration_fee +
-                                          priceLists.book +
-                                          priceLists.tuition -
+                                      <SelectPopover
+                                        name="tuition_in_advance"
+                                        defaultValue={yesOrNoOptions.find(
+                                          (option) =>
+                                            option.value ===
+                                            pageData.priceLists
+                                              .tuition_in_advance
+                                        )}
+                                        centeredText={true}
+                                        readOnly={true}
+                                        options={yesOrNoOptions}
+                                        InputContext={InputContext}
+                                      />
+                                    </td>
+                                    <td>
+                                      <Input
+                                        type="text"
+                                        name="total_discount"
+                                        value={totalDiscount.toFixed(2)}
+                                        centeredText={true}
+                                        placeholder="$ 0.00"
+                                        className="text-center"
+                                        readOnly={true}
+                                        InputContext={InputContext}
+                                      />
+                                    </td>
+                                    <td>
+                                      <Input
+                                        type="text"
+                                        name="total_tuition"
+                                        value={(
+                                          pageData.priceLists.registration_fee +
+                                          pageData.priceLists.book +
+                                          pageData.priceLists.tuition -
                                           totalDiscount
-                                      )}
+                                        ).toFixed(2)}
+                                        centeredText={true}
+                                        placeholder="$ 0.00"
+                                        className="text-center"
+                                        readOnly={true}
+                                        InputContext={InputContext}
+                                      />
                                     </td>
                                   </tr>
                                 </tbody>
                               </table>
                             </InputLine>
                           )}
-                          {discountLists &&
-                            discountLists
+                          {activeDiscounts.length > 0 ? (
+                            <Input
+                              type="hidden"
+                              name="discount_id"
+                              value={activeDiscounts[0]}
+                              InputContext={InputContext}
+                            />
+                          ) : (
+                            index === 0 && (
+                              <Input
+                                type="hidden"
+                                name="discount_id"
+                                value={null}
+                                InputContext={InputContext}
+                              />
+                            )
+                          )}
+                          {pageData.discountLists &&
+                            pageData.discountLists
                               .filter(
                                 (discount) => discount.type === "Admission"
                               )
-                              .map((discount) => {
+                              .map((discount, index) => {
                                 return (
-                                  <InputLine>
-                                    <Input
-                                      readOnly={true}
-                                      type="text"
-                                      name="discount_id"
-                                      grow
-                                      title="Description"
-                                      defaultValue={discount.name}
-                                      InputContext={InputContext}
-                                    />
-                                    <Input
-                                      readOnly={true}
-                                      type="text"
-                                      name="value"
-                                      grow
-                                      title="Discount"
-                                      defaultValue={
-                                        (discount.percent ? "%" : "$") +
-                                        " " +
-                                        discount.value
+                                  <>
+                                    <InputLine
+                                      key={index}
+                                      title={
+                                        index === 0 ? "Admission Discounts" : ""
                                       }
-                                      InputContext={InputContext}
-                                    />
-                                    <SelectPopover
-                                      readOnly={true}
-                                      name="all_installments"
-                                      title="All Installments?"
-                                      options={yesOrNoOptions}
-                                      defaultValue={yesOrNoOptions.find(
-                                        (option) =>
-                                          option.value ===
-                                          discount.all_installments
-                                      )}
-                                      InputContext={InputContext}
-                                    />
-                                    <SelectPopover
-                                      readOnly={true}
-                                      name="free_vacation"
-                                      title="Free Vacation?"
-                                      options={yesOrNoOptions}
-                                      defaultValue={yesOrNoOptions.find(
-                                        (option) =>
-                                          option.value ===
-                                          discount.free_vacation
-                                      )}
-                                      InputContext={InputContext}
-                                    />
-                                    <SelectPopover
-                                      name="apply"
-                                      title="Apply?"
-                                      options={yesOrNoOptions}
-                                      InputContext={InputContext}
-                                      defaultValue={yesOrNoOptions.find(
-                                        (option) => option.value === false
-                                      )}
-                                      onChange={(el) =>
-                                        handleDiscount(discount.id, el)
-                                      }
-                                    />
-                                  </InputLine>
+                                    >
+                                      <Input
+                                        readOnly={true}
+                                        type="text"
+                                        name="discount"
+                                        grow
+                                        title="Description"
+                                        defaultValue={discount.name}
+                                        InputContext={InputContext}
+                                      />
+                                      <Input
+                                        readOnly={true}
+                                        type="text"
+                                        name="value"
+                                        grow
+                                        title="Discount"
+                                        defaultValue={
+                                          (discount.percent ? "%" : "$") +
+                                          " " +
+                                          discount.value
+                                        }
+                                        InputContext={InputContext}
+                                      />
+                                      <SelectPopover
+                                        readOnly={true}
+                                        name="all_installments"
+                                        title="All Installments?"
+                                        options={yesOrNoOptions}
+                                        defaultValue={yesOrNoOptions.find(
+                                          (option) =>
+                                            option.value ===
+                                            discount.all_installments
+                                        )}
+                                        InputContext={InputContext}
+                                      />
+                                      <SelectPopover
+                                        readOnly={true}
+                                        name="free_vacation"
+                                        title="Free Vacation?"
+                                        options={yesOrNoOptions}
+                                        defaultValue={yesOrNoOptions.find(
+                                          (option) =>
+                                            option.value ===
+                                            discount.free_vacation
+                                        )}
+                                        InputContext={InputContext}
+                                      />
+                                      <SelectPopover
+                                        name="apply"
+                                        title="Apply?"
+                                        options={yesOrNoOptions}
+                                        InputContext={InputContext}
+                                        value={yesOrNoOptions.find(
+                                          (option) =>
+                                            option.value ===
+                                            (activeDiscounts.length > 0 &&
+                                            activeDiscounts[0] === discount.id
+                                              ? true
+                                              : false)
+                                        )}
+                                        onChange={(el) =>
+                                          handleDiscount(discount.id, el)
+                                        }
+                                      />
+                                    </InputLine>
+                                  </>
                                 );
                               })}
                           <InputLine title="Location">
@@ -1010,7 +1189,10 @@ export default function PagePreview({
                                         ) {
                                           return (
                                             <>
-                                              <div className="flex flex-row justify-center items-center gap-2">
+                                              <div
+                                                key={index}
+                                                className="flex flex-row justify-center items-center gap-2"
+                                              >
                                                 <a
                                                   href={
                                                     enrollmentdocument.file.url

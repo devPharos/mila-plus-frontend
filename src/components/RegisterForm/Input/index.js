@@ -18,6 +18,7 @@ const Input = ({
   onlyFloat = false,
   isPhoneNumber = false,
   InputContext = null,
+  centeredText = false,
   ...rest
 }) => {
   const inputRef = useRef();
@@ -105,7 +106,7 @@ const Input = ({
         <div
           htmlFor={name}
           className={`flex-1 border rounded-sm p-2 px-2 text-sm flex flex-row justify-between items-center gap-2 ${
-            (disabled || readOnly) && "bg-gray-100"
+            (disabled || readOnly) && "bg-slate-100"
           } ${error && "border-red-300"}`}
         >
           <input
@@ -116,7 +117,9 @@ const Input = ({
             type={type}
             readOnly={readOnly}
             {...rest}
-            className="text-sm focus:outline-none flex-1 bg-transparent w-full"
+            className={`${
+              centeredText ? "text-center" : "text-left"
+            } text-sm focus:outline-none flex-1 bg-transparent w-full`}
           />
         </div>
       </div>

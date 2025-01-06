@@ -1,14 +1,25 @@
-import React, { useContext, useEffect, useRef } from 'react'
-import { useField } from '@unform/core'
-import { Asterisk } from 'lucide-react'
-import AsyncSelect from 'react-select/async';
+import React, { useContext, useEffect, useRef } from "react";
+import { useField } from "@unform/core";
+import { Asterisk } from "lucide-react";
+import AsyncSelect from "react-select/async";
 
-export default function SelectPopover({ name, title, grow, hidden = false, shrink, type, options = [], isSearchable = false, InputContext, ...rest }) {
-  const inputRef = useRef()
-  const { fieldName, registerField, error } = useField(name)
-  const { defaultValue, required, disabled, readOnly } = { ...rest }
+export default function SelectPopover({
+  name,
+  title,
+  grow,
+  hidden = false,
+  shrink,
+  type,
+  options = [],
+  isSearchable = false,
+  InputContext,
+  ...rest
+}) {
+  const inputRef = useRef();
+  const { fieldName, registerField, error } = useField(name);
+  const { defaultValue, required, disabled, readOnly } = { ...rest };
 
-  const { setSuccessfullyUpdated } = useContext(InputContext)
+  const { setSuccessfullyUpdated } = useContext(InputContext);
 
   const filterColors = (inputValue) => {
     return options.filter((i) =>
@@ -16,10 +27,7 @@ export default function SelectPopover({ name, title, grow, hidden = false, shrin
     );
   };
 
-  const loadOptions = (
-    inputValue,
-    callback
-  ) => {
+  const loadOptions = (inputValue, callback) => {
     callback(filterColors(inputValue));
   };
 
@@ -35,26 +43,36 @@ export default function SelectPopover({ name, title, grow, hidden = false, shrin
           return ref.state.selectValue.map((option) => option.value);
         }
         if (!ref.state.selectValue) {
-          return '';
+          return "";
         }
-        return ref.state.selectValue.length > 0 ? ref.state.selectValue[0].value : null;
+        return ref.state.selectValue.length > 0
+          ? ref.state.selectValue[0].value
+          : null;
       },
     });
-
   }, [fieldName, registerField, rest.isMulti]);
 
   function handleChanged() {
-    setSuccessfullyUpdated(false)
+    setSuccessfullyUpdated(false);
   }
 
-  const width = shrink ? 'w-full md:w-auto max-w-32' : 'w-full md:w-auto'
+  const width = shrink ? "w-full md:w-auto max-w-32" : "w-full md:w-auto";
   return (
-    <div className={`${type === 'hidden' ? 'hidden' : 'flex'} flex-col justify-center items-start relative ${width} ${grow ? 'grow' : ''}`}>
-      <div className='px-1 text-xs flex flex-row justify-between items-center'>{title} {required && <Asterisk color='#e00' size={12} />}</div>
+    <div
+      className={`${
+        type === "hidden" ? "hidden" : "flex"
+      } flex-col justify-center items-start relative ${width} ${
+        grow ? "grow" : ""
+      }`}
+    >
+      <div className="px-1 text-xs flex flex-row justify-between items-center">
+        {title} {required && <Asterisk color="#e00" size={12} />}
+      </div>
       <div
-        className={`text-sm focus:outline-none flex-1 w-full bg-transparent`}>
+        className={`text-sm focus:outline-none flex-1 w-full bg-transparent`}
+      >
         <AsyncSelect
-          type='hidden'
+          type="hidden"
           id={name}
           name={name}
           cacheOptions
@@ -69,11 +87,13 @@ export default function SelectPopover({ name, title, grow, hidden = false, shrin
           // filterOption={filterOptions}
           defaultValue={defaultValue}
           {...rest}
-          className={`rounded-lg text-sm focus:outline-none flex-1 w-full bg-transparent text-left relative ${error && '[.react-select__control]:border-red-300'}`}
+          className={`rounded-lg text-sm focus:outline-none flex-1 w-full bg-transparent text-left relative ${
+            error && "[.react-select__control]:border-red-300"
+          }`}
         />
       </div>
 
       {/* {error && <span className="text-xs text-red-500 absolute top-7 bg-white px-2 rounded-full right-4">{error}</span>} */}
     </div>
-  )
+  );
 }

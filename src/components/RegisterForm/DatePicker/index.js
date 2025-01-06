@@ -63,7 +63,7 @@ export default function DatePicker({
       <div
         htmlFor={name}
         className={`w-full border rounded-sm p-2 px-4 text-sm flex flex-row justify-between items-center gap-2 ${
-          (disabled || readOnly) && "bg-gray-100"
+          (disabled || readOnly) && "bg-slate-100"
         } ${error && "border-red-300"}`}
       >
         <ReactDatePicker

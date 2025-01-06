@@ -48,7 +48,7 @@ const Textarea = ({
         htmlFor={name}
         className={`border rounded-lg p-2 px-4 text-sm flex flex-row justify-between items-center gap-2 w-full ${
           error && "border-red-300"
-        } ${(disabled || readOnly) && "bg-gray-100"}`}
+        } ${(disabled || readOnly) && "bg-slate-100"}`}
       >
         <textarea
           id={name}

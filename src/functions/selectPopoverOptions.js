@@ -1,3 +1,5 @@
+import api from "~/services/api";
+
 export const yesOrNoOptions = [
   { value: true, label: "Yes" },
   { value: false, label: "No" },
@@ -17,9 +19,14 @@ export const optionsStatus = [
   { value: "Waiting", label: "Waiting" },
   { value: "Inactive", label: "Inactive" },
 ];
+
 export const optionsSubStatus = [
-  { value: "Transfer In", label: "Transfer In" },
-  { value: "Initial", label: "Initial" },
+  { value: 1, label: "Initial Visa", type_id: 1 },
+  { value: 2, label: "Change of Status", type_id: 1 },
+  { value: 3, label: "Reinstatement", type_id: 1 },
+  { value: 4, label: "Transfer", type_id: 1 },
+  { value: 5, label: "Private", type_id: 2 },
+  { value: 6, label: "Regular", type_id: 2 },
 ];
 
 export const genderOptions = [

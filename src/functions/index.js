@@ -374,7 +374,8 @@ export function handleUpdatedFields(data, pageData) {
           ? false
           : field[1];
       const y =
-        pageDataInArray.length > 0
+        pageDataInArray.length > 0 &&
+        pageDataInArray.find((pageField) => pageField[0] === field[0])
           ? pageDataInArray.find((pageField) => pageField[0] === field[0])[1]
           : null;
 

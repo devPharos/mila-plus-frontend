@@ -80,7 +80,7 @@ const FileInput = ({
           <div
             htmlFor={name}
             className={`flex-1 border rounded-sm p-2 px-4 text-sm flex flex-row justify-between items-center gap-2 ${
-              (disabled || readOnly) && "bg-gray-100"
+              (disabled || readOnly) && "bg-slate-100"
             } ${error && "border-red-300"}`}
           >
             <input
@@ -100,7 +100,7 @@ const FileInput = ({
           <div
             htmlFor={name}
             className={`flex-1 border rounded-sm p-2 px-4 text-sm flex flex-row flex-start items-center gap-2 ${
-              (disabled || readOnly) && "bg-gray-100"
+              (disabled || readOnly) && "bg-slate-100"
             } ${error && "border-red-300"}`}
           >
             <Loader size={16} color="#111" />

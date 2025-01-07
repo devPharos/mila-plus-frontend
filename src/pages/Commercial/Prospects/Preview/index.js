@@ -59,6 +59,7 @@ import {
   yesOrNoOptions,
 } from "~/functions/selectPopoverOptions";
 import { Scope } from "@unform/core";
+import PricesSimulation from "~/components/PricesSimulation";
 
 export const InputContext = createContext({});
 
@@ -113,8 +114,6 @@ export default function PagePreview({
   const [countriesList, setCountriesList] = useState([]);
   const [filialOptions, setFilialOptions] = useState([]);
   const [agentOptions, setAgentOptions] = useState([]);
-  const [totalDiscount, setTotalDiscount] = useState(0);
-  const [activeDiscounts, setActiveDiscounts] = useState([]);
   const generalForm = useRef();
   const auth = useSelector((state) => state.auth);
 
@@ -179,11 +178,6 @@ export default function PagePreview({
     if (prospectId !== "new") {
       try {
         const { data } = await api.get(`/prospects/${prospectId}`);
-        const { priceLists, discountLists } = await getPriceLists({
-          filial_id: data.filial_id,
-          processtype_id: data.processtype_id,
-          processsubstatus_id: data.processsubstatus_id,
-        });
         setPageData({
           ...data,
           searchFields: {
@@ -198,8 +192,6 @@ export default function PagePreview({
           agentOptions,
           typesOptions,
           subStatusOptions,
-          priceLists,
-          discountLists,
           transferEligibility: data.enrollments.find(
             (enrollment) => enrollment.application === "Transfer Eligibility"
           ),
@@ -210,15 +202,6 @@ export default function PagePreview({
             (enrollment) => enrollment.application === "Placement Test"
           ),
         });
-        if (data.discount_id) {
-          handleDiscount(
-            data.discount_id,
-            { value: true },
-            true,
-            priceLists,
-            discountLists
-          );
-        }
         const {
           created_by,
           created_at,
@@ -267,15 +250,6 @@ export default function PagePreview({
         priceLists,
         discountLists,
       });
-      if (pageData.discount_id) {
-        handleDiscount(
-          pageData.discount_id,
-          { value: pageData.discount_id ? true : false },
-          true,
-          priceLists,
-          discountLists
-        );
-      }
     }
     if (
       pageData.searchFields.filial_id &&
@@ -315,7 +289,7 @@ export default function PagePreview({
     delete data.status;
     if (id === "new") {
       try {
-        const { date_of_birth, visa_expiration, discount_id } = data;
+        const { date_of_birth, visa_expiration } = data;
         const response = await api.post(`/prospects`, {
           ...data,
           date_of_birth: date_of_birth
@@ -324,7 +298,6 @@ export default function PagePreview({
           visa_expiration: visa_expiration
             ? format(visa_expiration, "yyyy-MM-dd")
             : null,
-          discount_id: activeDiscounts.length > 0 ? activeDiscounts[0] : null,
         });
         setOpened(response.data.id);
         // setPageData({ ...pageData, ...data });
@@ -351,18 +324,6 @@ export default function PagePreview({
             visa_expiration: visa_expiration
               ? format(visa_expiration, "yyyy-MM-dd")
               : null,
-            discount_id: activeDiscounts.length > 0 ? activeDiscounts[0] : null,
-          });
-          console.log(objUpdated);
-          console.log({
-            ...objUpdated,
-            date_of_birth: date_of_birth
-              ? format(date_of_birth, "yyyy-MM-dd")
-              : null,
-            visa_expiration: visa_expiration
-              ? format(visa_expiration, "yyyy-MM-dd")
-              : null,
-            discount_id: activeDiscounts.length > 0 ? activeDiscounts[0] : null,
           });
           setPageData({ ...pageData, ...objUpdated });
           setSuccessfullyUpdated(true);
@@ -427,62 +388,6 @@ export default function PagePreview({
       setLoading(false);
       toast("Error!", { autoClose: 1000 });
       console.log(err);
-    }
-  }
-
-  function handleDiscount(
-    id,
-    el,
-    force = false,
-    priceLists = null,
-    discountLists = null
-  ) {
-    if (!force) {
-      priceLists = pageData.priceLists;
-      discountLists = pageData.discountLists;
-      setSuccessfullyUpdated(false);
-    }
-
-    const discount = discountLists.find((discount) => discount.id === id);
-
-    if (
-      // !activeDiscounts.find((active) => active === discount.id) &&
-      el.value
-    ) {
-      setActiveDiscounts([discount.id]);
-
-      let discountAmount = 0;
-
-      const total =
-        priceLists.registration_fee + priceLists.book + priceLists.tuition;
-
-      if (discount.percent) {
-        discountAmount = total * (discount.value / 100);
-      } else {
-        discountAmount = discount.value;
-      }
-      setTotalDiscount(discountAmount);
-    } else if (
-      // activeDiscounts.find((active) => active === discount.id) &&
-      !el.value
-    ) {
-      // setActiveDiscounts(
-      //   activeDiscounts.filter((active) => active !== discount.id)
-      // );
-      setActiveDiscounts([]);
-
-      let discountAmount = 0;
-
-      const total =
-        priceLists.registration_fee + priceLists.book + priceLists.tuition;
-
-      if (discount.percent) {
-        discountAmount = total * (discount.value / 100);
-      } else {
-        discountAmount = discount.value;
-      }
-      discountAmount = discountAmount * -1;
-      setTotalDiscount(0);
     }
   }
 
@@ -690,14 +595,14 @@ export default function PagePreview({
                               defaultValue={pageData.name}
                               InputContext={InputContext}
                             />
-                            <Input
+                            {/* <Input
                               type="text"
                               name="middle_name"
                               grow
                               title="Middle Name"
                               defaultValue={pageData.middle_name}
                               InputContext={InputContext}
-                            />
+                            /> */}
                             <Input
                               type="text"
                               name="last_name"
@@ -833,201 +738,18 @@ export default function PagePreview({
                               InputContext={InputContext}
                             />
                           </InputLine>
-                          {pageData.priceLists && (
-                            <InputLine title="Prices Simulation">
-                              <table className="table-auto w-full text-center">
-                                <thead className="bg-slate-100 rounded-lg overflow-hidden">
-                                  <tr>
-                                    <th className="w-1/6">Registration Fee</th>
-                                    <th className="w-1/6">Books</th>
-                                    <th className="w-1/6">Tuition</th>
-                                    <th className="w-1/6">
-                                      Tuition in Advanced
-                                    </th>
-                                    <th className="w-1/6">Discount</th>
-                                    <th className="w-1/6">Total</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  <tr>
-                                    <td>
-                                      <Input
-                                        type="text"
-                                        name="registration_fee"
-                                        value={pageData.priceLists.registration_fee.toFixed(
-                                          2
-                                        )}
-                                        centeredText={true}
-                                        placeholder="$ 0.00"
-                                        className="text-center"
-                                        readOnly={true}
-                                        InputContext={InputContext}
-                                      />
-                                    </td>
-                                    <td>
-                                      <Input
-                                        type="text"
-                                        name="books"
-                                        value={pageData.priceLists.book.toFixed(
-                                          2
-                                        )}
-                                        centeredText={true}
-                                        placeholder="$ 0.00"
-                                        className="text-center"
-                                        readOnly={true}
-                                        InputContext={InputContext}
-                                      />
-                                    </td>
-                                    <td>
-                                      <Input
-                                        type="text"
-                                        name="tuition_original_price"
-                                        value={pageData.priceLists.tuition.toFixed(
-                                          2
-                                        )}
-                                        centeredText={true}
-                                        placeholder="$ 0.00"
-                                        className="text-center"
-                                        readOnly={true}
-                                        InputContext={InputContext}
-                                      />
-                                    </td>
-                                    <td>
-                                      <SelectPopover
-                                        name="tuition_in_advance"
-                                        defaultValue={yesOrNoOptions.find(
-                                          (option) =>
-                                            option.value ===
-                                            pageData.priceLists
-                                              .tuition_in_advance
-                                        )}
-                                        centeredText={true}
-                                        readOnly={true}
-                                        options={yesOrNoOptions}
-                                        InputContext={InputContext}
-                                      />
-                                    </td>
-                                    <td>
-                                      <Input
-                                        type="text"
-                                        name="total_discount"
-                                        value={totalDiscount.toFixed(2)}
-                                        centeredText={true}
-                                        placeholder="$ 0.00"
-                                        className="text-center"
-                                        readOnly={true}
-                                        InputContext={InputContext}
-                                      />
-                                    </td>
-                                    <td>
-                                      <Input
-                                        type="text"
-                                        name="total_tuition"
-                                        value={(
-                                          pageData.priceLists.registration_fee +
-                                          pageData.priceLists.book +
-                                          pageData.priceLists.tuition -
-                                          totalDiscount
-                                        ).toFixed(2)}
-                                        centeredText={true}
-                                        placeholder="$ 0.00"
-                                        className="text-center"
-                                        readOnly={true}
-                                        InputContext={InputContext}
-                                      />
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            </InputLine>
-                          )}
-                          <Input
-                            type="hidden"
-                            name="discount_id"
-                            value={
-                              activeDiscounts.length > 0
-                                ? activeDiscounts[0]
-                                : null
-                            }
+
+                          <PricesSimulation
+                            student={pageData}
                             InputContext={InputContext}
+                            FullGridContext={FullGridContext}
+                            generalForm={generalForm}
+                            showAdmissionDiscounts={true}
+                            isAdmissionDiscountChangable={true}
+                            showFinancialDiscounts={true}
+                            isFinancialDiscountChangable={false}
                           />
-                          {pageData.discountLists &&
-                            pageData.discountLists.map((discount, index) => {
-                              return (
-                                <>
-                                  <InputLine
-                                    key={index}
-                                    title={
-                                      index === 0 ? "Available Discounts" : ""
-                                    }
-                                  >
-                                    <Input
-                                      readOnly={true}
-                                      type="text"
-                                      name="discount"
-                                      grow
-                                      title="Description"
-                                      defaultValue={discount.name}
-                                      InputContext={InputContext}
-                                    />
-                                    <Input
-                                      readOnly={true}
-                                      type="text"
-                                      name="value"
-                                      grow
-                                      title="Discount"
-                                      defaultValue={
-                                        (discount.percent ? "%" : "$") +
-                                        " " +
-                                        discount.value
-                                      }
-                                      InputContext={InputContext}
-                                    />
-                                    <SelectPopover
-                                      readOnly={true}
-                                      name="all_installments"
-                                      title="All Installments?"
-                                      options={yesOrNoOptions}
-                                      defaultValue={yesOrNoOptions.find(
-                                        (option) =>
-                                          option.value ===
-                                          discount.all_installments
-                                      )}
-                                      InputContext={InputContext}
-                                    />
-                                    <SelectPopover
-                                      readOnly={true}
-                                      name="free_vacation"
-                                      title="Free Vacation?"
-                                      options={yesOrNoOptions}
-                                      defaultValue={yesOrNoOptions.find(
-                                        (option) =>
-                                          option.value ===
-                                          discount.free_vacation
-                                      )}
-                                      InputContext={InputContext}
-                                    />
-                                    <SelectPopover
-                                      name="apply"
-                                      title="Apply?"
-                                      options={yesOrNoOptions}
-                                      InputContext={InputContext}
-                                      value={yesOrNoOptions.find(
-                                        (option) =>
-                                          option.value ===
-                                          (activeDiscounts.length > 0 &&
-                                          activeDiscounts[0] === discount.id
-                                            ? true
-                                            : false)
-                                      )}
-                                      onChange={(el) =>
-                                        handleDiscount(discount.id, el)
-                                      }
-                                    />
-                                  </InputLine>
-                                </>
-                              );
-                            })}
+
                           <InputLine title="Location">
                             <Input
                               type="text"

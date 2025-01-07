@@ -99,7 +99,6 @@ export default function PagePreview({
       if (updated.length > 0) {
         const objUpdated = Object.fromEntries(updated);
         try {
-          console.log(objUpdated);
           await api.put(`/bankaccounts/${id}`, objUpdated);
           setPageData({ ...pageData, ...objUpdated });
           setSuccessfullyUpdated(true);

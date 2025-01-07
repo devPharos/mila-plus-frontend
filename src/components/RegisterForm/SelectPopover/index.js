@@ -12,6 +12,7 @@ export default function SelectPopover({
   type,
   options = [],
   isSearchable = false,
+  isClearable = false,
   InputContext,
   ...rest
 }) {
@@ -77,7 +78,7 @@ export default function SelectPopover({
           name={name}
           cacheOptions
           defaultOptions={options}
-          isClearable={false}
+          isClearable={isClearable}
           loadOptions={loadOptions}
           isSearchable={isSearchable}
           isDisabled={disabled || readOnly}

@@ -35,6 +35,8 @@ import { format, parseISO } from "date-fns";
 import { yesOrNoOptions } from "~/functions/selectPopoverOptions";
 import { openPaymentModal } from "~/functions/emergepayfn";
 import { AlertContext } from "~/App";
+import PricesSimulation from "~/components/PricesSimulation";
+import { FullGridContext } from "../..";
 
 export const InputContext = createContext({});
 
@@ -42,7 +44,6 @@ export default function PagePreview({
   access,
   id,
   defaultFormType = "preview",
-  Context = null,
 }) {
   const { alertBox } = useContext(AlertContext);
   const {
@@ -50,7 +51,7 @@ export default function PagePreview({
     setOpened,
     successfullyUpdated,
     setSuccessfullyUpdated,
-  } = useContext(Context);
+  } = useContext(FullGridContext);
   const [pageData, setPageData] = useState({
     loaded: false,
     filial_id: null,
@@ -77,8 +78,6 @@ export default function PagePreview({
   const [paymentCriterias, setPaymentCriterias] = useState([]);
   const [chartOfAccountOptions, setChartOfAccountOptions] = useState([]);
   const [isAutoPay, setIsAutoPay] = useState(false);
-  const [totalDiscount, setTotalDiscount] = useState(0);
-  const [activeDiscounts, setActiveDiscounts] = useState([]);
 
   const auth = useSelector((state) => state.auth);
 
@@ -200,12 +199,6 @@ export default function PagePreview({
       await getAllChartOfAccountsByIssuer();
       try {
         const { data } = await api.get(`/recurrence/${id}`);
-        const { priceLists, discountLists } = await getPriceLists({
-          filial_id: data.filial_id,
-          processtype_id: data.processtype_id,
-          processsubstatus_id: data.processsubstatus_id,
-        });
-
         api
           .get(`/receivables?search=${data.name}`)
           .then(({ data: receivables }) => {
@@ -214,18 +207,7 @@ export default function PagePreview({
               ...data,
               receivables,
               loaded: true,
-              priceLists,
-              discountLists,
             });
-            if (data.discount_id) {
-              handleDiscount(
-                data.discount_id,
-                { value: true },
-                true,
-                priceLists,
-                discountLists
-              );
-            }
           });
 
         const {
@@ -252,61 +234,6 @@ export default function PagePreview({
     }
     getPageData();
   }, []);
-
-  function handleDiscount(
-    id,
-    el,
-    force = false,
-    priceLists = null,
-    discountLists = null
-  ) {
-    if (!force) {
-      priceLists = pageData.priceLists;
-      discountLists = pageData.discountLists;
-      setSuccessfullyUpdated(false);
-    }
-
-    const discount = discountLists.find((discount) => discount.id === id);
-    if (
-      // !activeDiscounts.find((active) => active === discount.id) &&
-      el.value
-    ) {
-      setActiveDiscounts([discount.id]);
-
-      let discountAmount = 0;
-
-      const total =
-        priceLists.registration_fee + priceLists.book + priceLists.tuition;
-
-      if (discount.percent) {
-        discountAmount = total * (discount.value / 100);
-      } else {
-        discountAmount = discount.value;
-      }
-      setTotalDiscount(discountAmount);
-    } else if (
-      // activeDiscounts.find((active) => active === discount.id) &&
-      !el.value
-    ) {
-      // setActiveDiscounts(
-      //   activeDiscounts.filter((active) => active !== discount.id)
-      // );
-      setActiveDiscounts([]);
-
-      let discountAmount = 0;
-
-      const total =
-        priceLists.registration_fee + priceLists.book + priceLists.tuition;
-
-      if (discount.percent) {
-        discountAmount = total * (discount.value / 100);
-      } else {
-        discountAmount = discount.value;
-      }
-      discountAmount = discountAmount * -1;
-      setTotalDiscount(0);
-    }
-  }
 
   return (
     <Preview formType={formType} fullscreen={fullscreen}>
@@ -412,186 +339,16 @@ export default function PagePreview({
                           InputContext={InputContext}
                         />
 
-                        {pageData.priceLists && (
-                          <InputLine title="Prices Simulation">
-                            <table className="table-auto w-full text-center">
-                              <thead className="bg-slate-100 rounded-lg overflow-hidden">
-                                <tr>
-                                  <th className="w-1/6">Registration Fee</th>
-                                  <th className="w-1/6">Books</th>
-                                  <th className="w-1/6">Tuition</th>
-                                  <th className="w-1/6">Tuition in Advanced</th>
-                                  <th className="w-1/6">Discount</th>
-                                  <th className="w-1/6">Total</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>
-                                    <Input
-                                      type="text"
-                                      name="registration_fee"
-                                      value={pageData.priceLists.registration_fee.toFixed(
-                                        2
-                                      )}
-                                      centeredText={true}
-                                      placeholder="$ 0.00"
-                                      className="text-center"
-                                      readOnly={true}
-                                      InputContext={InputContext}
-                                    />
-                                  </td>
-                                  <td>
-                                    <Input
-                                      type="text"
-                                      name="books"
-                                      value={pageData.priceLists.book.toFixed(
-                                        2
-                                      )}
-                                      centeredText={true}
-                                      placeholder="$ 0.00"
-                                      className="text-center"
-                                      readOnly={true}
-                                      InputContext={InputContext}
-                                    />
-                                  </td>
-                                  <td>
-                                    <Input
-                                      type="text"
-                                      name="tuition_original_price"
-                                      value={pageData.priceLists.tuition.toFixed(
-                                        2
-                                      )}
-                                      centeredText={true}
-                                      placeholder="$ 0.00"
-                                      className="text-center"
-                                      readOnly={true}
-                                      InputContext={InputContext}
-                                    />
-                                  </td>
-                                  <td>
-                                    <SelectPopover
-                                      name="tuition_in_advance"
-                                      defaultValue={yesOrNoOptions.find(
-                                        (option) =>
-                                          option.value ===
-                                          pageData.priceLists.tuition_in_advance
-                                      )}
-                                      centeredText={true}
-                                      readOnly={true}
-                                      options={yesOrNoOptions}
-                                      InputContext={InputContext}
-                                    />
-                                  </td>
-                                  <td>
-                                    <Input
-                                      type="text"
-                                      name="total_discount"
-                                      value={totalDiscount.toFixed(2)}
-                                      centeredText={true}
-                                      placeholder="$ 0.00"
-                                      className="text-center"
-                                      readOnly={true}
-                                      InputContext={InputContext}
-                                    />
-                                  </td>
-                                  <td>
-                                    <Input
-                                      type="text"
-                                      name="total_tuition"
-                                      value={(
-                                        pageData.priceLists.registration_fee +
-                                        pageData.priceLists.book +
-                                        pageData.priceLists.tuition -
-                                        totalDiscount
-                                      ).toFixed(2)}
-                                      centeredText={true}
-                                      placeholder="$ 0.00"
-                                      className="text-center"
-                                      readOnly={true}
-                                      InputContext={InputContext}
-                                    />
-                                  </td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </InputLine>
-                        )}
-                        {pageData.discountLists &&
-                          pageData.discountLists.map((discount, index) => {
-                            return (
-                              <>
-                                <InputLine
-                                  key={index}
-                                  title={
-                                    index === 0
-                                      ? "Avaiable Admission Discounts"
-                                      : ""
-                                  }
-                                >
-                                  <Input
-                                    readOnly={true}
-                                    type="text"
-                                    name="discount"
-                                    grow
-                                    title="Description"
-                                    defaultValue={discount.name}
-                                    InputContext={InputContext}
-                                  />
-                                  <Input
-                                    readOnly={true}
-                                    type="text"
-                                    name="value"
-                                    grow
-                                    title="Discount"
-                                    defaultValue={
-                                      (discount.percent ? "%" : "$") +
-                                      " " +
-                                      discount.value
-                                    }
-                                    InputContext={InputContext}
-                                  />
-                                  <SelectPopover
-                                    readOnly={true}
-                                    name="all_installments"
-                                    title="All Installments?"
-                                    options={yesOrNoOptions}
-                                    defaultValue={yesOrNoOptions.find(
-                                      (option) =>
-                                        option.value ===
-                                        discount.all_installments
-                                    )}
-                                    InputContext={InputContext}
-                                  />
-                                  <SelectPopover
-                                    readOnly={true}
-                                    name="free_vacation"
-                                    title="Free Vacation?"
-                                    options={yesOrNoOptions}
-                                    defaultValue={yesOrNoOptions.find(
-                                      (option) =>
-                                        option.value === discount.free_vacation
-                                    )}
-                                    InputContext={InputContext}
-                                  />
-                                  <SelectPopover
-                                    name="apply"
-                                    title="Apply?"
-                                    options={yesOrNoOptions}
-                                    InputContext={InputContext}
-                                    readOnly={true}
-                                    value={yesOrNoOptions.find(
-                                      (option) =>
-                                        option.value ===
-                                        (pageData.discount_id !== null
-                                          ? true
-                                          : false)
-                                    )}
-                                  />
-                                </InputLine>
-                              </>
-                            );
-                          })}
+                        <PricesSimulation
+                          student={pageData}
+                          InputContext={InputContext}
+                          FullGridContext={FullGridContext}
+                          generalForm={generalForm}
+                          showAdmissionDiscounts={true}
+                          isAdmissionDiscountChangable={false}
+                          showFinancialDiscounts={true}
+                          isFinancialDiscountChangable={true}
+                        />
 
                         <InputLine title="Recurrence Information">
                           <DatePicker

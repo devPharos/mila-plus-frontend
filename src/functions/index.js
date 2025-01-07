@@ -421,21 +421,26 @@ export function capitalizeFirstLetter(val) {
   return vals.join(" ");
 }
 
-export async function getPriceLists(searchFields = null) {
+export async function getPriceLists({
+  filial_id = null,
+  processsubstatus_id = null,
+}) {
   let priceLists = null;
   let discountLists = null;
 
-  if (!searchFields) {
+  if (!filial_id || !processsubstatus_id) {
     return { priceLists: null, discountLists: null };
   }
 
-  await api.get(`filials/${searchFields.filial_id}`).then(({ data }) => {
+  await api.get(`filials/${filial_id}`).then(({ data }) => {
     priceLists = data.pricelists.find(
-      (price) => price.processsubstatus_id === searchFields.processsubstatus_id
+      (price) => price.processsubstatus_id === processsubstatus_id
     );
-    discountLists = data.discountlists.filter(
-      (discount) => discount.active === true && discount.type === "Admission"
-    );
+    discountLists = data.discountlists.filter((discount) => {
+      if (discount.active) {
+        return discount;
+      }
+    });
   });
   return { priceLists, discountLists };
 }

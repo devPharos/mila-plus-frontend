@@ -2,12 +2,13 @@ import React, { useContext, useEffect } from "react";
 import PageHeader from "../PageHeader";
 import Breadcrumbs from "../Breadcrumbs";
 import FiltersBar from "../FiltersBar";
-import { Filter } from "lucide-react";
+import { Filter, Loader } from "lucide-react";
 import Filters from "../Filters";
 import Grid from "../Grid";
 import PreviewController from "../PreviewController";
 import { applyFilters, getCurrentPage, hasAccessTo } from "~/functions";
 import { useSelector } from "react-redux";
+import FormLoading from "../RegisterForm/FormLoading";
 
 // import { Container } from './styles';
 
@@ -59,18 +60,22 @@ function PageContainer({
         handleNew={() => setOpened("new")}
       />
 
-      <Grid Context={FullGridContext}>
-        {opened && (
-          <PreviewController Context={FullGridContext}>
-            <PagePreview
-              access={pageAccesses}
-              id={opened}
-              defaultFormType="full"
-              Context={FullGridContext}
-            />
-          </PreviewController>
-        )}
-      </Grid>
+      {gridData.length === 0 ? (
+        <FormLoading />
+      ) : (
+        <Grid Context={FullGridContext}>
+          {opened && (
+            <PreviewController Context={FullGridContext}>
+              <PagePreview
+                access={pageAccesses}
+                id={opened}
+                defaultFormType="full"
+                Context={FullGridContext}
+              />
+            </PreviewController>
+          )}
+        </Grid>
+      )}
     </div>
   );
 }

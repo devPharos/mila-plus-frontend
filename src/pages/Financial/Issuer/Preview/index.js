@@ -172,7 +172,6 @@ export default function PagePreview({
         const merchantData = await api.get(`/merchants`);
         const studentData = await api.get(`/students`);
 
-        console.log(studentData);
         const filialOptions = filialData.data
           .filter((f) => f.id !== id)
           .map((f) => {
@@ -184,7 +183,10 @@ export default function PagePreview({
         });
 
         const studentOptions = studentData.data.map((s) => {
-          return { value: s.id, label: s.name };
+          return {
+            value: s.id,
+            label: s.name + " " + s.last_name + " - " + s.registration_number,
+          };
         });
 
         setMerchantOptions(merchantOptions);
@@ -287,40 +289,29 @@ export default function PagePreview({
                               />
                             </InputLine>
                           )}
-                          <InputLine title="Merchant">
+                          <InputLine title="Merchant / Student">
                             <SelectPopover
                               name="merchant_id"
-                              required
                               title="Merchant"
                               isSearchable
+                              isClearable
                               grow
-                              defaultValue={
-                                pageData.merchant_id
-                                  ? {
-                                      value: pageData.merchant_id,
-                                      label: pageData.merchant.name,
-                                    }
-                                  : null
-                              }
+                              value={merchantOptions.find(
+                                (m) => m.value === pageData.merchant_id
+                              )}
                               options={merchantOptions}
                               InputContext={InputContext}
                             />
-                          </InputLine>
-
-                          <InputLine title="Student">
+                            <h4 className="text-xs text-zinc-500 mt-4">or</h4>
                             <SelectPopover
                               name="student_id"
                               title="Student"
                               isSearchable
+                              isClearable
                               grow
-                              defaultValue={
-                                pageData.student_id
-                                  ? {
-                                      value: pageData.student_id,
-                                      label: pageData.student.name,
-                                    }
-                                  : null
-                              }
+                              value={studentOptions.find(
+                                (s) => s.value === pageData.student_id
+                              )}
                               options={studentOptions}
                               InputContext={InputContext}
                             />

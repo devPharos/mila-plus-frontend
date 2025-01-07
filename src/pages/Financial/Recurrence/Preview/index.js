@@ -344,10 +344,11 @@ export default function PagePreview({
                           InputContext={InputContext}
                           FullGridContext={FullGridContext}
                           generalForm={generalForm}
-                          showAdmissionDiscounts={true}
+                          showAdmissionDiscounts={false}
                           isAdmissionDiscountChangable={false}
                           showFinancialDiscounts={true}
                           isFinancialDiscountChangable={true}
+                          recurrence={true}
                         />
 
                         <InputLine title="Recurrence Information">
@@ -385,7 +386,7 @@ export default function PagePreview({
                             placeholderText="MM/DD/YYYY"
                             InputContext={InputContext}
                           />
-                          <Input
+                          {/* <Input
                             type="text"
                             name="amount"
                             grow
@@ -396,7 +397,7 @@ export default function PagePreview({
                               pageData?.issuer?.issuer_x_recurrence?.amount
                             }
                             InputContext={InputContext}
-                          />
+                          /> */}
                         </InputLine>
                         <InputLine>
                           <SelectPopover

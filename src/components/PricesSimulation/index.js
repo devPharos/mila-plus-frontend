@@ -7,6 +7,8 @@ import { Zoom, toast } from "react-toastify";
 import { Trash2 } from "lucide-react";
 import { Scope } from "@unform/core";
 import { getPriceLists } from "~/functions";
+import DatePicker from "../RegisterForm/DatePicker";
+import { addDays, format, parseISO } from "date-fns";
 
 function PricesSimulation({
   student = null,
@@ -17,6 +19,7 @@ function PricesSimulation({
   showFinancialDiscounts = false,
   isFinancialDiscountChangable = false,
   FullGridContext = null,
+  recurrence = false,
 }) {
   const { setSuccessfullyUpdated } = useContext(FullGridContext);
   const [appliedDiscounts, setAppliedDiscounts] = useState([]);
@@ -27,11 +30,19 @@ function PricesSimulation({
   const [discountOptions, setDiscountOptions] = useState([]);
   useEffect(() => {
     async function loadData() {
-      const { priceLists: newPriceLists, discountLists: newDiscountLists } =
+      const { priceLists: newPriceLists, discountLists: discountListData } =
         await getPriceLists({
           filial_id,
           processsubstatus_id,
         });
+
+      let newDiscountLists = discountListData;
+
+      if (recurrence) {
+        newDiscountLists = discountListData.filter(
+          (discount) => discount.type === "Financial"
+        );
+      }
 
       setPriceLists(newPriceLists);
       setDiscountLists(newDiscountLists);
@@ -51,11 +62,21 @@ function PricesSimulation({
       );
 
       if (student.discounts) {
-        setAppliedDiscounts(
-          student.discounts.map((discount) => {
-            return discount.discount;
-          })
-        );
+        const discounts = student.discounts
+          .filter(
+            (discount) =>
+              (showFinancialDiscounts &&
+                discount.discount.type === "Financial") ||
+              (showAdmissionDiscounts && discount.discount.type === "Admission")
+          )
+          .map((discount) => {
+            return {
+              ...discount.discount,
+              start_date: discount.start_date,
+              end_date: discount.end_date,
+            };
+          });
+        setAppliedDiscounts(discounts);
       }
     }
     loadData();
@@ -82,7 +103,14 @@ function PricesSimulation({
     }
   }, [appliedDiscounts, priceLists, discountLists]);
 
-  function handleDiscount({ id, el, priceLists = null, discountLists = null }) {
+  function handleDiscount({
+    id,
+    start_date = null,
+    end_date = null,
+    el,
+    priceLists = null,
+    discountLists = null,
+  }) {
     if (!id) {
       toast("not defined");
       return;
@@ -91,18 +119,20 @@ function PricesSimulation({
 
     const discount = discountLists.find((discount) => discount.id === id);
     if (el.value) {
-      if (appliedDiscounts.find((discount) => discount.id === id)) {
-        toast("Discount already applied!", {
-          autoClose: 1000,
-          type: "error",
-          transition: Zoom,
-        });
-        return;
-      }
+      // if (appliedDiscounts.find((discount) => discount.id === id)) {
+      //   toast("Discount already applied!", {
+      //     autoClose: 1000,
+      //     type: "error",
+      //     transition: Zoom,
+      //   });
+      //   return;
+      // }
       newDiscounts = [
         ...appliedDiscounts,
         {
           id: discount.id,
+          start_date: start_date ? format(start_date, "yyyy-MM-dd") : null,
+          end_date: end_date ? format(end_date, "yyyy-MM-dd") : null,
           name: discount.name,
           value: discount.value,
           percent: discount.percent,
@@ -136,40 +166,61 @@ function PricesSimulation({
         <table className="table-auto w-full text-center">
           <thead className="bg-slate-200 rounded-lg overflow-hidden">
             <tr>
-              <th className="w-1/6">Registration Fee</th>
-              <th className="w-1/6">Books</th>
+              {!recurrence && (
+                <>
+                  <th className="w-1/6">Registration Fee</th>
+                  <th className="w-1/6">Books</th>
+                  <th className="w-1/6">Tuition in Advanced</th>
+                </>
+              )}
               <th className="w-1/6">Tuition</th>
-              <th className="w-1/6">Tuition in Advanced</th>
               <th className="w-1/6">Discount</th>
               <th className="w-1/6">Total</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>
-                <Input
-                  type="text"
-                  name="registration_fee"
-                  value={priceLists.registration_fee.toFixed(2)}
-                  centeredText={true}
-                  placeholder="$ 0.00"
-                  className="text-center"
-                  readOnly={true}
-                  InputContext={InputContext}
-                />
-              </td>
-              <td>
-                <Input
-                  type="text"
-                  name="books"
-                  value={priceLists.book.toFixed(2)}
-                  centeredText={true}
-                  placeholder="$ 0.00"
-                  className="text-center"
-                  readOnly={true}
-                  InputContext={InputContext}
-                />
-              </td>
+              {!recurrence && (
+                <>
+                  <td>
+                    <Input
+                      type="text"
+                      name="registration_fee"
+                      value={priceLists.registration_fee.toFixed(2)}
+                      centeredText={true}
+                      placeholder="$ 0.00"
+                      className="text-center"
+                      readOnly={true}
+                      InputContext={InputContext}
+                    />
+                  </td>
+                  <td>
+                    <Input
+                      type="text"
+                      name="books"
+                      value={priceLists.book.toFixed(2)}
+                      centeredText={true}
+                      placeholder="$ 0.00"
+                      className="text-center"
+                      readOnly={true}
+                      InputContext={InputContext}
+                    />
+                  </td>
+                  <td>
+                    <SelectPopover
+                      name="tuition_in_advance"
+                      defaultValue={yesOrNoOptions.find(
+                        (option) =>
+                          option.value === priceLists.tuition_in_advance
+                      )}
+                      centeredText={true}
+                      readOnly={true}
+                      options={yesOrNoOptions}
+                      InputContext={InputContext}
+                    />
+                  </td>
+                </>
+              )}
               <td>
                 <Input
                   type="text"
@@ -179,18 +230,6 @@ function PricesSimulation({
                   placeholder="$ 0.00"
                   className="text-center"
                   readOnly={true}
-                  InputContext={InputContext}
-                />
-              </td>
-              <td>
-                <SelectPopover
-                  name="tuition_in_advance"
-                  defaultValue={yesOrNoOptions.find(
-                    (option) => option.value === priceLists.tuition_in_advance
-                  )}
-                  centeredText={true}
-                  readOnly={true}
-                  options={yesOrNoOptions}
                   InputContext={InputContext}
                 />
               </td>
@@ -210,11 +249,12 @@ function PricesSimulation({
                 <Input
                   type="text"
                   name="total_tuition"
-                  value={(
-                    priceLists.registration_fee +
-                    priceLists.book +
-                    priceLists.tuition -
-                    totalDiscount
+                  value={(!recurrence
+                    ? priceLists.registration_fee +
+                      priceLists.book +
+                      priceLists.tuition -
+                      totalDiscount
+                    : priceLists.tuition - totalDiscount
                   ).toFixed(2)}
                   centeredText={true}
                   placeholder="$ 0.00"
@@ -233,12 +273,14 @@ function PricesSimulation({
             <table className="table-auto w-full text-center">
               <thead className="bg-slate-200 rounded-lg overflow-hidden">
                 <tr>
-                  <th className="w-1/2">Discount name</th>
-                  <th className="w-1/6">Value</th>
-                  <th className="w-1/6">Type</th>
+                  <th>Discount name</th>
+                  <th className="w-1/7">Value</th>
+                  <th className="w-1/7">Start Date</th>
+                  <th className="w-1/7">End Date</th>
+                  <th className="w-1/7">Type</th>
                   {(isAdmissionDiscountChangable ||
                     isFinancialDiscountChangable) && (
-                    <th className="w-1/6">Action</th>
+                    <th className="w-1/7">Action</th>
                   )}
                 </tr>
               </thead>
@@ -264,10 +306,35 @@ function PricesSimulation({
                             value={discount.id}
                             InputContext={InputContext}
                           />
+                          <Input
+                            type="hidden"
+                            name="start_date"
+                            value={discount.start_date}
+                            InputContext={InputContext}
+                          />
+                          <Input
+                            type="hidden"
+                            name="end_date"
+                            value={discount.end_date}
+                            InputContext={InputContext}
+                          />
                         </Scope>
                         <td>{discount.name}</td>
                         <td>
                           {discount.value} {discount.percent ? "%" : "$"}
+                        </td>
+                        <td>
+                          {discount.start_date
+                            ? format(
+                                parseISO(discount.start_date),
+                                "dd/MM/yyyy"
+                              )
+                            : ""}
+                        </td>
+                        <td>
+                          {discount.end_date
+                            ? format(parseISO(discount.end_date), "dd/MM/yyyy")
+                            : ""}
                         </td>
                         <td>{discount.type}</td>
                         <td>
@@ -343,12 +410,30 @@ function PricesSimulation({
                   )}
                   InputContext={InputContext}
                 />
+                <DatePicker
+                  name="financialDiscountFromDate"
+                  title="Start Date"
+                  required
+                  defaultValue={format(addDays(new Date(), 1), "yyyy-MM-dd")}
+                  InputContext={InputContext}
+                />
+                <DatePicker
+                  name="financialDiscountUntilDate"
+                  title="End Date"
+                  InputContext={InputContext}
+                />
                 <button
                   type="button"
                   onClick={() => {
                     handleDiscount({
                       id: generalForm.current.getFieldValue(
                         "prices.financialDiscountChoose"
+                      ),
+                      start_date: generalForm.current.getFieldValue(
+                        "prices.financialDiscountFromDate"
+                      ),
+                      end_date: generalForm.current.getFieldValue(
+                        "prices.financialDiscountUntilDate"
                       ),
                       el: { value: true },
                       priceLists,

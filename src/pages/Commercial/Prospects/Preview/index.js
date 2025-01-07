@@ -746,7 +746,7 @@ export default function PagePreview({
                             generalForm={generalForm}
                             showAdmissionDiscounts={true}
                             isAdmissionDiscountChangable={true}
-                            showFinancialDiscounts={true}
+                            showFinancialDiscounts={false}
                             isFinancialDiscountChangable={false}
                           />
 

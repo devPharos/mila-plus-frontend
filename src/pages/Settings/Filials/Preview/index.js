@@ -1045,6 +1045,17 @@ export default function PagePreview({
                               }
                               InputContext={InputContext}
                             />
+                            <Input
+                              type="text"
+                              onlyFloat
+                              grow
+                              name={`financial_support_year_amount`}
+                              title="Amount ($) per year required by MILA"
+                              defaultValue={
+                                pageData.financial_support_year_amount
+                              }
+                              InputContext={InputContext}
+                            />
                           </InputLine>
                         </InputLineGroup>
 

@@ -41,8 +41,8 @@ export default function FinancialReceivables() {
       filter: false,
     },
     {
-      title: "Fee",
-      name: "fee",
+      title: "Discount",
+      name: "discount",
       type: "currency",
       filter: false,
     },
@@ -100,7 +100,7 @@ export default function FinancialReceivables() {
             entry_date,
             due_date,
             amount,
-            fee,
+            discount,
             total,
             paymentcriteria_id,
             paymentCriteria,
@@ -117,9 +117,9 @@ export default function FinancialReceivables() {
               filial.name,
               format(parseISO(entry_date), "yyyy-MM-dd"),
               format(parseISO(due_date), "yyyy-MM-dd"),
-              amount,
-              fee,
-              total,
+              "$ " + amount,
+              "$ " + discount,
+              "$ " + total,
               paymentcriteria_id
                 ? paymentCriteria.description.slice(0, 20)
                 : "",

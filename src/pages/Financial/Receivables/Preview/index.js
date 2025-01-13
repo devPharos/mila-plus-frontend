@@ -24,12 +24,14 @@ import { useSelector } from "react-redux";
 import Textarea from "~/components/RegisterForm/Textarea";
 import Grid from "~/components/Grid";
 import { format, parseISO } from "date-fns";
-import { FullGridContext } from "../..";
 import {
   invoiceTypeDetailsOptions,
   invoiceTypesOptions,
   receivableStatusesOptions,
 } from "~/functions/selectPopoverOptions";
+import PricesSimulation from "~/components/PricesSimulation";
+import { FullGridContext } from "../..";
+import { Scope } from "@unform/core";
 
 export const InputContext = createContext({});
 
@@ -383,6 +385,7 @@ export default function PagePreview({
                                   name="filial_id"
                                   required
                                   title="Filial"
+                                  readOnly={pageData.is_recurrence}
                                   isSearchable
                                   grow
                                   defaultValue={
@@ -420,6 +423,7 @@ export default function PagePreview({
                                 required
                                 grow
                                 title="Type"
+                                readOnly={pageData.is_recurrence}
                                 options={invoiceTypesOptions}
                                 defaultValue={invoiceTypesOptions.find(
                                   (invoiceType) =>
@@ -438,6 +442,7 @@ export default function PagePreview({
                                 required
                                 grow
                                 title="Type Detail"
+                                readOnly={pageData.is_recurrence}
                                 options={invoiceTypeDetailsOptions.filter(
                                   (typeDetail) =>
                                     typeDetail.type === pageData.type
@@ -474,6 +479,7 @@ export default function PagePreview({
                                 name="issuer_id"
                                 required
                                 title="Issuer"
+                                readOnly={pageData.is_recurrence}
                                 isSearchable
                                 grow
                                 defaultValue={
@@ -494,6 +500,7 @@ export default function PagePreview({
                                 name="entry_date"
                                 required
                                 title="Entry Date"
+                                readOnly={pageData.is_recurrence}
                                 grow
                                 defaultValue={
                                   pageData.entry_date
@@ -511,6 +518,7 @@ export default function PagePreview({
                                 name="due_date"
                                 required
                                 title="Due Date"
+                                readOnly={pageData.is_recurrence}
                                 grow
                                 defaultValue={
                                   pageData?.due_date
@@ -543,15 +551,6 @@ export default function PagePreview({
                                 options={pageData.paymentMethodOptions}
                                 InputContext={InputContext}
                               />
-                              <Input
-                                type="number"
-                                name="amount"
-                                required
-                                title="Amount"
-                                grow
-                                defaultValue={pageData.amount}
-                                InputContext={InputContext}
-                              />
                               <SelectPopover
                                 name="is_recurrence"
                                 title="Is Recurrence?"
@@ -569,29 +568,76 @@ export default function PagePreview({
                                 InputContext={InputContext}
                               />
                             </InputLine>
-
-                            {/* <InputLine>
-                              <SelectPopover
-                                name="paymentcriteria_id"
-                                title="Payment Criteria"
-                                isSearchable
-                                grow
+                            <InputLine title="Amount">
+                              <Input
+                                type="text"
+                                name="amount"
                                 required
-                                defaultValue={
-                                  pageData.paymentcriteria_id
-                                    ? pageData.paymentCriteriaOptions.find(
-                                        (paymentCriteria) =>
-                                          paymentCriteria.value ===
-                                          pageData.paymentcriteria_id
-                                      )
-                                    : null
-                                }
-                                options={pageData.paymentCriteriaOptions}
+                                readOnly={pageData.is_recurrence}
+                                title="Amount"
+                                grow
+                                defaultValue={pageData.amount}
                                 InputContext={InputContext}
                               />
-                            </InputLine> */}
+                              {pageData.is_recurrence && (
+                                <>
+                                  <Input
+                                    type="text"
+                                    name="discount"
+                                    readOnly
+                                    title="Discount"
+                                    grow
+                                    defaultValue={pageData.discount}
+                                    InputContext={InputContext}
+                                  />
+                                  <Input
+                                    type="text"
+                                    name="total"
+                                    readOnly
+                                    title="Total"
+                                    grow
+                                    defaultValue={pageData.total}
+                                    InputContext={InputContext}
+                                  />
+                                </>
+                              )}
+                            </InputLine>
 
-                            <InputLine>
+                            {pageData.discounts &&
+                              pageData.discounts.length > 0 &&
+                              pageData.discounts.map((discount, index) => {
+                                return (
+                                  <Scope path={`discounts.${index}`}>
+                                    <InputLine
+                                      title={
+                                        index === 0 ? "Applied Discounts" : ""
+                                      }
+                                    >
+                                      <Input
+                                        type="text"
+                                        name="name"
+                                        grow
+                                        readOnly
+                                        value={discount.name}
+                                        InputContext={InputContext}
+                                      />
+                                      <Input
+                                        type="text"
+                                        name="value"
+                                        readOnly
+                                        value={
+                                          (discount.percent ? "" : "$ ") +
+                                          discount.value +
+                                          (discount.percent ? " %" : "")
+                                        }
+                                        InputContext={InputContext}
+                                      />
+                                    </InputLine>
+                                  </Scope>
+                                );
+                              })}
+
+                            <InputLine title="Details">
                               <Textarea
                                 name="memo"
                                 title="Observations"
@@ -628,6 +674,7 @@ export default function PagePreview({
                                 title="Chart of Account"
                                 isSearchable
                                 required
+                                readOnly={pageData.is_recurrence}
                                 grow
                                 defaultValue={
                                   pageData.chartofaccount_id

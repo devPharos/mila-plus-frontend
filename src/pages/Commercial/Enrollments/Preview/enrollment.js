@@ -111,6 +111,8 @@ export default function EnrollmentOutside({
   const generalForm = useRef();
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [sponsorOtherRelationshipType, setSponsorOtherRelationshipType] =
+    useState("");
 
   const id = searchparams.get("crypt");
   const { alertBox } = useContext(AlertContext);
@@ -199,7 +201,6 @@ export default function EnrollmentOutside({
           "Relationship Type is required."
         ),
         gender: Yup.string().required("Required field."),
-        dept1_type: Yup.string().required("Required field."),
         email: Yup.string().email("Email is invalid."),
         // phone: Yup.string().matches(/^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/, 'Phone number is invalid.')
       })
@@ -1532,7 +1533,7 @@ export default function EnrollmentOutside({
                                             )}
                                             InputContext={InputContext}
                                           />
-                                          <SelectPopover
+                                          {/* <SelectPopover
                                             name="dept1_type"
                                             required
                                             grow
@@ -1548,7 +1549,7 @@ export default function EnrollmentOutside({
                                                 dependent.dept1_type
                                             )}
                                             InputContext={InputContext}
-                                          />
+                                          /> */}
                                           <SelectPopover
                                             name="relationship_type"
                                             required
@@ -1900,6 +1901,11 @@ export default function EnrollmentOutside({
                                                 pageData.lastActiveMenu.order >=
                                                 7
                                               }
+                                              onChange={(e) => {
+                                                setSponsorOtherRelationshipType(
+                                                  e.value
+                                                );
+                                              }}
                                               defaultValue={sponsorRelationshipTypeOptions.find(
                                                 (relationshipType) =>
                                                   relationshipType.value ===
@@ -1907,6 +1913,22 @@ export default function EnrollmentOutside({
                                               )}
                                               InputContext={InputContext}
                                             />
+                                            {sponsorOtherRelationshipType ===
+                                              "Other" && (
+                                              <Input
+                                                type="text"
+                                                name="relationship_type"
+                                                required
+                                                grow
+                                                title="Please specify"
+                                                defaultValue={
+                                                  sponsor.relationship_type
+                                                }
+                                                InputContext={InputContext}
+                                              />
+                                            )}
+                                          </InputLine>
+                                          <InputLine>
                                             <Input
                                               type="text"
                                               name="email"

@@ -67,10 +67,10 @@ export default function SelectPopover({
       }`}
     >
       <div className="px-1 text-xs flex flex-row justify-between items-center">
-        {title} {required && <Asterisk color="#e00" size={12} />}
+        {title} {required && <Asterisk color="#f00" size={12} />}
       </div>
       <div
-        className={`text-sm focus:outline-none flex-1 w-full bg-transparent`}
+        className={`text-sm focus:outline-none flex-1 w-full bg-transprearent`}
       >
         <AsyncSelect
           type="hidden"
@@ -88,6 +88,12 @@ export default function SelectPopover({
           // filterOption={filterOptions}
           defaultValue={defaultValue}
           {...rest}
+          styles={{
+            control: (provided, state) => ({
+              ...provided,
+              backgroundColor: state.isDisabled ? "rgb(241,245,249)" : "#fff",
+            }),
+          }}
           className={`rounded-lg text-sm focus:outline-none flex-1 w-full bg-transparent text-left relative ${
             error && "[.react-select__control]:border-red-300"
           }`}

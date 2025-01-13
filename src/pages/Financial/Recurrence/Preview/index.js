@@ -31,7 +31,7 @@ import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
 import DatePicker from "~/components/RegisterForm/DatePicker";
-import { format, parseISO } from "date-fns";
+import { addDays, format, parseISO } from "date-fns";
 import { yesOrNoOptions } from "~/functions/selectPopoverOptions";
 import { openPaymentModal } from "~/functions/emergepayfn";
 import { AlertContext } from "~/App";
@@ -571,7 +571,7 @@ export default function PagePreview({
                                   shrink
                                   title="Entry Date "
                                   defaultValue={format(
-                                    parseISO(receivable.entry_date),
+                                    addDays(parseISO(receivable.entry_date), 1),
                                     "yyyy-MM-dd"
                                   )}
                                   placeholderText="MM/DD/YYYY"
@@ -583,7 +583,7 @@ export default function PagePreview({
                                   shrink
                                   title="Due Date "
                                   defaultValue={format(
-                                    parseISO(receivable.due_date),
+                                    addDays(parseISO(receivable.due_date), 1),
                                     "yyyy-MM-dd"
                                   )}
                                   placeholderText="MM/DD/YYYY"
@@ -602,6 +602,17 @@ export default function PagePreview({
                                 />
                                 <Input
                                   type="text"
+                                  name="grid_discount"
+                                  readOnly={true}
+                                  grow
+                                  title="Discount"
+                                  defaultValue={formatter.format(
+                                    receivable.discount
+                                  )}
+                                  InputContext={InputContext}
+                                />
+                                {/* <Input
+                                  type="text"
                                   name="grid_fee"
                                   readOnly={true}
                                   grow
@@ -610,7 +621,7 @@ export default function PagePreview({
                                     receivable.fee
                                   )}
                                   InputContext={InputContext}
-                                />
+                                /> */}
                                 <Input
                                   type="text"
                                   name="grid_receivable_total"

@@ -72,6 +72,10 @@ export const scheduleOptions = [
     value: "2 days - Full Time (Wed - Thu) - 08:30 to 18:00",
     label: "2 days - Full Time (Wed - Thu) - 08:30 to 18:00",
   },
+  {
+    value: "2 days - Full Time (Fri - Sat) - 08:30 to 18:00",
+    label: "2 days - Full Time (Fri - Sat) - 08:30 to 18:00",
+  },
 ];
 export const dept1TypeOptions = [
   { value: "Wholly Dependent", label: "Wholly Dependent" },

@@ -119,7 +119,7 @@ const Input = ({
             {...rest}
             className={`${
               centeredText ? "text-center" : "text-left"
-            } text-sm focus:outline-none flex-1 bg-transparent w-full`}
+            } text-sm focus:outline-none flex-1 w-full bg-transparent`}
           />
         </div>
       </div>

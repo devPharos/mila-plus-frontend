@@ -43,6 +43,7 @@ import {
   yesOrNoOptions,
 } from "~/functions/selectPopoverOptions";
 import { FullGridContext } from "../..";
+import PhoneNumberInput from "~/components/RegisterForm/PhoneNumberInput";
 
 export const InputContext = createContext({});
 
@@ -714,21 +715,18 @@ export default function PagePreview({
                           </InputLine>
 
                           <InputLine title="Contact / On the web">
-                            <Input
+                            <PhoneNumberInput
                               type="text"
                               name="phone"
-                              isPhoneNumber
                               title="Phone"
-                              defaultValue={pageData.phone}
+                              value={pageData.phone}
                               InputContext={InputContext}
                             />
-                            <Input
+                            <PhoneNumberInput
                               type="text"
                               name="phone2"
-                              isPhoneNumber
                               title="Phone 2"
-                              defaultValue={pageData.phone2}
-                              placeholder="(---) -------"
+                              value={pageData.phone2}
                               InputContext={InputContext}
                             />
                             <Input
@@ -744,13 +742,11 @@ export default function PagePreview({
                           </InputLine>
 
                           <InputLine>
-                            <Input
+                            <PhoneNumberInput
                               type="text"
                               name="whatsapp"
-                              isPhoneNumber
                               title="Whatsapp"
-                              defaultValue={pageData.whatsapp}
-                              placeholder="(---) -------"
+                              value={pageData.whatsapp}
                               InputContext={InputContext}
                             />
                             <Input

@@ -41,6 +41,7 @@ import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import PDFViewer from "~/components/PDFViewer";
 import CheckboxInput from "~/components/RegisterForm/CheckboxInput";
+import PhoneNumberInput from "~/components/RegisterForm/PhoneNumberInput";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -446,16 +447,13 @@ export default function SponsorOutside({
                               }
                               InputContext={InputContext}
                             />
-                            <Input
+                            <PhoneNumberInput
                               type="text"
                               name="phone"
                               required
                               grow
                               title="Phone Number"
-                              isPhoneNumber
-                              defaultValue={
-                                pageData.enrollmentsponsors[0].phone
-                              }
+                              value={pageData.enrollmentsponsors[0].phone}
                               InputContext={InputContext}
                             />
                             <DatePicker
@@ -496,13 +494,12 @@ export default function SponsorOutside({
                               }
                               InputContext={InputContext}
                             />
-                            <Input
+                            <PhoneNumberInput
                               type="text"
                               name="legal_entity_phone"
                               grow
                               title="Phone Number"
-                              isPhoneNumber
-                              defaultValue={
+                              value={
                                 pageData.enrollmentsponsors[0]
                                   .legal_entity_phone
                               }

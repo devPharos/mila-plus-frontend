@@ -28,6 +28,7 @@ function PageContainer({
     setGridHeader,
     orderBy,
     setGridData,
+    loadingData,
   } = useContext(FullGridContext);
 
   const pageAccesses = hasAccessTo(
@@ -60,7 +61,7 @@ function PageContainer({
         handleNew={() => setOpened("new")}
       />
 
-      {gridData.length === 0 ? (
+      {loadingData ? (
         <FormLoading />
       ) : (
         <Grid Context={FullGridContext}>

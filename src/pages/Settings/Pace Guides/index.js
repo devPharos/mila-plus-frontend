@@ -29,8 +29,16 @@ export default function PaceGuides() {
     },
   ];
 
-  const { opened, orderBy, setGridData, page, setPages, limit, search } =
-    useContext(FullGridContext);
+  const {
+    opened,
+    orderBy,
+    setGridData,
+    page,
+    setPages,
+    limit,
+    search,
+    setLoadingData,
+  } = useContext(FullGridContext);
 
   useEffect(() => {
     async function loader() {
@@ -59,6 +67,7 @@ export default function PaceGuides() {
         }
       );
       setGridData(gridDataValues);
+      setLoadingData(false);
     }
     loader();
   }, [opened, filial, orderBy, search, limit]);

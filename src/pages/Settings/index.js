@@ -15,6 +15,7 @@ export default function Settings() {
   const [orderBy, setOrderBy] = useState(null);
   const [gridHeader, setGridHeader] = useState([]);
   const [gridData, setGridData] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
   const [successfullyUpdated, setSuccessfullyUpdated] = useState(true);
   const [page, setPage] = useState(1);
   const [pagesNo, setPages] = useState(1);
@@ -95,6 +96,8 @@ export default function Settings() {
           setSearch,
           handleFilters,
           handleOpened,
+          loadingData,
+          setLoadingData,
         }}
       >
         <Outlet />

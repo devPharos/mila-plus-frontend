@@ -197,6 +197,7 @@ export default function PagePreview({
         //     );
 
         //     setGridData(gridDataValues);
+        setLoadingData(false);
         //   }
 
         //   setItensInstallmentsIsTemp(true);
@@ -254,6 +255,7 @@ export default function PagePreview({
           //   }
 
           //   setGridData(gridDataValues);
+          setLoadingData(false);
           // } else {
 
           // }
@@ -318,6 +320,7 @@ export default function PagePreview({
         //   );
 
         //   setGridData(gridDataValues);
+        setLoadingData(false);
         // }
       } catch (err) {
         console.log(err);

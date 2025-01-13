@@ -27,6 +27,7 @@ import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
 import Grid from "~/components/Grid";
 import { FullGridContext } from "../..";
+import PhoneNumberInput from "~/components/RegisterForm/PhoneNumberInput";
 
 export const InputContext = createContext({});
 
@@ -752,12 +753,12 @@ export default function PagePreview({
                                 defaultValue={pageData.email}
                                 InputContext={InputContext}
                               />
-                              <Input
+                              <PhoneNumberInput
                                 type="text"
                                 name="phone_number"
                                 title="Phone Number"
                                 grow
-                                defaultValue={pageData.phone_number}
+                                value={pageData.phone_number}
                                 InputContext={InputContext}
                               />
                             </InputLine>

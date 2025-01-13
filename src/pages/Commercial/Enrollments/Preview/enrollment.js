@@ -71,6 +71,7 @@ import {
   sponsorRelationshipTypeOptions,
   yesOrNoOptions,
 } from "~/functions/selectPopoverOptions";
+import PhoneNumberInput from "~/components/RegisterForm/PhoneNumberInput";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -1182,15 +1183,12 @@ export default function EnrollmentOutside({
                           <Scope path={`students`}>
                             {pageData.students.sub_status !== "Transfer In" && (
                               <InputLine title="Address in Home Country">
-                                <Input
+                                <PhoneNumberInput
                                   type="text"
                                   name="home_country_phone"
                                   grow
                                   title="Phone Number"
-                                  isPhoneNumber
-                                  defaultValue={
-                                    pageData.students.home_country_phone
-                                  }
+                                  value={pageData.students.home_country_phone}
                                   InputContext={InputContext}
                                 />
                                 <Input
@@ -1254,12 +1252,11 @@ export default function EnrollmentOutside({
                             )}
                             {pageData.students.sub_status !== "Initial" && (
                               <InputLine title="Address in United States">
-                                <Input
+                                <PhoneNumberInput
                                   type="text"
                                   name="phone"
                                   grow
                                   title="USA Phone Number"
-                                  isPhoneNumber
                                   defaultValue={pageData.students.phone}
                                   InputContext={InputContext}
                                 />
@@ -1369,14 +1366,13 @@ export default function EnrollmentOutside({
                                 }
                                 InputContext={InputContext}
                               />
-                              <Input
+                              <PhoneNumberInput
                                 type="text"
                                 name="phone"
                                 required
                                 grow
                                 title="Phone Number"
-                                isPhoneNumber
-                                defaultValue={
+                                value={
                                   pageData.enrollmentemergencies.length > 0
                                     ? pageData.enrollmentemergencies[0].phone
                                     : ""
@@ -1579,7 +1575,7 @@ export default function EnrollmentOutside({
                                             defaultValue={dependent.email}
                                             InputContext={InputContext}
                                           />
-                                          <Input
+                                          <PhoneNumberInput
                                             type="text"
                                             name="phone"
                                             required
@@ -1588,8 +1584,7 @@ export default function EnrollmentOutside({
                                             readOnly={
                                               pageData.lastActiveMenu.order >= 7
                                             }
-                                            isPhoneNumber
-                                            defaultValue={dependent.phone}
+                                            value={dependent.phone}
                                             InputContext={InputContext}
                                           />
                                         </InputLine>
@@ -1942,7 +1937,7 @@ export default function EnrollmentOutside({
                                               defaultValue={sponsor.email}
                                               InputContext={InputContext}
                                             />
-                                            <Input
+                                            <PhoneNumberInput
                                               type="text"
                                               name="phone"
                                               required
@@ -1952,8 +1947,7 @@ export default function EnrollmentOutside({
                                                 pageData.lastActiveMenu.order >=
                                                 7
                                               }
-                                              isPhoneNumber
-                                              defaultValue={sponsor.phone}
+                                              value={sponsor.phone}
                                               InputContext={InputContext}
                                             />
                                           </InputLine>

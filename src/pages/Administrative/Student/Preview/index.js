@@ -36,6 +36,7 @@ import {
 } from "~/functions/selectPopoverOptions";
 import { app } from "~/services/firebase";
 import PricesSimulation from "~/components/PricesSimulation";
+import PhoneNumberInput from "~/components/RegisterForm/PhoneNumberInput";
 
 export const InputContext = createContext({});
 
@@ -520,32 +521,21 @@ export default function PagePreview({
                               defaultValue={pageData.email}
                               InputContext={InputContext}
                             />
-                            <SelectCountry
-                              name="whatsapp_ddi"
-                              title="DDI"
-                              options={countriesList}
-                              defaultValue={countriesList.find(
-                                (ddi) => ddi.value === pageData.whatsapp_ddi
-                              )}
-                              InputContext={InputContext}
-                            />
-                            <Input
+                            <PhoneNumberInput
                               type="text"
                               grow
                               name="whatsapp"
                               title="Whatsapp"
                               isPhoneNumber
-                              defaultValue={pageData.whatsapp}
-                              defaultValueDDI={pageData.whatsapp_ddi}
+                              value={pageData.whatsapp}
                               InputContext={InputContext}
                             />
-                            <Input
+                            <PhoneNumberInput
                               type="text"
                               grow
                               name="home_country_phone"
                               title="Home Country Phone"
-                              isPhoneNumber
-                              defaultValue={pageData.home_country_phone}
+                              value={pageData.home_country_phone}
                               InputContext={InputContext}
                             />
                           </InputLine>

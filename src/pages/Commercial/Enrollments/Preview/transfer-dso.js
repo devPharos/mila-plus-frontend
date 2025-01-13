@@ -44,6 +44,7 @@ import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import Textarea from "~/components/RegisterForm/Textarea";
 import { yesOrNoOptions } from "~/functions/selectPopoverOptions";
+import PhoneNumberInput from "~/components/RegisterForm/PhoneNumberInput";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -544,14 +545,13 @@ export default function TransferDSOOutside({
                               />
                             </InputLine>
                             <InputLine>
-                              <Input
+                              <PhoneNumberInput
                                 type="text"
                                 name="previous_school_phone"
                                 required
                                 grow
                                 title="Phone Number"
-                                isPhoneNumber
-                                defaultValue={
+                                value={
                                   pageData.enrollmenttransfers
                                     ? pageData.enrollmenttransfers
                                         .previous_school_phone

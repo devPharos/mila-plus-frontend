@@ -1,6 +1,5 @@
 import axios from "axios";
 import { logout } from "~/store/modules/auth/actions";
-import { Navigate } from "react-router-dom";
 
 const api = axios.create({
   baseURL:

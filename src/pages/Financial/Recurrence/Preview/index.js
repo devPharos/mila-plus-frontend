@@ -401,7 +401,7 @@ export default function PagePreview({
                             title="First Due Date"
                             defaultValue={
                               pageData?.issuer?.issuer_x_recurrence
-                                ?.in_class_date
+                                ?.first_due_date
                                 ? parseISO(
                                     pageData.issuer.issuer_x_recurrence
                                       .first_due_date

@@ -5,7 +5,7 @@ import { Navigate } from "react-router-dom";
 const api = axios.create({
   baseURL:
     process.env.NODE_ENV === "production"
-      ? "https://milaplus.pharosit.com.br/"
+      ? process.env.BACKEND_URL
       : "http://localhost:3333",
 });
 

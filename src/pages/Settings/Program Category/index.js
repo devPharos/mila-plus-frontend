@@ -42,6 +42,7 @@ export default function ProgramCategory() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("programcategories", {
         limit,
         page,

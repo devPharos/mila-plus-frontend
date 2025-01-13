@@ -42,6 +42,7 @@ export default function Levels() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("levels", {
         limit,
         page,

@@ -48,6 +48,7 @@ export default function FinancialRecurrence() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("recurrence", {
         limit,
         page,

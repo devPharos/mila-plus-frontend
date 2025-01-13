@@ -54,6 +54,7 @@ export default function FinancialIssuers() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("issuers", {
         limit,
         page,

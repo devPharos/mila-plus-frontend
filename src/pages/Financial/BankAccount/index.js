@@ -48,6 +48,7 @@ export default function FinancialBankAccounts() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("bankaccounts", {
         limit,
         page,

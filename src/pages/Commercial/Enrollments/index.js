@@ -80,6 +80,7 @@ export default function CommercialEnrollments() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("enrollments", {
         limit,
         page,

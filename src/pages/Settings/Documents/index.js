@@ -48,6 +48,7 @@ export default function Documents() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("documents", {
         limit,
         page,

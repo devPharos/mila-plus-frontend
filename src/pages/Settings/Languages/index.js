@@ -30,6 +30,7 @@ export default function Languages() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("languages", {
         limit,
         page,

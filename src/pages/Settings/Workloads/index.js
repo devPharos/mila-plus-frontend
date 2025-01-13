@@ -54,6 +54,7 @@ export default function Workloads() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("workloads", {
         limit,
         page,

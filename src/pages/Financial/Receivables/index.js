@@ -85,6 +85,7 @@ export default function FinancialReceivables() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("receivables", {
         limit,
         page,

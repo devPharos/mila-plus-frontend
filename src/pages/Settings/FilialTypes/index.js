@@ -30,6 +30,7 @@ export default function FilialTypes() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("filialtypes", {
         limit,
         page,

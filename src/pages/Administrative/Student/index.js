@@ -66,6 +66,7 @@ export default function AdministrativeStudent() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("students", {
         limit,
         page,

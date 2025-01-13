@@ -60,6 +60,7 @@ export default function CommercialProspects() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("prospects", {
         limit,
         page,

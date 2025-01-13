@@ -48,6 +48,7 @@ export default function FinancialBank() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("chartofaccounts", {
         limit,
         page,

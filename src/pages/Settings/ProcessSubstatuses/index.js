@@ -30,6 +30,7 @@ export default function ProcessSubstatuses() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("processsubstatuses", {
         limit,
         page,

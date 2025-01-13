@@ -90,6 +90,7 @@ export default function FinancialPayees() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("payee", {
         limit,
         page,

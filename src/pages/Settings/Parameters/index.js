@@ -42,6 +42,7 @@ export default function Parameters() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("parameters", {
         limit,
         page,

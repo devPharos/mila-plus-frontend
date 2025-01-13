@@ -42,6 +42,7 @@ export default function FinancialPaymentMethods() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("paymentmethods", {
         limit,
         page,

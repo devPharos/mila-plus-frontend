@@ -48,6 +48,7 @@ export default function Users() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("users", {
         limit,
         page,

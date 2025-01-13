@@ -66,6 +66,7 @@ export default function FinancialMerchants() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("merchants", {
         limit,
         page,

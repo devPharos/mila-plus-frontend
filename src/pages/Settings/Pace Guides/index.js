@@ -42,6 +42,7 @@ export default function PaceGuides() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("paceguides", {
         limit,
         page,

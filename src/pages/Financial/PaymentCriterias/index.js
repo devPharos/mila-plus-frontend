@@ -72,6 +72,7 @@ export default function FinancialPaymentCriteria() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("paymentcriterias", {
         limit,
         page,

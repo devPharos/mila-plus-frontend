@@ -36,6 +36,7 @@ export default function Groups() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("groups?filialId=" + filial.id, {
         limit,
         page,

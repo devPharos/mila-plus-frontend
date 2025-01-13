@@ -29,6 +29,7 @@ export default function ProcessTypes() {
 
   useEffect(() => {
     async function loader() {
+      setLoadingData(true);
       const data = await getData("processtypes", {
         limit,
         page,

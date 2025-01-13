@@ -287,7 +287,7 @@ export default function PagePreview({
                         title="GENERAL"
                         activeMenu={activeMenu === "general"}
                       >
-                        {auth.filial.id === 1 && (
+                        {auth.filial.id === 1 ? (
                           <InputLine title="Filial">
                             <SelectPopover
                               name="filial_id"
@@ -307,6 +307,15 @@ export default function PagePreview({
                               InputContext={InputContext}
                             />
                           </InputLine>
+                        ) : (
+                          <Input
+                            type="hidden"
+                            name="filial_id"
+                            readOnly
+                            grow
+                            defaultValue={pageData?.filial_id}
+                            InputContext={InputContext}
+                          />
                         )}
                         <InputLine title="Student">
                           <Input
@@ -555,6 +564,7 @@ export default function PagePreview({
                           .map((receivable, index) => {
                             return (
                               <InputLine
+                                key={index}
                                 title={index === 0 ? "Receivables" : ""}
                               >
                                 <Input

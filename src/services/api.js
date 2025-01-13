@@ -2,7 +2,7 @@ import axios from "axios";
 import { logout } from "~/store/modules/auth/actions";
 
 const api = axios.create({
-  baseURL: "https://milaplus.pharosit.com.br/",
+  baseURL: process.env.REACT_APP_BACKEND_URL,
 });
 
 let store;

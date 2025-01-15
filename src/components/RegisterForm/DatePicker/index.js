@@ -69,7 +69,7 @@ export default function DatePicker({
         <ReactDatePicker
           ref={datepickerRef}
           selected={date}
-          className="bg-transparent"
+          className="bg-transparent w-full"
           onChange={handleOnChange}
           {...rest}
         />

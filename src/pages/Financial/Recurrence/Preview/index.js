@@ -100,16 +100,14 @@ export default function PagePreview({
       return;
     }
     try {
-      const { entry_date, in_class_date } = data;
+      const { entry_date, in_class_date, first_due_date } = data;
       const { data: postedData } = await api.post(`/recurrence/`, {
         ...data,
         entry_date: entry_date ? format(entry_date, "yyyyMMdd") : null,
         in_class_date: in_class_date ? format(in_class_date, "yyyyMMdd") : null,
-      });
-      console.log({
-        ...data,
-        entry_date: entry_date ? format(entry_date, "yyyyMMdd") : null,
-        in_class_date: in_class_date ? format(in_class_date, "yyyyMMdd") : null,
+        first_due_date: first_due_date
+          ? format(first_due_date, "yyyyMMdd")
+          : null,
       });
       setPageData({ ...pageData, ...data, loaded: false });
       toast("Saved!", { autoClose: 1000 });
@@ -395,6 +393,24 @@ export default function PagePreview({
                             placeholderText="MM/DD/YYYY"
                             InputContext={InputContext}
                           />
+
+                          <DatePicker
+                            name="first_due_date"
+                            grow
+                            required
+                            title="First Due Date"
+                            defaultValue={
+                              pageData?.issuer?.issuer_x_recurrence
+                                ?.first_due_date
+                                ? parseISO(
+                                    pageData.issuer.issuer_x_recurrence
+                                      .first_due_date
+                                  )
+                                : null
+                            }
+                            placeholderText="MM/DD/YYYY"
+                            InputContext={InputContext}
+                          />
                           {/* <Input
                             type="text"
                             name="amount"
@@ -578,7 +594,6 @@ export default function PagePreview({
                                 <DatePicker
                                   name="grid_entry_date"
                                   disabled
-                                  shrink
                                   title="Entry Date "
                                   defaultValue={format(
                                     addDays(parseISO(receivable.entry_date), 1),
@@ -590,7 +605,6 @@ export default function PagePreview({
                                 <DatePicker
                                   name="grid_due_date"
                                   disabled
-                                  shrink
                                   title="Due Date "
                                   defaultValue={format(
                                     addDays(parseISO(receivable.due_date), 1),

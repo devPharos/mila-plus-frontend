@@ -1,12 +1,8 @@
 import axios from "axios";
 import { logout } from "~/store/modules/auth/actions";
-import { Navigate } from "react-router-dom";
 
 const api = axios.create({
-  baseURL:
-    process.env.NODE_ENV === "production"
-      ? "https://milaplus.pharosit.com.br/"
-      : "http://localhost:3333",
+  baseURL: process.env.REACT_APP_BACKEND_URL,
 });
 
 let store;
@@ -45,10 +41,10 @@ api.interceptors.response.use(
       store.dispatch(logout());
     }
     if (error.response.status === 404) {
-      // window.location.href = "/404";
+      window.location.href = "/404";
     }
     if (error.response.status === 500) {
-      // window.location.href = "/500";
+      window.location.href = "/500";
     }
     return Promise.reject(error);
   }

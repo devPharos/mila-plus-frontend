@@ -6,23 +6,8 @@
   <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#000000" />
-  <meta name="description" content="Web site created using create-react-app" />
-  <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-  <!-- <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script> -->
-  <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
+  <meta name="description" content="A MILA International Language Academy é a melhor opção para quem busca viver e aprender inglês nos Estados Unidos." />
   <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-  <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
-
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
   <title>MILA Plus</title>
   <link href="./output.css" rel="stylesheet" type="text/css">
   <style>
@@ -36,73 +21,7 @@
 <body class="scroll-smooth">
   <noscript>You need to enable JavaScript to run this app.</noscript>
   <div id="root"></div>
-  <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
     <script>
-      // window.onload = function() {
-      //     // Initialize emergepay modal (not required, but makes things load faster)
-      //     emergepay.init();
-
-      //     // Set up event listener on Pay With Card button
-      //     if(document.getElementById('cip-pay-btn')) {
-      //       document.getElementById('cip-pay-btn').addEventListener('click', function(e) {
-      //         e.preventDefault();
-
-      //         // Get a transactionToken serverside
-      //         getToken()
-      //         .then(function(transactionToken) {
-      //             // Set up and open the payment modal
-      //             emergepay.open({
-      //                 // (required) Used to set up the modal
-      //                 transactionToken: transactionToken,
-      //                 // (optional) Callback function that gets called after a successful transaction
-      //                 onTransactionSuccess: function(approvalData) {
-      //                     console.log("Approval Data", approvalData);
-      //                     setTimeout(() => {
-      //                       emergepay.close();
-      //                       // location = "";
-      //                     }, 2000)
-      //                 },
-      //                 // (optional) Callback function that gets called after a failure occurs during the transaction (such as a declined card)
-      //                 onTransactionFailure: function(failureData) {
-      //                     console.log("Failure Data", failureData);
-      //                 },
-      //                 // (optional) Callback function that gets called after a user clicks the close button on the modal
-      //                 onTransactionCancel: function () {
-      //                     console.log("transaction cancelled!");
-      //                 }
-      //             });
-      //         });
-      //     });
-      //   }
-      // };
-
-      // This function makes a call to your server to get a transaction token
-      // function getToken() {
-      //     return new Promise(function (resolve, reject) {
-      //         $.ajax({
-      //             url: 'https://milaplus.pharosit.com.br/emergepay/simple-form',
-      //             type: 'POST',
-      //             dataType: 'json',
-      //             contentType: 'application/json'
-      //         })
-      //         .done(function(data) {
-      //             if (data.transactionToken) resolve(data.transactionToken);
-      //             else reject('Error getting transaction token');
-      //         })
-      //         .fail(function(err) {
-      //             reject(err);
-      //         });
-      //     });
-      // }
   </script>
 </body>
 

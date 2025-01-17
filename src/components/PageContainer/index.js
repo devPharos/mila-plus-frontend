@@ -41,7 +41,7 @@ function PageContainer({
     if (gridData && gridHeader) {
       applyFilters(activeFilters, gridData, gridHeader, orderBy, setGridData);
     }
-  }, [activeFilters]);
+  }, [activeFilters, gridHeader]);
 
   useEffect(() => {
     setGridHeader(defaultGridHeader);

@@ -296,8 +296,8 @@ export default function PagePreview({
                                 (filial) => filial.value === pageData.filial_id
                               )}
                               onChange={(el) => {
-                                setSearchFields({
-                                  ...searchFields,
+                                setPageData({
+                                  ...pageData,
                                   filial_id: el.value,
                                 });
                               }}

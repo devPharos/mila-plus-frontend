@@ -38,6 +38,10 @@ function PricesSimulation({
 
       let newDiscountLists = discountListData;
 
+      if (!newDiscountLists) {
+        return;
+      }
+
       if (recurrence) {
         newDiscountLists = discountListData.filter(
           (discount) => discount.type === "Financial"

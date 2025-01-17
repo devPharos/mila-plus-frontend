@@ -28,6 +28,7 @@ export default function Filters({
     limit,
     setLimit,
     handleFilters,
+    search,
   } = useContext(Context);
   const [activePopover, setActivePopover] = useState("");
   const results = gridData.filter((data) => data.show === true).length;
@@ -177,10 +178,17 @@ export default function Filters({
             onChange={(el) =>
               handleFilters({ title: "search", value: el.target.value })
             }
+            defaultValue={search}
             className="bg-transparent min-w-0 text-xs text-gray-500 h-full focus:outline-none flex-1"
             autoFocus={true}
             placeholder="Search..."
           />
+          <button
+            type="button"
+            className="bg-transparent text-xs text-slate-500 border border-slate-500 py-[2px] px-2 rounded focus:outline-none"
+          >
+            Fix it!
+          </button>
         </div>
       }
       <div className="flex flex-row justify-end items-center">

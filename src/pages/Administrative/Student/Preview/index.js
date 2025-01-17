@@ -340,9 +340,12 @@ export default function PagePreview({
                                     filial.value === pageData.filial_id
                                 )}
                                 onChange={(el) => {
-                                  setSearchFields({
-                                    ...searchFields,
-                                    filial_id: el.value,
+                                  setPageData({
+                                    ...pageData,
+                                    searchFields: {
+                                      ...pageData.searchFields,
+                                      filial_id: el.value,
+                                    },
                                   });
                                 }}
                                 options={filialOptions}

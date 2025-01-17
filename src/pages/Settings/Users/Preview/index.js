@@ -292,6 +292,7 @@ export default function PagePreview({
                               name="group_id"
                               title="Group"
                               required
+                              isSearchable
                               grow
                               options={
                                 pageData.group_id ===
@@ -346,6 +347,7 @@ export default function PagePreview({
                                           name="filial_id"
                                           title="Filial"
                                           required
+                                          isSearchable
                                           grow
                                           options={filialOptions}
                                           defaultValue={filialOptions.filter(

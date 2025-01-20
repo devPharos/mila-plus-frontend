@@ -96,23 +96,23 @@ export const discountTypesOptions = [
 
 export const subStatusOptions = [
   {
-    value: "open",
-    label: "Open",
+    value: "Pending",
+    label: "Pending",
   },
   {
-    value: "parcial_paid",
+    value: "Parcial Paid",
     label: "Parcial Paid",
   },
   {
-    value: "paid",
+    value: "Paid",
     label: "Paid",
   },
   {
-    value: "cancelled",
+    value: "Cancelled",
     label: "Cancelled",
   },
   {
-    value: "late",
+    value: "Late",
     label: "Late",
   },
 ];
@@ -143,8 +143,8 @@ export const invoiceTypeDetailsOptions = [
 
 export const receivableStatusesOptions = [
   {
-    value: "Open",
-    label: "Open",
+    value: "Pending",
+    label: "Pending",
   },
   {
     value: "Paid",

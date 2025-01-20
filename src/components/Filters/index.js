@@ -187,7 +187,7 @@ export default function Filters({
             type="button"
             className="bg-transparent text-xs text-slate-500 border border-slate-500 py-[2px] px-2 rounded focus:outline-none"
           >
-            Fix it!
+            Fix across pages
           </button>
         </div>
       }

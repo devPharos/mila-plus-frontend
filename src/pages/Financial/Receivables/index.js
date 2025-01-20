@@ -47,6 +47,12 @@ export default function FinancialReceivables() {
       filter: false,
     },
     {
+      title: "Fee",
+      name: "fee",
+      type: "currency",
+      filter: false,
+    },
+    {
       title: "Total",
       name: "total",
       type: "currency",
@@ -110,6 +116,7 @@ export default function FinancialReceivables() {
             due_date,
             amount,
             discount,
+            fee,
             total,
             paymentcriteria_id,
             paymentCriteria,
@@ -128,6 +135,7 @@ export default function FinancialReceivables() {
               format(parseISO(due_date), "yyyy-MM-dd"),
               "$ " + amount,
               "$ " + discount,
+              "$ " + fee,
               "$ " + total,
               paymentcriteria_id
                 ? paymentCriteria.description.slice(0, 20)

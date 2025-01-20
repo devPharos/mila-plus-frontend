@@ -635,7 +635,7 @@ export default function PagePreview({
                                   )}
                                   InputContext={InputContext}
                                 />
-                                {/* <Input
+                                <Input
                                   type="text"
                                   name="grid_fee"
                                   readOnly={true}
@@ -645,7 +645,7 @@ export default function PagePreview({
                                     receivable.fee
                                   )}
                                   InputContext={InputContext}
-                                /> */}
+                                />
                                 <Input
                                   type="text"
                                   name="grid_receivable_total"
@@ -657,7 +657,7 @@ export default function PagePreview({
                                   )}
                                   InputContext={InputContext}
                                 />
-                                <Input
+                                {/* <Input
                                   type="text"
                                   name="grid_status"
                                   readOnly={true}
@@ -665,8 +665,8 @@ export default function PagePreview({
                                   title="Status"
                                   defaultValue={receivable.status}
                                   InputContext={InputContext}
-                                />
-                                {receivable.status === "Open" ? (
+                                /> */}
+                                {receivable.status === "Pending" ? (
                                   <button
                                     type="button"
                                     onClick={() =>

@@ -138,7 +138,7 @@ export default function PagePreview({
                     title: "Yes",
                     onPress: async () => {
                       const receivable = receivables
-                        .filter((receivable) => receivable.status === "Open")
+                        .filter((receivable) => receivable.status === "Pending")
                         .sort((a, b) => a.due_date - b.due_date)[0];
                       await openPaymentModal(receivable, postedData.id);
                     },
@@ -486,7 +486,7 @@ export default function PagePreview({
                                     pageData?.receivables
                                       .filter(
                                         (receivable) =>
-                                          receivable.status === "Open"
+                                          receivable.status === "Pending"
                                       )
                                       .sort(
                                         (a, b) => a.due_date - b.due_date

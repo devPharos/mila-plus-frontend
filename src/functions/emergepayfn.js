@@ -4,6 +4,7 @@ export async function openPaymentModal(
   receivable = null,
   recurrence_id = null
 ) {
+  console.log({ receivable, recurrence_id });
   await api
     .post(`/emergepay/simple-form`, {
       receivable_id: receivable.id,

@@ -41,6 +41,7 @@ import {
   discountOptions,
   discountTypesOptions,
   yesOrNoOptions,
+  appliedAtOptions,
 } from "~/functions/selectPopoverOptions";
 import { FullGridContext } from "../..";
 import PhoneNumberInput from "~/components/RegisterForm/PhoneNumberInput";
@@ -965,7 +966,7 @@ export default function PagePreview({
                                       defaultValue={discount.value}
                                       InputContext={InputContext}
                                     />
-                                    <SelectPopover
+                                    {/* <SelectPopover
                                       name="all_installments"
                                       required
                                       title="All Installments"
@@ -985,6 +986,18 @@ export default function PagePreview({
                                       defaultValue={yesOrNoOptions.find(
                                         (type) =>
                                           type.value === discount.free_vacation
+                                      )}
+                                      InputContext={InputContext}
+                                    /> */}
+
+                                    <SelectPopover
+                                      name="applied_at"
+                                      required
+                                      title="Applied At"
+                                      options={appliedAtOptions}
+                                      defaultValue={appliedAtOptions.find(
+                                        (type) =>
+                                          type.value === discount.applied_at
                                       )}
                                       InputContext={InputContext}
                                     />

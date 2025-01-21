@@ -12,13 +12,13 @@ export default function FinancialReceivables() {
   const defaultGridHeader = [
     {
       title: "Issuer Name",
-      name: "issuer_name",
+      name: ["issuer", "name"],
       type: "text",
       filter: false,
     },
     {
       title: "Filial Name",
-      name: "filial_name",
+      name: ["filial", "name"],
       type: "text",
       filter: true,
     },
@@ -60,7 +60,7 @@ export default function FinancialReceivables() {
     },
     {
       title: "Payment Criteria",
-      name: "paymentcriteria_id",
+      name: ["paymentCriteria", "description"],
       type: "text",
       filter: true,
     },

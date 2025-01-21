@@ -140,6 +140,12 @@ function App() {
           icon: "HandCoins",
         },
         {
+          alias: "financial-settlement",
+          path: "/Financial/Settlement",
+          title: "Settlement",
+          icon: "ReplaceAll",
+        },
+        {
           alias: "financial-payees",
           path: "/Financial/Payees",
           title: "Payees",

@@ -72,6 +72,7 @@ import FinancialReceivables from "./pages/Financial/Receivables";
 import FinancialPayees from "./pages/Financial/Payees";
 import DataSync from "./pages/Settings/Data Sync";
 import FinancialRecurrence from "./pages/Financial/Recurrence";
+import FinancialSettlement from "./pages/Financial/Settlement";
 
 injectStore(store);
 
@@ -261,6 +262,10 @@ const router = createBrowserRouter([
           {
             path: "/Financial/Receivables",
             element: <FinancialReceivables />,
+          },
+          {
+            path: "/Financial/Settlement",
+            element: <FinancialSettlement />,
           },
           {
             path: "/Financial/Payees",

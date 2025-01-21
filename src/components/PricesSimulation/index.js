@@ -6,7 +6,7 @@ import SelectPopover from "../RegisterForm/SelectPopover";
 import { Zoom, toast } from "react-toastify";
 import { Trash2 } from "lucide-react";
 import { Scope } from "@unform/core";
-import { getPriceLists } from "~/functions";
+import { getPriceLists, today } from "~/functions";
 import DatePicker from "../RegisterForm/DatePicker";
 import { addDays, format, parseISO } from "date-fns";
 
@@ -483,7 +483,7 @@ function PricesSimulation({
                     name="financialDiscountFromDate"
                     title="Start Date"
                     required
-                    defaultValue={format(addDays(new Date(), 1), "yyyy-MM-dd")}
+                    defaultValue={today()}
                     InputContext={InputContext}
                   />
                   <DatePicker

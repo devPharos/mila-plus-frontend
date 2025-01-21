@@ -28,6 +28,8 @@ function PricesSimulation({
   const [priceLists, setPriceLists] = useState(null);
   const [discountLists, setDiscountLists] = useState(null);
   const [discountOptions, setDiscountOptions] = useState([]);
+  const [canModifyDiscounts, setCanModifyDiscounts] = useState(true);
+
   useEffect(() => {
     async function loadData() {
       const { priceLists: newPriceLists, discountLists: discountListData } =
@@ -59,7 +61,10 @@ function PricesSimulation({
               discount.name +
               " - " +
               discount.value +
-              (discount.percent ? "%" : "$"),
+              (discount.percent ? "%" : "$") +
+              " - " +
+              discount.applied_at,
+            applied_at: discount.applied_at,
             type: discount.type,
           };
         })
@@ -82,6 +87,26 @@ function PricesSimulation({
           });
         setAppliedDiscounts(discounts);
       }
+
+      if (student.receivables) {
+        const lastPaidReceivable = student.receivables.filter(
+          (receivable) => receivable.status === "Paid"
+        );
+        if (lastPaidReceivable && lastPaidReceivable.length > 0) {
+          console.log("1");
+          setCanModifyDiscounts(false);
+        }
+      }
+      if (
+        !recurrence &&
+        student.enrollments &&
+        student.enrollments.length > 0
+      ) {
+        if (student.enrollments[0].payment_link_sent_to_student) {
+          console.log("2");
+          setCanModifyDiscounts(false);
+        }
+      }
     }
     loadData();
   }, []);
@@ -93,10 +118,18 @@ function PricesSimulation({
         return;
       }
       const discountAmount = appliedDiscounts.reduce((acc, curr) => {
+        const { applied_at, percent, value } = curr;
         if (curr.percent) {
-          return acc + (priceLists.tuition * curr.value) / 100;
+          if (curr.applied_at.includes("Tuition")) {
+            acc += (priceLists.tuition * curr.value) / 100;
+          }
+          if (curr.applied_at.includes("Registration")) {
+            acc += (priceLists.registration_fee * curr.value) / 100;
+          }
+          return acc;
         } else {
-          return acc + curr.value;
+          acc += curr.value;
+          return acc;
         }
       }, 0);
 
@@ -112,7 +145,6 @@ function PricesSimulation({
     start_date = null,
     end_date = null,
     el,
-    priceLists = null,
     discountLists = null,
   }) {
     if (!id) {
@@ -123,14 +155,14 @@ function PricesSimulation({
 
     const discount = discountLists.find((discount) => discount.id === id);
     if (el.value) {
-      // if (appliedDiscounts.find((discount) => discount.id === id)) {
-      //   toast("Discount already applied!", {
-      //     autoClose: 1000,
-      //     type: "error",
-      //     transition: Zoom,
-      //   });
-      //   return;
-      // }
+      if (appliedDiscounts.find((discount) => discount.id === id)) {
+        toast("Discount already applied!", {
+          autoClose: 1000,
+          type: "error",
+          transition: Zoom,
+        });
+        return;
+      }
       newDiscounts = [
         ...appliedDiscounts,
         {
@@ -140,6 +172,7 @@ function PricesSimulation({
           name: discount.name,
           value: discount.value,
           percent: discount.percent,
+          applied_at: discount.applied_at,
           type: discount.type,
         },
       ];
@@ -160,6 +193,12 @@ function PricesSimulation({
     setAppliedDiscounts(newDiscounts);
   }
 
+  function handleChangeDiscout(discount_id = null) {
+    const discount = discountOptions.find(
+      (discount) => discount.value === discount_id
+    );
+  }
+
   if (!priceLists || !discountLists) {
     return null;
   }
@@ -173,7 +212,7 @@ function PricesSimulation({
               {!recurrence && (
                 <>
                   <th className="w-1/6">Registration Fee</th>
-                  <th className="w-1/6">Books</th>
+                  {/* <th className="w-1/6">Books</th> */}
                   <th className="w-1/6">Tuition in Advanced</th>
                 </>
               )}
@@ -198,7 +237,7 @@ function PricesSimulation({
                       InputContext={InputContext}
                     />
                   </td>
-                  <td>
+                  {/* <td>
                     <Input
                       type="text"
                       name="books"
@@ -209,7 +248,7 @@ function PricesSimulation({
                       readOnly={true}
                       InputContext={InputContext}
                     />
-                  </td>
+                  </td> */}
                   <td>
                     <SelectPopover
                       name="tuition_in_advance"
@@ -279,13 +318,17 @@ function PricesSimulation({
                 <tr>
                   <th>Discount name</th>
                   <th className="w-1/7">Value</th>
-                  <th className="w-1/7">Start Date</th>
-                  <th className="w-1/7">End Date</th>
-                  <th className="w-1/7">Type</th>
-                  {(isAdmissionDiscountChangable ||
-                    isFinancialDiscountChangable) && (
-                    <th className="w-1/7">Action</th>
+                  {showFinancialDiscounts && (
+                    <>
+                      <th className="w-1/7">Start Date</th>
+                      <th className="w-1/7">End Date</th>
+                    </>
                   )}
+                  <th className="w-1/7">Type</th>
+                  <th className="w-1/7">Applied At</th>
+                  {(isAdmissionDiscountChangable ||
+                    isFinancialDiscountChangable) &&
+                    canModifyDiscounts && <th className="w-1/7">Action</th>}
                 </tr>
               </thead>
               <tbody>
@@ -300,6 +343,7 @@ function PricesSimulation({
                     }
                   })
                   .sort((a, b) => (a.type < b.type ? -1 : 1))
+                  .sort((a, b) => (a.name < b.name ? -1 : 1))
                   .map((discount, index) => {
                     return (
                       <tr key={index} className="border-b even:bg-slate-50">
@@ -322,135 +366,157 @@ function PricesSimulation({
                             value={discount.end_date}
                             InputContext={InputContext}
                           />
-                        </Scope>
-                        <td>{discount.name}</td>
-                        <td>
-                          {discount.value} {discount.percent ? "%" : "$"}
-                        </td>
-                        <td>
-                          {discount.start_date
-                            ? format(
-                                parseISO(discount.start_date),
-                                "dd/MM/yyyy"
-                              )
-                            : ""}
-                        </td>
-                        <td>
-                          {discount.end_date
-                            ? format(parseISO(discount.end_date), "dd/MM/yyyy")
-                            : ""}
-                        </td>
-                        <td>{discount.type}</td>
-                        <td>
-                          {((isAdmissionDiscountChangable &&
-                            discount.type === "Admission") ||
-                            (isFinancialDiscountChangable &&
-                              discount.type === "Financial")) && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                handleDiscount({
-                                  id: discount.id,
-                                  el: {
-                                    value: false,
-                                  },
-                                  priceLists,
-                                  discountLists,
-                                });
-                              }}
-                              className="w-full text-xs px-2 py-1 rounded-md cursor-pointer flex flex-row items-center justify-center gap-2"
-                            >
-                              <Trash2 size={12} />
-                              Remove
-                            </button>
+                          <td>{discount.name}</td>
+                          <td>
+                            {discount.value} {discount.percent ? "%" : "$"}
+                          </td>
+                          {showFinancialDiscounts && (
+                            <>
+                              <td>
+                                {discount.start_date
+                                  ? format(
+                                      parseISO(discount.start_date),
+                                      "MM/dd/yyyy"
+                                    )
+                                  : ""}
+                              </td>
+                              <td className="max-w-16">
+                                <DatePicker
+                                  name={`end_date`}
+                                  // title="End Date"
+                                  InputContext={InputContext}
+                                  defaultValue={
+                                    discount.end_date
+                                      ? format(
+                                          parseISO(discount.end_date),
+                                          "yyyy-MM-dd"
+                                        )
+                                      : null
+                                  }
+                                  className="w-full bg-transparent text-center border-b border-red-500 border-dashed"
+                                />
+                              </td>
+                            </>
                           )}
-                        </td>
+                          <td>{discount.type}</td>
+                          <td>{discount.applied_at}</td>
+                          <td>
+                            {((isAdmissionDiscountChangable &&
+                              discount.type === "Admission") ||
+                              (isFinancialDiscountChangable &&
+                                discount.type === "Financial")) &&
+                              canModifyDiscounts && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    handleDiscount({
+                                      id: discount.id,
+                                      el: {
+                                        value: false,
+                                      },
+                                      priceLists,
+                                      discountLists,
+                                    });
+                                  }}
+                                  className="w-full text-xs px-2 py-1 rounded-md cursor-pointer flex flex-row items-center justify-center gap-2"
+                                >
+                                  <Trash2 size={12} />
+                                  Remove
+                                </button>
+                              )}
+                          </td>
+                        </Scope>
                       </tr>
                     );
                   })}
               </tbody>
             </table>
           </InputLine>
-          <InputLine title="Avaiable Discounts">
-            {isAdmissionDiscountChangable && (
-              <>
-                <SelectPopover
-                  name="admissionDiscountChoose"
-                  title="Admission Discounts"
-                  isSearchable
-                  grow
-                  options={discountOptions.filter(
-                    (discount) => discount.type === "Admission"
-                  )}
-                  InputContext={InputContext}
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleDiscount({
-                      id: generalForm.current.getFieldValue(
-                        "prices.admissionDiscountChoose"
-                      ),
-                      el: { value: true },
-                      priceLists,
-                      discountLists,
-                    });
-                  }}
-                  className="text-xs bg-gray-100 px-4 py-2 mt-4 rounded-md border cursor-pointer flex flex-row items-center justify-center gap-2 hover:bg-gray-200"
-                >
-                  Apply
-                </button>
-              </>
-            )}
-            {isFinancialDiscountChangable && (
-              <>
-                <SelectPopover
-                  name="financialDiscountChoose"
-                  title="Financial Discounts"
-                  isSearchable
-                  grow
-                  options={discountOptions.filter(
-                    (discount) => discount.type === "Financial"
-                  )}
-                  InputContext={InputContext}
-                />
-                <DatePicker
-                  name="financialDiscountFromDate"
-                  title="Start Date"
-                  required
-                  defaultValue={format(addDays(new Date(), 1), "yyyy-MM-dd")}
-                  InputContext={InputContext}
-                />
-                <DatePicker
-                  name="financialDiscountUntilDate"
-                  title="End Date"
-                  InputContext={InputContext}
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleDiscount({
-                      id: generalForm.current.getFieldValue(
-                        "prices.financialDiscountChoose"
-                      ),
-                      start_date: generalForm.current.getFieldValue(
-                        "prices.financialDiscountFromDate"
-                      ),
-                      end_date: generalForm.current.getFieldValue(
-                        "prices.financialDiscountUntilDate"
-                      ),
-                      el: { value: true },
-                      priceLists,
-                      discountLists,
-                    });
-                  }}
-                  className="text-xs bg-gray-100 px-4 py-2 mt-4 rounded-md border cursor-pointer flex flex-row items-center justify-center gap-2 hover:bg-gray-200"
-                >
-                  Apply
-                </button>
-              </>
-            )}
-          </InputLine>
+          {canModifyDiscounts && (
+            <InputLine title="Avaiable Discounts">
+              {isAdmissionDiscountChangable && (
+                <>
+                  <SelectPopover
+                    name="admissionDiscountChoose"
+                    title="Admission Discounts"
+                    isSearchable
+                    grow
+                    options={discountOptions.filter(
+                      (discount) => discount.type === "Admission"
+                    )}
+                    InputContext={InputContext}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleDiscount({
+                        id: generalForm.current.getFieldValue(
+                          "prices.admissionDiscountChoose"
+                        ),
+                        el: { value: true },
+                        priceLists,
+                        discountLists,
+                      });
+                    }}
+                    className="text-xs bg-gray-100 px-4 py-2 mt-4 rounded-md border cursor-pointer flex flex-row items-center justify-center gap-2 hover:bg-gray-200"
+                  >
+                    Apply
+                  </button>
+                </>
+              )}
+              {isFinancialDiscountChangable && (
+                <>
+                  <SelectPopover
+                    name="financialDiscountChoose"
+                    title="Financial Discounts"
+                    isSearchable
+                    grow
+                    options={discountOptions.filter(
+                      (discount) => discount.type === "Financial"
+                    )}
+                    defaultValue={discountLists.find(
+                      (discount) => discount.type === "Financial"
+                    )}
+                    InputContext={InputContext}
+                  />
+                  <DatePicker
+                    name="financialDiscountFromDate"
+                    title="Start Date"
+                    required
+                    defaultValue={format(addDays(new Date(), 1), "yyyy-MM-dd")}
+                    InputContext={InputContext}
+                  />
+                  <DatePicker
+                    name="financialDiscountUntilDate"
+                    title="End Date"
+                    InputContext={InputContext}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleDiscount({
+                        id: generalForm.current.getFieldValue(
+                          "prices.financialDiscountChoose"
+                        ),
+                        start_date: generalForm.current.getFieldValue(
+                          "prices.financialDiscountFromDate"
+                        ),
+                        end_date: generalForm.current.getFieldValue(
+                          "prices.financialDiscountUntilDate"
+                        ),
+                        el: { value: true },
+                        priceLists,
+                        discountLists,
+                      });
+                    }}
+                    className="text-xs bg-gray-100 px-4 py-2 mt-4 rounded-md border cursor-pointer flex flex-row items-center justify-center gap-2 hover:bg-gray-200"
+                  >
+                    Apply
+                  </button>
+                </>
+              )}
+            </InputLine>
+          )}
         </>
       )}
     </Scope>

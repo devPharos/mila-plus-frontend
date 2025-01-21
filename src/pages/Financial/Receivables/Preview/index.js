@@ -29,7 +29,6 @@ import {
   invoiceTypesOptions,
   receivableStatusesOptions,
 } from "~/functions/selectPopoverOptions";
-import PricesSimulation from "~/components/PricesSimulation";
 import { FullGridContext } from "../..";
 import { Scope } from "@unform/core";
 
@@ -579,28 +578,33 @@ export default function PagePreview({
                                 defaultValue={pageData.amount}
                                 InputContext={InputContext}
                               />
-                              {pageData.is_recurrence && (
-                                <>
-                                  <Input
-                                    type="text"
-                                    name="discount"
-                                    readOnly
-                                    title="Discount"
-                                    grow
-                                    defaultValue={pageData.discount}
-                                    InputContext={InputContext}
-                                  />
-                                  <Input
-                                    type="text"
-                                    name="total"
-                                    readOnly
-                                    title="Total"
-                                    grow
-                                    defaultValue={pageData.total}
-                                    InputContext={InputContext}
-                                  />
-                                </>
-                              )}
+                              <Input
+                                type="text"
+                                name="discount"
+                                readOnly
+                                title="Discount"
+                                grow
+                                defaultValue={pageData.discount}
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="text"
+                                name="fee"
+                                readOnly
+                                title="Fee"
+                                grow
+                                defaultValue={pageData.fee}
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="text"
+                                name="total"
+                                readOnly
+                                title="Total"
+                                grow
+                                defaultValue={pageData.total}
+                                InputContext={InputContext}
+                              />
                             </InputLine>
 
                             {pageData.discounts &&

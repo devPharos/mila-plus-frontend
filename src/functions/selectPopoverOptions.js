@@ -13,6 +13,12 @@ export const optionsTypes = [
   { value: "F1", label: "F1" },
   { value: "Non-F1", label: "Non-F1" },
 ];
+
+export const appliedAtOptions = [
+  { value: "Tuition", label: "Tuition" },
+  { value: "Registration", label: "Registration" },
+  { value: "Tuition & Registration", label: "Tuition & Registration" },
+];
 export const optionsStatus = [
   { value: "In Class", label: "In Class" },
   { value: "School Waiting List", label: "School Waiting List" },

@@ -411,18 +411,6 @@ export default function PagePreview({
                             placeholderText="MM/DD/YYYY"
                             InputContext={InputContext}
                           />
-                          {/* <Input
-                            type="text"
-                            name="amount"
-                            grow
-                            required
-                            placeholder="0.00"
-                            title="Amount"
-                            defaultValue={
-                              pageData?.issuer?.issuer_x_recurrence?.amount
-                            }
-                            InputContext={InputContext}
-                          /> */}
                         </InputLine>
                         <InputLine>
                           <SelectPopover

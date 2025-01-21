@@ -30,7 +30,7 @@ export default function DatePicker({
 
   const [date, setDate] = useState(defaultValue || null);
 
-  const { id, generalForm, setSuccessfullyUpdated } = useContext(InputContext);
+  const { setSuccessfullyUpdated } = useContext(InputContext);
 
   useEffect(() => {
     registerField({
@@ -69,7 +69,7 @@ export default function DatePicker({
         <ReactDatePicker
           ref={datepickerRef}
           selected={date}
-          className="bg-transparent w-full"
+          className="bg-transparent w-full "
           onChange={handleOnChange}
           {...rest}
         />

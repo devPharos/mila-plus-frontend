@@ -15,17 +15,12 @@ import InputLine from "~/components/RegisterForm/InputLine";
 import InputLineGroup from "~/components/RegisterForm/InputLineGroup";
 import FormHeader from "~/components/RegisterForm/FormHeader";
 import Preview from "~/components/Preview";
-import {
-  countries_list,
-  getRegistries,
-  handleUpdatedFields,
-} from "~/functions";
+import { getRegistries, handleUpdatedFields } from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import { format, parseISO } from "date-fns";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSearchParams } from "react-router-dom";
 import { Scope } from "@unform/core";
-import * as Yup from "yup";
 import FileInputMultiple from "~/components/RegisterForm/FileInputMultiple";
 import FileInput from "~/components/RegisterForm/FileInput";
 import { organizeMultiAndSingleFiles } from "~/functions/uploadFile";
@@ -83,6 +78,7 @@ export default function TransferOutside({ access = null, handleOpened }) {
   const menus = [
     { order: 1, name: "transfer-request" },
     { order: 2, name: "transfer-dso" },
+    { order: 3, name: "finished" },
   ];
 
   useEffect(() => {

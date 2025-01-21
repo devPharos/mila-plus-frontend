@@ -4,6 +4,11 @@ import { useLocation } from "react-router-dom";
 import { PageContext } from "~/App";
 import api from "~/services/api";
 
+export function today() {
+  const date = new Date();
+  return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+}
+
 export function hasAccessTo(
   accesses = null,
   main_menu = null,

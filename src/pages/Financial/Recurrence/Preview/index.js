@@ -58,6 +58,11 @@ export default function PagePreview({
     filial: {
       name: "",
     },
+    searchFields: {
+      filial_id: null,
+      processtype_id: null,
+      processsubstatus_id: null,
+    },
     receivables: [],
   });
   const buttonRef = useRef(null);
@@ -109,7 +114,11 @@ export default function PagePreview({
           ? format(first_due_date, "yyyyMMdd")
           : null,
       });
-      setPageData({ ...pageData, ...data, loaded: false });
+      setPageData({
+        ...pageData,
+        ...data,
+        loaded: false,
+      });
       toast("Saved!", { autoClose: 1000 });
       setSuccessfullyUpdated(true);
 
@@ -203,6 +212,11 @@ export default function PagePreview({
             setPageData({
               ...pageData,
               ...data,
+              searchFields: {
+                processtype_id: data.processtype_id,
+                processsubstatus_id: data.processsubstatus_id,
+                filial_id: data.filial_id,
+              },
               receivables,
               loaded: true,
             });
@@ -298,7 +312,10 @@ export default function PagePreview({
                               onChange={(el) => {
                                 setPageData({
                                   ...pageData,
-                                  filial_id: el.value,
+                                  searchFields: {
+                                    ...pageData.searchFields,
+                                    filial_id: el.value,
+                                  },
                                 });
                               }}
                               options={filialOptions}

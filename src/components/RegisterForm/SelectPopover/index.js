@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { useField } from "@unform/core";
 import { Asterisk } from "lucide-react";
 import AsyncSelect from "react-select/async";
@@ -54,7 +54,9 @@ export default function SelectPopover({
   }, [fieldName, registerField, rest.isMulti]);
 
   function handleChanged() {
-    setSuccessfullyUpdated(false);
+    if (InputContext) {
+      setSuccessfullyUpdated(false);
+    }
   }
 
   const width = shrink ? "w-full md:w-auto max-w-32" : "w-full md:w-auto";

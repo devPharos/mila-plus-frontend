@@ -40,10 +40,7 @@ const PhoneNumberInput = ({
   const { generalForm, setSuccessfullyUpdated } = useContext(InputContext);
 
   function handleChanged() {
-    const value = generalForm.current.getFieldValue(name);
-    if (isPossiblePhoneNumber(value)) {
-      setSuccessfullyUpdated(false);
-    }
+    setSuccessfullyUpdated(false);
   }
   const width = shrink ? "w-full md:w-auto max-w-32" : "w-full md:w-auto";
   return (

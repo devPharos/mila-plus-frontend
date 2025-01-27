@@ -854,7 +854,7 @@ export default function EnrollmentOutside({
         );
       })
       .catch((err) => {
-        toast("Affidavit not avaiable yet.", {
+        toast("Affidavit not available yet.", {
           type: "error",
           autoClose: 3000,
         });

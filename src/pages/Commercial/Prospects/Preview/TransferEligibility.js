@@ -48,7 +48,7 @@ function TransferEligibility({
         saveAs(pdfBlob, `transfer_eligibility_${enrollment.id}.pdf`);
       })
       .catch((err) => {
-        toast("Transfer Eligibility not avaiable yet.", {
+        toast("Transfer Eligibility not available yet.", {
           type: "error",
           autoClose: 3000,
         });

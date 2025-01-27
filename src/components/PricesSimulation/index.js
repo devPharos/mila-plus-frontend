@@ -24,7 +24,6 @@ function PricesSimulation({
   const { setSuccessfullyUpdated } = useContext(FullGridContext);
   const [appliedDiscounts, setAppliedDiscounts] = useState([]);
   const [totalDiscount, setTotalDiscount] = useState(0);
-  const { filial_id, processtype_id, processsubstatus_id } = student;
   const [priceLists, setPriceLists] = useState(null);
   const [discountLists, setDiscountLists] = useState(null);
   const [discountOptions, setDiscountOptions] = useState([]);
@@ -32,10 +31,11 @@ function PricesSimulation({
 
   useEffect(() => {
     async function loadData() {
+      const { searchFields } = student;
       const { priceLists: newPriceLists, discountLists: discountListData } =
         await getPriceLists({
-          filial_id,
-          processsubstatus_id,
+          filial_id: searchFields.filial_id,
+          processsubstatus_id: searchFields.processsubstatus_id,
         });
 
       let newDiscountLists = discountListData;
@@ -93,7 +93,6 @@ function PricesSimulation({
           (receivable) => receivable.status === "Paid"
         );
         if (lastPaidReceivable && lastPaidReceivable.length > 0) {
-          console.log("1");
           setCanModifyDiscounts(false);
         }
       }
@@ -103,13 +102,12 @@ function PricesSimulation({
         student.enrollments.length > 0
       ) {
         if (student.enrollments[0].payment_link_sent_to_student) {
-          console.log("2");
           setCanModifyDiscounts(false);
         }
       }
     }
     loadData();
-  }, []);
+  }, [student]);
 
   useEffect(() => {
     function calculateDiscounts() {
@@ -191,12 +189,6 @@ function PricesSimulation({
     }
     setSuccessfullyUpdated(false);
     setAppliedDiscounts(newDiscounts);
-  }
-
-  function handleChangeDiscout(discount_id = null) {
-    const discount = discountOptions.find(
-      (discount) => discount.value === discount_id
-    );
   }
 
   if (!priceLists || !discountLists) {
@@ -433,7 +425,7 @@ function PricesSimulation({
             </table>
           </InputLine>
           {canModifyDiscounts && (
-            <InputLine title="Avaiable Discounts">
+            <InputLine title="Available Discounts">
               {isAdmissionDiscountChangable && (
                 <>
                   <SelectPopover

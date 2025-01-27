@@ -32,6 +32,7 @@ import { useSelector } from "react-redux";
 import { FullGridContext } from "../..";
 import {
   genderOptions,
+  optionsSubStatus,
   yesOrNoOptions,
 } from "~/functions/selectPopoverOptions";
 import { app } from "~/services/firebase";
@@ -124,32 +125,46 @@ export default function PagePreview({
       });
       setFilialOptions(retGroupOptions);
     }
+    async function getTypesOptions() {
+      const { data } = await api.get("/processtypes");
+      const retTypesOptions = data.map((type) => {
+        return { value: type.id, label: type.name };
+      });
+      return retTypesOptions;
+    }
+    async function getSubStatusOptions() {
+      const { data } = await api.get("/processsubstatuses");
+      const retSubStatusOptions = data.map((subStatus) => {
+        return {
+          value: subStatus.id,
+          label: subStatus.name,
+          father_id: subStatus.processtype_id,
+        };
+      });
+      retSubStatusOptions.push({ value: 0, label: "Select..." });
+      return retSubStatusOptions;
+    }
     async function getPageData() {
       const filialOptions = await getDefaultFilialOptions();
       const ddiOptions = await getCountriesList();
+      const typesOptions = await getTypesOptions();
+      const subStatusOptions = await getSubStatusOptions();
       if (id !== "new") {
         try {
           const { data } = await api.get(`/students/${id}`);
-          const { priceLists, discountLists } = await getPriceLists({
-            filial_id: data.filial_id,
-            processtype_id: data.processtype_id,
-            processsubstatus_id: data.processsubstatus_id,
-          });
           setPageData({
             ...data,
+            searchFields: {
+              processtype_id: data.processtype_id,
+              processsubstatus_id: data.processsubstatus_id,
+              filial_id: data.filial_id,
+            },
+            typesOptions,
+            subStatusOptions,
             loaded: true,
             ddiOptions,
             filialOptions,
           });
-          if (data.discount_id) {
-            handleDiscount(
-              data.discount_id,
-              { value: true },
-              true,
-              priceLists,
-              discountLists
-            );
-          }
           const {
             created_by,
             created_at,
@@ -453,6 +468,65 @@ export default function PagePreview({
                               grow
                               defaultValue={pageData.nsevis}
                               placeholder="-----"
+                              InputContext={InputContext}
+                            />
+                          </InputLine>
+                          <InputLine title="Enrollment">
+                            <SelectPopover
+                              name="processtype_id"
+                              grow
+                              required
+                              title="Type"
+                              disabled={pageData.enrollmentProcess}
+                              onChange={(el) => {
+                                setPageData({
+                                  ...pageData,
+                                  searchFields: {
+                                    ...pageData.searchFields,
+                                    processsubstatus_id: null,
+                                    processtype_id: el.value,
+                                  },
+                                });
+                                setSuccessfullyUpdated(false);
+                              }}
+                              defaultValue={
+                                pageData.processtype_id
+                                  ? pageData.typesOptions.find(
+                                      (type) =>
+                                        type.value === pageData.processtype_id
+                                    )
+                                  : null
+                              }
+                              options={pageData.typesOptions}
+                              InputContext={InputContext}
+                            />
+                            <SelectPopover
+                              name="processsubstatus_id"
+                              grow
+                              required
+                              disabled={pageData.enrollmentProcess}
+                              title="Sub Status"
+                              onChange={(el) => {
+                                setSuccessfullyUpdated(false);
+                                setPageData({
+                                  ...pageData,
+                                  searchFields: {
+                                    ...pageData.searchFields,
+                                    processsubstatus_id: el.value,
+                                  },
+                                });
+                              }}
+                              isSearchable
+                              defaultValue={optionsSubStatus.find(
+                                (substatus) =>
+                                  substatus.value ===
+                                  pageData.processsubstatus_id
+                              )}
+                              options={optionsSubStatus.filter(
+                                (type) =>
+                                  type.type_id ===
+                                  pageData.searchFields.processtype_id
+                              )}
                               InputContext={InputContext}
                             />
                           </InputLine>

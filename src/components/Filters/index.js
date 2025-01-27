@@ -8,11 +8,13 @@ import {
 import React, { useContext, useState } from "react";
 import Popover from "../Popover";
 import PopoverAddFilter from "../Popover/PopoverAddFilter";
+import Icon from "../Icon";
 
 export default function Filters({
   access = { view: false, edit: false, create: false, inactivate: false },
   Context = null,
   handleNew = null,
+  selection = null,
 }) {
   if (!Context) {
     return null;
@@ -104,7 +106,7 @@ export default function Filters({
   }
 
   return (
-    <div className="flex flex-row justify-between items-center w-full">
+    <div className="flex flex-row justify-between items-center w-full gap-2">
       {access.create && handleNew && (
         <button
           type="button"
@@ -114,6 +116,20 @@ export default function Filters({
           +
         </button>
       )}
+      {selection &&
+        selection.functions &&
+        selection.functions.map((func, index) => {
+          return (
+            <button
+              type="button"
+              onClick={() => func.fun()}
+              className="p-2 flex flex-row items-center justify-center gap-2 border border-mila_orange text-mila_orange transition-all hover:bg-mila_orange hover:text-white font-bold rounded text-xs"
+            >
+              <Icon name={func.icon} size={12} />
+              {func.title}
+            </button>
+          );
+        })}
       {results === 0 && (
         <p className="text-xs pl-2 text-gray-500">No results</p>
       )}

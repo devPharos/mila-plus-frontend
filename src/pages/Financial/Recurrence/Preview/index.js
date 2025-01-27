@@ -83,6 +83,7 @@ export default function PagePreview({
   const [paymentCriterias, setPaymentCriterias] = useState([]);
   const [chartOfAccountOptions, setChartOfAccountOptions] = useState([]);
   const [isAutoPay, setIsAutoPay] = useState(false);
+  const [paid, setPaid] = useState(false);
 
   const auth = useSelector((state) => state.auth);
 
@@ -246,6 +247,29 @@ export default function PagePreview({
     }
     getPageData();
   }, []);
+
+  useEffect(() => {
+    if (paid) {
+      setPageData({
+        ...pageData,
+        loaded: false,
+      });
+      try {
+        setPaid(false);
+        api
+          .get(`/receivables?search=${data.name}`)
+          .then(({ data: receivables }) => {
+            setPageData({
+              ...pageData,
+              receivables,
+              loaded: true,
+            });
+          });
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  }, [paid]);
 
   return (
     <Preview formType={formType} fullscreen={fullscreen}>
@@ -677,11 +701,13 @@ export default function PagePreview({
                                   <button
                                     type="button"
                                     onClick={() =>
-                                      openPaymentModal(
+                                      openPaymentModal({
                                         receivable,
-                                        pageData?.issuer?.issuer_x_recurrence
-                                          ?.id
-                                      )
+                                        recurrence_id:
+                                          pageData?.issuer?.issuer_x_recurrence
+                                            ?.id,
+                                        setPaid,
+                                      })
                                     }
                                     className="text-xs bg-gray-800 font-bold text-white px-3 py-2 mt-3 rounded-md border cursor-pointer flex flex-row items-center justify-center gap-2 hover:bg-gray-900"
                                   >

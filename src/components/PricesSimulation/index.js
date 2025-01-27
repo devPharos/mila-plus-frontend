@@ -20,6 +20,7 @@ function PricesSimulation({
   isFinancialDiscountChangable = false,
   FullGridContext = null,
   recurrence = false,
+  totalAmount = 0,
 }) {
   const { setSuccessfullyUpdated } = useContext(FullGridContext);
   const [appliedDiscounts, setAppliedDiscounts] = useState([]);
@@ -116,10 +117,11 @@ function PricesSimulation({
         return;
       }
       const discountAmount = appliedDiscounts.reduce((acc, curr) => {
-        const { applied_at, percent, value } = curr;
         if (curr.percent) {
           if (curr.applied_at.includes("Tuition")) {
-            acc += (priceLists.tuition * curr.value) / 100;
+            acc +=
+              ((totalAmount ? totalAmount : priceLists.tuition) * curr.value) /
+              100;
           }
           if (curr.applied_at.includes("Registration")) {
             acc += (priceLists.registration_fee * curr.value) / 100;
@@ -260,7 +262,11 @@ function PricesSimulation({
                 <Input
                   type="text"
                   name="tuition_original_price"
-                  value={priceLists.tuition.toFixed(2)}
+                  value={
+                    totalAmount
+                      ? totalAmount.toFixed(2)
+                      : priceLists.tuition.toFixed(2)
+                  }
                   centeredText={true}
                   placeholder="$ 0.00"
                   className="text-center"
@@ -287,9 +293,10 @@ function PricesSimulation({
                   value={(!recurrence
                     ? priceLists.registration_fee +
                       priceLists.book +
-                      priceLists.tuition -
+                      (totalAmount ? totalAmount : priceLists.tuition) -
                       totalDiscount
-                    : priceLists.tuition - totalDiscount
+                    : (totalAmount ? totalAmount : priceLists.tuition) -
+                      totalDiscount
                   ).toFixed(2)}
                   centeredText={true}
                   placeholder="$ 0.00"

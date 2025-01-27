@@ -1,10 +1,15 @@
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, CheckSquare, Square } from "lucide-react";
 import React, { useContext, useEffect } from "react";
 import Icon from "../Icon";
 
 // import { Container } from './styles';
 
-export default function Grid({ children, Context = null }) {
+export default function Grid({ children, Context = null, selection = null }) {
+  let { setSelected, selected } = { setSelected: () => null, selected: [] };
+  if (selection !== null) {
+    setSelected = selection.setSelected;
+    selected = selection.selected;
+  }
   if (!Context) {
     return null;
   }
@@ -26,6 +31,13 @@ export default function Grid({ children, Context = null }) {
       <table className="relative bg-secondary-50 rounded-xl p-4 w-full table-auto text-xs overflow-hidden text-left">
         <thead className="sticky top-0 border-md">
           <tr className="bg-secondary h-8">
+            {selection !== null && (
+              <th className="px-4">
+                <div className="flex flex-row justify-center items-center gap-2">
+                  Sel.
+                </div>
+              </th>
+            )}
             {gridHeader.length > 0 &&
               gridHeader.map((head, index) => {
                 return (
@@ -72,7 +84,6 @@ export default function Grid({ children, Context = null }) {
                 row.show && (
                   <tr
                     key={index}
-                    onClick={() => handleOpened(row.id || null)}
                     className={`${
                       opened === row.id
                         ? "bg-mila_orange text-white"
@@ -81,10 +92,38 @@ export default function Grid({ children, Context = null }) {
                         : "odd:bg-white"
                     } h-10  hover:rounded hover:border hover:border-mila_orange cursor-pointer`}
                   >
+                    {selection !== null && (
+                      <td
+                        className="px-4 pointer "
+                        onClick={() =>
+                          selected.find(
+                            (selectedRow) => selectedRow.id === row.id
+                          )
+                            ? setSelected(
+                                selected.filter(
+                                  (selectedRow) => selectedRow.id !== row.id
+                                )
+                              )
+                            : setSelected([...selected, row])
+                        }
+                      >
+                        {selected.find(
+                          (selectedRow) => selectedRow.id === row.id
+                        ) ? (
+                          <CheckSquare size={18} />
+                        ) : (
+                          <Square size={18} />
+                        )}
+                      </td>
+                    )}
                     {row.fields.map((field, index) => {
                       if (gridHeader[index]?.type === "image") {
                         return (
-                          <td className="px-4 w-10" key={index}>
+                          <td
+                            className="px-4 w-10"
+                            key={index}
+                            onClick={() => handleOpened(row.id || null)}
+                          >
                             <img
                               src={field}
                               width="30"
@@ -95,7 +134,11 @@ export default function Grid({ children, Context = null }) {
                       }
                       if (gridHeader[index]?.type === "boolean") {
                         return (
-                          <td className={`px-4`} key={index}>
+                          <td
+                            className={`px-4`}
+                            key={index}
+                            onClick={() => handleOpened(row.id || null)}
+                          >
                             <div
                               className={`flex flex-row items-center justify-start gap-2`}
                             >
@@ -106,7 +149,11 @@ export default function Grid({ children, Context = null }) {
                       }
                       if (gridHeader[index]?.type === "date") {
                         return (
-                          <td className={`px-4`} key={index}>
+                          <td
+                            className={`px-4`}
+                            key={index}
+                            onClick={() => handleOpened(row.id || null)}
+                          >
                             <div
                               className={`flex flex-row items-center justify-start gap-2`}
                             >
@@ -123,7 +170,11 @@ export default function Grid({ children, Context = null }) {
                         );
                       }
                       return (
-                        <td className={`px-4`} key={index}>
+                        <td
+                          className={`px-4`}
+                          key={index}
+                          onClick={() => handleOpened(row.id || null)}
+                        >
                           <div
                             className={`flex flex-row items-center justify-start gap-2`}
                           >

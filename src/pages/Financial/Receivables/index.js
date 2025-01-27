@@ -1,14 +1,17 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import PagePreview from "./Preview";
 import { useSelector } from "react-redux";
 import { getData } from "~/functions/gridFunctions";
 import PageContainer from "~/components/PageContainer";
 import { FullGridContext } from "..";
 import { format, parseISO } from "date-fns";
+import Settlement from "./Settlement";
+import { AlertContext } from "~/App";
 
 export default function FinancialReceivables() {
   const filial = useSelector((state) => state.auth.filial);
   const defaultOrderBy = { column: "due_date", asc: false };
+  const { alertBox } = useContext(AlertContext);
   const defaultGridHeader = [
     {
       title: "Issuer Name",
@@ -77,6 +80,8 @@ export default function FinancialReceivables() {
       filter: false,
     },
   ];
+  const [selected, setSelected] = useState([]);
+  const [settlementOpen, setSettlementOpen] = useState(false);
 
   const {
     opened,
@@ -156,11 +161,64 @@ export default function FinancialReceivables() {
     loader();
   }, [opened, filial, orderBy, search, limit]);
 
+  function handleSettlement() {
+    setSettlementOpen(!settlementOpen);
+  }
+
+  useEffect(() => {
+    let issuer = null;
+    let differentIssuer = null;
+    if (selected.length > 0) {
+      selected.map(async (receivable) => {
+        console.log(receivable.fields[0], issuer);
+        if (issuer) {
+          if (receivable.fields[0] !== issuer) {
+            differentIssuer = receivable.fields[0];
+          }
+        }
+        issuer = receivable.fields[0];
+      });
+    }
+    if (differentIssuer) {
+      alertBox({
+        title: "Attention!",
+        descriptionHTML: `<p>You have selected receivables from different issuers. Please select only receivables from the same issuer.</p>`,
+        buttons: [
+          {
+            title: "Ok",
+            class: "cancel",
+          },
+        ],
+      });
+      setSelected(
+        selected.filter(
+          (receivable) => receivable.fields[0] !== differentIssuer
+        )
+      );
+    }
+  }, [selected]);
+
   return (
     <PageContainer
       FullGridContext={FullGridContext}
       PagePreview={PagePreview}
       defaultGridHeader={defaultGridHeader}
+      selection={{
+        multiple: true,
+        selected,
+        setSelected,
+        functions: [
+          {
+            title: "Settlement",
+            fun: handleSettlement,
+            icon: "ReplaceAll",
+            Page: Settlement,
+            opened: settlementOpen,
+            setOpened: setSettlementOpen,
+            selected,
+          },
+        ],
+      }}
     />
   );
 }

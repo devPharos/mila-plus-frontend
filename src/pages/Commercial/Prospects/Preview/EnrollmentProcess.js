@@ -37,17 +37,21 @@ function EnrollmentProcess({
   const generalForm = useRef();
   const [successfullyUpdated, setSuccessfullyUpdated] = useState(false);
 
-  function handleSendMail() {
+  function handleSendMail(type = "enrollment-process") {
     setLoading(true);
     api
       .post(`/enrollments/send-form-mail`, {
-        type: routine,
+        type: type ? type : routine,
         enrollment_id: enrollment.id,
         student_id,
       })
       .then(({ data }) => {
         setLoading(false);
         toast("Form mail sent!", { autoClose: 1000 });
+      })
+      .catch((error) => {
+        setLoading(false);
+        toast.error("Form mail failed!");
       });
   }
   useEffect(() => {
@@ -174,15 +178,26 @@ function EnrollmentProcess({
                 <strong>Access the Form</strong>
               </NavLink>
               {enrollment.form_step !== "finished" ? (
-                <button
-                  type="button"
-                  disabled={loading}
-                  onClick={() => handleSendMail()}
-                  className="bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2"
-                >
-                  <Mail size={14} />
-                  <strong>Re-send form link to student</strong>
-                </button>
+                <>
+                  <button
+                    type="button"
+                    disabled={loading}
+                    onClick={() => handleSendMail()}
+                    className="bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2"
+                  >
+                    <Mail size={14} />
+                    <strong>Re-send form link to student</strong>
+                  </button>
+                  <button
+                    type="button"
+                    disabled={loading}
+                    onClick={() => handleSendMail("sponsor-signature")}
+                    className="bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2"
+                  >
+                    <Mail size={14} />
+                    <strong>Re-send form link to sponsor</strong>
+                  </button>
+                </>
               ) : (
                 <button
                   type="button"

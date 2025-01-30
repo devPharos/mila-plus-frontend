@@ -18,6 +18,7 @@ export const appliedAtOptions = [
   { value: "Tuition", label: "Tuition" },
   { value: "Registration", label: "Registration" },
   { value: "Tuition & Registration", label: "Tuition & Registration" },
+  { value: "Settlement", label: "Settlement" },
 ];
 export const optionsStatus = [
   { value: "In Class", label: "In Class" },

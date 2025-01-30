@@ -118,7 +118,10 @@ function PricesSimulation({
       }
       const discountAmount = appliedDiscounts.reduce((acc, curr) => {
         if (curr.percent) {
-          if (curr.applied_at.includes("Tuition")) {
+          if (
+            curr.applied_at.includes("Tuition") ||
+            curr.applied_at.includes("Settlement")
+          ) {
             acc +=
               ((totalAmount ? totalAmount : priceLists.tuition) * curr.value) /
               100;

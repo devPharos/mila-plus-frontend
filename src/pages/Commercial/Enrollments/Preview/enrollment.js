@@ -1257,7 +1257,7 @@ export default function EnrollmentOutside({
                                   name="phone"
                                   grow
                                   title="USA Phone Number"
-                                  defaultValue={pageData.students.phone}
+                                  value={pageData.students.phone}
                                   InputContext={InputContext}
                                 />
                                 <Input

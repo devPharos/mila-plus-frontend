@@ -1901,27 +1901,42 @@ export default function EnrollmentOutside({
                                                   e.value
                                                 );
                                               }}
-                                              defaultValue={sponsorRelationshipTypeOptions.find(
-                                                (relationshipType) =>
-                                                  relationshipType.value ===
-                                                  sponsor.relationship_type
-                                              )}
+                                              defaultValue={
+                                                sponsorRelationshipTypeOptions.find(
+                                                  (relationshipType) =>
+                                                    relationshipType.value ===
+                                                    sponsor.relationship_type
+                                                ) ||
+                                                sponsorRelationshipTypeOptions[
+                                                  sponsorRelationshipTypeOptions.length -
+                                                    1
+                                                ]
+                                              }
                                               InputContext={InputContext}
                                             />
                                             {sponsorOtherRelationshipType ===
-                                              "Other" && (
-                                              <Input
-                                                type="text"
-                                                name="relationship_type"
-                                                required
-                                                grow
-                                                title="Please specify"
-                                                defaultValue={
+                                              "Other" ||
+                                              (!sponsorRelationshipTypeOptions.find(
+                                                (relationshipType) =>
+                                                  relationshipType.value ===
                                                   sponsor.relationship_type
-                                                }
-                                                InputContext={InputContext}
-                                              />
-                                            )}
+                                              ) && (
+                                                <Input
+                                                  type="text"
+                                                  name="relationship_type"
+                                                  required
+                                                  readOnly={
+                                                    pageData.lastActiveMenu
+                                                      .order >= 7
+                                                  }
+                                                  grow
+                                                  title="Please specify"
+                                                  defaultValue={
+                                                    sponsor.relationship_type
+                                                  }
+                                                  InputContext={InputContext}
+                                                />
+                                              ))}
                                           </InputLine>
                                           <InputLine>
                                             <Input

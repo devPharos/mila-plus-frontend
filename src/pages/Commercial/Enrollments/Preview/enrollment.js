@@ -72,6 +72,7 @@ import {
   yesOrNoOptions,
 } from "~/functions/selectPopoverOptions";
 import PhoneNumberInput from "~/components/RegisterForm/PhoneNumberInput";
+import { useSelector } from "react-redux";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -83,6 +84,7 @@ export default function EnrollmentOutside({
   setOpened,
   defaultFormType = "preview",
 }) {
+  const { profile } = useSelector((state) => state.user);
   const [searchparams, setSearchParams] = useSearchParams();
   const [pageData, setPageData] = useState({
     enrollmentemergencies: [
@@ -113,7 +115,7 @@ export default function EnrollmentOutside({
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [sponsorOtherRelationshipType, setSponsorOtherRelationshipType] =
-    useState("");
+    useState([]);
 
   const id = searchparams.get("crypt");
   const { alertBox } = useContext(AlertContext);
@@ -288,7 +290,21 @@ export default function EnrollmentOutside({
             lastActiveMenu: searchparams.has("activeMenu")
               ? searchparams.get("activeMenu")
               : menus.find((menu) => menu.name === data.form_step),
+            has_sponsor_signed: data.enrollmentsponsors.find(
+              (sponsor) => sponsor.signature !== null
+            )
+              ? true
+              : false,
           });
+          const getRelationshipTypeOptions = data.enrollmentsponsors.map(
+            (sponsor) => {
+              return {
+                id: sponsor.id,
+                value: sponsor.relationship_type,
+              };
+            }
+          );
+          setSponsorOtherRelationshipType(getRelationshipTypeOptions);
         } catch (err) {
           if (err.response && err.response.data && err.response.data.error) {
             toast(err.response.data.error, { type: "error", autoClose: 3000 });
@@ -330,7 +346,6 @@ export default function EnrollmentOutside({
         err.inner.forEach((error) => {
           validationErrors[error.path] = error.message;
         });
-        console.log(validationErrors);
         generalForm.current.setErrors(validationErrors);
       }
       setLoading(false);
@@ -392,8 +407,6 @@ export default function EnrollmentOutside({
 
         Promise.all(promises)
           .then((result) => {
-            console.log(result);
-            console.log(9);
             if (data.documents && data.documents.length > 0) {
               let toastId = null;
               if (
@@ -494,10 +507,8 @@ export default function EnrollmentOutside({
 
   function verifyDependentDocuments(data = null) {
     if (data.enrollmentdependents && data.enrollmentdependents.length > 0) {
-      console.log("has dependents");
       let toastId = null;
       data.enrollmentdependents.map((dependent, index) => {
-        console.log("for each dependent");
         if (
           dependent.dependentDocuments.find(
             (document) =>
@@ -508,7 +519,6 @@ export default function EnrollmentOutside({
         ) {
           toastId = toast.loading("Dependents files are being uploaded...");
         }
-        console.log(`sending files for dependent ${index} `);
         const allPromises = organizeMultiAndSingleFiles(
           dependent.dependentDocuments,
           "Dependents"
@@ -516,16 +526,13 @@ export default function EnrollmentOutside({
         data.enrollmentdependents[index].storedFiles = [];
         Promise.all(allPromises)
           .then(async (files) => {
-            console.log(`files from ${index} uploaded`);
             try {
               files.map(async (file) => {
-                console.log(`for each file`);
                 if (!file) {
                   return;
                 }
                 if (file.name) {
                   data.enrollmentdependents[index].storedFiles.push(file);
-                  console.log(data);
                   await api.post(`/dependentsdocuments`, {
                     enrollment_id: id,
                     files: file,
@@ -539,12 +546,10 @@ export default function EnrollmentOutside({
                       isLoading: false,
                     });
                 } else {
-                  console.log(`multiple files`);
                   file
                     .sort((a, b) => a.size > b.size)
                     .map(async (promise, index) => {
                       await Promise.all([promise]).then(async (singleFile) => {
-                        console.log(`now is a single file`);
                         if (index + 1 === file.length) {
                           toastId &&
                             toast.update(toastId, {
@@ -574,7 +579,6 @@ export default function EnrollmentOutside({
             }
           })
           .finally(() => {
-            console.log(data);
             return data;
           });
       });
@@ -846,7 +850,6 @@ export default function EnrollmentOutside({
         responseType: "blob",
       })
       .then((res) => {
-        console.log(3);
         const pdfBlob = new Blob([res.data], { type: "application/pdf" });
         saveAs(
           pdfBlob,
@@ -1099,7 +1102,6 @@ export default function EnrollmentOutside({
                                 defaultValue={pageData.students.native_language}
                                 InputContext={InputContext}
                               />
-                              {console.log(countriesOptions)}
                               <SelectPopover
                                 name="citizen_country"
                                 required
@@ -1437,18 +1439,13 @@ export default function EnrollmentOutside({
                           }
                         >
                           <InputLine title="Dependent Information">
-                            {console.log(pageData.lastActiveMenu)}
                             <SelectPopover
                               name="has_dependents"
                               required
-                              onChange={(el) =>
-                                pageData.lastActiveMenu &&
-                                pageData.lastActiveMenu.order < 7
-                                  ? handleHasDependents(el)
-                                  : null
-                              }
+                              onChange={(el) => handleHasDependents(el)}
                               grow
                               disabled={
+                                !profile &&
                                 pageData.lastActiveMenu &&
                                 pageData.lastActiveMenu.order > 7
                               }
@@ -1479,7 +1476,9 @@ export default function EnrollmentOutside({
                                             defaultValue={dependent.id}
                                             InputContext={InputContext}
                                           />
-                                          {pageData.lastActiveMenu.order < 7 &&
+                                          {(profile ||
+                                            pageData.lastActiveMenu.order <
+                                              7) &&
                                           index > 0 &&
                                           index ===
                                             pageData.enrollmentdependents
@@ -1507,6 +1506,7 @@ export default function EnrollmentOutside({
                                             grow
                                             title="Full Name"
                                             readOnly={
+                                              !profile &&
                                               pageData.lastActiveMenu.order >= 7
                                             }
                                             defaultValue={dependent.name}
@@ -1518,6 +1518,7 @@ export default function EnrollmentOutside({
                                             grow
                                             title="Gender"
                                             readOnly={
+                                              !profile &&
                                               pageData.lastActiveMenu.order >= 7
                                             }
                                             options={genderOptions}
@@ -1552,6 +1553,7 @@ export default function EnrollmentOutside({
                                             grow
                                             title="Relationship Type"
                                             readOnly={
+                                              !profile &&
                                               pageData.lastActiveMenu.order >= 7
                                             }
                                             options={relationshipTypeOptions}
@@ -1570,6 +1572,7 @@ export default function EnrollmentOutside({
                                             grow
                                             title="E-mail"
                                             readOnly={
+                                              !profile &&
                                               pageData.lastActiveMenu.order >= 7
                                             }
                                             defaultValue={dependent.email}
@@ -1582,6 +1585,7 @@ export default function EnrollmentOutside({
                                             grow
                                             title="Phone Number"
                                             readOnly={
+                                              !profile &&
                                               pageData.lastActiveMenu.order >= 7
                                             }
                                             value={dependent.phone}
@@ -1607,8 +1611,9 @@ export default function EnrollmentOutside({
                                                     }
                                                     InputContext={InputContext}
                                                   />
-                                                  {pageData.lastActiveMenu
-                                                    .order < 7 && (
+                                                  {(profile ||
+                                                    pageData.lastActiveMenu
+                                                      .order < 7) && (
                                                     <InputLine
                                                       subtitle={
                                                         dependentDocument.title
@@ -1703,10 +1708,11 @@ export default function EnrollmentOutside({
                                                                           }
                                                                         </div>
                                                                       </a>
-                                                                      {pageData
-                                                                        .lastActiveMenu
-                                                                        .order <
-                                                                        7 && (
+                                                                      {(profile ||
+                                                                        pageData
+                                                                          .lastActiveMenu
+                                                                          .order <
+                                                                          7) && (
                                                                         <button
                                                                           type="button"
                                                                           onClick={() =>
@@ -1743,16 +1749,17 @@ export default function EnrollmentOutside({
                                   }
                                 }
                               )}
-                              {pageData.lastActiveMenu &&
-                                pageData.lastActiveMenu.order < 7 && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleAddDependent()}
-                                    className="bg-slate-100 border ml-6 py-2 px-2 text-xs flex flex-row justify-center items-center gap-2 rounded-md transition-all hover:border-primary hover:text-primary"
-                                  >
-                                    <PlusCircle size={16} /> Add Dependent
-                                  </button>
-                                )}
+                              {(profile ||
+                                (pageData.lastActiveMenu &&
+                                  pageData.lastActiveMenu.order < 7)) && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleAddDependent()}
+                                  className="bg-slate-100 border ml-6 py-2 px-2 text-xs flex flex-row justify-center items-center gap-2 rounded-md transition-all hover:border-primary hover:text-primary"
+                                >
+                                  <PlusCircle size={16} /> Add Dependent
+                                </button>
+                              )}
                             </>
                           )}
                         </InputLineGroup>
@@ -1794,14 +1801,11 @@ export default function EnrollmentOutside({
                             )}
                             <SelectPopover
                               name="need_sponsorship"
-                              onChange={(el) =>
-                                pageData.lastActiveMenu &&
-                                pageData.lastActiveMenu.order < 7
-                                  ? handleHasSponsors(el)
-                                  : null
-                              }
+                              onChange={(el) => handleHasSponsors(el)}
                               required
                               disabled={
+                                !pageData.has_sponsor_signed &&
+                                !profile &&
                                 pageData.lastActiveMenu &&
                                 pageData.lastActiveMenu.order > 7
                               }
@@ -1848,9 +1852,11 @@ export default function EnrollmentOutside({
                                               defaultValue={sponsor.id}
                                               InputContext={InputContext}
                                             />
-                                            {pageData.lastActiveMenu.order <
-                                              7 &&
-                                            index > 0 &&
+                                            {!sponsor.signature &&
+                                            (profile ||
+                                              (pageData.lastActiveMenu.order <
+                                                7 &&
+                                                index > 0)) &&
                                             index ===
                                               pageData.enrollmentsponsors
                                                 .length -
@@ -1877,8 +1883,10 @@ export default function EnrollmentOutside({
                                               grow
                                               title="Full Name"
                                               readOnly={
-                                                pageData.lastActiveMenu.order >=
-                                                7
+                                                sponsor.signature ||
+                                                (!profile &&
+                                                  pageData.lastActiveMenu
+                                                    .order >= 7)
                                               }
                                               defaultValue={sponsor.name}
                                               InputContext={InputContext}
@@ -1893,31 +1901,77 @@ export default function EnrollmentOutside({
                                               }
                                               isSearchable
                                               readOnly={
-                                                pageData.lastActiveMenu.order >=
-                                                7
+                                                sponsor.signature ||
+                                                (!profile &&
+                                                  pageData.lastActiveMenu
+                                                    .order >= 7)
                                               }
                                               onChange={(e) => {
+                                                setSuccessfullyUpdated(false);
                                                 setSponsorOtherRelationshipType(
-                                                  e.value
+                                                  [
+                                                    ...sponsorOtherRelationshipType.filter(
+                                                      (sp) =>
+                                                        sp.id !== sponsor.id
+                                                    ),
+                                                    {
+                                                      id: sponsor.id,
+                                                      value: e.value,
+                                                    },
+                                                  ]
                                                 );
                                               }}
-                                              defaultValue={sponsorRelationshipTypeOptions.find(
-                                                (relationshipType) =>
-                                                  relationshipType.value ===
-                                                  sponsor.relationship_type
-                                              )}
+                                              defaultValue={
+                                                sponsorRelationshipTypeOptions.find(
+                                                  (relationshipType) =>
+                                                    relationshipType.value ===
+                                                    sponsor.relationship_type
+                                                ) ||
+                                                sponsorRelationshipTypeOptions[
+                                                  sponsorRelationshipTypeOptions.length -
+                                                    1
+                                                ]
+                                              }
                                               InputContext={InputContext}
                                             />
-                                            {sponsorOtherRelationshipType ===
-                                              "Other" && (
+                                            {!sponsorRelationshipTypeOptions.find(
+                                              (relationshipType) =>
+                                                relationshipType.value ===
+                                                sponsorOtherRelationshipType.find(
+                                                  (sp) => sp.id === sponsor.id
+                                                ).value
+                                            ) ||
+                                            sponsorOtherRelationshipType.find(
+                                              (sp) => sp.id === sponsor.id
+                                            ).value === "Other" ? (
                                               <Input
                                                 type="text"
+                                                name="relationship_type"
+                                                required
+                                                readOnly={
+                                                  sponsor.signature ||
+                                                  (!profile &&
+                                                    pageData.lastActiveMenu
+                                                      .order >= 7)
+                                                }
+                                                grow
+                                                title="Please specify"
+                                                defaultValue={
+                                                  sponsor.relationship_type
+                                                }
+                                                InputContext={InputContext}
+                                              />
+                                            ) : (
+                                              <Input
+                                                type="hidden"
                                                 name="relationship_type"
                                                 required
                                                 grow
                                                 title="Please specify"
                                                 defaultValue={
-                                                  sponsor.relationship_type
+                                                  sponsorOtherRelationshipType.find(
+                                                    (sp) => sp.id === sponsor.id
+                                                  ).value
                                                 }
                                                 InputContext={InputContext}
                                               />
@@ -1931,8 +1985,10 @@ export default function EnrollmentOutside({
                                               grow
                                               title="E-mail"
                                               readOnly={
-                                                pageData.lastActiveMenu.order >=
-                                                7
+                                                sponsor.signature ||
+                                                (!profile &&
+                                                  pageData.lastActiveMenu
+                                                    .order >= 7)
                                               }
                                               defaultValue={sponsor.email}
                                               InputContext={InputContext}
@@ -1944,8 +2000,10 @@ export default function EnrollmentOutside({
                                               grow
                                               title="Phone Number"
                                               readOnly={
-                                                pageData.lastActiveMenu.order >=
-                                                7
+                                                sponsor.signature ||
+                                                (!profile &&
+                                                  pageData.lastActiveMenu
+                                                    .order >= 7)
                                               }
                                               value={sponsor.phone}
                                               InputContext={InputContext}
@@ -1956,16 +2014,16 @@ export default function EnrollmentOutside({
                                     }
                                   }
                                 )}
-                              {pageData.lastActiveMenu &&
-                                pageData.lastActiveMenu.order < 7 && (
-                                  <button
-                                    type="button"
-                                    onClick={() => handleAddSponsor()}
-                                    className="bg-slate-100 border ml-6 py-1 px-2 text-xs flex flex-row justify-center items-center gap-2 rounded-md transition-all hover:border-primary hover:text-primary"
-                                  >
-                                    <PlusCircle size={16} /> Sponsor
-                                  </button>
-                                )}
+                              {(profile ||
+                                pageData.lastActiveMenu.order < 7) && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleAddSponsor()}
+                                  className="bg-slate-100 border ml-6 py-1 px-2 text-xs flex flex-row justify-center items-center gap-2 rounded-md transition-all hover:border-primary hover:text-primary"
+                                >
+                                  <PlusCircle size={16} /> Sponsor
+                                </button>
+                              )}
                             </>
                           )}
                         </InputLineGroup>
@@ -1980,6 +2038,7 @@ export default function EnrollmentOutside({
                           {pageData.documents &&
                             pageData.documents.length > 0 &&
                             pageData.documents.map((document, index) => {
+                              console.log(document);
                               return (
                                 <Scope key={index} path={`documents[${index}]`}>
                                   <Input
@@ -2049,8 +2108,10 @@ export default function EnrollmentOutside({
                                                             }
                                                           </div>
                                                         </a>
-                                                        {pageData.lastActiveMenu
-                                                          .order < 7 && (
+                                                        {(profile ||
+                                                          pageData
+                                                            .lastActiveMenu
+                                                            .order < 7) && (
                                                           <button
                                                             type="button"
                                                             onClick={() =>
@@ -2085,7 +2146,7 @@ export default function EnrollmentOutside({
                             pageData.activeMenu === "student-signature"
                           }
                         >
-                          {!pageData.signature ? (
+                          {!profile && !pageData.signature ? (
                             <InputLine title="Student Signature">
                               {pageData.contracts &&
                                 pageData.contracts.length > 0 && (

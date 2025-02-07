@@ -140,6 +140,14 @@ export default function SponsorOutside({
               ? "sponsor-signature"
               : data.form_step,
             lastActiveMenu: menus.find((menu) => menu.name === data.form_step),
+            sponsor_signature: data.enrollmentsponsors.find(
+              (sponsor) => sponsor.id === id
+            ).signature
+              ? true
+              : false,
+            sponsor: data.enrollmentsponsors.find(
+              (sponsor) => sponsor.id === id
+            ),
           });
         } catch (err) {
           if (err.response && err.response.data && err.response.data.error) {
@@ -203,7 +211,7 @@ export default function SponsorOutside({
     }
 
     if (id !== "new") {
-      // const updated = handleUpdatedFields(data, pageData.enrollmentsponsors[0])
+      // const updated = handleUpdatedFields(data, pageData.sponsor)
 
       // if (updated.length > 0) {
       // const objUpdated = Object.fromEntries(updated);
@@ -368,11 +376,6 @@ export default function SponsorOutside({
         <div className="flex h-full flex-col items-start justify-between gap-4 md:flex-row">
           <div className="flex flex-row items-center justify-between text-xs w-32 gap-4 md:flex-col">
             <RegisterFormMenu
-              disabled={
-                pageData.lastActiveMenu &&
-                pageData.lastActiveMenu.order < 10 &&
-                !searchparams.has("activeMenu")
-              }
               setActiveMenu={() =>
                 setPageData({ ...pageData, activeMenu: "sponsor-signature" })
               }
@@ -432,8 +435,9 @@ export default function SponsorOutside({
                               name="name"
                               required
                               grow
+                              readOnly={pageData.sponsor_signature}
                               title="Full Name"
-                              defaultValue={pageData.enrollmentsponsors[0].name}
+                              defaultValue={pageData.sponsor.name}
                               InputContext={InputContext}
                             />
                             <Input
@@ -441,10 +445,9 @@ export default function SponsorOutside({
                               name="email"
                               required
                               grow
+                              readOnly={pageData.sponsor_signature}
                               title="E-mail"
-                              defaultValue={
-                                pageData.enrollmentsponsors[0].email
-                              }
+                              defaultValue={pageData.sponsor.email}
                               InputContext={InputContext}
                             />
                             <PhoneNumberInput
@@ -452,20 +455,20 @@ export default function SponsorOutside({
                               name="phone"
                               required
                               grow
+                              readOnly={pageData.sponsor_signature}
                               title="Phone Number"
-                              value={pageData.enrollmentsponsors[0].phone}
+                              value={pageData.sponsor.phone}
                               InputContext={InputContext}
                             />
                             <DatePicker
                               name="birthday"
                               required
                               grow
+                              readOnly={pageData.sponsor_signature}
                               title="Birth Date"
                               defaultValue={
-                                pageData.enrollmentsponsors[0].birthday
-                                  ? parseISO(
-                                      pageData.enrollmentsponsors[0].birthday
-                                    )
+                                pageData.sponsor.birthday
+                                  ? parseISO(pageData.sponsor.birthday)
                                   : null
                               }
                               placeholderText="MM/DD/YYYY"
@@ -477,42 +480,37 @@ export default function SponsorOutside({
                               type="text"
                               name="legal_entity_name"
                               grow
+                              readOnly={pageData.sponsor_signature}
                               title="Name of the company"
-                              defaultValue={
-                                pageData.enrollmentsponsors[0].legal_entity_name
-                              }
+                              defaultValue={pageData.sponsor.legal_entity_name}
                               InputContext={InputContext}
                             />
                             <Input
                               type="text"
                               name="legal_entity_email"
                               grow
+                              readOnly={pageData.sponsor_signature}
                               title="E-mail"
-                              defaultValue={
-                                pageData.enrollmentsponsors[0]
-                                  .legal_entity_email
-                              }
+                              defaultValue={pageData.sponsor.legal_entity_email}
                               InputContext={InputContext}
                             />
                             <PhoneNumberInput
                               type="text"
                               name="legal_entity_phone"
                               grow
+                              readOnly={pageData.sponsor_signature}
                               title="Phone Number"
-                              value={
-                                pageData.enrollmentsponsors[0]
-                                  .legal_entity_phone
-                              }
+                              value={pageData.sponsor.legal_entity_phone}
                               InputContext={InputContext}
                             />
                             <Input
                               type="text"
                               name="legal_entity_address"
                               grow
+                              readOnly={pageData.sponsor_signature}
                               title="Address"
                               defaultValue={
-                                pageData.enrollmentsponsors[0]
-                                  .legal_entity_address
+                                pageData.sponsor.legal_entity_address
                               }
                               InputContext={InputContext}
                             />
@@ -520,10 +518,10 @@ export default function SponsorOutside({
                               type="text"
                               name="legal_entity_position"
                               grow
+                              readOnly={pageData.sponsor_signature}
                               title="Position of the person who is signing this affidavit."
                               defaultValue={
-                                pageData.enrollmentsponsors[0]
-                                  .legal_entity_position
+                                pageData.sponsor.legal_entity_position
                               }
                               InputContext={InputContext}
                             />
@@ -534,10 +532,9 @@ export default function SponsorOutside({
                               name="address"
                               required
                               grow
+                              readOnly={pageData.sponsor_signature}
                               title="Address"
-                              defaultValue={
-                                pageData.enrollmentsponsors[0].address
-                              }
+                              defaultValue={pageData.sponsor.address}
                               InputContext={InputContext}
                             />
                             <Input
@@ -545,10 +542,9 @@ export default function SponsorOutside({
                               name="zip_code"
                               required
                               grow
+                              readOnly={pageData.sponsor_signature}
                               title="Zip Code"
-                              defaultValue={
-                                pageData.enrollmentsponsors[0].zip_code
-                              }
+                              defaultValue={pageData.sponsor.zip_code}
                               InputContext={InputContext}
                             />
                           </InputLine>
@@ -558,8 +554,9 @@ export default function SponsorOutside({
                               name="city"
                               required
                               grow
+                              readOnly={pageData.sponsor_signature}
                               title="City"
-                              defaultValue={pageData.enrollmentsponsors[0].city}
+                              defaultValue={pageData.sponsor.city}
                               InputContext={InputContext}
                             />
                             <Input
@@ -567,22 +564,21 @@ export default function SponsorOutside({
                               name="state"
                               required
                               grow
+                              readOnly={pageData.sponsor_signature}
                               title="State"
-                              defaultValue={
-                                pageData.enrollmentsponsors[0].state
-                              }
+                              defaultValue={pageData.sponsor.state}
                               InputContext={InputContext}
                             />
                             <SelectPopover
                               name="country"
                               required
                               grow
+                              readOnly={pageData.sponsor_signature}
                               title="Country"
                               isSearchable
                               defaultValue={countriesOptions.find(
                                 (country) =>
-                                  country.value ===
-                                  pageData.enrollmentsponsors[0].country
+                                  country.value === pageData.sponsor.country
                               )}
                               options={countriesOptions}
                               InputContext={InputContext}
@@ -594,10 +590,9 @@ export default function SponsorOutside({
                               name="birth_city"
                               required
                               grow
+                              readOnly={pageData.sponsor_signature}
                               title="City"
-                              defaultValue={
-                                pageData.enrollmentsponsors[0].birth_city
-                              }
+                              defaultValue={pageData.sponsor.birth_city}
                               InputContext={InputContext}
                             />
                             <Input
@@ -605,22 +600,22 @@ export default function SponsorOutside({
                               name="birth_state"
                               required
                               grow
+                              readOnly={pageData.sponsor_signature}
                               title="State"
-                              defaultValue={
-                                pageData.enrollmentsponsors[0].birth_state
-                              }
+                              defaultValue={pageData.sponsor.birth_state}
                               InputContext={InputContext}
                             />
                             <SelectPopover
                               name="birth_country"
                               required
                               grow
+                              readOnly={pageData.sponsor_signature}
                               title="Country"
                               isSearchable
                               defaultValue={countriesOptions.find(
                                 (country) =>
                                   country.value ===
-                                  pageData.enrollmentsponsors[0].birth_country
+                                  pageData.sponsor.birth_country
                               )}
                               options={countriesOptions}
                               InputContext={InputContext}
@@ -676,13 +671,13 @@ export default function SponsorOutside({
                             )}
                           </InputLine>
                           <InputLine>
-                            {pageData.enrollmentsponsors[0]
-                              .responsible_checkbox ? (
+                            {pageData.sponsor.responsible_checkbox ? (
                               <CheckboxInput
                                 grow
                                 name="responsible_checkbox"
                                 defaultValue={true}
                                 required
+                                readOnly={pageData.sponsor_signature}
                                 title={`I will be responsible for student's financial and personal support for the durantion of hir/her studies at MILA.`}
                                 InputContext={InputContext}
                               />
@@ -707,7 +702,7 @@ export default function SponsorOutside({
                                     defaultValue={document.id}
                                     InputContext={InputContext}
                                   />
-                                  {pageData.lastActiveMenu.order < 10 && (
+                                  {!pageData.sponsor_signature && (
                                     <InputLine title={document.title}>
                                       {!document.multiple &&
                                         pageData.enrollmentdocuments &&
@@ -770,8 +765,7 @@ export default function SponsorOutside({
                                                             }
                                                           </div>
                                                         </a>
-                                                        {pageData.lastActiveMenu
-                                                          .order < 10 && (
+                                                        {!pageData.sponsor_signature && (
                                                           <button
                                                             type="button"
                                                             onClick={() =>
@@ -797,30 +791,27 @@ export default function SponsorOutside({
                                 </Scope>
                               );
                             })}
-                          {pageData.enrollmentsponsors[0].sponsorsignature ? (
+                          {pageData.sponsor_signature ? (
                             <InputLine title="Sponsor Signature">
                               <div className="flex flex-1 flex-col items-start justify-start">
                                 <img
-                                  src={
-                                    pageData.enrollmentsponsors[0]
-                                      .sponsorsignature.url
-                                  }
+                                  src={pageData.sponsor.sponsorsignature.url}
                                   className="border w-96"
                                 />
                                 <p className="text-xs p-2 border border-t-0 rounded-b-md bg-slate-100 w-96">
                                   Signed:{" "}
                                   {format(
                                     parseISO(
-                                      pageData.enrollmentsponsors[0]
-                                        .sponsorsignature.created_at
+                                      pageData.sponsor.sponsorsignature
+                                        .created_at
                                     ),
                                     "MMM do, yyyy"
                                   )}{" "}
                                   at{" "}
                                   {format(
                                     parseISO(
-                                      pageData.enrollmentsponsors[0]
-                                        .sponsorsignature.created_at
+                                      pageData.sponsor.sponsorsignature
+                                        .created_at
                                     ),
                                     "HH:mm"
                                   )}

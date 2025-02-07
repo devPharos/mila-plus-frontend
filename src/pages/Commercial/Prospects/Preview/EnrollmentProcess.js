@@ -1,4 +1,5 @@
 import {
+  CheckCheck,
   CreditCard,
   Download,
   Edit,
@@ -6,6 +7,7 @@ import {
   Mail,
   PlayCircle,
   Send,
+  X,
 } from "lucide-react";
 import React, {
   createContext,
@@ -26,6 +28,7 @@ export const InputContext = createContext({});
 function EnrollmentProcess({
   enrollment = null,
   student_id = null,
+  issuer = null,
   setLoading = () => null,
   loading = false,
   handleStartProcess = null,
@@ -47,7 +50,7 @@ function EnrollmentProcess({
       })
       .then(({ data }) => {
         setLoading(false);
-        toast("Form mail sent!", { autoClose: 1000 });
+        toast("E-mail has been sent!", { autoClose: 1000 });
       })
       .catch((error) => {
         setLoading(false);
@@ -66,6 +69,7 @@ function EnrollmentProcess({
     }
     loadData();
   }, []);
+
   if (!enrollment) {
     return (
       <div className="flex flex-1 w-full flex-col items-start justify-start text-center gap-4 px-4">
@@ -166,6 +170,11 @@ function EnrollmentProcess({
           <div className="relative flex w-full flex-col items-start justify-start text-center gap-4 border border-gray-200 bg-slate-50 rounded-md p-4">
             <h2 className="text-md font-bold w-full text-left border-b border-gray-200 pb-2">
               Enrollment Process
+              {enrollment.student_signature ? (
+                <span className="text-green-500"> - Signed</span>
+              ) : (
+                <span className="text-red-500"> - Not signed yet</span>
+              )}
             </h2>
             <div className="relative flex w-full flex-row items-center justify-start text-center gap-4">
               <NavLink
@@ -175,9 +184,9 @@ function EnrollmentProcess({
                 className="bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2"
               >
                 <Edit size={14} />
-                <strong>Access the Form</strong>
+                <strong>Access enrollment form</strong>
               </NavLink>
-              {enrollment.form_step !== "finished" ? (
+              {!enrollment.student_signature ? (
                 <>
                   <button
                     type="button"
@@ -186,16 +195,7 @@ function EnrollmentProcess({
                     className="bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2"
                   >
                     <Mail size={14} />
-                    <strong>Re-send form link to student</strong>
-                  </button>
-                  <button
-                    type="button"
-                    disabled={loading}
-                    onClick={() => handleSendMail("sponsor-signature")}
-                    className="bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2"
-                  >
-                    <Mail size={14} />
-                    <strong>Re-send form link to sponsor</strong>
+                    <strong>Send form link to student</strong>
                   </button>
                 </>
               ) : (
@@ -211,45 +211,106 @@ function EnrollmentProcess({
               )}
             </div>
           </div>
-          {enrollment.form_step === "finished" && (
-            <div className="relative flex w-full flex-col items-start justify-start text-center gap-4 border border-gray-200 bg-slate-50 rounded-md p-4">
-              <h2 className="text-md font-bold w-full text-left border-b border-gray-200 pb-2">
-                Payment
-              </h2>
-              <div className="relative flex w-full flex-row items-center justify-start text-center gap-4">
-                <SelectPopover
-                  name="paymentmethod_id"
-                  title="Payment Method"
-                  isSearchable
-                  grow
-                  required
-                  defaultValue={
-                    enrollment.paymentmethod_id
-                      ? paymentMethods.find(
-                          (paymentMethod) =>
-                            paymentMethod.value === enrollment.paymentmethod_id
-                        )
-                      : null
-                  }
-                  options={paymentMethods}
-                  InputContext={InputContext}
-                />
-                <button
-                  type="button"
-                  onClick={() => generalForm.current.submitForm()}
-                  disabled={loading}
-                  className={`bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 mb-2 mt-5 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2`}
-                >
-                  <Send size={14} />
-                  <strong>
-                    {enrollment.payment_link_sent_to_student
-                      ? "Payment link already sent, re-send link?"
-                      : "Send payment link to student"}
-                  </strong>
-                </button>
+          {enrollment.enrollmentsponsors.map((sponsor, index) => {
+            return (
+              <div className="relative flex w-full flex-col items-start justify-start text-center gap-4 border border-gray-200 bg-slate-50 rounded-md p-4">
+                <h2 className="text-md font-bold w-full text-left border-b border-gray-200 pb-2">
+                  Sponsor #{index + 1} - {sponsor.name}{" "}
+                  {sponsor.signature ? (
+                    <span className="text-green-500"> - Signed</span>
+                  ) : (
+                    <span className="text-red-500"> - Not signed yet</span>
+                  )}
+                </h2>
+                <div className="relative flex w-full flex-row items-center justify-start text-center gap-4">
+                  <NavLink
+                    to={`/fill-form/Sponsor?crypt=${sponsor.id}`}
+                    target="_blank"
+                    disabled={true}
+                    className="bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2"
+                  >
+                    <Edit size={14} />
+                    <strong>Access sponsor form</strong>
+                  </NavLink>
+                  {!sponsor.signature ? (
+                    <>
+                      <button
+                        type="button"
+                        disabled={loading}
+                        onClick={() => handleSendMail("sponsor-signature")}
+                        className="bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2"
+                      >
+                        <Mail size={14} />
+                        <strong>Send form link to sponsor</strong>
+                      </button>
+                    </>
+                  ) : null}
+                </div>
               </div>
+            );
+          })}
+          <div className="relative flex w-full flex-col items-start justify-start text-center gap-4 border border-gray-200 bg-slate-50 rounded-md p-4">
+            <h2 className="text-md font-bold w-full text-left border-b border-gray-200 pb-2">
+              Payment{" "}
+              {issuer && issuer.receivables.length > 0 ? (
+                <>
+                  <span className="text-green-500">
+                    {" "}
+                    - Invoice I
+                    {issuer.receivables[0].invoice_number
+                      .toString()
+                      .padStart(6, "0")}
+                  </span>
+                  {issuer.receivables.find(
+                    (receivable) => receivable.status === "Pending"
+                  ) ? (
+                    <span className="text-red-500">
+                      {" "}
+                      - Invoice not paid yet
+                    </span>
+                  ) : (
+                    <>
+                      <span className="text-green-500"> - Invoice Paid</span>{" "}
+                    </>
+                  )}
+                </>
+              ) : (
+                <span className="text-red-500"> - Invoice not created</span>
+              )}
+            </h2>
+            <div className="relative flex w-full flex-row items-center justify-start text-center gap-4">
+              <SelectPopover
+                name="paymentmethod_id"
+                title="Payment Method"
+                isSearchable
+                grow
+                required
+                defaultValue={
+                  enrollment.paymentmethod_id
+                    ? paymentMethods.find(
+                        (paymentMethod) =>
+                          paymentMethod.value === enrollment.paymentmethod_id
+                      )
+                    : null
+                }
+                options={paymentMethods}
+                InputContext={InputContext}
+              />
+              <button
+                type="button"
+                onClick={() => generalForm.current.submitForm()}
+                disabled={loading}
+                className={`bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 mb-2 mt-5 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2`}
+              >
+                <Send size={14} />
+                <strong>
+                  {enrollment.payment_link_sent_to_student
+                    ? "Payment link already sent, re-send link?"
+                    : "Send payment link to student"}
+                </strong>
+              </button>
             </div>
-          )}
+          </div>
         </div>
       </Form>
     </InputContext.Provider>

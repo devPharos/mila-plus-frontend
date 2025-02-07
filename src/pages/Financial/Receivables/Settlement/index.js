@@ -64,7 +64,6 @@ export default function Settlement({
   }
 
   async function handleGeneralFormSubmit(data) {
-    console.log(data);
     // return;
     async function handleSettlement(data) {
       await api
@@ -84,7 +83,7 @@ export default function Settlement({
       await openPaymentModal({
         receivable: {
           id: data.receivables[0].id,
-          amount: data.prices.total_tuition,
+          total: parseFloat(data.prices.total_tuition),
           memo: "Settlement for " + data.receivables.length + " receivables",
         },
       }).then(() => {

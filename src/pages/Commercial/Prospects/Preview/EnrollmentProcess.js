@@ -278,38 +278,42 @@ function EnrollmentProcess({
                 <span className="text-red-500"> - Invoice not created</span>
               )}
             </h2>
-            <div className="relative flex w-full flex-row items-center justify-start text-center gap-4">
-              <SelectPopover
-                name="paymentmethod_id"
-                title="Payment Method"
-                isSearchable
-                grow
-                required
-                defaultValue={
-                  enrollment.paymentmethod_id
-                    ? paymentMethods.find(
-                        (paymentMethod) =>
-                          paymentMethod.value === enrollment.paymentmethod_id
-                      )
-                    : null
-                }
-                options={paymentMethods}
-                InputContext={InputContext}
-              />
-              <button
-                type="button"
-                onClick={() => generalForm.current.submitForm()}
-                disabled={loading}
-                className={`bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 mb-2 mt-5 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2`}
-              >
-                <Send size={14} />
-                <strong>
-                  {enrollment.payment_link_sent_to_student
-                    ? "Payment link already sent, re-send link?"
-                    : "Send payment link to student"}
-                </strong>
-              </button>
-            </div>
+            {issuer.receivables.find(
+              (receivable) => receivable.status === "Pending"
+            ) && (
+              <div className="relative flex w-full flex-row items-center justify-start text-center gap-4">
+                <SelectPopover
+                  name="paymentmethod_id"
+                  title="Payment Method"
+                  isSearchable
+                  grow
+                  required
+                  defaultValue={
+                    enrollment.paymentmethod_id
+                      ? paymentMethods.find(
+                          (paymentMethod) =>
+                            paymentMethod.value === enrollment.paymentmethod_id
+                        )
+                      : null
+                  }
+                  options={paymentMethods}
+                  InputContext={InputContext}
+                />
+                <button
+                  type="button"
+                  onClick={() => generalForm.current.submitForm()}
+                  disabled={loading}
+                  className={`bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 mb-2 mt-5 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2`}
+                >
+                  <Send size={14} />
+                  <strong>
+                    {enrollment.payment_link_sent_to_student
+                      ? "Payment link already sent, re-send link?"
+                      : "Send payment link to student"}
+                  </strong>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </Form>

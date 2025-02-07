@@ -1011,7 +1011,7 @@ export default function PagePreview({
                         >
                           <EnrollmentProcess
                             enrollment={pageData.enrollmentProcess}
-                            issuer={pageData.issuer}
+                            issuer={pageData.issuer ? pageData.issuer : null}
                             student_id={id}
                             loading={loading}
                             setLoading={setLoading}

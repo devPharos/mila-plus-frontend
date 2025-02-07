@@ -63,7 +63,7 @@ import PDFViewer from "~/components/PDFViewer";
 import CheckboxInput from "~/components/RegisterForm/CheckboxInput";
 import {
   addressOptions,
-  dept1TypeOptions,
+  dependentRelationshipTypeOptions,
   genderOptions,
   maritalStatusOptions,
   relationshipTypeOptions,
@@ -1556,9 +1556,11 @@ export default function EnrollmentOutside({
                                               !profile &&
                                               pageData.lastActiveMenu.order >= 7
                                             }
-                                            options={relationshipTypeOptions}
+                                            options={
+                                              dependentRelationshipTypeOptions
+                                            }
                                             isSearchable
-                                            defaultValue={relationshipTypeOptions.find(
+                                            defaultValue={dependentRelationshipTypeOptions.find(
                                               (relationshipType) =>
                                                 relationshipType.value ===
                                                 dependent.relationship_type

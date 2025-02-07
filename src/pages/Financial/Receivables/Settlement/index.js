@@ -80,22 +80,55 @@ export default function Settlement({
         });
     }
     if (data.paymentmethod_id === "dcbe2b5b-c088-4107-ae32-efb4e7c4b161") {
-      if (
-        await openPaymentModal({
-          receivable: {
-            id: data.receivables[0].id,
-            total: parseFloat(data.prices.total_tuition),
-            memo: "Settlement for " + data.receivables.length + " receivables",
-          },
+      const receivable = {
+        id: data.receivables[0].id,
+        total: parseFloat(data.prices.total_tuition),
+        memo: "Settlement for " + data.receivables.length + " receivables",
+      };
+      await api
+        .post(`/emergepay/simple-form`, {
+          receivable_id: receivable.id,
+          amount: receivable.total,
+          pageDescription: receivable.memo,
         })
-      ) {
-        handleSettlement(data);
-      } else {
-        toast("Payment failed!", {
-          type: "error",
-          autoClose: 3000,
+        .then(({ data: formData }) => {
+          const { transactionToken } = formData;
+          emergepay.open({
+            // (required) Used to set up the modal
+            transactionToken: transactionToken,
+            // (optional) Callback function that gets called after a successful transaction
+            onTransactionSuccess: async function (approvalData) {
+              handleSettlement(data);
+              await api
+                .post(`/emergepay/post-back-listener`, approvalData)
+                .then(async () => {
+                  return approvalData;
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+              setTimeout(() => {
+                emergepay.close();
+              }, 2000);
+            },
+            // (optional) Callback function that gets called after a failure occurs during the transaction (such as a declined card)
+            onTransactionFailure: function (failureData) {
+              console.log("Failure Data", failureData);
+              toast("Payment error!", {
+                type: "error",
+                autoClose: 3000,
+              });
+            },
+            // (optional) Callback function that gets called after a user clicks the close button on the modal
+            onTransactionCancel: function () {
+              console.log("transaction cancelled!");
+              toast("Transaction cancelled!", {
+                type: "error",
+                autoClose: 3000,
+              });
+            },
+          });
         });
-      }
     } else {
       handleSettlement(data);
     }

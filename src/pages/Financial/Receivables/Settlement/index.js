@@ -80,15 +80,22 @@ export default function Settlement({
         });
     }
     if (data.paymentmethod_id === "dcbe2b5b-c088-4107-ae32-efb4e7c4b161") {
-      await openPaymentModal({
-        receivable: {
-          id: data.receivables[0].id,
-          total: parseFloat(data.prices.total_tuition),
-          memo: "Settlement for " + data.receivables.length + " receivables",
-        },
-      }).then(() => {
+      if (
+        await openPaymentModal({
+          receivable: {
+            id: data.receivables[0].id,
+            total: parseFloat(data.prices.total_tuition),
+            memo: "Settlement for " + data.receivables.length + " receivables",
+          },
+        })
+      ) {
         handleSettlement(data);
-      });
+      } else {
+        toast("Payment failed!", {
+          type: "error",
+          autoClose: 3000,
+        });
+      }
     } else {
       handleSettlement(data);
     }

@@ -91,18 +91,17 @@ export default function Settlement({
           amount: receivable.total,
           pageDescription: receivable.memo,
         })
-        .then(({ data }) => {
-          const { transactionToken } = data;
+        .then(({ data: formData }) => {
+          const { transactionToken } = formData;
           emergepay.open({
             // (required) Used to set up the modal
             transactionToken: transactionToken,
             // (optional) Callback function that gets called after a successful transaction
             onTransactionSuccess: async function (approvalData) {
-              //   console.log("Approval Data", approvalData);
+              handleSettlement(data);
               await api
                 .post(`/emergepay/post-back-listener`, approvalData)
                 .then(async () => {
-                  handleSettlement(data);
                   return approvalData;
                 })
                 .catch((err) => {

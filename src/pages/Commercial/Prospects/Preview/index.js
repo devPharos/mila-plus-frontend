@@ -877,7 +877,7 @@ export default function PagePreview({
                                         "MM/dd/yyyy @ HH:mm"
                                       )}
                                     >
-                                      {/* <Scope
+                                      <Scope
                                         path={`students.processsubstatuses`}
                                       >
                                         <Input
@@ -894,7 +894,7 @@ export default function PagePreview({
                                           }
                                           InputContext={InputContext}
                                         />
-                                      </Scope> */}
+                                      </Scope>
                                       <Input
                                         type="text"
                                         name="phase"

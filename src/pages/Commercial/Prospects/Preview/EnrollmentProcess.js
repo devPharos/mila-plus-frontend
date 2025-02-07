@@ -278,11 +278,10 @@ function EnrollmentProcess({
                 <span className="text-red-500"> - Invoice not created</span>
               )}
             </h2>
-            {issuer.receivables.find(
-              (receivable) =>
-                receivable.status === "Pending" ||
-                issuer.receivables.length === 0
-            ) && (
+            {(issuer.receivables.find(
+              (receivable) => receivable.status === "Pending"
+            ) ||
+              issuer.receivables.length === 0) && (
               <div className="relative flex w-full flex-row items-center justify-start text-center gap-4">
                 <SelectPopover
                   name="paymentmethod_id"

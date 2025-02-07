@@ -1,6 +1,7 @@
 // prospect preview page
 import { Form } from "@unform/web";
 import {
+  Building,
   CheckCircle,
   CircleCheckBig,
   CircleDashed,
@@ -117,6 +118,10 @@ export default function PagePreview({
   const [agentOptions, setAgentOptions] = useState([]);
   const generalForm = useRef();
   const auth = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    document.getElementById("scrollPage").scrollTo(0, 0);
+  }, [activeMenu]);
 
   const countriesOptions = countries_list.map((country) => {
     return { value: country, label: country };
@@ -435,6 +440,15 @@ export default function PagePreview({
                 <RegisterFormMenu
                   setActiveMenu={setActiveMenu}
                   activeMenu={activeMenu}
+                  name="timeline"
+                >
+                  <Building size={16} /> Timeline
+                </RegisterFormMenu>
+              )}
+              {id !== "new" && (
+                <RegisterFormMenu
+                  setActiveMenu={setActiveMenu}
+                  activeMenu={activeMenu}
                   name="follow-up"
                 >
                   <ListMinus size={16} /> Follow Up
@@ -521,7 +535,10 @@ export default function PagePreview({
                   canceled: pageData.canceled_at,
                 }}
               >
-                <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll">
+                <div
+                  id="scrollPage"
+                  className="flex flex-col items-start justify-start text-sm overflow-y-scroll"
+                >
                   <Form
                     ref={generalForm}
                     onSubmit={handleGeneralFormSubmit}
@@ -839,6 +856,88 @@ export default function PagePreview({
                         </InputLineGroup>
 
                         <InputLineGroup
+                          title="TIMELINE"
+                          activeMenu={activeMenu === "timeline"}
+                        >
+                          {pageData.enrollmentProcess &&
+                            pageData.enrollmentProcess.enrollmenttimelines &&
+                            pageData.enrollmentProcess.enrollmenttimelines
+                              .length > 0 &&
+                            pageData.enrollmentProcess.enrollmenttimelines
+                              .sort((a, b) => a.created_at < b.created_at)
+                              .map((timeline, index) => {
+                                return (
+                                  <Scope
+                                    key={index}
+                                    path={`enrollmenttimelines[${index}]`}
+                                  >
+                                    <InputLine
+                                      title={format(
+                                        timeline.created_at,
+                                        "MM/dd/yyyy @ HH:mm"
+                                      )}
+                                    >
+                                      {/* <Scope
+                                        path={`students.processsubstatuses`}
+                                      >
+                                        <Input
+                                          type="text"
+                                          name="name"
+                                          grow
+                                          title="Sub Status"
+                                          defaultValue={
+                                            pageData.subStatusOptions.find(
+                                              (subStatus) =>
+                                                subStatus.value ===
+                                                pageData.processsubstatus_id
+                                            ).label
+                                          }
+                                          InputContext={InputContext}
+                                        />
+                                      </Scope> */}
+                                      <Input
+                                        type="text"
+                                        name="phase"
+                                        grow
+                                        title="Phase"
+                                        defaultValue={timeline.phase}
+                                        InputContext={InputContext}
+                                      />
+                                      <Input
+                                        type="text"
+                                        name="phase_step"
+                                        grow
+                                        title="Phase Step"
+                                        defaultValue={timeline.phase_step}
+                                        InputContext={InputContext}
+                                      />
+                                      <Input
+                                        type="text"
+                                        name="step_status"
+                                        grow
+                                        title="Step Status"
+                                        defaultValue={timeline.step_status}
+                                        InputContext={InputContext}
+                                      />
+                                      <DatePicker
+                                        name="expected_date"
+                                        grow
+                                        title="Expected Date"
+                                        defaultValue={
+                                          timeline.expected_date
+                                            ? parseISO(timeline.expected_date)
+                                            : null
+                                        }
+                                        placeholderText="MM/DD/YYYY"
+                                        InputContext={InputContext}
+                                      />
+                                    </InputLine>
+                                  </Scope>
+                                );
+                              })}
+                        </InputLineGroup>
+
+                        {/* <InputLineGroup
                           title="Documents"
                           activeMenu={activeMenu === "documents"}
                         >
@@ -894,7 +993,7 @@ export default function PagePreview({
                                 </div>
                               </InputLine>
                             )}
-                        </InputLineGroup>
+                        </InputLineGroup> */}
 
                         <InputLineGroup
                           title="Transfer Eligibility"
@@ -912,6 +1011,7 @@ export default function PagePreview({
                         >
                           <EnrollmentProcess
                             enrollment={pageData.enrollmentProcess}
+                            issuer={pageData.issuer}
                             student_id={id}
                             loading={loading}
                             setLoading={setLoading}

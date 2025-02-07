@@ -1,4 +1,12 @@
-import { ArrowUpDown, CheckSquare, Square } from "lucide-react";
+import {
+  ArrowUpDown,
+  Check,
+  CheckCheck,
+  CheckSquare,
+  Dot,
+  Minus,
+  Square,
+} from "lucide-react";
 import React, { useContext, useEffect } from "react";
 import Icon from "../Icon";
 
@@ -93,28 +101,36 @@ export default function Grid({ children, Context = null, selection = null }) {
                     } h-10  hover:rounded hover:border hover:border-mila_orange cursor-pointer`}
                   >
                     {selection !== null && (
-                      <td
-                        className="px-4 pointer "
-                        onClick={() =>
-                          selected.find(
-                            (selectedRow) => selectedRow.id === row.id
-                          )
-                            ? setSelected(
-                                selected.filter(
-                                  (selectedRow) => selectedRow.id !== row.id
-                                )
-                              )
-                            : setSelected([...selected, row])
-                        }
-                      >
-                        {selected.find(
-                          (selectedRow) => selectedRow.id === row.id
-                        ) ? (
-                          <CheckSquare size={18} />
+                      <>
+                        {!row.selectable ? (
+                          <td className="px-4">
+                            <Dot size={18} />
+                          </td>
                         ) : (
-                          <Square size={18} />
+                          <td
+                            className="px-4 pointer "
+                            onClick={() =>
+                              selected.find(
+                                (selectedRow) => selectedRow.id === row.id
+                              )
+                                ? setSelected(
+                                    selected.filter(
+                                      (selectedRow) => selectedRow.id !== row.id
+                                    )
+                                  )
+                                : setSelected([...selected, row])
+                            }
+                          >
+                            {selected.find(
+                              (selectedRow) => selectedRow.id === row.id
+                            ) ? (
+                              <CheckSquare size={18} />
+                            ) : (
+                              <Square size={18} />
+                            )}
+                          </td>
                         )}
-                      </td>
+                      </>
                     )}
                     {row.fields.map((field, index) => {
                       if (gridHeader[index]?.type === "image") {

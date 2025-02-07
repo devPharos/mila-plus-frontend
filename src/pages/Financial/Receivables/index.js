@@ -10,7 +10,7 @@ import { AlertContext } from "~/App";
 
 export default function FinancialReceivables() {
   const filial = useSelector((state) => state.auth.filial);
-  const defaultOrderBy = { column: "due_date", asc: false };
+  const defaultOrderBy = { column: "due_date", asc: true };
   const { alertBox } = useContext(AlertContext);
   const defaultGridHeader = [
     {
@@ -24,6 +24,12 @@ export default function FinancialReceivables() {
       name: ["filial", "name"],
       type: "text",
       filter: true,
+    },
+    {
+      title: "Invoice Number",
+      name: "invoice_number",
+      type: "text",
+      filter: false,
     },
     {
       title: "Entry Date",
@@ -60,12 +66,6 @@ export default function FinancialReceivables() {
       name: "total",
       type: "currency",
       filter: false,
-    },
-    {
-      title: "Payment Criteria",
-      name: ["paymentCriteria", "description"],
-      type: "text",
-      filter: true,
     },
     {
       title: "Status",
@@ -117,6 +117,7 @@ export default function FinancialReceivables() {
             canceled_at,
             filial,
             issuer,
+            invoice_number,
             entry_date,
             due_date,
             amount,
@@ -136,19 +137,18 @@ export default function FinancialReceivables() {
             fields: [
               issuer.name,
               filial.name,
+              "I" + invoice_number.toString().padStart(6, "0"),
               format(parseISO(entry_date), "yyyy-MM-dd"),
               format(parseISO(due_date), "yyyy-MM-dd"),
               "$ " + amount,
               "$ " + discount,
               "$ " + fee,
               "$ " + total,
-              paymentcriteria_id
-                ? paymentCriteria.description.slice(0, 20)
-                : "",
               status,
               format(parseISO(status_date), "yyyy-MM-dd"),
               ,
             ],
+            selectable: status !== "Paid",
             canceled: canceled_at,
             page: Math.ceil((index + 1) / limit),
           };
@@ -157,9 +157,12 @@ export default function FinancialReceivables() {
       );
       setGridData(gridDataValues);
       setLoadingData(false);
+      if (!settlementOpen) {
+        setSelected([]);
+      }
     }
     loader();
-  }, [opened, filial, orderBy, search, limit]);
+  }, [opened, settlementOpen, filial, orderBy, search, limit]);
 
   function handleSettlement() {
     setSettlementOpen(!settlementOpen);

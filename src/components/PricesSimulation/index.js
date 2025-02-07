@@ -20,6 +20,7 @@ function PricesSimulation({
   isFinancialDiscountChangable = false,
   FullGridContext = null,
   recurrence = false,
+  settlement = false,
   totalAmount = 0,
 }) {
   const { setSuccessfullyUpdated } = useContext(FullGridContext);
@@ -47,7 +48,17 @@ function PricesSimulation({
 
       if (recurrence) {
         newDiscountLists = discountListData.filter(
-          (discount) => discount.type === "Financial"
+          (discount) =>
+            discount.type === "Financial" &&
+            !discount.applied_at.includes("Settlement")
+        );
+      }
+
+      if (settlement) {
+        newDiscountLists = discountListData.filter(
+          (discount) =>
+            discount.type === "Financial" &&
+            discount.applied_at.includes("Settlement")
         );
       }
 
@@ -98,6 +109,7 @@ function PricesSimulation({
         }
       }
       if (
+        !settlement &&
         !recurrence &&
         student.enrollments &&
         student.enrollments.length > 0
@@ -206,7 +218,7 @@ function PricesSimulation({
         <table className="table-auto w-full text-center">
           <thead className="bg-slate-200 rounded-lg overflow-hidden">
             <tr>
-              {!recurrence && (
+              {!recurrence && !settlement && (
                 <>
                   <th className="w-1/6">Registration Fee</th>
                   {/* <th className="w-1/6">Books</th> */}
@@ -220,7 +232,7 @@ function PricesSimulation({
           </thead>
           <tbody>
             <tr>
-              {!recurrence && (
+              {!recurrence && !settlement && (
                 <>
                   <td>
                     <Input
@@ -293,7 +305,7 @@ function PricesSimulation({
                 <Input
                   type="text"
                   name="total_tuition"
-                  value={(!recurrence
+                  value={(!recurrence && !settlement
                     ? priceLists.registration_fee +
                       priceLists.book +
                       (totalAmount ? totalAmount : priceLists.tuition) -

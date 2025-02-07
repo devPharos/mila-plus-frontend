@@ -1,5 +1,5 @@
 import { Form } from "@unform/web";
-import { Building, Pencil, X, ListMinus } from "lucide-react";
+import { Building, Pencil, X, ListMinus, Undo, UndoDot } from "lucide-react";
 import React, {
   createContext,
   useContext,
@@ -22,7 +22,6 @@ import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
 import Textarea from "~/components/RegisterForm/Textarea";
-import Grid from "~/components/Grid";
 import { format, parseISO } from "date-fns";
 import {
   invoiceTypeDetailsOptions,
@@ -32,6 +31,7 @@ import {
 } from "~/functions/selectPopoverOptions";
 import { FullGridContext } from "../..";
 import { Scope } from "@unform/core";
+import DatePicker from "~/components/RegisterForm/DatePicker";
 
 export const InputContext = createContext({});
 
@@ -104,6 +104,7 @@ export default function PagePreview({
   const auth = useSelector((state) => state.auth);
 
   const generalForm = useRef();
+  const refundForm = useRef();
 
   function handleCloseForm() {
     if (!successfullyUpdated) {
@@ -174,6 +175,33 @@ export default function PagePreview({
           transition: Zoom,
         });
       }
+    }
+  }
+
+  async function handleRefundFormSubmit(data) {
+    const { receivable_id, refund_amount, total, refund_reason } = data;
+
+    if (!total || !receivable_id || !refund_amount || !refund_reason) {
+      return;
+    }
+    if (parseFloat(refund_amount) > parseFloat(total)) {
+      toast("Refund amount cannot be greater than total paid!", {
+        type: "error",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    try {
+      const response = await api.put(`/receivables/refund/${receivable_id}`, {
+        receivable_id,
+        refund_amount,
+        refund_reason,
+      });
+      setPageData({ ...pageData, ...response.data });
+      setOpened(response.data.id);
+    } catch (err) {
+      toast(err.response.data.error, { type: "error", autoClose: 3000 });
     }
   }
 
@@ -311,6 +339,15 @@ export default function PagePreview({
               >
                 <Building size={16} /> General
               </RegisterFormMenu>
+              {pageData.status === "Paid" && (
+                <RegisterFormMenu
+                  setActiveMenu={setActiveMenu}
+                  activeMenu={activeMenu}
+                  name="refund"
+                >
+                  <UndoDot size={16} /> Refund
+                </RegisterFormMenu>
+              )}
             </div>
             <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
               <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll">
@@ -357,7 +394,10 @@ export default function PagePreview({
                                   name="filial_id"
                                   required
                                   title="Filial"
-                                  readOnly={pageData.is_recurrence}
+                                  readOnly={
+                                    pageData.is_recurrence ||
+                                    pageData.type === "Invoice"
+                                  }
                                   isSearchable
                                   grow
                                   defaultValue={
@@ -379,6 +419,7 @@ export default function PagePreview({
                                 name="status"
                                 required
                                 grow
+                                disabled
                                 title="Status"
                                 options={receivableStatusesOptions}
                                 defaultValue={receivableStatusesOptions.find(
@@ -389,163 +430,73 @@ export default function PagePreview({
                               />
                             </InputLine>
 
-                            <InputLine title="Details">
-                              <SelectPopover
-                                name="type"
-                                required
-                                grow
-                                title="Type"
-                                readOnly={pageData.is_recurrence}
-                                options={invoiceTypesOptions}
-                                defaultValue={invoiceTypesOptions.find(
-                                  (invoiceType) =>
-                                    invoiceType.value === pageData.type
+                            <InputLine title="Settlements">
+                              {pageData.settlements &&
+                                pageData.settlements.length > 0 &&
+                                pageData.settlements.map(
+                                  (settlement, index) => {
+                                    return (
+                                      <Scope
+                                        key={index}
+                                        path={`settlements[${index}]`}
+                                      >
+                                        <Input
+                                          type="hidden"
+                                          name="id"
+                                          defaultValue={settlement.id}
+                                          InputContext={InputContext}
+                                        />
+                                        <Input
+                                          type="text"
+                                          name="amount"
+                                          grow
+                                          readOnly
+                                          title="Amount"
+                                          defaultValue={settlement.amount}
+                                          InputContext={InputContext}
+                                        />
+                                        <SelectPopover
+                                          name="paymentmethod_id"
+                                          grow
+                                          title="Payment Method"
+                                          isSearchable
+                                          options={
+                                            pageData.paymentMethodOptions
+                                          }
+                                          disabled
+                                          defaultValue={pageData.paymentMethodOptions.find(
+                                            (paymentMethod) =>
+                                              paymentMethod.value ===
+                                              settlement.paymentmethod_id
+                                          )}
+                                          InputContext={InputContext}
+                                        />
+                                        <DatePicker
+                                          name="created_at"
+                                          grow
+                                          disabled
+                                          title="Settled At"
+                                          defaultValue={format(
+                                            parseISO(settlement.created_at),
+                                            "yyyy-MM-dd"
+                                          )}
+                                          placeholderText="MM/DD/YYYY"
+                                          InputContext={InputContext}
+                                        />
+                                      </Scope>
+                                    );
+                                  }
                                 )}
-                                onChange={(el) => {
-                                  setPageData({
-                                    ...pageData,
-                                    type: el.value,
-                                  });
-                                }}
-                                InputContext={InputContext}
-                              />
-                              <SelectPopover
-                                name="type_detail"
-                                required
-                                grow
-                                title="Type Detail"
-                                readOnly={pageData.is_recurrence}
-                                options={invoiceTypeDetailsOptions.filter(
-                                  (typeDetail) =>
-                                    typeDetail.type === pageData.type
-                                )}
-                                defaultValue={
-                                  pageData.type_detail
-                                    ? invoiceTypeDetailsOptions.find(
-                                        (invoiceTypeDetail) =>
-                                          invoiceTypeDetail.value ===
-                                          pageData.type_detail
-                                      )
-                                    : null
-                                }
-                                InputContext={InputContext}
-                              />
-                              <Input
-                                type="text"
-                                name="invoice_number"
-                                required
-                                readOnly
-                                title="Invoice Number"
-                                grow
-                                defaultValue={
-                                  pageData.invoice_number
-                                    ? pageData.invoice_number
-                                    : ""
-                                }
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-
-                            <InputLine>
-                              <SelectPopover
-                                name="issuer_id"
-                                required
-                                title="Issuer"
-                                readOnly={pageData.is_recurrence}
-                                isSearchable
-                                grow
-                                defaultValue={
-                                  pageData.issuer_id
-                                    ? pageData.issuerOptions.find(
-                                        (issuer) =>
-                                          issuer.value === pageData.issuer_id
-                                      )
-                                    : null
-                                }
-                                options={pageData.issuerOptions}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-                            <InputLine>
-                              <Input
-                                type="date"
-                                name="entry_date"
-                                required
-                                title="Entry Date"
-                                readOnly={pageData.is_recurrence}
-                                grow
-                                defaultValue={
-                                  pageData.entry_date
-                                    ? format(
-                                        parseISO(pageData.entry_date),
-                                        "yyyy-MM-dd"
-                                      )
-                                    : ""
-                                }
-                                InputContext={InputContext}
-                              />
-
-                              <Input
-                                type="date"
-                                name="due_date"
-                                required
-                                title="Due Date"
-                                readOnly={pageData.is_recurrence}
-                                grow
-                                defaultValue={
-                                  pageData?.due_date
-                                    ? format(
-                                        parseISO(pageData.due_date),
-                                        "yyyy-MM-dd"
-                                      )
-                                    : ""
-                                }
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-
-                            <InputLine>
-                              <SelectPopover
-                                name="paymentmethod_id"
-                                title="Payment Method"
-                                isSearchable
-                                grow
-                                required
-                                defaultValue={
-                                  pageData.paymentmethod_id
-                                    ? pageData.paymentMethodOptions.find(
-                                        (paymentMethod) =>
-                                          paymentMethod.value ===
-                                          pageData.paymentmethod_id
-                                      )
-                                    : null
-                                }
-                                options={pageData.paymentMethodOptions}
-                                InputContext={InputContext}
-                              />
-                              <SelectPopover
-                                name="is_recurrence"
-                                title="Is Recurrence?"
-                                readOnly
-                                grow
-                                defaultValue={
-                                  pageData.is_recurrence
-                                    ? yesOrNoOptions.find(
-                                        (type) =>
-                                          type.value === pageData.is_recurrence
-                                      )
-                                    : null
-                                }
-                                options={yesOrNoOptions}
-                                InputContext={InputContext}
-                              />
                             </InputLine>
                             <InputLine title="Amount">
                               <Input
                                 type="text"
                                 name="amount"
                                 required
-                                readOnly={pageData.is_recurrence}
+                                readOnly={
+                                  pageData.is_recurrence ||
+                                  pageData.type === "Invoice"
+                                }
                                 title="Amount"
                                 grow
                                 defaultValue={pageData.amount}
@@ -614,11 +565,185 @@ export default function PagePreview({
                                 );
                               })}
 
+                            <InputLine title="Invoice">
+                              <SelectPopover
+                                name="type"
+                                required
+                                grow
+                                title="Type"
+                                readOnly={
+                                  pageData.is_recurrence ||
+                                  pageData.type === "Invoice"
+                                }
+                                options={invoiceTypesOptions}
+                                defaultValue={invoiceTypesOptions.find(
+                                  (invoiceType) =>
+                                    invoiceType.value === pageData.type
+                                )}
+                                onChange={(el) => {
+                                  setPageData({
+                                    ...pageData,
+                                    type: el.value,
+                                  });
+                                }}
+                                InputContext={InputContext}
+                              />
+                              <SelectPopover
+                                name="type_detail"
+                                required
+                                grow
+                                title="Type Detail"
+                                readOnly={
+                                  pageData.is_recurrence ||
+                                  pageData.type === "Invoice"
+                                }
+                                options={invoiceTypeDetailsOptions.filter(
+                                  (typeDetail) =>
+                                    typeDetail.type === pageData.type
+                                )}
+                                defaultValue={
+                                  pageData.type_detail
+                                    ? invoiceTypeDetailsOptions.find(
+                                        (invoiceTypeDetail) =>
+                                          invoiceTypeDetail.value ===
+                                          pageData.type_detail
+                                      )
+                                    : null
+                                }
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="text"
+                                name="invoice_number"
+                                required
+                                readOnly
+                                title="Invoice Number"
+                                grow
+                                defaultValue={
+                                  pageData.invoice_number
+                                    ? pageData.invoice_number
+                                    : ""
+                                }
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+
+                            <InputLine>
+                              <SelectPopover
+                                name="issuer_id"
+                                required
+                                title="Issuer"
+                                readOnly={
+                                  pageData.is_recurrence ||
+                                  pageData.type === "Invoice"
+                                }
+                                isSearchable
+                                grow
+                                defaultValue={
+                                  pageData.issuer_id
+                                    ? pageData.issuerOptions.find(
+                                        (issuer) =>
+                                          issuer.value === pageData.issuer_id
+                                      )
+                                    : null
+                                }
+                                options={pageData.issuerOptions}
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+                            <InputLine>
+                              <Input
+                                type="date"
+                                name="entry_date"
+                                required
+                                title="Entry Date"
+                                readOnly={
+                                  pageData.is_recurrence ||
+                                  pageData.type === "Invoice"
+                                }
+                                grow
+                                defaultValue={
+                                  pageData.entry_date
+                                    ? format(
+                                        parseISO(pageData.entry_date),
+                                        "yyyy-MM-dd"
+                                      )
+                                    : ""
+                                }
+                                InputContext={InputContext}
+                              />
+
+                              <Input
+                                type="date"
+                                name="due_date"
+                                required
+                                title="Due Date"
+                                readOnly={
+                                  pageData.is_recurrence ||
+                                  pageData.type === "Invoice"
+                                }
+                                grow
+                                defaultValue={
+                                  pageData?.due_date
+                                    ? format(
+                                        parseISO(pageData.due_date),
+                                        "yyyy-MM-dd"
+                                      )
+                                    : ""
+                                }
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+
+                            <InputLine>
+                              <SelectPopover
+                                name="paymentmethod_id"
+                                title="Payment Method"
+                                isSearchable
+                                grow
+                                required
+                                readOnly={
+                                  pageData.is_recurrence ||
+                                  pageData.type === "Invoice"
+                                }
+                                defaultValue={
+                                  pageData.paymentmethod_id
+                                    ? pageData.paymentMethodOptions.find(
+                                        (paymentMethod) =>
+                                          paymentMethod.value ===
+                                          pageData.paymentmethod_id
+                                      )
+                                    : null
+                                }
+                                options={pageData.paymentMethodOptions}
+                                InputContext={InputContext}
+                              />
+                              <SelectPopover
+                                name="is_recurrence"
+                                title="Is Recurrence?"
+                                readOnly
+                                grow
+                                defaultValue={
+                                  pageData.is_recurrence
+                                    ? yesOrNoOptions.find(
+                                        (type) =>
+                                          type.value === pageData.is_recurrence
+                                      )
+                                    : null
+                                }
+                                options={yesOrNoOptions}
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+
                             <InputLine title="Details">
                               <Textarea
                                 name="memo"
                                 title="Observations"
-                                readOnly={pageData.is_recurrence}
+                                readOnly={
+                                  pageData.is_recurrence ||
+                                  pageData.type === "Invoice"
+                                }
                                 rows={3}
                                 grow
                                 defaultValue={pageData.memo}
@@ -651,7 +776,10 @@ export default function PagePreview({
                                 title="Chart of Account"
                                 isSearchable
                                 required
-                                readOnly={pageData.is_recurrence}
+                                readOnly={
+                                  pageData.is_recurrence ||
+                                  pageData.type === "Invoice"
+                                }
                                 grow
                                 defaultValue={
                                   pageData.chartofaccount_id
@@ -663,6 +791,120 @@ export default function PagePreview({
                                     : null
                                 }
                                 options={pageData.chartOfAccountOptions}
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+                          </InputLineGroup>
+                        </>
+                      ) : (
+                        <FormLoading />
+                      )}
+                    </InputContext.Provider>
+                  </Form>
+                )}
+                {activeMenu === "refund" && (
+                  <Form
+                    ref={generalForm}
+                    onSubmit={handleRefundFormSubmit}
+                    className="w-full pb-32"
+                  >
+                    <InputContext.Provider
+                      value={{
+                        id,
+                        generalForm: refundForm,
+                        setSuccessfullyUpdated,
+                        fullscreen,
+                        setFullscreen,
+                        successfullyUpdated,
+                        handleCloseForm,
+                      }}
+                    >
+                      {id !== "new" && pageData.loaded ? (
+                        <>
+                          <FormHeader
+                            access={access}
+                            title={
+                              pageData.issuer_id
+                                ? pageData.issuerOptions.find(
+                                    (issuer) =>
+                                      issuer.value === pageData.issuer_id
+                                  ).label
+                                : null
+                            }
+                            registry={registry}
+                            InputContext={InputContext}
+                          />
+
+                          <InputLineGroup
+                            title="REFUND"
+                            activeMenu={activeMenu === "refund"}
+                          >
+                            <Input
+                              type="hidden"
+                              name="receivable_id"
+                              defaultValue={id}
+                              InputContext={InputContext}
+                            ></Input>
+                            <InputLine title="Status">
+                              <SelectPopover
+                                name="status"
+                                grow
+                                disabled
+                                title="Status"
+                                options={receivableStatusesOptions}
+                                defaultValue={receivableStatusesOptions.find(
+                                  (status) => status.value === pageData.status
+                                )}
+                                InputContext={InputContext}
+                                isSearchable
+                              />
+                            </InputLine>
+                            <InputLine title="Amount">
+                              <Input
+                                type="text"
+                                name="total"
+                                readOnly
+                                title="Total Paid"
+                                grow
+                                defaultValue={pageData.total}
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="text"
+                                name="refund_amount"
+                                title="Refund Amount"
+                                required
+                                placeholder={pageData.total}
+                                grow
+                                InputContext={InputContext}
+                              />
+                              <SelectPopover
+                                name="paymentmethod_id"
+                                title="Payment Method"
+                                isSearchable
+                                grow
+                                required
+                                defaultValue={
+                                  pageData.paymentmethod_id
+                                    ? pageData.paymentMethodOptions.find(
+                                        (paymentMethod) =>
+                                          paymentMethod.value ===
+                                          pageData.paymentmethod_id
+                                      )
+                                    : null
+                                }
+                                options={pageData.paymentMethodOptions}
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+
+                            <InputLine title="Details">
+                              <Textarea
+                                name="memo"
+                                required
+                                title="Refund reason"
+                                rows={3}
+                                grow
                                 InputContext={InputContext}
                               />
                             </InputLine>

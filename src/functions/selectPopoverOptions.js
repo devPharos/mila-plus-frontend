@@ -142,6 +142,11 @@ export const invoiceTypeDetailsOptions = [
     type: "Invoice",
   },
   {
+    value: "Registration fee",
+    label: "Registration fee",
+    type: "Invoice",
+  },
+  {
     value: "Other",
     label: "Other",
     type: "Credit Note",

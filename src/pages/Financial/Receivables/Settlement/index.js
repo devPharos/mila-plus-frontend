@@ -17,10 +17,12 @@ import { toast } from "react-toastify";
 import api from "~/services/api";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { FullGridContext } from "../..";
-import { format, parseISO } from "date-fns";
+import { addDays, format, parseISO } from "date-fns";
 import DatePicker from "~/components/RegisterForm/DatePicker";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import PricesSimulation from "~/components/PricesSimulation";
+import { Scope } from "@unform/core";
+import { openPaymentModal } from "~/functions/emergepayfn";
 
 export const InputContext = createContext({});
 
@@ -63,6 +65,34 @@ export default function Settlement({
 
   async function handleGeneralFormSubmit(data) {
     console.log(data);
+    // return;
+    async function handleSettlement(data) {
+      await api
+        .post(`/receivables/settlement`, {
+          ...data,
+          total_amount: parseFloat(data.prices.total_tuition),
+          settlement_date: format(data.settlement_date, "yyyy-MM-dd"),
+        })
+        .then(({ data }) => {
+          handleOpened(null);
+        })
+        .catch((err) => {
+          toast(err.response.data.error, { type: "error", autoClose: 3000 });
+        });
+    }
+    if (data.paymentmethod_id === "dcbe2b5b-c088-4107-ae32-efb4e7c4b161") {
+      await openPaymentModal({
+        receivable: {
+          id: data.receivables[0].id,
+          amount: data.prices.total_tuition,
+          memo: "Settlement for " + data.receivables.length + " receivables",
+        },
+      }).then(() => {
+        handleSettlement(data);
+      });
+    } else {
+      handleSettlement(data);
+    }
     return;
   }
 
@@ -162,7 +192,12 @@ export default function Settlement({
                       <>
                         <FormHeader
                           access={access}
-                          title={pageData.bank_name}
+                          title={
+                            "Settlement - " +
+                            pageData.student?.name +
+                            " " +
+                            pageData.student?.last_name
+                          }
                           registry={registry}
                           InputContext={InputContext}
                         />
@@ -176,8 +211,8 @@ export default function Settlement({
                               <InputLine title="Settlement Data">
                                 <Input
                                   type="text"
-                                  name="Qty. of Receivables"
-                                  grow
+                                  name="qty_of_receivables"
+                                  shrink
                                   readOnly
                                   title="Qty. of Receivables"
                                   defaultValue={pageData.receivables.length}
@@ -186,12 +221,12 @@ export default function Settlement({
                                 <Input
                                   type="text"
                                   name="total_amount"
-                                  grow
+                                  shrink
                                   readOnly
                                   title="Total Amount"
                                   defaultValue={pageData.receivables.reduce(
                                     (acc, curr) => {
-                                      return acc + curr.amount;
+                                      return acc + curr.total;
                                     },
                                     0
                                   )}
@@ -201,6 +236,7 @@ export default function Settlement({
                                   name="paymentmethod_id"
                                   grow
                                   title="Payment Method"
+                                  required
                                   isSearchable
                                   options={pageData.paymentMethodOptions}
                                   defaultValue={pageData.paymentMethodOptions.find(
@@ -213,11 +249,8 @@ export default function Settlement({
                                 <DatePicker
                                   name="settlement_date"
                                   grow
+                                  required
                                   title="Settlement Date"
-                                  defaultValue={format(
-                                    parseISO(pageData.receivables[0].due_date),
-                                    "yyyy-MM-dd"
-                                  )}
                                   placeholderText="MM/DD/YYYY"
                                   InputContext={InputContext}
                                 />
@@ -232,10 +265,10 @@ export default function Settlement({
                                 isAdmissionDiscountChangable={false}
                                 showFinancialDiscounts={true}
                                 isFinancialDiscountChangable={true}
-                                recurrence
+                                settlement
                                 totalAmount={pageData.receivables.reduce(
                                   (acc, curr) => {
-                                    return acc + curr.amount;
+                                    return acc + curr.total;
                                   },
                                   0
                                 )}
@@ -250,45 +283,53 @@ export default function Settlement({
                                       title={index === 0 ? "Receivables" : ""}
                                     >
                                       <p className="pt-3">#{index + 1}</p>
-                                      <Input
-                                        type="text"
-                                        name="memo"
-                                        grow
-                                        readOnly
-                                        title="Memo"
-                                        defaultValue={receivable.memo}
-                                        InputContext={InputContext}
-                                      />
-                                      <Input
-                                        type="text"
-                                        name="amount"
-                                        grow
-                                        readOnly
-                                        title="Amount"
-                                        defaultValue={receivable.amount}
-                                        InputContext={InputContext}
-                                      />
-                                      <DatePicker
-                                        name="due_date"
-                                        grow
-                                        disabled
-                                        title="Due Date"
-                                        defaultValue={format(
-                                          parseISO(receivable.due_date),
-                                          "yyyy-MM-dd"
-                                        )}
-                                        placeholderText="MM/DD/YYYY"
-                                        InputContext={InputContext}
-                                      />
-                                      <Input
-                                        type="text"
-                                        name="status"
-                                        grow
-                                        readOnly
-                                        title="Status"
-                                        defaultValue={receivable.status}
-                                        InputContext={InputContext}
-                                      />
+                                      <Scope path={`receivables[${index}]`}>
+                                        <Input
+                                          type="hidden"
+                                          name="id"
+                                          defaultValue={receivable.id}
+                                          InputContext={InputContext}
+                                        />
+                                        <Input
+                                          type="text"
+                                          name="memo"
+                                          grow
+                                          readOnly
+                                          title="Memo"
+                                          defaultValue={receivable.memo}
+                                          InputContext={InputContext}
+                                        />
+                                        <Input
+                                          type="text"
+                                          name="total"
+                                          grow
+                                          readOnly
+                                          title="Total Amount"
+                                          defaultValue={receivable.total}
+                                          InputContext={InputContext}
+                                        />
+                                        <DatePicker
+                                          name="due_date"
+                                          grow
+                                          disabled
+                                          title="Due Date"
+                                          defaultValue={format(
+                                            parseISO(receivable.due_date),
+                                            "yyyy-MM-dd"
+                                          )}
+                                          placeholderText="MM/DD/YYYY"
+                                          InputContext={InputContext}
+                                        />
+                                        <Input
+                                          type="text"
+                                          name="status"
+                                          grow
+                                          readOnly
+                                          title="Status"
+                                          defaultValue={receivable.status}
+                                          InputContext={InputContext}
+                                        />
+                                      </Scope>
                                     </InputLine>
                                   );
                                 })}

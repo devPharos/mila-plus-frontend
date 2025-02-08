@@ -46,7 +46,7 @@ import {
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import DatePicker from "~/components/RegisterForm/DatePicker";
 import SelectCountry from "~/components/RegisterForm/SelectCountry";
-import { format, parseISO } from "date-fns";
+import { differenceInDays, format, parseISO } from "date-fns";
 import CountryList from "country-list-with-dial-code-and-flag";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
@@ -859,82 +859,123 @@ export default function PagePreview({
                           title="TIMELINE"
                           activeMenu={activeMenu === "timeline"}
                         >
-                          {pageData.enrollmentProcess &&
-                            pageData.enrollmentProcess.enrollmenttimelines &&
-                            pageData.enrollmentProcess.enrollmenttimelines
-                              .length > 0 &&
-                            pageData.enrollmentProcess.enrollmenttimelines
-                              .sort((a, b) => a.created_at < b.created_at)
-                              .map((timeline, index) => {
-                                return (
-                                  <Scope
-                                    key={index}
-                                    path={`enrollmenttimelines[${index}]`}
-                                  >
-                                    <InputLine
-                                      title={format(
-                                        timeline.created_at,
-                                        "MM/dd/yyyy @ HH:mm"
-                                      )}
-                                    >
-                                      <Scope
-                                        path={`students.processsubstatuses`}
-                                      >
-                                        <Input
-                                          type="text"
-                                          name="name"
-                                          grow
-                                          title="Sub Status"
-                                          defaultValue={
-                                            pageData.subStatusOptions.find(
-                                              (subStatus) =>
-                                                subStatus.value ===
-                                                pageData.processsubstatus_id
-                                            ).label
-                                          }
-                                          InputContext={InputContext}
-                                        />
-                                      </Scope>
-                                      <Input
-                                        type="text"
-                                        name="phase"
-                                        grow
-                                        title="Phase"
-                                        defaultValue={timeline.phase}
-                                        InputContext={InputContext}
-                                      />
-                                      <Input
-                                        type="text"
-                                        name="phase_step"
-                                        grow
-                                        title="Phase Step"
-                                        defaultValue={timeline.phase_step}
-                                        InputContext={InputContext}
-                                      />
-                                      <Input
-                                        type="text"
-                                        name="step_status"
-                                        grow
-                                        title="Step Status"
-                                        defaultValue={timeline.step_status}
-                                        InputContext={InputContext}
-                                      />
-                                      <DatePicker
-                                        name="expected_date"
-                                        grow
-                                        title="Expected Date"
-                                        defaultValue={
-                                          timeline.expected_date
-                                            ? parseISO(timeline.expected_date)
-                                            : null
-                                        }
-                                        placeholderText="MM/DD/YYYY"
-                                        InputContext={InputContext}
-                                      />
-                                    </InputLine>
-                                  </Scope>
-                                );
-                              })}
+                          <div className="px-4 w-full flex flex-col">
+                            <h2 className="text-xl font-bold w-full text-left pb-4">
+                              {
+                                pageData.typesOptions.find(
+                                  (type) =>
+                                    type.value === pageData.processtype_id
+                                ).label
+                              }
+                              {" - "}
+                              {pageData.processsubstatus_id &&
+                                pageData.subStatusOptions.find(
+                                  (subStatus) =>
+                                    subStatus.value ===
+                                    pageData.processsubstatus_id
+                                ).label}
+                            </h2>
+                            <div className="w-full flex flex-col items-center justify-start text-center border border-gray-200 border-b-0">
+                              {pageData.enrollmentProcess &&
+                                pageData.enrollmentProcess
+                                  .enrollmenttimelines &&
+                                pageData.enrollmentProcess.enrollmenttimelines
+                                  .length > 0 &&
+                                pageData.enrollmentProcess.enrollmenttimelines.map(
+                                  (timeline, index) => {
+                                    const showPhase =
+                                      index === 0 ||
+                                      timeline.phase !==
+                                        pageData.enrollmentProcess
+                                          .enrollmenttimelines[index - 1].phase
+                                        ? true
+                                        : false;
+
+                                    const showPhaseStep =
+                                      index === 0 ||
+                                      timeline.phase_step !==
+                                        pageData.enrollmentProcess
+                                          .enrollmenttimelines[index - 1]
+                                          .phase_step
+                                        ? true
+                                        : false;
+
+                                    return (
+                                      <>
+                                        {showPhase ? (
+                                          <div className="px-4 py-2 w-full flex flex-col items-start justify-start text-center border-b bg-slate-100 gap-2">
+                                            <h2 className="text-md font-bold w-full text-left">
+                                              {timeline.phase}
+                                            </h2>
+                                          </div>
+                                        ) : null}
+
+                                        {showPhaseStep ? (
+                                          <div className="px-8 py-2 w-full flex flex-col items-start justify-start text-center border-b bg-slate-50 gap-2">
+                                            <h2 className="text-sm font-bold w-full text-left ">
+                                              {timeline.phase_step}
+                                            </h2>
+                                          </div>
+                                        ) : null}
+
+                                        <div className="relative px-12 py-2 w-full flex flex-col items-start justify-start text-center border-b gap-2">
+                                          <p>{timeline.step_status}</p>
+                                          <span className="text-xs text-gray-500">
+                                            {format(
+                                              timeline.created_at,
+                                              "MM/dd/yyyy"
+                                            ) +
+                                              " at " +
+                                              format(
+                                                timeline.created_at,
+                                                "HH:mm"
+                                              )}
+                                          </span>
+                                          {index === 0 &&
+                                            timeline.expected_date && (
+                                              <div className="w-full flex flex-row items-center justify-start text-center gap-2 border-t border-dashed pt-1">
+                                                <span className="relative flex h-2 w-2">
+                                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-mila_orange opacity-75"></span>
+                                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-mila_orange"></span>
+                                                </span>
+
+                                                <p className="text-xs ">
+                                                  Expected to{" "}
+                                                  {format(
+                                                    parseISO(
+                                                      timeline.expected_date
+                                                    ),
+                                                    "MM/dd/yyyy"
+                                                  )}{" "}
+                                                  {differenceInDays(
+                                                    parseISO(
+                                                      timeline.expected_date
+                                                    ),
+                                                    new Date()
+                                                  ) < 0 && (
+                                                    <>
+                                                      <span className="text-red-500">
+                                                        - Delayed by{" "}
+                                                        {differenceInDays(
+                                                          parseISO(
+                                                            timeline.expected_date
+                                                          ),
+                                                          new Date()
+                                                        ) * -1}{" "}
+                                                        days
+                                                      </span>
+                                                    </>
+                                                  )}
+                                                </p>
+                                              </div>
+                                            )}
+                                        </div>
+                                      </>
+                                    );
+                                  }
+                                )}
+                            </div>
+                          </div>
                         </InputLineGroup>
 
                         {/* <InputLineGroup

@@ -113,7 +113,6 @@ export default function Settlement({
             },
             // (optional) Callback function that gets called after a failure occurs during the transaction (such as a declined card)
             onTransactionFailure: function (failureData) {
-              console.log("Failure Data", failureData);
               toast("Payment error!", {
                 type: "error",
                 autoClose: 3000,
@@ -121,7 +120,6 @@ export default function Settlement({
             },
             // (optional) Callback function that gets called after a user clicks the close button on the modal
             onTransactionCancel: function () {
-              console.log("transaction cancelled!");
               toast("Transaction cancelled!", {
                 type: "error",
                 autoClose: 3000,
@@ -265,7 +263,7 @@ export default function Settlement({
                                   title="Total Amount"
                                   defaultValue={pageData.receivables.reduce(
                                     (acc, curr) => {
-                                      return acc + curr.total;
+                                      return acc + curr.balance;
                                     },
                                     0
                                   )}
@@ -307,7 +305,7 @@ export default function Settlement({
                                 settlement
                                 totalAmount={pageData.receivables.reduce(
                                   (acc, curr) => {
-                                    return acc + curr.total;
+                                    return acc + curr.balance;
                                   },
                                   0
                                 )}
@@ -345,6 +343,15 @@ export default function Settlement({
                                           readOnly
                                           title="Total Amount"
                                           defaultValue={receivable.total}
+                                          InputContext={InputContext}
+                                        />
+                                        <Input
+                                          type="text"
+                                          name="balance"
+                                          grow
+                                          readOnly
+                                          title="Balance Amount"
+                                          defaultValue={receivable.balance}
                                           InputContext={InputContext}
                                         />
                                         <DatePicker

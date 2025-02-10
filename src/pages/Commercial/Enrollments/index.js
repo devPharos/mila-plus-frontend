@@ -131,7 +131,9 @@ export default function CommercialEnrollments() {
               phase_step,
               format(stepCreatedAt, "MM/dd/yyyy @ HH:mm"),
               step_status,
-              format(parseISO(expected_date), "MM/dd/yyyy"),
+              expected_date
+                ? format(parseISO(expected_date), "MM/dd/yyyy")
+                : "",
             ],
             canceled: canceled_at,
             page: Math.ceil((index + 1) / limit),

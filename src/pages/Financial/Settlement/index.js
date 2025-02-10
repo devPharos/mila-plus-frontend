@@ -1,41 +1,35 @@
-import React, { createContext, useContext, useRef, useState } from "react";
-import PageHeader from "~/components/PageHeader";
-import Breadcrumbs from "~/components/Breadcrumbs";
-import FiltersBar from "~/components/FiltersBar";
-import { Filter } from "lucide-react";
-import { getCurrentPage } from "~/functions";
-import { Form } from "@unform/web";
-import { FullGridContext } from "..";
-import { toast } from "react-toastify";
-import InputLineGroup from "~/components/RegisterForm/InputLineGroup";
-import InputLine from "~/components/RegisterForm/InputLine";
-import DatePicker from "~/components/RegisterForm/DatePicker";
-import { format } from "date-fns";
-import SelectPopover from "~/components/RegisterForm/SelectPopover";
-import PageContainer from "~/components/PageContainer";
+import React, { useContext, useEffect, useState } from "react";
 import PagePreview from "./Preview";
-import Grid from "~/components/Grid";
-
-export const InputContext = createContext({});
+import { useSelector } from "react-redux";
+import { getData } from "~/functions/gridFunctions";
+import PageContainer from "~/components/PageContainer";
+import { FullGridContext } from "..";
+import { format, parseISO } from "date-fns";
+import { AlertContext } from "~/App";
+import api from "~/services/api";
+import { toast } from "react-toastify";
 
 export default function FinancialSettlement() {
-  const currentPage = getCurrentPage();
-  const generalForm = useRef();
-  const [formType, setFormType] = useState("full");
-  const [fullscreen, setFullscreen] = useState(false);
-  const [activeMenu, setActiveMenu] = useState("general");
+  const filial = useSelector((state) => state.auth.filial);
+  const defaultOrderBy = { column: "receivable,due_date", asc: true };
   const defaultGridHeader = [
     {
       title: "Issuer Name",
-      name: "issuer_name",
+      name: ["issuer", "name"],
       type: "text",
       filter: false,
     },
     {
       title: "Filial Name",
-      name: "filial_name",
+      name: ["filial", "name"],
       type: "text",
       filter: true,
+    },
+    {
+      title: "Invoice Number",
+      name: "invoice_number",
+      type: "text",
+      filter: false,
     },
     {
       title: "Entry Date",
@@ -56,124 +50,199 @@ export default function FinancialSettlement() {
       filter: false,
     },
     {
-      title: "Discount",
-      name: "discount",
-      type: "currency",
-      filter: false,
-    },
-    {
-      title: "Fee",
-      name: "fee",
-      type: "currency",
-      filter: false,
-    },
-    {
-      title: "Total",
-      name: "total",
-      type: "currency",
-      filter: false,
-    },
-    {
-      title: "Payment Criteria",
-      name: "paymentcriteria_id",
+      title: "Payment Method",
+      name: ["paymentMethod", "description"],
       type: "text",
-      filter: true,
+      filter: false,
     },
     {
-      title: "Status",
-      name: "status",
-      type: "text",
-      filter: true,
-    },
-    {
-      title: "Status Date",
-      name: "status_date",
+      title: "Settlement Date",
+      name: "created_at",
       type: "date",
       filter: false,
     },
   ];
-
-  function handleGeneralFormSubmit(data) {
-    console.log(data);
-  }
-
-  function handleCloseForm() {
-    if (!successfullyUpdated) {
-      toast("Changes discarted!", { autoClose: 1000 });
-    }
-    handleOpened(null);
-  }
+  const [selected, setSelected] = useState([]);
+  const [settlementOpen, setSettlementOpen] = useState(false);
+  const { alertBox } = useContext(AlertContext);
 
   const {
-    handleOpened,
-    setOpened,
-    successfullyUpdated,
-    setSuccessfullyUpdated,
+    opened,
+    orderBy,
+    setGridData,
+    page,
+    setPages,
+    limit,
+    search,
+    setLoadingData,
   } = useContext(FullGridContext);
 
-  return (
-    <div className="h-full bg-white flex flex-1 flex-col justify-start items-start rounded-tr-2xl px-4">
-      <PageHeader>
-        <Breadcrumbs currentPage={currentPage} />
-        <FiltersBar>
-          <Filter size={14} /> Custom Filters
-        </FiltersBar>
-      </PageHeader>
+  async function loader() {
+    setLoadingData(true);
+    setTimeout(async () => {
+      const data = await getData("settlements", {
+        limit,
+        page,
+        orderBy,
+        setPages,
+        setGridData,
+        search,
+        defaultGridHeader,
+        defaultOrderBy,
+      });
+      if (!data) {
+        return;
+      }
+      const gridDataValues = data.map(
+        (
+          {
+            id,
+            canceled_at,
+            receivable,
+            status,
+            amount,
+            created_at,
+            paymentMethod,
+            // status_date,
+          },
+          index
+        ) => {
+          const ret = {
+            show: true,
+            id,
+            fields: [
+              receivable.issuer.name,
+              receivable.filial.name,
+              "I" + receivable.invoice_number.toString().padStart(6, "0"),
+              format(parseISO(receivable.entry_date), "yyyy-MM-dd"),
+              format(parseISO(receivable.due_date), "yyyy-MM-dd"),
+              "$ " + amount.toFixed(2),
+              paymentMethod ? paymentMethod.description : "",
+              format(parseISO(created_at), "yyyy-MM-dd"),
+              ,
+            ],
+            selectable: !paymentMethod.description
+              .toUpperCase()
+              .includes("GRAVITY"),
+            canceled: canceled_at,
+            page: Math.ceil((index + 1) / limit),
+          };
+          return ret;
+        }
+      );
+      setGridData(gridDataValues);
+      setLoadingData(false);
+    }, 500);
+  }
 
-      <div className="mt-4 w-full overflow-hidden flex flex-col justify-start">
-        <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll">
-          <Form
-            ref={generalForm}
-            onSubmit={handleGeneralFormSubmit}
-            className="w-full pb-32"
-          >
-            <InputContext.Provider
-              value={{
-                id: "New",
-                generalForm,
-                setSuccessfullyUpdated,
-                fullscreen,
-                setFullscreen,
-                successfullyUpdated,
-                handleCloseForm,
-              }}
-            >
-              <InputLineGroup
-                title="GENERAL"
-                activeMenu={activeMenu === "general"}
-              >
-                <InputLine title="Filters">
-                  <SelectPopover
-                    name="student_id"
-                    required
-                    title="Student"
-                    isSearchable
-                    grow
-                    defaultValue={null}
-                    options={[]}
-                    InputContext={InputContext}
-                  />
-                  <DatePicker
-                    name="from_date"
-                    title="From Date"
-                    required
-                    defaultValue={format(new Date(), "yyyy-MM-dd")}
-                    placeholderText="MM/DD/YYYY"
-                    InputContext={InputContext}
-                  />
-                  <DatePicker
-                    name="to_date"
-                    title="To Date"
-                    defaultValue={format(new Date(), "yyyy-MM-dd")}
-                    placeholderText="MM/DD/YYYY"
-                    InputContext={InputContext}
-                  />
-                </InputLine>
-              </InputLineGroup>
-            </InputContext.Provider>
-          </Form>
-        </div>
-      </div>
-    </div>
+  useEffect(() => {
+    loader();
+  }, [opened, filial, orderBy, search, limit]);
+
+  useEffect(() => {
+    let issuer = null;
+    let differentIssuer = null;
+    if (selected.length > 0) {
+      selected.map(async (receivable) => {
+        if (issuer) {
+          if (receivable.fields[0] !== issuer) {
+            differentIssuer = receivable.fields[0];
+          }
+        }
+        issuer = receivable.fields[0];
+      });
+    }
+    if (differentIssuer) {
+      alertBox({
+        title: "Attention!",
+        descriptionHTML: `<p>You have selected receivables from different issuers. Please select only receivables from the same issuer.</p>`,
+        buttons: [
+          {
+            title: "Ok",
+            class: "cancel",
+          },
+        ],
+      });
+      setSelected(
+        selected.filter(
+          (receivable) => receivable.fields[0] !== differentIssuer
+        )
+      );
+    }
+  }, [selected]);
+
+  function handleDelete() {
+    if (selected.length === 0) {
+      return;
+    }
+    alertBox({
+      title: "Attention!",
+      descriptionHTML:
+        "Are you sure you want to delete the selected settlements? This action cannot be undone.",
+      buttons: [
+        {
+          title: "No",
+          class: "cancel",
+        },
+        {
+          title: "Yes",
+          onPress: async () => {
+            try {
+              const promises = [];
+              selected.map((receivable) => {
+                promises.push(
+                  api
+                    .delete(`/settlements/${receivable.id}`)
+                    .then((response) => {
+                      toast(response.data.message, { autoClose: 1000 });
+                    })
+                    .catch((err) => {
+                      toast(err.response.data.error, {
+                        type: "error",
+                        autoClose: 5000,
+                      });
+                    })
+                );
+              });
+              Promise.all(promises).then(() => {
+                loader();
+                setSelected([]);
+              });
+            } catch (err) {
+              toast(err.response.data.error, {
+                type: "error",
+                autoClose: 3000,
+              });
+            }
+          },
+        },
+      ],
+    });
+  }
+
+  return (
+    <PageContainer
+      FullGridContext={FullGridContext}
+      PagePreview={null}
+      defaultGridHeader={defaultGridHeader}
+      handleNew={false}
+      handleEdit={false}
+      selection={{
+        multiple: true,
+        selected,
+        setSelected,
+        functions: [
+          {
+            title: "Delete settlement",
+            fun: handleDelete,
+            icon: "X",
+            Page: null,
+            opened: null,
+            setOpened: () => null,
+            selected,
+          },
+        ],
+      }}
+    />
   );
 }

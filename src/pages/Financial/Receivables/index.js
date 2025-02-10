@@ -4,14 +4,15 @@ import { useSelector } from "react-redux";
 import { getData } from "~/functions/gridFunctions";
 import PageContainer from "~/components/PageContainer";
 import { FullGridContext } from "..";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, set } from "date-fns";
 import Settlement from "./Settlement";
 import { AlertContext } from "~/App";
+import { toast } from "react-toastify";
+import api from "~/services/api";
 
 export default function FinancialReceivables() {
   const filial = useSelector((state) => state.auth.filial);
   const defaultOrderBy = { column: "due_date", asc: true };
-  const { alertBox } = useContext(AlertContext);
   const defaultGridHeader = [
     {
       title: "Issuer Name",
@@ -88,6 +89,7 @@ export default function FinancialReceivables() {
   ];
   const [selected, setSelected] = useState([]);
   const [settlementOpen, setSettlementOpen] = useState(false);
+  const { alertBox } = useContext(AlertContext);
 
   const {
     opened,
@@ -99,10 +101,9 @@ export default function FinancialReceivables() {
     search,
     setLoadingData,
   } = useContext(FullGridContext);
-
-  useEffect(() => {
-    async function loader() {
-      setLoadingData(true);
+  async function loader() {
+    setLoadingData(true);
+    setTimeout(async () => {
       const data = await getData("receivables", {
         limit,
         page,
@@ -163,15 +164,22 @@ export default function FinancialReceivables() {
       );
       setGridData(gridDataValues);
       setLoadingData(false);
-      if (!settlementOpen) {
-        setSelected([]);
-      }
+    }, 500);
+  }
+
+  useEffect(() => {
+    if (!settlementOpen) {
+      setSelected([]);
     }
     loader();
   }, [opened, settlementOpen, filial, orderBy, search, limit]);
 
   function handleSettlement() {
-    setSettlementOpen(!settlementOpen);
+    const newVarOpened = !settlementOpen;
+    setSettlementOpen(newVarOpened);
+    if (!newVarOpened) {
+      loader();
+    }
   }
 
   useEffect(() => {
@@ -179,7 +187,6 @@ export default function FinancialReceivables() {
     let differentIssuer = null;
     if (selected.length > 0) {
       selected.map(async (receivable) => {
-        console.log(receivable.fields[0], issuer);
         if (issuer) {
           if (receivable.fields[0] !== issuer) {
             differentIssuer = receivable.fields[0];
@@ -207,6 +214,49 @@ export default function FinancialReceivables() {
     }
   }, [selected]);
 
+  async function handleDelete() {
+    if (selected.length === 0) {
+      return;
+    }
+    alertBox({
+      title: "Attention!",
+      descriptionHTML:
+        "Are you sure you want to delete the selected receivables? This action cannot be undone.",
+      buttons: [
+        {
+          title: "No",
+          class: "cancel",
+        },
+        {
+          title: "Yes",
+          onPress: async () => {
+            const promises = [];
+            let hasChanged = false;
+            selected.map((receivable) => {
+              promises.push(
+                api
+                  .delete(`/receivables/${receivable.id}`)
+                  .then((response) => {
+                    toast(response.data.message, { autoClose: 1000 });
+                  })
+                  .catch((err) => {
+                    toast(err.response.data.error, {
+                      type: "error",
+                      autoClose: 3000,
+                    });
+                  })
+              );
+            });
+            Promise.all(promises).then(() => {
+              setSelected();
+              loader();
+            });
+          },
+        },
+      ],
+    });
+  }
+
   return (
     <PageContainer
       FullGridContext={FullGridContext}
@@ -224,6 +274,15 @@ export default function FinancialReceivables() {
             Page: Settlement,
             opened: settlementOpen,
             setOpened: setSettlementOpen,
+            selected,
+          },
+          {
+            title: "Delete",
+            fun: handleDelete,
+            icon: "X",
+            Page: null,
+            opened: false,
+            setOpened: () => null,
             selected,
           },
         ],

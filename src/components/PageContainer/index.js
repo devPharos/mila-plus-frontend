@@ -17,6 +17,8 @@ function PageContainer({
   PagePreview = null,
   defaultGridHeader = [],
   selection = null,
+  handleNew = true,
+  handleEdit = true,
 }) {
   const accesses = useSelector((state) => state.auth.accesses);
   const currentPage = getCurrentPage();
@@ -59,14 +61,18 @@ function PageContainer({
       <Filters
         access={pageAccesses}
         Context={FullGridContext}
-        handleNew={() => setOpened("new")}
+        handleNew={handleNew ? () => setOpened("new") : null}
         selection={selection}
       />
 
       {loadingData ? (
         <FormLoading />
       ) : (
-        <Grid Context={FullGridContext} selection={selection}>
+        <Grid
+          Context={FullGridContext}
+          selection={selection}
+          handleEdit={handleEdit}
+        >
           {opened && (
             <PreviewController Context={FullGridContext}>
               <PagePreview
@@ -80,8 +86,9 @@ function PageContainer({
           {selection &&
             selection.functions &&
             selection.functions.map((func, index) => {
+              if (func.fun === null) return null;
               return (
-                <PreviewController Context={FullGridContext}>
+                <PreviewController key={index} Context={FullGridContext}>
                   {func.opened && (
                     <func.Page
                       access={pageAccesses}

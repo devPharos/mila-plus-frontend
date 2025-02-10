@@ -73,6 +73,7 @@ export default function Settlement({
           settlement_date: format(data.settlement_date, "yyyy-MM-dd"),
         })
         .then(({ data }) => {
+          toast(data.message, { autoClose: 1000 });
           handleOpened(null);
         })
         .catch((err) => {
@@ -98,7 +99,7 @@ export default function Settlement({
             transactionToken: transactionToken,
             // (optional) Callback function that gets called after a successful transaction
             onTransactionSuccess: async function (approvalData) {
-              handleSettlement(data);
+              await handleSettlement(data);
               await api
                 .post(`/emergepay/post-back-listener`, approvalData)
                 .then(async () => {
@@ -128,8 +129,9 @@ export default function Settlement({
           });
         });
     } else {
-      handleSettlement(data);
+      await handleSettlement(data);
     }
+    handleOpened(null);
     return;
   }
 
@@ -351,7 +353,9 @@ export default function Settlement({
                                           grow
                                           readOnly
                                           title="Balance Amount"
-                                          defaultValue={receivable.balance}
+                                          defaultValue={receivable.balance.toFixed(
+                                            2
+                                          )}
                                           InputContext={InputContext}
                                         />
                                         <DatePicker

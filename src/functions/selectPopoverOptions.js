@@ -27,6 +27,11 @@ export const optionsStatus = [
   { value: "Inactive", label: "Inactive" },
 ];
 
+export const optionsCategory = [
+  { value: "Student", label: "Student" },
+  { value: "Ex-Student", label: "Ex-Student" },
+];
+
 export const optionsSubStatus = [
   { value: 1, label: "Initial Visa", type_id: 1 },
   { value: 2, label: "Change of Status", type_id: 1 },

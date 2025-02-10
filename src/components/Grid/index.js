@@ -36,7 +36,7 @@ export default function Grid({ children, Context = null, selection = null }) {
   }
   return (
     <div className="relative flex flex-1 justify-start w-full h-screen overflow-y-scroll">
-      <table className="relative bg-secondary-50 rounded-xl p-4 w-full table-auto text-xs overflow-hidden text-left">
+      <table className="relative bg-secondary-50 rounded-xl p-4 w-full table-auto text-xs overflow-hidden text-left whitespace-nowrap">
         <thead className="sticky top-0 border-md">
           <tr className="bg-secondary h-8">
             {selection !== null && (

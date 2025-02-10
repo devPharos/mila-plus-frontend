@@ -32,6 +32,8 @@ import { useSelector } from "react-redux";
 import { FullGridContext } from "../..";
 import {
   genderOptions,
+  optionsCategory,
+  optionsStatus,
   optionsSubStatus,
   yesOrNoOptions,
 } from "~/functions/selectPopoverOptions";
@@ -89,7 +91,7 @@ export default function PagePreview({
   const [countriesList, setCountriesList] = useState([]);
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
-  const [activeMenu, setActiveMenu] = useState("general");
+  const [activeMenu, setActiveMenu] = useState("student-information");
   const [registry, setRegistry] = useState({
     created_by: null,
     created_at: null,
@@ -306,9 +308,25 @@ export default function PagePreview({
               <RegisterFormMenu
                 setActiveMenu={setActiveMenu}
                 activeMenu={activeMenu}
-                name="general"
+                name="student-information"
               >
-                <Building size={16} /> General
+                <Building size={16} /> Student Information
+              </RegisterFormMenu>
+
+              <RegisterFormMenu
+                setActiveMenu={setActiveMenu}
+                activeMenu={activeMenu}
+                name="student-admission"
+              >
+                <Building size={16} /> Admission
+              </RegisterFormMenu>
+
+              <RegisterFormMenu
+                setActiveMenu={setActiveMenu}
+                activeMenu={activeMenu}
+                name="student-academic"
+              >
+                <Building size={16} /> Academic
               </RegisterFormMenu>
             </div>
             <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
@@ -340,8 +358,8 @@ export default function PagePreview({
                           InputContext={InputContext}
                         />
                         <InputLineGroup
-                          title="GENERAL"
-                          activeMenu={activeMenu === "general"}
+                          title="student-information"
+                          activeMenu={activeMenu === "student-information"}
                         >
                           {auth.filial.id === 1 && (
                             <InputLine title="Filial">
@@ -380,6 +398,15 @@ export default function PagePreview({
                             />
                             <Input
                               type="text"
+                              name="registration_number"
+                              required
+                              readOnly
+                              title="Registration Number"
+                              defaultValue={pageData.registration_number}
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              type="text"
                               name="name"
                               required
                               grow
@@ -387,14 +414,6 @@ export default function PagePreview({
                               defaultValue={pageData.name}
                               InputContext={InputContext}
                             />
-                            {/* <Input
-                              type="text"
-                              name="middle_name"
-                              grow
-                              title="Middle Name"
-                              defaultValue={pageData.middle_name}
-                              InputContext={InputContext}
-                            /> */}
                             <Input
                               type="text"
                               name="last_name"
@@ -404,12 +423,9 @@ export default function PagePreview({
                               defaultValue={pageData.last_name}
                               InputContext={InputContext}
                             />
-                          </InputLine>
-                          <InputLine>
                             <SelectPopover
                               name="gender"
                               required
-                              grow
                               title="Gender"
                               isSearchable
                               defaultValue={genderOptions.find(
@@ -418,6 +434,8 @@ export default function PagePreview({
                               options={genderOptions}
                               InputContext={InputContext}
                             />
+                          </InputLine>
+                          <InputLine>
                             <DatePicker
                               name="date_of_birth"
                               grow
@@ -439,8 +457,6 @@ export default function PagePreview({
                               defaultValue={pageData.passport_number}
                               InputContext={InputContext}
                             />
-                          </InputLine>
-                          <InputLine>
                             <Input
                               type="text"
                               name="visa_number"
@@ -473,9 +489,22 @@ export default function PagePreview({
                           </InputLine>
                           <InputLine title="Enrollment">
                             <SelectPopover
+                              name="status"
+                              required
+                              title="Status"
+                              readOnly
+                              isSearchable
+                              defaultValue={optionsStatus.find(
+                                (opt) => opt.value === pageData.status
+                              )}
+                              options={optionsStatus}
+                              InputContext={InputContext}
+                            />
+                            <SelectPopover
                               name="processtype_id"
                               grow
                               required
+                              readOnly
                               title="Type"
                               disabled={pageData.enrollmentProcess}
                               onChange={(el) => {
@@ -504,6 +533,7 @@ export default function PagePreview({
                               name="processsubstatus_id"
                               grow
                               required
+                              readOnly
                               disabled={pageData.enrollmentProcess}
                               title="Sub Status"
                               onChange={(el) => {
@@ -527,6 +557,18 @@ export default function PagePreview({
                                   type.type_id ===
                                   pageData.searchFields.processtype_id
                               )}
+                              InputContext={InputContext}
+                            />
+                            <SelectPopover
+                              name="category"
+                              required
+                              title="Category"
+                              readOnly
+                              isSearchable
+                              defaultValue={optionsCategory.find(
+                                (opt) => opt.value === pageData.category
+                              )}
+                              options={optionsCategory}
                               InputContext={InputContext}
                             />
                           </InputLine>
@@ -623,6 +665,123 @@ export default function PagePreview({
                               grow
                               title="Preferred Contact Form"
                               defaultValue={pageData.preferred_contact_form}
+                              InputContext={InputContext}
+                            />
+                          </InputLine>
+                        </InputLineGroup>
+                        <InputLineGroup
+                          title="student-admission"
+                          activeMenu={activeMenu === "student-admission"}
+                        >
+                          <InputLine title="Admission">
+                            <DatePicker
+                              name="enrollment_date"
+                              grow
+                              title="Enrollment Date "
+                              defaultValue={null}
+                              placeholderText="MM/DD/YYYY"
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              type="text"
+                              name="agent"
+                              grow
+                              title="Agent"
+                              defaultValue={pageData.Agent}
+                              InputContext={InputContext}
+                            />
+                          </InputLine>
+                          <InputLine>
+                            <DatePicker
+                              name="original_start_date"
+                              grow
+                              title="Original Start Date "
+                              defaultValue={null}
+                              placeholderText="MM/DD/YYYY"
+                              InputContext={InputContext}
+                            />
+                            <DatePicker
+                              name="updated_start_date"
+                              grow
+                              title="Updated Start Date "
+                              defaultValue={null}
+                              placeholderText="MM/DD/YYYY"
+                              InputContext={InputContext}
+                            />
+                          </InputLine>
+                          <InputLine>
+                            <Input
+                              name="how_did_you_hear_about_mila"
+                              grow
+                              title="How did you hear about MILA?"
+                              defaultValue={
+                                pageData.how_did_you_hear_about_mila
+                              }
+                              InputContext={InputContext}
+                            />
+                          </InputLine>
+                        </InputLineGroup>
+                        <InputLineGroup
+                          title="student-academic"
+                          activeMenu={activeMenu === "student-academic"}
+                        >
+                          <InputLine title="Academic">
+                            <DatePicker
+                              name="program_start_date"
+                              grow
+                              title="Program Start Date "
+                              defaultValue={null}
+                              placeholderText="MM/DD/YYYY"
+                              InputContext={InputContext}
+                            />
+                            <DatePicker
+                              name="program_end_date"
+                              grow
+                              title="Program End Date "
+                              defaultValue={null}
+                              placeholderText="MM/DD/YYYY"
+                              InputContext={InputContext}
+                            />
+                            <DatePicker
+                              name="start_date"
+                              grow
+                              title="Start Date "
+                              defaultValue={null}
+                              placeholderText="MM/DD/YYYY"
+                              InputContext={InputContext}
+                            />
+                          </InputLine>
+                          <InputLine title="Placement Test">
+                            <Input
+                              type="text"
+                              name="placement_test_location"
+                              grow
+                              title="Placement Test Location"
+                              defaultValue={pageData.placement_test_location}
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              type="text"
+                              name="placement_test_score"
+                              grow
+                              title="Placement Test Score"
+                              defaultValue={pageData.placement_test_score}
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              name="level"
+                              grow
+                              title="Level"
+                              defaultValue={pageData.level}
+                              InputContext={InputContext}
+                            />
+                          </InputLine>
+                          <InputLine title="Group">
+                            <Input
+                              name="group"
+                              grow
+                              title="Group Name"
+                              defaultValue={pageData.group}
                               InputContext={InputContext}
                             />
                           </InputLine>

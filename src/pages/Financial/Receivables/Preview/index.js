@@ -148,7 +148,8 @@ export default function PagePreview({
         setSuccessfullyUpdated(true);
         toast("Created!", { autoClose: 1000 });
       } catch (err) {
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
+        console.log(err);
+        // toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     } else if (id !== "new") {
       const updated = handleUpdatedFields(data, pageData);
@@ -179,7 +180,13 @@ export default function PagePreview({
   }
 
   async function handleRefundFormSubmit(data) {
-    const { receivable_id, refund_amount, total, refund_reason } = data;
+    const {
+      receivable_id,
+      refund_amount,
+      total,
+      refund_reason,
+      paymentmethod_id,
+    } = data;
 
     if (!total || !receivable_id || !refund_amount || !refund_reason) {
       return;
@@ -193,15 +200,23 @@ export default function PagePreview({
     }
 
     try {
-      const response = await api.put(`/receivables/refund/${receivable_id}`, {
-        receivable_id,
-        refund_amount,
-        refund_reason,
-      });
-      setPageData({ ...pageData, ...response.data });
-      setOpened(response.data.id);
+      api
+        .post(`/receivables/refund/${receivable_id}`, {
+          receivable_id,
+          refund_amount,
+          refund_reason,
+          paymentmethod_id,
+        })
+        .then(({ data }) => {
+          setPageData({ ...pageData, ...data });
+          setOpened(data.id);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     } catch (err) {
-      toast(err.response.data.error, { type: "error", autoClose: 3000 });
+      console.log({ err });
+      // toast(err.response.data.error, { type: "error", autoClose: 3000 });
     }
   }
 
@@ -298,10 +313,10 @@ export default function PagePreview({
         setRegistry(registries);
       } catch (err) {
         console.log(err);
-        toast(err || err.response.data.error, {
-          type: "error",
-          autoClose: 3000,
-        });
+        // toast(err || err.response.data.error, {
+        //   type: "error",
+        //   autoClose: 3000,
+        // });
       }
     }
 
@@ -900,7 +915,7 @@ export default function PagePreview({
 
                             <InputLine title="Details">
                               <Textarea
-                                name="memo"
+                                name="refund_reason"
                                 required
                                 title="Refund reason"
                                 rows={3}

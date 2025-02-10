@@ -68,17 +68,23 @@ export default function FinancialReceivables() {
       filter: false,
     },
     {
+      title: "Balance",
+      name: "balance",
+      type: "currency",
+      filter: false,
+    },
+    {
       title: "Status",
       name: "status",
       type: "text",
       filter: true,
     },
-    {
-      title: "Status Date",
-      name: "status_date",
-      type: "date",
-      filter: false,
-    },
+    // {
+    //   title: "Status Date",
+    //   name: "status_date",
+    //   type: "date",
+    //   filter: false,
+    // },
   ];
   const [selected, setSelected] = useState([]);
   const [settlementOpen, setSettlementOpen] = useState(false);
@@ -124,10 +130,9 @@ export default function FinancialReceivables() {
             discount,
             fee,
             total,
-            paymentcriteria_id,
-            paymentCriteria,
+            balance,
             status,
-            status_date,
+            // status_date,
           },
           index
         ) => {
@@ -140,12 +145,13 @@ export default function FinancialReceivables() {
               "I" + invoice_number.toString().padStart(6, "0"),
               format(parseISO(entry_date), "yyyy-MM-dd"),
               format(parseISO(due_date), "yyyy-MM-dd"),
-              "$ " + amount,
-              "$ " + discount,
-              "$ " + fee,
-              "$ " + total,
+              "$ " + amount.toFixed(2),
+              "$ " + discount.toFixed(2),
+              "$ " + fee.toFixed(2),
+              "$ " + total.toFixed(2),
+              "$ " + balance.toFixed(2),
               status,
-              format(parseISO(status_date), "yyyy-MM-dd"),
+              // format(parseISO(status_date), "yyyy-MM-dd"),
               ,
             ],
             selectable: status !== "Paid",

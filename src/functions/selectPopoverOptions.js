@@ -56,6 +56,12 @@ export const relationshipTypeOptions = [
   { value: "Husband or Wife", label: "Husband/Wife" },
   { value: "Other", label: "Other" },
 ];
+
+export const dependentRelationshipTypeOptions = [
+  { value: "Husband/Wife", label: "Husband/Wife" },
+  { value: "Son/Daughter", label: "Son/Daughter" },
+];
+
 export const sponsorRelationshipTypeOptions = [
   { value: "Parents", label: "Parents" },
   { value: "Family", label: "Family" },

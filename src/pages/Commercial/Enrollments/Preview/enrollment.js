@@ -63,7 +63,7 @@ import PDFViewer from "~/components/PDFViewer";
 import CheckboxInput from "~/components/RegisterForm/CheckboxInput";
 import {
   addressOptions,
-  dept1TypeOptions,
+  dependentRelationshipTypeOptions,
   genderOptions,
   maritalStatusOptions,
   relationshipTypeOptions,
@@ -1556,9 +1556,11 @@ export default function EnrollmentOutside({
                                               !profile &&
                                               pageData.lastActiveMenu.order >= 7
                                             }
-                                            options={relationshipTypeOptions}
+                                            options={
+                                              dependentRelationshipTypeOptions
+                                            }
                                             isSearchable
-                                            defaultValue={relationshipTypeOptions.find(
+                                            defaultValue={dependentRelationshipTypeOptions.find(
                                               (relationshipType) =>
                                                 relationshipType.value ===
                                                 dependent.relationship_type
@@ -1803,12 +1805,7 @@ export default function EnrollmentOutside({
                               name="need_sponsorship"
                               onChange={(el) => handleHasSponsors(el)}
                               required
-                              disabled={
-                                !pageData.has_sponsor_signed &&
-                                !profile &&
-                                pageData.lastActiveMenu &&
-                                pageData.lastActiveMenu.order > 7
-                              }
+                              disabled={pageData.has_sponsor_signed}
                               grow
                               title="Do you need sponsorship?"
                               options={sponsorshipOptions}
@@ -1908,18 +1905,32 @@ export default function EnrollmentOutside({
                                               }
                                               onChange={(e) => {
                                                 setSuccessfullyUpdated(false);
-                                                setSponsorOtherRelationshipType(
-                                                  [
-                                                    ...sponsorOtherRelationshipType.filter(
-                                                      (sp) =>
-                                                        sp.id !== sponsor.id
-                                                    ),
-                                                    {
-                                                      id: sponsor.id,
-                                                      value: e.value,
-                                                    },
-                                                  ]
-                                                );
+                                                if (
+                                                  sponsorOtherRelationshipType.length >
+                                                  0
+                                                ) {
+                                                  setSponsorOtherRelationshipType(
+                                                    [
+                                                      ...sponsorOtherRelationshipType.filter(
+                                                        (sp) =>
+                                                          sp.id !== sponsor.id
+                                                      ),
+                                                      {
+                                                        id: sponsor.id,
+                                                        value: e.value,
+                                                      },
+                                                    ]
+                                                  );
+                                                } else {
+                                                  setSponsorOtherRelationshipType(
+                                                    [
+                                                      {
+                                                        id: sponsor.id,
+                                                        value: e.value,
+                                                      },
+                                                    ]
+                                                  );
+                                                }
                                               }}
                                               defaultValue={
                                                 sponsorRelationshipTypeOptions.find(
@@ -1934,16 +1945,22 @@ export default function EnrollmentOutside({
                                               }
                                               InputContext={InputContext}
                                             />
-                                            {!sponsorRelationshipTypeOptions.find(
+                                            {sponsorOtherRelationshipType.find(
+                                              (sp) => sp.id === sponsor.id
+                                            ) !== undefined &&
+                                            sponsorOtherRelationshipType.find(
+                                              (sp) => sp.id === sponsor.id
+                                            ) &&
+                                            (!sponsorRelationshipTypeOptions.find(
                                               (relationshipType) =>
                                                 relationshipType.value ===
                                                 sponsorOtherRelationshipType.find(
                                                   (sp) => sp.id === sponsor.id
                                                 ).value
                                             ) ||
-                                            sponsorOtherRelationshipType.find(
-                                              (sp) => sp.id === sponsor.id
-                                            ).value === "Other" ? (
+                                              sponsorOtherRelationshipType.find(
+                                                (sp) => sp.id === sponsor.id
+                                              ).value === "Other") ? (
                                               <Input
                                                 type="text"
                                                 name="relationship_type"
@@ -1969,9 +1986,12 @@ export default function EnrollmentOutside({
                                                 grow
                                                 title="Please specify"
                                                 defaultValue={
+                                                  sponsorOtherRelationshipType &&
+                                                  sponsorOtherRelationshipType.length >
+                                                    0 &&
                                                   sponsorOtherRelationshipType.find(
                                                     (sp) => sp.id === sponsor.id
-                                                  ).value
+                                                  )?.value
                                                 }
                                                 InputContext={InputContext}
                                               />

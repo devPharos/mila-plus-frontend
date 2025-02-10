@@ -211,44 +211,47 @@ function EnrollmentProcess({
               )}
             </div>
           </div>
-          {enrollment.enrollmentsponsors.map((sponsor, index) => {
-            return (
-              <div className="relative flex w-full flex-col items-start justify-start text-center gap-4 border border-gray-200 bg-slate-50 rounded-md p-4">
-                <h2 className="text-md font-bold w-full text-left border-b border-gray-200 pb-2">
-                  Sponsor #{index + 1} - {sponsor.name}{" "}
-                  {sponsor.signature ? (
-                    <span className="text-green-500"> - Signed</span>
-                  ) : (
-                    <span className="text-red-500"> - Not signed yet</span>
-                  )}
-                </h2>
-                <div className="relative flex w-full flex-row items-center justify-start text-center gap-4">
-                  <NavLink
-                    to={`/fill-form/Sponsor?crypt=${sponsor.id}`}
-                    target="_blank"
-                    disabled={true}
-                    className="bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2"
-                  >
-                    <Edit size={14} />
-                    <strong>Access sponsor form</strong>
-                  </NavLink>
-                  {!sponsor.signature ? (
-                    <>
-                      <button
-                        type="button"
-                        disabled={loading}
-                        onClick={() => handleSendMail("sponsor-signature")}
+          {enrollment.enrollmentsponsors.length > 0 &&
+            enrollment.enrollmentsponsors.map((sponsor, index) => {
+              if (sponsor.name) {
+                return (
+                  <div className="relative flex w-full flex-col items-start justify-start text-center gap-4 border border-gray-200 bg-slate-50 rounded-md p-4">
+                    <h2 className="text-md font-bold w-full text-left border-b border-gray-200 pb-2">
+                      Sponsor #{index + 1} - {sponsor.name}{" "}
+                      {sponsor.signature ? (
+                        <span className="text-green-500"> - Signed</span>
+                      ) : (
+                        <span className="text-red-500"> - Not signed yet</span>
+                      )}
+                    </h2>
+                    <div className="relative flex w-full flex-row items-center justify-start text-center gap-4">
+                      <NavLink
+                        to={`/fill-form/Sponsor?crypt=${sponsor.id}`}
+                        target="_blank"
+                        disabled={true}
                         className="bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2"
                       >
-                        <Mail size={14} />
-                        <strong>Send form link to sponsor</strong>
-                      </button>
-                    </>
-                  ) : null}
-                </div>
-              </div>
-            );
-          })}
+                        <Edit size={14} />
+                        <strong>Access sponsor form</strong>
+                      </NavLink>
+                      {!sponsor.signature ? (
+                        <>
+                          <button
+                            type="button"
+                            disabled={loading}
+                            onClick={() => handleSendMail("sponsor-signature")}
+                            className="bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2"
+                          >
+                            <Mail size={14} />
+                            <strong>Send form link to sponsor</strong>
+                          </button>
+                        </>
+                      ) : null}
+                    </div>
+                  </div>
+                );
+              }
+            })}
           <div className="relative flex w-full flex-col items-start justify-start text-center gap-4 border border-gray-200 bg-slate-50 rounded-md p-4">
             <h2 className="text-md font-bold w-full text-left border-b border-gray-200 pb-2">
               Payment{" "}
@@ -278,9 +281,11 @@ function EnrollmentProcess({
                 <span className="text-red-500"> - Invoice not created</span>
               )}
             </h2>
-            {(issuer.receivables.find(
-              (receivable) => receivable.status === "Pending"
-            ) ||
+            {console.log({ issuer })}
+            {(!issuer ||
+              issuer.receivables.find(
+                (receivable) => receivable.status === "Pending"
+              ) ||
               issuer.receivables.length === 0) && (
               <div className="relative flex w-full flex-row items-center justify-start text-center gap-4">
                 <SelectPopover

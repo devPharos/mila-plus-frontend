@@ -248,7 +248,7 @@ export default function FinancialReceivables() {
               );
             });
             Promise.all(promises).then(() => {
-              setSelected();
+              setSelected([]);
               loader();
             });
           },

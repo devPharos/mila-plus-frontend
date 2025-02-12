@@ -101,6 +101,8 @@ export default function PagePreview({
       processtype_id: null,
       processsubstatus_id: null,
     },
+    typesOptions: [],
+    subtypesOptions: [],
   });
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
@@ -718,7 +720,8 @@ export default function PagePreview({
                                 setSuccessfullyUpdated(false);
                               }}
                               defaultValue={
-                                pageData.processtype_id
+                                pageData.processtype_id &&
+                                pageData.typesOptions.length > 0
                                   ? pageData.typesOptions.find(
                                       (type) =>
                                         type.value === pageData.processtype_id
@@ -861,12 +864,12 @@ export default function PagePreview({
                         >
                           <div className="px-4 w-full flex flex-col">
                             <h2 className="text-xl font-bold w-full text-left pb-4">
-                              {
+                              {pageData.typesOptions.length > 0 &&
+                                pageData.processtype_id &&
                                 pageData.typesOptions.find(
                                   (type) =>
                                     type.value === pageData.processtype_id
-                                ).label
-                              }
+                                ).label}
                               {" - "}
                               {pageData.processsubstatus_id &&
                                 pageData.subStatusOptions.find(

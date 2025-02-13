@@ -61,11 +61,12 @@ export default function PagePreview({
     issuer: {
       name: "",
     },
-    status: "Open",
+    status: "Pending",
     entry_date: null,
     due_date: null,
-    amount: 0,
-    total: 0,
+    amount: null,
+    total: null,
+    balance: null,
     memo: "",
     is_recurrence: false,
     contract_number: "",
@@ -86,6 +87,10 @@ export default function PagePreview({
     installment: [],
     type: "Credit Note",
     type_detail: "Other",
+    searchfields: {
+      type: "Credit Note",
+      type_detail: "Other",
+    },
   });
 
   const [registry, setRegistry] = useState({
@@ -208,11 +213,13 @@ export default function PagePreview({
           paymentmethod_id,
         })
         .then(({ data }) => {
+          toast(data.message, { autoClose: 1000 });
           setPageData({ ...pageData, ...data });
           setOpened(data.id);
+          handleCloseForm();
         })
         .catch((err) => {
-          console.log(err);
+          toast(err.response.data.error, { type: "error", autoClose: 3000 });
         });
     } catch (err) {
       console.log({ err });
@@ -290,6 +297,10 @@ export default function PagePreview({
           // paymentCriteriaOptions,
           chartOfAccountOptions,
           loaded: true,
+          searchfields: {
+            type: data.type,
+            type_detail: data.type_detail,
+          },
         });
 
         const {
@@ -354,7 +365,7 @@ export default function PagePreview({
               >
                 <Building size={16} /> General
               </RegisterFormMenu>
-              {pageData.status === "Paid" && (
+              {pageData.status !== "Pending" && (
                 <RegisterFormMenu
                   setActiveMenu={setActiveMenu}
                   activeMenu={activeMenu}
@@ -445,64 +456,69 @@ export default function PagePreview({
                               />
                             </InputLine>
 
-                            <InputLine title="Settlements">
-                              {pageData.settlements &&
-                                pageData.settlements.length > 0 &&
-                                pageData.settlements.map(
-                                  (settlement, index) => {
-                                    return (
-                                      <Scope
-                                        key={index}
-                                        path={`settlements[${index}]`}
-                                      >
-                                        <Input
-                                          type="hidden"
-                                          name="id"
-                                          defaultValue={settlement.id}
-                                          InputContext={InputContext}
-                                        />
-                                        <Input
-                                          type="text"
-                                          name="amount"
-                                          grow
-                                          readOnly
-                                          title="Amount"
-                                          defaultValue={settlement.amount}
-                                          InputContext={InputContext}
-                                        />
-                                        <SelectPopover
-                                          name="paymentmethod_id"
-                                          grow
-                                          title="Payment Method"
-                                          isSearchable
-                                          options={
-                                            pageData.paymentMethodOptions
-                                          }
-                                          disabled
-                                          defaultValue={pageData.paymentMethodOptions.find(
-                                            (paymentMethod) =>
-                                              paymentMethod.value ===
-                                              settlement.paymentmethod_id
-                                          )}
-                                          InputContext={InputContext}
-                                        />
-                                        <DatePicker
-                                          name="created_at"
-                                          grow
-                                          disabled
-                                          title="Settled At"
-                                          defaultValue={format(
-                                            parseISO(settlement.created_at),
-                                            "yyyy-MM-dd"
-                                          )}
-                                          placeholderText="MM/DD/YYYY"
-                                          InputContext={InputContext}
-                                        />
-                                      </Scope>
-                                    );
-                                  }
-                                )}
-                            </InputLine>
+                            {pageData.settlements &&
+                              pageData.settlements.length > 0 && (
+                                <>
+                                  {pageData.settlements.map(
+                                    (settlement, index) => {
+                                      return (
+                                        <Scope
+                                          key={index}
+                                          path={`settlements[${index}]`}
+                                        >
+                                          <InputLine
+                                            title={`Settlement #${index + 1}`}
+                                          >
+                                            <Input
+                                              type="hidden"
+                                              name="id"
+                                              defaultValue={settlement.id}
+                                              InputContext={InputContext}
+                                            />
+                                            <Input
+                                              type="text"
+                                              name="amount"
+                                              shrink
+                                              readOnly
+                                              title="Amount"
+                                              defaultValue={settlement.amount}
+                                              InputContext={InputContext}
+                                            />
+                                            <SelectPopover
+                                              name="paymentmethod_id"
+                                              grow
+                                              title="Payment Method"
+                                              isSearchable
+                                              options={
+                                                pageData.paymentMethodOptions
+                                              }
+                                              disabled
+                                              defaultValue={pageData.paymentMethodOptions.find(
+                                                (paymentMethod) =>
+                                                  paymentMethod.value ===
+                                                  settlement.paymentmethod_id
+                                              )}
+                                              InputContext={InputContext}
+                                            />
+                                            <DatePicker
+                                              name="created_at"
+                                              grow
+                                              disabled
+                                              title="Settled At"
+                                              defaultValue={format(
+                                                parseISO(settlement.created_at),
+                                                "yyyy-MM-dd"
+                                              )}
+                                              placeholderText="MM/DD/YYYY"
+                                              InputContext={InputContext}
+                                            />
+                                          </InputLine>
+                                        </Scope>
+                                      );
+                                    }
+                                  )}
+                                </>
+                              )}
                             <InputLine title="Amount">
                               <Input
                                 type="text"
@@ -510,9 +526,18 @@ export default function PagePreview({
                                 required
                                 readOnly={
                                   pageData.is_recurrence ||
-                                  pageData.type === "Invoice"
+                                  pageData.balance !== pageData.total
                                 }
+                                placeholder="0.00"
                                 title="Amount"
+                                onChange={(el) => {
+                                  setPageData({
+                                    ...pageData,
+                                    total: el.target.value,
+                                    balance: el.target.value,
+                                  });
+                                  setSuccessfullyUpdated(false);
+                                }}
                                 grow
                                 defaultValue={pageData.amount}
                                 InputContext={InputContext}
@@ -521,6 +546,7 @@ export default function PagePreview({
                                 type="text"
                                 name="discount"
                                 readOnly
+                                placeholder="0.00"
                                 title="Discount"
                                 grow
                                 defaultValue={pageData.discount}
@@ -530,6 +556,7 @@ export default function PagePreview({
                                 type="text"
                                 name="fee"
                                 readOnly
+                                placeholder="0.00"
                                 title="Fee"
                                 grow
                                 defaultValue={pageData.fee}
@@ -539,18 +566,34 @@ export default function PagePreview({
                                 type="text"
                                 name="total"
                                 readOnly
+                                placeholder="0.00"
                                 title="Total"
                                 grow
-                                defaultValue={pageData.total}
+                                value={pageData.total}
                                 InputContext={InputContext}
                               />
+                              {id !== "new" && (
+                                <Input
+                                  type="text"
+                                  name="balance"
+                                  readOnly
+                                  placeholder="0.00"
+                                  title="Balance"
+                                  grow
+                                  value={pageData.balance.toFixed(2)}
+                                  InputContext={InputContext}
+                                />
+                              )}
                             </InputLine>
 
                             {pageData.discounts &&
                               pageData.discounts.length > 0 &&
                               pageData.discounts.map((discount, index) => {
                                 return (
-                                  <Scope path={`discounts.${index}`}>
+                                  <Scope
+                                    key={index}
+                                    path={`discounts.${index}`}
+                                  >
                                     <InputLine
                                       title={
                                         index === 0 ? "Applied Discounts" : ""
@@ -588,7 +631,7 @@ export default function PagePreview({
                                 title="Type"
                                 readOnly={
                                   pageData.is_recurrence ||
-                                  pageData.type === "Invoice"
+                                  pageData.balance !== pageData.total
                                 }
                                 options={invoiceTypesOptions}
                                 defaultValue={invoiceTypesOptions.find(
@@ -598,8 +641,16 @@ export default function PagePreview({
                                 onChange={(el) => {
                                   setPageData({
                                     ...pageData,
-                                    type: el.value,
+                                    searchfields: {
+                                      type: el.value,
+                                      type_detail:
+                                        invoiceTypeDetailsOptions.find(
+                                          (typeDetail) =>
+                                            typeDetail.type === el.value
+                                        ).value,
+                                    },
                                   });
+                                  setSuccessfullyUpdated(false);
                                 }}
                                 InputContext={InputContext}
                               />
@@ -610,37 +661,46 @@ export default function PagePreview({
                                 title="Type Detail"
                                 readOnly={
                                   pageData.is_recurrence ||
-                                  pageData.type === "Invoice"
+                                  pageData.balance !== pageData.total
                                 }
                                 options={invoiceTypeDetailsOptions.filter(
                                   (typeDetail) =>
-                                    typeDetail.type === pageData.type
+                                    typeDetail.type ===
+                                    pageData.searchfields.type
                                 )}
-                                defaultValue={
-                                  pageData.type_detail
-                                    ? invoiceTypeDetailsOptions.find(
-                                        (invoiceTypeDetail) =>
-                                          invoiceTypeDetail.value ===
-                                          pageData.type_detail
-                                      )
-                                    : null
-                                }
+                                value={invoiceTypeDetailsOptions.find(
+                                  (typedetail) =>
+                                    typedetail.value ===
+                                    pageData.searchfields.type_detail
+                                )}
+                                onChange={(el) => {
+                                  setPageData({
+                                    ...pageData,
+                                    searchfields: {
+                                      ...pageData.searchfields,
+                                      type_detail: el.value,
+                                    },
+                                  });
+                                  setSuccessfullyUpdated(false);
+                                }}
                                 InputContext={InputContext}
                               />
-                              <Input
-                                type="text"
-                                name="invoice_number"
-                                required
-                                readOnly
-                                title="Invoice Number"
-                                grow
-                                defaultValue={
-                                  pageData.invoice_number
-                                    ? pageData.invoice_number
-                                    : ""
-                                }
-                                InputContext={InputContext}
-                              />
+                              {pageData.invoice_number && (
+                                <Input
+                                  type="text"
+                                  name="invoice_number"
+                                  required
+                                  readOnly
+                                  title="Invoice Number"
+                                  grow
+                                  defaultValue={
+                                    pageData.invoice_number
+                                      ? pageData.invoice_number
+                                      : ""
+                                  }
+                                  InputContext={InputContext}
+                                />
+                              )}
                             </InputLine>
 
                             <InputLine>
@@ -650,7 +710,7 @@ export default function PagePreview({
                                 title="Issuer"
                                 readOnly={
                                   pageData.is_recurrence ||
-                                  pageData.type === "Invoice"
+                                  pageData.balance !== pageData.total
                                 }
                                 isSearchable
                                 grow
@@ -674,7 +734,7 @@ export default function PagePreview({
                                 title="Entry Date"
                                 readOnly={
                                   pageData.is_recurrence ||
-                                  pageData.type === "Invoice"
+                                  pageData.balance !== pageData.total
                                 }
                                 grow
                                 defaultValue={
@@ -695,7 +755,7 @@ export default function PagePreview({
                                 title="Due Date"
                                 readOnly={
                                   pageData.is_recurrence ||
-                                  pageData.type === "Invoice"
+                                  pageData.balance !== pageData.total
                                 }
                                 grow
                                 defaultValue={
@@ -719,7 +779,7 @@ export default function PagePreview({
                                 required
                                 readOnly={
                                   pageData.is_recurrence ||
-                                  pageData.type === "Invoice"
+                                  pageData.balance !== pageData.total
                                 }
                                 defaultValue={
                                   pageData.paymentmethod_id
@@ -738,14 +798,10 @@ export default function PagePreview({
                                 title="Is Recurrence?"
                                 readOnly
                                 grow
-                                defaultValue={
-                                  pageData.is_recurrence
-                                    ? yesOrNoOptions.find(
-                                        (type) =>
-                                          type.value === pageData.is_recurrence
-                                      )
-                                    : null
-                                }
+                                defaultValue={yesOrNoOptions.find(
+                                  (type) =>
+                                    type.value === pageData.is_recurrence
+                                )}
                                 options={yesOrNoOptions}
                                 InputContext={InputContext}
                               />
@@ -757,7 +813,7 @@ export default function PagePreview({
                                 title="Observations"
                                 readOnly={
                                   pageData.is_recurrence ||
-                                  pageData.type === "Invoice"
+                                  pageData.balance !== pageData.total
                                 }
                                 rows={3}
                                 grow
@@ -793,7 +849,7 @@ export default function PagePreview({
                                 required
                                 readOnly={
                                   pageData.is_recurrence ||
-                                  pageData.type === "Invoice"
+                                  pageData.balance !== pageData.total
                                 }
                                 grow
                                 defaultValue={
@@ -881,7 +937,7 @@ export default function PagePreview({
                                 readOnly
                                 title="Total Paid"
                                 grow
-                                defaultValue={pageData.total}
+                                defaultValue={pageData.total - pageData.balance}
                                 InputContext={InputContext}
                               />
                               <Input
@@ -889,7 +945,7 @@ export default function PagePreview({
                                 name="refund_amount"
                                 title="Refund Amount"
                                 required
-                                placeholder={pageData.total}
+                                placeholder={pageData.total - pageData.balance}
                                 grow
                                 InputContext={InputContext}
                               />
@@ -899,16 +955,16 @@ export default function PagePreview({
                                 isSearchable
                                 grow
                                 required
-                                defaultValue={
-                                  pageData.paymentmethod_id
-                                    ? pageData.paymentMethodOptions.find(
-                                        (paymentMethod) =>
-                                          paymentMethod.value ===
-                                          pageData.paymentmethod_id
-                                      )
-                                    : null
-                                }
-                                options={pageData.paymentMethodOptions}
+                                defaultValue={pageData.paymentMethodOptions.find(
+                                  (paymentMethod) =>
+                                    paymentMethod.value ===
+                                    "dcbe2b5b-c088-4107-ae32-efb4e7c4b161"
+                                )}
+                                options={pageData.paymentMethodOptions.filter(
+                                  (paymentMethod) =>
+                                    paymentMethod.value ===
+                                    "dcbe2b5b-c088-4107-ae32-efb4e7c4b161"
+                                )}
                                 InputContext={InputContext}
                               />
                             </InputLine>

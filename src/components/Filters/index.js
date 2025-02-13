@@ -107,7 +107,7 @@ export default function Filters({
 
   return (
     <div className="flex flex-row justify-between items-center w-full gap-2">
-      {access.create && handleNew && (
+      {access.create && handleNew !== null && (
         <button
           type="button"
           onClick={() => handleNew()}
@@ -118,9 +118,11 @@ export default function Filters({
       )}
       {selection &&
         selection.functions &&
+        selection.selected.length > 0 &&
         selection.functions.map((func, index) => {
           return (
             <button
+              key={index}
               type="button"
               onClick={() => func.fun()}
               className="p-2 flex flex-row items-center justify-center gap-2 border border-mila_orange text-mila_orange transition-all hover:bg-mila_orange hover:text-white font-bold rounded text-xs"

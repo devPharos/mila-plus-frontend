@@ -1,18 +1,15 @@
-import {
-  ArrowUpDown,
-  Check,
-  CheckCheck,
-  CheckSquare,
-  Dot,
-  Minus,
-  Square,
-} from "lucide-react";
-import React, { useContext, useEffect } from "react";
+import { ArrowUpDown, CheckSquare, Dot, Square } from "lucide-react";
+import React, { useContext } from "react";
 import Icon from "../Icon";
 
 // import { Container } from './styles';
 
-export default function Grid({ children, Context = null, selection = null }) {
+export default function Grid({
+  children,
+  Context = null,
+  selection = null,
+  handleEdit = true,
+}) {
   let { setSelected, selected } = { setSelected: () => null, selected: [] };
   if (selection !== null) {
     setSelected = selection.setSelected;
@@ -138,7 +135,9 @@ export default function Grid({ children, Context = null, selection = null }) {
                           <td
                             className="px-4 w-10"
                             key={index}
-                            onClick={() => handleOpened(row.id || null)}
+                            onClick={() =>
+                              handleEdit ? handleOpened(row.id || null) : null
+                            }
                           >
                             <img
                               src={field}
@@ -153,7 +152,9 @@ export default function Grid({ children, Context = null, selection = null }) {
                           <td
                             className={`px-4`}
                             key={index}
-                            onClick={() => handleOpened(row.id || null)}
+                            onClick={() =>
+                              handleEdit ? handleOpened(row.id || null) : null
+                            }
                           >
                             <div
                               className={`flex flex-row items-center justify-start gap-2`}
@@ -168,7 +169,9 @@ export default function Grid({ children, Context = null, selection = null }) {
                           <td
                             className={`px-4`}
                             key={index}
-                            onClick={() => handleOpened(row.id || null)}
+                            onClick={() =>
+                              handleEdit ? handleOpened(row.id || null) : null
+                            }
                           >
                             <div
                               className={`flex flex-row items-center justify-start gap-2`}
@@ -189,7 +192,9 @@ export default function Grid({ children, Context = null, selection = null }) {
                         <td
                           className={`px-4`}
                           key={index}
-                          onClick={() => handleOpened(row.id || null)}
+                          onClick={() =>
+                            handleEdit ? handleOpened(row.id || null) : null
+                          }
                         >
                           <div
                             className={`flex flex-row items-center justify-start gap-2`}

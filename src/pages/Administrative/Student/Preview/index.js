@@ -1,5 +1,17 @@
 import { Form } from "@unform/web";
-import { Building, Loader2, Pencil, Trash, Trash2, X } from "lucide-react";
+import {
+  Building,
+  Contact,
+  GraduationCap,
+  Loader2,
+  NotebookPen,
+  NotebookTabs,
+  Pencil,
+  Trash,
+  Trash2,
+  User,
+  X,
+} from "lucide-react";
 import React, {
   createContext,
   useContext,
@@ -304,13 +316,13 @@ export default function PagePreview({
           </div>
         ) : (
           <div className="flex h-full flex-row items-start justify-between gap-4">
-            <div className="flex flex-col items-center justify-between text-xs w-32 gap-4">
+            <div className="flex flex-col items-center justify-between text-xs w-40 gap-4">
               <RegisterFormMenu
                 setActiveMenu={setActiveMenu}
                 activeMenu={activeMenu}
                 name="student-information"
               >
-                <Building size={16} /> Student Information
+                <GraduationCap size={16} /> Student Information
               </RegisterFormMenu>
 
               <RegisterFormMenu
@@ -318,7 +330,7 @@ export default function PagePreview({
                 activeMenu={activeMenu}
                 name="student-admission"
               >
-                <Building size={16} /> Admission
+                <NotebookPen size={16} /> Admission
               </RegisterFormMenu>
 
               <RegisterFormMenu
@@ -326,7 +338,7 @@ export default function PagePreview({
                 activeMenu={activeMenu}
                 name="student-academic"
               >
-                <Building size={16} /> Academic
+                <Contact size={16} /> Academic
               </RegisterFormMenu>
             </div>
             <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">

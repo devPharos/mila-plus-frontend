@@ -1,5 +1,13 @@
 import { Form } from "@unform/web";
-import { Building, Pencil, X, ListMinus, Undo, UndoDot } from "lucide-react";
+import {
+  Building,
+  Pencil,
+  X,
+  ListMinus,
+  Undo,
+  UndoDot,
+  ReplaceAll,
+} from "lucide-react";
 import React, {
   createContext,
   useContext,
@@ -105,6 +113,10 @@ export default function PagePreview({
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
+
+  useEffect(() => {
+    document.getElementById("scrollPage-" + activeMenu).scrollTo(0, 0);
+  }, [activeMenu]);
 
   const auth = useSelector((state) => state.auth);
 
@@ -369,9 +381,18 @@ export default function PagePreview({
                 <RegisterFormMenu
                   setActiveMenu={setActiveMenu}
                   activeMenu={activeMenu}
+                  name="settlements"
+                >
+                  <ReplaceAll size={16} /> Settlements
+                </RegisterFormMenu>
+              )}
+              {pageData.status !== "Pending" && (
+                <RegisterFormMenu
+                  setActiveMenu={setActiveMenu}
+                  activeMenu={activeMenu}
                   name="refund"
                 >
-                  <UndoDot size={16} /> Refund
+                  <UndoDot size={16} /> Refunds
                 </RegisterFormMenu>
               )}
             </div>
@@ -379,9 +400,10 @@ export default function PagePreview({
               <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll">
                 {activeMenu === "general" && (
                   <Form
+                    id={`scrollPage-${activeMenu}`}
                     ref={generalForm}
                     onSubmit={handleGeneralFormSubmit}
-                    className="w-full pb-32"
+                    className="w-full pb-32 overflow-y-scroll"
                   >
                     <InputContext.Provider
                       value={{
@@ -467,7 +489,13 @@ export default function PagePreview({
                                           path={`settlements[${index}]`}
                                         >
                                           <InputLine
-                                            title={`Settlement #${index + 1}`}
+                                            title={
+                                              index === 0
+                                                ? "Settlements (" +
+                                                  pageData.settlements.length +
+                                                  ")"
+                                                : ""
+                                            }
                                           >
                                             <Input
                                               type="hidden"
@@ -539,7 +567,7 @@ export default function PagePreview({
                                   setSuccessfullyUpdated(false);
                                 }}
                                 grow
-                                defaultValue={pageData.amount}
+                                defaultValue={pageData.amount.toFixed(2)}
                                 InputContext={InputContext}
                               />
                               <Input
@@ -549,7 +577,7 @@ export default function PagePreview({
                                 placeholder="0.00"
                                 title="Discount"
                                 grow
-                                defaultValue={pageData.discount}
+                                defaultValue={pageData.discount.toFixed(2)}
                                 InputContext={InputContext}
                               />
                               <Input
@@ -559,7 +587,7 @@ export default function PagePreview({
                                 placeholder="0.00"
                                 title="Fee"
                                 grow
-                                defaultValue={pageData.fee}
+                                defaultValue={pageData.fee.toFixed(2)}
                                 InputContext={InputContext}
                               />
                               <Input
@@ -569,7 +597,7 @@ export default function PagePreview({
                                 placeholder="0.00"
                                 title="Total"
                                 grow
-                                value={pageData.total}
+                                value={pageData.total.toFixed(2)}
                                 InputContext={InputContext}
                               />
                               {id !== "new" && (
@@ -585,6 +613,91 @@ export default function PagePreview({
                                 />
                               )}
                             </InputLine>
+
+                            {pageData.feeadjustments &&
+                              pageData.feeadjustments.length > 0 &&
+                              pageData.feeadjustments
+                                .sort((a, b) => a.created_at < b.created_at)
+                                .map((feeadjustment, index) => {
+                                  return (
+                                    <Scope
+                                      key={index}
+                                      path={`feeadjustments.${index}`}
+                                    >
+                                      <InputLine
+                                        title={
+                                          index === 0
+                                            ? "Fee Adjustments: (" +
+                                              pageData.feeadjustments.length +
+                                              ")"
+                                            : ""
+                                        }
+                                      >
+                                        <div className="mt-2 text-xs text-gray-500">
+                                          #
+                                          {pageData.feeadjustments.length -
+                                            index}
+                                        </div>
+
+                                        <Input
+                                          type="text"
+                                          name="created_at"
+                                          readOnly
+                                          placeholder="0.00"
+                                          title="Date"
+                                          shrink
+                                          defaultValue={format(
+                                            parseISO(feeadjustment.created_at),
+                                            "MM/dd/yyyy"
+                                          )}
+                                          InputContext={InputContext}
+                                        />
+                                        <Input
+                                          type="text"
+                                          name="fee"
+                                          readOnly
+                                          placeholder="0.00"
+                                          title="Previous Fee"
+                                          shrink
+                                          defaultValue={feeadjustment.old_fee.toFixed(
+                                            2
+                                          )}
+                                          InputContext={InputContext}
+                                        />
+                                        <Input
+                                          type="text"
+                                          name="fee"
+                                          readOnly
+                                          placeholder="0.00"
+                                          title="New Fee"
+                                          shrink
+                                          defaultValue={
+                                            index > 0
+                                              ? pageData.feeadjustments
+                                                  .sort(
+                                                    (a, b) =>
+                                                      a.created_at <
+                                                      b.created_at
+                                                  )
+                                                  [index - 1].old_fee.toFixed(2)
+                                              : pageData.fee.toFixed(2)
+                                          }
+                                          InputContext={InputContext}
+                                        />
+                                        <Input
+                                          type="text"
+                                          name="reason"
+                                          readOnly
+                                          placeholder=""
+                                          title="Reason"
+                                          grow
+                                          defaultValue={feeadjustment.reason}
+                                          InputContext={InputContext}
+                                        />
+                                      </InputLine>
+                                    </Scope>
+                                  );
+                                })}
 
                             {pageData.discounts &&
                               pageData.discounts.length > 0 &&
@@ -875,9 +988,10 @@ export default function PagePreview({
                 )}
                 {activeMenu === "refund" && (
                   <Form
+                    id={`scrollPage-${activeMenu}`}
                     ref={generalForm}
                     onSubmit={handleRefundFormSubmit}
-                    className="w-full pb-32"
+                    className="w-full pb-32 overflow-y-scroll"
                   >
                     <InputContext.Provider
                       value={{
@@ -979,6 +1093,172 @@ export default function PagePreview({
                                 InputContext={InputContext}
                               />
                             </InputLine>
+
+                            {pageData.refunds &&
+                              pageData.refunds.length > 0 &&
+                              pageData.refunds.map((refund, index) => {
+                                return (
+                                  <Scope key={index} path={`refunds.${index}`}>
+                                    <InputLine
+                                      title={
+                                        index === 0
+                                          ? "Refunds (" +
+                                            pageData.refunds.length +
+                                            ")"
+                                          : ""
+                                      }
+                                    >
+                                      <div className="mt-2 text-xs text-gray-500">
+                                        #{pageData.refunds.length - index}
+                                      </div>
+
+                                      <Input
+                                        type="text"
+                                        name="created_at"
+                                        readOnly
+                                        placeholder="0.00"
+                                        title="Date"
+                                        shrink
+                                        defaultValue={format(
+                                          parseISO(refund.created_at),
+                                          "MM/dd/yyyy"
+                                        )}
+                                        InputContext={InputContext}
+                                      />
+                                      <Input
+                                        type="text"
+                                        name="amount"
+                                        readOnly
+                                        placeholder="0.00"
+                                        title="Refund Amount"
+                                        shrink
+                                        defaultValue={refund.amount.toFixed(2)}
+                                        InputContext={InputContext}
+                                      />
+                                      <Input
+                                        type="text"
+                                        name="refund_reason"
+                                        readOnly
+                                        placeholder=""
+                                        title="Refund Reason"
+                                        grow
+                                        defaultValue={refund.refund_reason}
+                                        InputContext={InputContext}
+                                      />
+                                    </InputLine>
+                                  </Scope>
+                                );
+                              })}
+                          </InputLineGroup>
+                        </>
+                      ) : (
+                        <FormLoading />
+                      )}
+                    </InputContext.Provider>
+                  </Form>
+                )}
+
+                {activeMenu === "settlements" && (
+                  <Form
+                    id={`scrollPage-${activeMenu}`}
+                    ref={generalForm}
+                    onSubmit={handleRefundFormSubmit}
+                    className="w-full pb-32 overflow-y-scroll"
+                  >
+                    <InputContext.Provider
+                      value={{
+                        id,
+                        generalForm: refundForm,
+                        setSuccessfullyUpdated,
+                        fullscreen,
+                        setFullscreen,
+                        successfullyUpdated,
+                        handleCloseForm,
+                      }}
+                    >
+                      {id !== "new" && pageData.loaded ? (
+                        <>
+                          <FormHeader
+                            access={access}
+                            title={
+                              pageData.issuer_id
+                                ? pageData.issuerOptions.find(
+                                    (issuer) =>
+                                      issuer.value === pageData.issuer_id
+                                  ).label
+                                : null
+                            }
+                            registry={registry}
+                            InputContext={InputContext}
+                          />
+
+                          <InputLineGroup
+                            title="settlements"
+                            activeMenu={activeMenu === "settlements"}
+                          >
+                            {pageData.settlements &&
+                              pageData.settlements.length > 0 &&
+                              pageData.settlements.map((settlement, index) => {
+                                return (
+                                  <Scope
+                                    key={index}
+                                    path={`settlements.${index}`}
+                                  >
+                                    <InputLine
+                                      title={
+                                        index === 0
+                                          ? "Settlements (" +
+                                            pageData.settlements.length +
+                                            ")"
+                                          : ""
+                                      }
+                                    >
+                                      <div className="mt-2 text-xs text-gray-500">
+                                        #{pageData.settlements.length - index}
+                                      </div>
+
+                                      <Input
+                                        type="text"
+                                        name="created_at"
+                                        readOnly
+                                        placeholder="0.00"
+                                        title="Date"
+                                        shrink
+                                        defaultValue={format(
+                                          parseISO(settlement.settlement_date),
+                                          "MM/dd/yyyy"
+                                        )}
+                                        InputContext={InputContext}
+                                      />
+                                      <Input
+                                        type="text"
+                                        name="amount"
+                                        readOnly
+                                        placeholder="0.00"
+                                        title="Amount"
+                                        shrink
+                                        defaultValue={settlement.amount.toFixed(
+                                          2
+                                        )}
+                                        InputContext={InputContext}
+                                      />
+                                      <SelectPopover
+                                        name="paymentmethod_id"
+                                        title="Payment Method"
+                                        disabled
+                                        grow
+                                        defaultValue={pageData.paymentMethodOptions.find(
+                                          (paymentMethod) =>
+                                            paymentMethod.value ===
+                                            settlement.paymentmethod_id
+                                        )}
+                                        options={pageData.paymentMethodOptions}
+                                        InputContext={InputContext}
+                                      />
+                                    </InputLine>
+                                  </Scope>
+                                );
+                              })}
                           </InputLineGroup>
                         </>
                       ) : (

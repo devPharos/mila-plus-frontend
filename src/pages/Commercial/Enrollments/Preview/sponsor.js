@@ -498,7 +498,7 @@ export default function SponsorOutside({
                               InputContext={InputContext}
                             />
                           </InputLine>
-                          <InputLine title="Legal Entity">
+                          <InputLine title="Legal Entity (If a bank statement is in the name of a company)">
                             <Input
                               type="text"
                               name="legal_entity_name"

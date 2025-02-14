@@ -507,6 +507,7 @@ export default function PagePreview({
                           <SelectPopover
                             name="is_autopay"
                             title="Is Autopay?"
+                            required
                             grow
                             onChange={(el) => {
                               setIsAutoPay(el.value);

@@ -8,7 +8,14 @@ import { format, parseISO, set } from "date-fns";
 import Settlement from "./Settlement";
 import { AlertContext } from "~/App";
 import { toast } from "react-toastify";
-import api from "~/services/api";
+import api, { baseURL } from "~/services/api";
+import FeeAdjustment from "./FeeAdjustment";
+import {
+  invoiceTypeDetailsOptions,
+  invoiceTypesOptions,
+  receivableStatusesOptions,
+} from "~/functions/selectPopoverOptions";
+import { date } from "yup";
 
 export default function FinancialReceivables() {
   const filial = useSelector((state) => state.auth.filial);
@@ -89,6 +96,51 @@ export default function FinancialReceivables() {
   ];
   const [selected, setSelected] = useState([]);
   const [settlementOpen, setSettlementOpen] = useState(false);
+  const [feeAdjustmentOpen, setFeeAdjustmentOpen] = useState(false);
+  const [excelOpen, setExcelOpen] = useState(false);
+  const defaultExcelData = [
+    {
+      title: "Entry date from",
+      name: "entry_date_from",
+      type: "date",
+      value: null,
+    },
+    {
+      title: "Entry date to",
+      name: "entry_date_to",
+      type: "date",
+      value: null,
+    },
+    {
+      title: "Due date from",
+      name: "due_date_from",
+      type: "date",
+      value: null,
+    },
+    { title: "Due date to", name: "due_date_to", type: "date", value: null },
+    {
+      title: "Status",
+      name: "status",
+      type: "select",
+      options: receivableStatusesOptions,
+      value: "All",
+    },
+    {
+      title: "Type",
+      name: "type",
+      type: "select",
+      options: invoiceTypesOptions,
+      value: "All",
+    },
+    {
+      title: "Type Detail",
+      name: "type_detail",
+      type: "select",
+      options: invoiceTypeDetailsOptions,
+      value: "All",
+    },
+  ];
+  const [excelData, setExcelData] = useState(defaultExcelData);
   const { alertBox } = useContext(AlertContext);
 
   const {
@@ -257,6 +309,57 @@ export default function FinancialReceivables() {
     });
   }
 
+  async function handleExcel(generate = true) {
+    if (excelOpen && generate) {
+      api
+        .post(`/receivables/excel`, {
+          entry_date_from: excelData[0].value,
+          entry_date_to: excelData[1].value,
+          due_date_from: excelData[2].value,
+          due_date_to: excelData[3].value,
+          status: excelData[4].value,
+          type: excelData[5].value,
+          type_detail: excelData[6].value,
+        })
+        .then(({ data }) => {
+          saveAs(`${baseURL}/get-file/${data.name}`, `${data.name}.xlsx`);
+          // setExcelData(defaultExcelData);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+    setExcelOpen(!excelOpen);
+  }
+
+  async function handleFeeAdjustment() {
+    if (selected.length === 0) {
+      return;
+    }
+    if (selected.length > 1) {
+      alertBox({
+        title: "Attention!",
+        descriptionHTML:
+          "<p>You can only adjust fees of one receivable at a time.</p>",
+        buttons: [
+          {
+            title: "Ok",
+            class: "cancel",
+            onPress: () => {
+              setSelected([]);
+            },
+          },
+        ],
+      });
+      return;
+    }
+    const newVarOpened = !feeAdjustmentOpen;
+    setFeeAdjustmentOpen(newVarOpened);
+    if (!newVarOpened) {
+      loader();
+    }
+  }
+
   return (
     <PageContainer
       FullGridContext={FullGridContext}
@@ -267,6 +370,15 @@ export default function FinancialReceivables() {
         selected,
         setSelected,
         functions: [
+          {
+            title: "Fee Adjustment",
+            fun: handleFeeAdjustment,
+            icon: "Pencil",
+            Page: FeeAdjustment,
+            opened: feeAdjustmentOpen,
+            setOpened: setFeeAdjustmentOpen,
+            selected,
+          },
           {
             title: "Settlement",
             fun: handleSettlement,
@@ -286,6 +398,12 @@ export default function FinancialReceivables() {
             selected,
           },
         ],
+      }}
+      Excel={{
+        fun: handleExcel,
+        opened: excelOpen,
+        excelData,
+        setExcelData,
       }}
     />
   );

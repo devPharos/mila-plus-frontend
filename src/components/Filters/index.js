@@ -140,62 +140,69 @@ export default function Filters({
             </button>
           );
         })}
-      {results === 0 && (
-        <p className="text-xs pl-2 text-gray-500">No results</p>
-      )}
-      {results > 0 && (
-        <p className="text-xs pl-2 text-gray-500">
-          Showing <span className="font-bold text-sky-700">{results}</span>{" "}
-          line(s)
-        </p>
-      )}
-      {pages > 1 && setPage !== null && (
-        <div className="flex flex-row justify-end items-center">
+      {((selection && selection.functions && selection.selected.length === 0) ||
+        !selection) &&
+        results === 0 && (
+          <p className="text-xs pl-2 text-gray-500">No results</p>
+        )}
+      {((selection && selection.functions && selection.selected.length === 0) ||
+        !selection) &&
+        results > 0 && (
           <p className="text-xs pl-2 text-gray-500">
-            | Page{" "}
-            <select className="bg-secondary rounded h-8 px-2 gap-2 m-1">
-              {[...Array(pages).keys()].map((retPage, index) => {
-                return (
-                  <option
-                    key={index}
-                    onClick={() => setPage(retPage + 1)}
-                    selected={page === retPage + 1}
-                    className={`${
-                      page === retPage + 1 ? "bg-sky-700 text-white" : ""
-                    } hover:bg-sky-700 hover:text-white px-2 py-1 rounded text-left whitespace-nowrap`}
-                  >
-                    {retPage + 1}
-                  </option>
-                );
-              })}
-            </select>{" "}
-            of <span className="font-bold text-sky-700">{pages}</span>
+            Showing <span className="font-bold text-sky-700">{results}</span>{" "}
+            line(s)
           </p>
-          <p className="text-xs pl-1 text-gray-500">
-            -
-            <select
-              className="bg-secondary rounded h-8 px-2 gap-2 m-1"
-              onChange={(el) => setLimit(el.target.value)}
-            >
-              {[10, 20, 50, 100, 200].map((retPage, index) => {
-                return (
-                  <option
-                    key={index}
-                    onClick={() => setLimit(retPage)}
-                    selected={limit === retPage}
-                    className={`${
-                      limit === retPage ? "bg-sky-700 text-white" : ""
-                    } hover:bg-sky-700 hover:text-white px-2 py-1 rounded text-left whitespace-nowrap`}
-                  >
-                    {retPage}
-                  </option>
-                );
-              })}
-            </select>
-            per page
-          </p>
-        </div>
-      )}
+        )}
+      {((selection && selection.functions && selection.selected.length === 0) ||
+        !selection) &&
+        pages > 1 &&
+        setPage !== null && (
+          <div className="flex flex-row justify-end items-center">
+            <p className="text-xs pl-2 text-gray-500">
+              | Page{" "}
+              <select className="bg-secondary rounded h-8 px-2 gap-2 m-1">
+                {[...Array(pages).keys()].map((retPage, index) => {
+                  return (
+                    <option
+                      key={index}
+                      onClick={() => setPage(retPage + 1)}
+                      selected={page === retPage + 1}
+                      className={`${
+                        page === retPage + 1 ? "bg-sky-700 text-white" : ""
+                      } hover:bg-sky-700 hover:text-white px-2 py-1 rounded text-left whitespace-nowrap`}
+                    >
+                      {retPage + 1}
+                    </option>
+                  );
+                })}
+              </select>{" "}
+              of <span className="font-bold text-sky-700">{pages}</span>
+            </p>
+            <p className="text-xs pl-1 text-gray-500">
+              -
+              <select
+                className="bg-secondary rounded h-8 px-2 gap-2 m-1"
+                onChange={(el) => setLimit(el.target.value)}
+              >
+                {[10, 20, 50, 100, 200].map((retPage, index) => {
+                  return (
+                    <option
+                      key={index}
+                      onClick={() => setLimit(retPage)}
+                      selected={limit === retPage}
+                      className={`${
+                        limit === retPage ? "bg-sky-700 text-white" : ""
+                      } hover:bg-sky-700 hover:text-white px-2 py-1 rounded text-left whitespace-nowrap`}
+                    >
+                      {retPage}
+                    </option>
+                  );
+                })}
+              </select>
+              per page
+            </p>
+          </div>
+        )}
       {
         <div className="flex flex-row flex-1 justify-start items-center bg-secondary rounded h-8 px-2 gap-2 m-2">
           <Search size={16} />
@@ -218,7 +225,11 @@ export default function Filters({
         </div>
       }
       <div className="flex flex-row justify-end items-center">
-        {gridHeader &&
+        {((selection &&
+          selection.functions &&
+          selection.selected.length === 0) ||
+          !selection) &&
+          gridHeader &&
           gridHeader.map((head, index) => {
             if (head.filter) {
               const active = activeFilters.filter(
@@ -265,7 +276,11 @@ export default function Filters({
               );
             }
           })}
-        {gridHeader &&
+        {((selection &&
+          selection.functions &&
+          selection.selected.length === 0) ||
+          !selection) &&
+          gridHeader &&
           gridHeader.filter((head) => head.filter === false).length > 0 && (
             <Popover
               name={"addFilter"}

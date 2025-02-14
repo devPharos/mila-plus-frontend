@@ -42,6 +42,7 @@ import "react-pdf/dist/esm/Page/TextLayer.css";
 import PDFViewer from "~/components/PDFViewer";
 import CheckboxInput from "~/components/RegisterForm/CheckboxInput";
 import PhoneNumberInput from "~/components/RegisterForm/PhoneNumberInput";
+import { useSelector } from "react-redux";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -53,6 +54,7 @@ export default function SponsorOutside({
   setOpened,
   defaultFormType = "preview",
 }) {
+  const { profile } = useSelector((state) => state.user);
   const [pageData, setPageData] = useState({
     enrollmentemergencies: [
       {
@@ -176,7 +178,10 @@ export default function SponsorOutside({
     // console.log(data)
     // return
 
-    if (pageData.activeMenu === "sponsor-signature") {
+    if (
+      pageData.activeMenu === "sponsor-signature" &&
+      !pageData.sponsor_signature
+    ) {
       const signature = signatureRef.current.toDataURL();
 
       const fileUuid = uuidv4();
@@ -279,35 +284,53 @@ export default function SponsorOutside({
           }
           // return
           delete data.documents;
-          await api.put(`/outside/sponsors/${id}`, {
-            ...data,
-            activeMenu: pageData.activeMenu,
-            lastActiveMenu: pageData.lastActiveMenu,
-            birthday: birthday ? format(birthday, "yyyyMMdd") : null,
-          });
-          setPageData({ ...pageData, activeMenu: "finished" });
-          setSuccessfullyUpdated(true);
-          toast("Saved!", { autoClose: 1000 });
-          setLoading(false);
+          api
+            .put(`/outside/sponsors/${id}`, {
+              ...data,
+              activeMenu: pageData.activeMenu,
+              lastActiveMenu: pageData.lastActiveMenu,
+              birthday: birthday ? format(birthday, "yyyyMMdd") : null,
+            })
+            .then(async (response) => {
+              const sponsor = pageData.enrollmentsponsors.findIndex(
+                (sponsor) => sponsor.id === id
+              );
+              setPageData({
+                ...pageData,
+                activeMenu: "finished",
+              });
+              setSuccessfullyUpdated(true);
+              toast("Saved!", { autoClose: 1000 });
+              // setSent(true);
+              setLoading(false);
+            })
+            .catch((err) => {
+              toast(err.response.data.error, {
+                type: "error",
+                autoClose: 3000,
+              });
+              setLoading(false);
+            });
         });
       } else {
-        try {
-          await api.put(`/outside/sponsors/${id}`, {
+        api
+          .put(`/outside/sponsors/${id}`, {
             ...data,
             activeMenu: pageData.activeMenu,
             lastActiveMenu: pageData.lastActiveMenu,
             birthday: birthday ? format(birthday, "yyyyMMdd") : null,
+          })
+          .then(async (response) => {
+            setPageData({ ...pageData, activeMenu: "finished" });
+            setSuccessfullyUpdated(true);
+            toast("Saved!", { autoClose: 1000 });
+            // setSent(true);
+            setLoading(false);
+          })
+          .catch((err) => {
+            toast(err.response.data.error, { type: "error", autoClose: 3000 });
+            setLoading(false);
           });
-          setPageData({ ...pageData, activeMenu: "finished" });
-          setSuccessfullyUpdated(true);
-          toast("Saved!", { autoClose: 1000 });
-          // setSent(true);
-          setLoading(false);
-        } catch (err) {
-          console.log(err);
-          toast(err.response.data.error, { type: "error", autoClose: 3000 });
-          setLoading(false);
-        }
       }
     }
   }
@@ -390,7 +413,7 @@ export default function SponsorOutside({
               value={{
                 id,
                 generalForm,
-                setSuccessfullyUpdated: () => null,
+                setSuccessfullyUpdated,
                 fullscreen,
                 setFullscreen,
                 successfullyUpdated,
@@ -435,7 +458,7 @@ export default function SponsorOutside({
                               name="name"
                               required
                               grow
-                              readOnly={pageData.sponsor_signature}
+                              readOnly={!profile && pageData.sponsor_signature}
                               title="Full Name"
                               defaultValue={pageData.sponsor.name}
                               InputContext={InputContext}
@@ -445,7 +468,7 @@ export default function SponsorOutside({
                               name="email"
                               required
                               grow
-                              readOnly={pageData.sponsor_signature}
+                              readOnly={!profile && pageData.sponsor_signature}
                               title="E-mail"
                               defaultValue={pageData.sponsor.email}
                               InputContext={InputContext}
@@ -455,7 +478,7 @@ export default function SponsorOutside({
                               name="phone"
                               required
                               grow
-                              readOnly={pageData.sponsor_signature}
+                              readOnly={!profile && pageData.sponsor_signature}
                               title="Phone Number"
                               value={pageData.sponsor.phone}
                               InputContext={InputContext}
@@ -464,7 +487,7 @@ export default function SponsorOutside({
                               name="birthday"
                               required
                               grow
-                              readOnly={pageData.sponsor_signature}
+                              readOnly={!profile && pageData.sponsor_signature}
                               title="Birth Date"
                               defaultValue={
                                 pageData.sponsor.birthday
@@ -480,7 +503,7 @@ export default function SponsorOutside({
                               type="text"
                               name="legal_entity_name"
                               grow
-                              readOnly={pageData.sponsor_signature}
+                              readOnly={!profile && pageData.sponsor_signature}
                               title="Name of the company"
                               defaultValue={pageData.sponsor.legal_entity_name}
                               InputContext={InputContext}
@@ -489,7 +512,7 @@ export default function SponsorOutside({
                               type="text"
                               name="legal_entity_email"
                               grow
-                              readOnly={pageData.sponsor_signature}
+                              readOnly={!profile && pageData.sponsor_signature}
                               title="E-mail"
                               defaultValue={pageData.sponsor.legal_entity_email}
                               InputContext={InputContext}
@@ -498,7 +521,7 @@ export default function SponsorOutside({
                               type="text"
                               name="legal_entity_phone"
                               grow
-                              readOnly={pageData.sponsor_signature}
+                              readOnly={!profile && pageData.sponsor_signature}
                               title="Phone Number"
                               value={pageData.sponsor.legal_entity_phone}
                               InputContext={InputContext}
@@ -507,7 +530,7 @@ export default function SponsorOutside({
                               type="text"
                               name="legal_entity_address"
                               grow
-                              readOnly={pageData.sponsor_signature}
+                              readOnly={!profile && pageData.sponsor_signature}
                               title="Address"
                               defaultValue={
                                 pageData.sponsor.legal_entity_address
@@ -518,7 +541,7 @@ export default function SponsorOutside({
                               type="text"
                               name="legal_entity_position"
                               grow
-                              readOnly={pageData.sponsor_signature}
+                              readOnly={!profile && pageData.sponsor_signature}
                               title="Position of the person who is signing this affidavit."
                               defaultValue={
                                 pageData.sponsor.legal_entity_position
@@ -532,7 +555,7 @@ export default function SponsorOutside({
                               name="address"
                               required
                               grow
-                              readOnly={pageData.sponsor_signature}
+                              readOnly={!profile && pageData.sponsor_signature}
                               title="Address"
                               defaultValue={pageData.sponsor.address}
                               InputContext={InputContext}
@@ -542,7 +565,7 @@ export default function SponsorOutside({
                               name="zip_code"
                               required
                               grow
-                              readOnly={pageData.sponsor_signature}
+                              readOnly={!profile && pageData.sponsor_signature}
                               title="Zip Code"
                               defaultValue={pageData.sponsor.zip_code}
                               InputContext={InputContext}
@@ -554,7 +577,7 @@ export default function SponsorOutside({
                               name="city"
                               required
                               grow
-                              readOnly={pageData.sponsor_signature}
+                              readOnly={!profile && pageData.sponsor_signature}
                               title="City"
                               defaultValue={pageData.sponsor.city}
                               InputContext={InputContext}
@@ -564,7 +587,7 @@ export default function SponsorOutside({
                               name="state"
                               required
                               grow
-                              readOnly={pageData.sponsor_signature}
+                              readOnly={!profile && pageData.sponsor_signature}
                               title="State"
                               defaultValue={pageData.sponsor.state}
                               InputContext={InputContext}
@@ -573,7 +596,7 @@ export default function SponsorOutside({
                               name="country"
                               required
                               grow
-                              readOnly={pageData.sponsor_signature}
+                              readOnly={!profile && pageData.sponsor_signature}
                               title="Country"
                               isSearchable
                               defaultValue={countriesOptions.find(
@@ -590,7 +613,7 @@ export default function SponsorOutside({
                               name="birth_city"
                               required
                               grow
-                              readOnly={pageData.sponsor_signature}
+                              readOnly={!profile && pageData.sponsor_signature}
                               title="City"
                               defaultValue={pageData.sponsor.birth_city}
                               InputContext={InputContext}
@@ -600,7 +623,7 @@ export default function SponsorOutside({
                               name="birth_state"
                               required
                               grow
-                              readOnly={pageData.sponsor_signature}
+                              readOnly={!profile && pageData.sponsor_signature}
                               title="State"
                               defaultValue={pageData.sponsor.birth_state}
                               InputContext={InputContext}
@@ -609,7 +632,7 @@ export default function SponsorOutside({
                               name="birth_country"
                               required
                               grow
-                              readOnly={pageData.sponsor_signature}
+                              readOnly={!profile && pageData.sponsor_signature}
                               title="Country"
                               isSearchable
                               defaultValue={countriesOptions.find(
@@ -677,7 +700,9 @@ export default function SponsorOutside({
                                 name="responsible_checkbox"
                                 defaultValue={true}
                                 required
-                                readOnly={pageData.sponsor_signature}
+                                readOnly={
+                                  !profile && pageData.sponsor_signature
+                                }
                                 title={`I will be responsible for student's financial and personal support for the durantion of hir/her studies at MILA.`}
                                 InputContext={InputContext}
                               />
@@ -702,36 +727,44 @@ export default function SponsorOutside({
                                     defaultValue={document.id}
                                     InputContext={InputContext}
                                   />
-                                  {!pageData.sponsor_signature && (
-                                    <InputLine title={document.title}>
-                                      {!document.multiple &&
-                                        pageData.enrollmentdocuments &&
-                                        pageData.enrollmentdocuments.filter(
-                                          (enrollmentdocument) =>
-                                            enrollmentdocument.document_id ===
-                                            document.id
-                                        ).length === 0 && (
-                                          <FileInput
-                                            type="file"
-                                            name="file_id"
-                                            title={"File"}
-                                            required={document.required}
-                                            grow
-                                            InputContext={InputContext}
-                                          />
-                                        )}
-                                      {document.multiple && (
-                                        <FileInputMultiple
+                                  {/* {!profile && !pageData.sponsor_signature && ( */}
+                                  <InputLine title={document.title}>
+                                    {!document.multiple &&
+                                      pageData.enrollmentdocuments &&
+                                      pageData.enrollmentdocuments.filter(
+                                        (enrollmentdocument) =>
+                                          enrollmentdocument.document_id ===
+                                          document.id
+                                      ).length === 0 && (
+                                        <FileInput
                                           type="file"
                                           name="file_id"
+                                          title={"File"}
                                           required={document.required}
-                                          title={"Multiple Files"}
                                           grow
                                           InputContext={InputContext}
                                         />
                                       )}
-                                    </InputLine>
-                                  )}
+                                    {document.multiple && (
+                                      <FileInputMultiple
+                                        type="file"
+                                        name="file_id"
+                                        required={
+                                          document.required &&
+                                          pageData.enrollmentdocuments &&
+                                          pageData.enrollmentdocuments.filter(
+                                            (enrollmentdocument) =>
+                                              enrollmentdocument.document_id ===
+                                              document.id
+                                          ).length === 0
+                                        }
+                                        title={"Multiple Files"}
+                                        grow
+                                        InputContext={InputContext}
+                                      />
+                                    )}
+                                  </InputLine>
+                                  {/* )} */}
                                   {pageData.enrollmentdocuments &&
                                     pageData.enrollmentdocuments.length > 0 && (
                                       <InputLine subtitle="Attached Files">

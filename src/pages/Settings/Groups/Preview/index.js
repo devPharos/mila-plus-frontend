@@ -43,6 +43,7 @@ export default function PagePreview({
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
+  const [loading, setLoading] = useState(false);
 
   const [registry, setRegistry] = useState({
     created_by: null,
@@ -62,7 +63,6 @@ export default function PagePreview({
         const { data: groupAccess } = await api.get(
           `MenuHierarchy/group/${id}`
         );
-        console.log(groupAccess);
         setPageData({ ...data, groupAccess, loaded: true });
         const {
           created_by,
@@ -106,8 +106,7 @@ export default function PagePreview({
   }, []);
 
   async function handleGeneralFormSubmit(data) {
-    // console.log(data)
-    // return
+    setLoading(true);
     if (successfullyUpdated) {
       toast("No need to be saved!", {
         autoClose: 1000,
@@ -117,16 +116,24 @@ export default function PagePreview({
       return;
     }
     if (id === "new") {
-      try {
-        const response = await api.post(`/groups`, data);
-        setOpened(response.data.id);
-        setPageData({ ...pageData, ...data });
-        setSuccessfullyUpdated(true);
-        toast("Saved!", { autoClose: 1000 });
-        handleOpened(null);
-      } catch (err) {
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
-      }
+      api
+        .post(`/groups`, data)
+        .then(async (response) => {
+          setOpened(response.data.id);
+          api
+            .get(`MenuHierarchy/group/${response.data.id}`)
+            .then(({ data: groupAccess }) => {
+              setPageData({ ...pageData, groupAccess, ...data });
+              setSuccessfullyUpdated(true);
+              toast("Saved!", { autoClose: 1000 });
+              setActiveMenu("group-access");
+              setLoading(false);
+            });
+        })
+        .catch((err) => {
+          toast(err.response.data.error, { type: "error", autoClose: 3000 });
+          setLoading(false);
+        });
     } else if (id !== "new") {
       const updated = handleUpdatedFields(data, pageData);
 
@@ -140,9 +147,8 @@ export default function PagePreview({
           handleOpened(null);
         } catch (err) {
           toast(err.response.data.error, { type: "error", autoClose: 3000 });
+          setLoading(false);
         }
-      } else {
-        // console.log(updated)
       }
     }
   }
@@ -203,8 +209,9 @@ export default function PagePreview({
               </RegisterFormMenu>
               <RegisterFormMenu
                 setActiveMenu={setActiveMenu}
-                messageOnDisabled="Feature under construction..."
+                messageOnDisabled="First create the group to manage it's access"
                 activeMenu={activeMenu}
+                disabled={id === "new"}
                 name="group-access"
               >
                 <Lock size={16} /> Group Access
@@ -236,6 +243,7 @@ export default function PagePreview({
                           title={pageData.name}
                           registry={registry}
                           InputContext={InputContext}
+                          loading={loading}
                         />
 
                         <InputLineGroup

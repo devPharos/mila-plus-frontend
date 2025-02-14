@@ -93,6 +93,10 @@ export default function EnrollmentOutside({
         relationship_type: "",
         email: "",
         phone: "",
+        signature: {
+          url: null,
+          created_at: null,
+        },
       },
     ],
     agreement: false,
@@ -2166,7 +2170,7 @@ export default function EnrollmentOutside({
                             pageData.activeMenu === "student-signature"
                           }
                         >
-                          {!profile && !pageData.signature ? (
+                          {!pageData.signature ? (
                             <InputLine title="Student Signature">
                               {pageData.contracts &&
                                 pageData.contracts.length > 0 && (

@@ -840,6 +840,14 @@ export default function PagePreview({
                             <PhoneNumberInput
                               type="text"
                               grow
+                              name="phone"
+                              title="U.S. Phone"
+                              value={pageData.phone}
+                              InputContext={InputContext}
+                            />
+                            <PhoneNumberInput
+                              type="text"
+                              grow
                               name="home_country_phone"
                               title="Home Country Phone"
                               value={pageData.home_country_phone}

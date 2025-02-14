@@ -19,6 +19,7 @@ function PageContainer({
   selection = null,
   handleNew = true,
   handleEdit = true,
+  Excel = null,
 }) {
   const accesses = useSelector((state) => state.auth.accesses);
   const currentPage = getCurrentPage();
@@ -63,6 +64,7 @@ function PageContainer({
         Context={FullGridContext}
         handleNew={handleNew ? () => setOpened("new") : null}
         selection={selection}
+        Excel={Excel}
       />
 
       {loadingData ? (

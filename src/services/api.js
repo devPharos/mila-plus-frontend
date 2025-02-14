@@ -1,11 +1,13 @@
 import axios from "axios";
 import { logout } from "~/store/modules/auth/actions";
 
+export const baseURL =
+  process.env.NODE_ENV === "production"
+    ? process.env.REACT_APP_BACKEND_URL
+    : "http://localhost:3333";
+
 const api = axios.create({
-  baseURL:
-    process.env.NODE_ENV === "production"
-      ? process.env.REACT_APP_BACKEND_URL
-      : "http://localhost:3333",
+  baseURL,
 });
 
 let store;

@@ -4,17 +4,25 @@ import {
   PlusCircle,
   Search,
   SlidersHorizontal,
+  Table2,
+  X,
 } from "lucide-react";
 import React, { useContext, useState } from "react";
 import Popover from "../Popover";
 import PopoverAddFilter from "../Popover/PopoverAddFilter";
 import Icon from "../Icon";
+import {
+  invoiceTypeDetailsOptions,
+  invoiceTypesOptions,
+  receivableStatusesOptions,
+} from "~/functions/selectPopoverOptions";
 
 export default function Filters({
   access = { view: false, edit: false, create: false, inactivate: false },
   Context = null,
   handleNew = null,
   selection = null,
+  Excel = null,
 }) {
   if (!Context) {
     return null;
@@ -85,7 +93,7 @@ export default function Filters({
               setActivePopover("");
               handleFilters({ title, value: "" });
             }}
-            className="text-primary font-bold hover:bg-gray-300 hover:text-white px-2 py-2 rounded text-left flex flex-row items-center justify-start gap-2 whitespace-nowrap"
+            className="text-sky-700 font-bold hover:bg-gray-300 hover:text-white px-2 py-2 rounded text-left flex flex-row items-center justify-start gap-2 whitespace-nowrap"
           >
             <Eraser size={12} /> Clear
           </button>
@@ -96,7 +104,7 @@ export default function Filters({
             onClick={() => {
               handleAddFilter(gridHeader[index]);
             }}
-            className="text-primary font-bold transition-all hover:bg-gray-300 hover:text-white px-2 py-2 rounded text-left flex flex-row items-center justify-start gap-2 whitespace-nowrap"
+            className="text-sky-700 font-bold transition-all hover:bg-gray-300 hover:text-white px-2 py-2 rounded text-left flex flex-row items-center justify-start gap-2 whitespace-nowrap"
           >
             <EyeOff size={12} /> Hide Filter
           </button>
@@ -137,7 +145,7 @@ export default function Filters({
       )}
       {results > 0 && (
         <p className="text-xs pl-2 text-gray-500">
-          Showing <span className="font-bold text-primary">{results}</span>{" "}
+          Showing <span className="font-bold text-sky-700">{results}</span>{" "}
           line(s)
         </p>
       )}
@@ -153,15 +161,15 @@ export default function Filters({
                     onClick={() => setPage(retPage + 1)}
                     selected={page === retPage + 1}
                     className={`${
-                      page === retPage + 1 ? "bg-primary text-white" : ""
-                    } hover:bg-primary hover:text-white px-2 py-1 rounded text-left whitespace-nowrap`}
+                      page === retPage + 1 ? "bg-sky-700 text-white" : ""
+                    } hover:bg-sky-700 hover:text-white px-2 py-1 rounded text-left whitespace-nowrap`}
                   >
                     {retPage + 1}
                   </option>
                 );
               })}
             </select>{" "}
-            of <span className="font-bold text-primary">{pages}</span>
+            of <span className="font-bold text-sky-700">{pages}</span>
           </p>
           <p className="text-xs pl-1 text-gray-500">
             -
@@ -176,8 +184,8 @@ export default function Filters({
                     onClick={() => setLimit(retPage)}
                     selected={limit === retPage}
                     className={`${
-                      limit === retPage ? "bg-primary text-white" : ""
-                    } hover:bg-primary hover:text-white px-2 py-1 rounded text-left whitespace-nowrap`}
+                      limit === retPage ? "bg-sky-700 text-white" : ""
+                    } hover:bg-sky-700 hover:text-white px-2 py-1 rounded text-left whitespace-nowrap`}
                   >
                     {retPage}
                   </option>
@@ -241,9 +249,9 @@ export default function Filters({
                   <div
                     className={`flex flex-row justify-start items-center rounded h-8 px-2 gap-2 m-2 transition ease-in-out ${
                       activePopover === head.title
-                        ? "-translate-y-1 scale-110 bg-primary text-white"
+                        ? "-translate-y-1 scale-110 bg-sky-700 text-white"
                         : "bg-secondary text-gray-500 "
-                    } hover:bg-primary hover:text-white duration-300 whitespace-nowrap`}
+                    } hover:bg-sky-700 hover:text-white duration-300 whitespace-nowrap`}
                   >
                     <SlidersHorizontal size={14} />
                     <div
@@ -272,7 +280,7 @@ export default function Filters({
               setOppened={setActivePopover}
             >
               <div
-                className={`flex flex-row justify-start items-center bg-primary rounded h-8 px-2 gap-2 m-2`}
+                className={`flex flex-row justify-start items-center bg-sky-700 transition ease-in  hover:bg-sky-600 rounded h-8 px-2 gap-2 m-2`}
               >
                 <PlusCircle size={14} color="#FFF" />
                 <div
@@ -283,6 +291,119 @@ export default function Filters({
               </div>
             </Popover>
           )}
+        {Excel && (
+          <div className="relative">
+            <button
+              type="button"
+              name={"excel"}
+              onClick={() => Excel.fun(false)}
+            >
+              <div
+                className={`relative flex flex-row justify-start items-center bg-lime-700 transition ease-in hover:bg-lime-600 rounded h-8 px-2 gap-2 m-2 text-white text-xs`}
+              >
+                <Table2 size={14} /> Excel
+              </div>
+            </button>
+
+            {Excel.opened && (
+              <div
+                className={`absolute top-[52px] right-2 z-40 w-96 bg-white rounded-md shadow-lg text-xs overflow-y-scroll`}
+              >
+                <div className="flex flex-col items-start justify-start gap-2">
+                  <h2 className="text-md font-bold w-full text-center bg-lime-700 p-2 text-white">
+                    Filters to generate sheet
+                  </h2>
+                  <div className="flex w-full flex-col items-start justify-start gap-2 p-2">
+                    {Excel.excelData.map((data, index) => {
+                      return (
+                        <div
+                          key={index}
+                          className="flex w-full flex-row items-center justify-between gap-2 p-2 border-b border-gray-300"
+                        >
+                          <label className="text-xs text-gray-500 flex-1">
+                            {data.title}
+                          </label>
+                          {data.type === "select" ? (
+                            <select
+                              name={data.name}
+                              className="bg-transparent w-32 text-xs h-full focus:outline-none"
+                              value={data.value}
+                              onChange={(el) => {
+                                Excel.setExcelData(
+                                  Excel.excelData.map((data) => {
+                                    if (data.name === el.target.name) {
+                                      return {
+                                        ...data,
+                                        value: el.target.value,
+                                      };
+                                    }
+                                    return data;
+                                  })
+                                );
+                              }}
+                            >
+                              <option value="All">All</option>
+                              {data.options.map((option, index) => {
+                                return (
+                                  <option key={index} value={option.value}>
+                                    {option.label}
+                                  </option>
+                                );
+                              })}
+                            </select>
+                          ) : (
+                            <input
+                              type={data.type}
+                              name={data.name}
+                              onChange={(el) => {
+                                Excel.setExcelData(
+                                  Excel.excelData.map((data) => {
+                                    if (data.name === el.target.name) {
+                                      return {
+                                        ...data,
+                                        value: el.target.value,
+                                      };
+                                    }
+                                    return data;
+                                  })
+                                );
+                              }}
+                              placeholder=""
+                              className="bg-transparent w-32 text-xs h-full focus:outline-none"
+                              value={data.value}
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                    {/* <div
+                          key={index}
+                          className="flex w-full flex-row items-center justify-between gap-2 p-2 border-b border-gray-300"
+                        >
+                          <label className="text-xs text-gray-500 flex-1">
+                            {data.title}
+                          </label>
+                          <input
+                            type={data.type}
+                            name={data.name}
+                            placeholder=""
+                            className="bg-transparent w-32 text-xs h-full focus:outline-none"
+                            value={data.value}
+                          />
+                        </div> */}
+                    <button type="button" onClick={Excel.fun}>
+                      <div
+                        className={`relative flex flex-row justify-start items-center bg-lime-700 transition ease-in hover:bg-lime-600 rounded h-8 px-2 gap-2 m-2 text-white text-xs`}
+                      >
+                        <Table2 size={14} /> Generate
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

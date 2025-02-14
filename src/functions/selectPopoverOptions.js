@@ -173,4 +173,8 @@ export const receivableStatusesOptions = [
     value: "Paid",
     label: "Paid",
   },
+  {
+    value: "Parcial Paid",
+    label: "Parcial Paid",
+  },
 ];

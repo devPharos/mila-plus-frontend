@@ -1,5 +1,5 @@
 import { Form } from "@unform/web";
-import { Building, CheckCircle, Pencil, PlusCircle, X } from "lucide-react";
+import { Building, Pencil, X } from "lucide-react";
 import React, {
   createContext,
   useContext,
@@ -17,12 +17,11 @@ import { toast } from "react-toastify";
 import api from "~/services/api";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { FullGridContext } from "../..";
-import { addDays, format, parseISO } from "date-fns";
+import { format, parseISO } from "date-fns";
 import DatePicker from "~/components/RegisterForm/DatePicker";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import PricesSimulation from "~/components/PricesSimulation";
 import { Scope } from "@unform/core";
-import { openPaymentModal } from "~/functions/emergepayfn";
 
 export const InputContext = createContext({});
 
@@ -33,7 +32,7 @@ export default function Settlement({
   selected,
   handleOpened,
 }) {
-  const { setOpened, successfullyUpdated, setSuccessfullyUpdated } =
+  const { successfullyUpdated, setSuccessfullyUpdated } =
     useContext(FullGridContext);
   const [pageData, setPageData] = useState({
     loaded: false,

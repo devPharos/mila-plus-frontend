@@ -412,8 +412,24 @@ function PricesSimulation({
                               </td>
                             </>
                           )}
-                          <td>{discount.type}</td>
-                          <td>{discount.applied_at}</td>
+                          <td>
+                            <Input
+                              type="hidden"
+                              name="type"
+                              value={discount.type}
+                              InputContext={InputContext}
+                            />
+                            {discount.type}
+                          </td>
+                          <td>
+                            <Input
+                              type="hidden"
+                              name="applied_at"
+                              value={discount.applied_at}
+                              InputContext={InputContext}
+                            />
+                            {discount.applied_at}
+                          </td>
                           <td>
                             {((isAdmissionDiscountChangable &&
                               discount.type === "Admission") ||

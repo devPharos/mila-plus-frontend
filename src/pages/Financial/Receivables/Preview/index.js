@@ -1196,6 +1196,7 @@ export default function PagePreview({
                             title="settlements"
                             activeMenu={activeMenu === "settlements"}
                           >
+                            {console.log(pageData.settlements)}
                             {pageData.settlements &&
                               pageData.settlements.length > 0 &&
                               pageData.settlements.map((settlement, index) => {
@@ -1219,15 +1220,23 @@ export default function PagePreview({
 
                                       <Input
                                         type="text"
-                                        name="created_at"
+                                        name="settlement_date"
                                         readOnly
-                                        placeholder="0.00"
-                                        title="Date"
+                                        title="Settlement Date"
                                         shrink
-                                        defaultValue={format(
-                                          parseISO(settlement.settlement_date),
-                                          "MM/dd/yyyy"
-                                        )}
+                                        defaultValue={
+                                          settlement.settlement_date
+                                            ? format(
+                                                parseISO(
+                                                  settlement.settlement_date
+                                                ),
+                                                "MM/dd/yyyy"
+                                              )
+                                            : format(
+                                                parseISO(settlement.created_at),
+                                                "MM/dd/yyyy"
+                                              )
+                                        }
                                         InputContext={InputContext}
                                       />
                                       <Input

@@ -178,3 +178,33 @@ export const receivableStatusesOptions = [
     label: "Parcial Paid",
   },
 ];
+
+export const typeOfPaymentOptions = [
+  {
+    value: "Inbounds & Outbounds",
+    label: "Inbounds & Outbounds",
+  },
+  {
+    value: "Inbounds Only",
+    label: "Inbounds Only",
+  },
+  {
+    value: "Outbounds Only",
+    label: "Outbounds Only",
+  },
+];
+
+export const paymentPlatformOptions = [
+  {
+    value: "Gravity",
+    label: "Gravity",
+  },
+  {
+    value: "Parcelow",
+    label: "Parcelow",
+  },
+  {
+    value: "Zelle",
+    label: "Zelle",
+  },
+];

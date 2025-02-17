@@ -86,41 +86,43 @@ export default function FinancialPaymentCriteria() {
       if (!data) {
         return;
       }
-      const gridDataValues = data.map(
-        (
-          {
-            id,
-            company_id,
-            company,
-            filial_id,
-            filial,
-            description,
-            recurring_qt,
-            recurring_metric,
-            fee_qt,
-            fee_metric,
-            fee_type,
-            fee_value,
-          },
-          index
-        ) => {
-          return {
-            show: true,
-            id,
-            fields: [
-              description.slice(0, 50) + "...",
+      const gridDataValues = data
+        .sort((a, b) => a.description > b.description)
+        .map(
+          (
+            {
+              id,
+              company_id,
+              company,
+              filial_id,
+              filial,
+              description,
               recurring_qt,
               recurring_metric,
               fee_qt,
               fee_metric,
               fee_type,
               fee_value,
-              filial.name,
-            ],
-            page: Math.ceil((index + 1) / limit),
-          };
-        }
-      );
+            },
+            index
+          ) => {
+            return {
+              show: true,
+              id,
+              fields: [
+                description,
+                recurring_qt,
+                recurring_metric,
+                fee_qt,
+                fee_metric,
+                fee_type,
+                fee_value,
+                filial.name,
+              ],
+              page: Math.ceil((index + 1) / limit),
+            };
+          }
+        );
       setGridData(gridDataValues);
       setLoadingData(false);
     }

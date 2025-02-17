@@ -16,14 +16,32 @@ export default function FinancialPaymentMethods() {
       filter: true,
     },
     {
-      title: "Filial Name",
-      name: "filial_name",
+      title: "Type of Payment",
+      name: "type_of_payment",
+      type: "text",
+      filter: true,
+    },
+    {
+      title: "Platform",
+      name: "platform",
+      type: "text",
+      filter: true,
+    },
+    {
+      title: "Payment Details",
+      name: "payment_details",
       type: "text",
       filter: true,
     },
     {
       title: "Bank Account",
       name: "bank_account",
+      type: "text",
+      filter: true,
+    },
+    {
+      title: "Filial Name",
+      name: "filial_name",
       type: "text",
       filter: true,
     },
@@ -56,23 +74,36 @@ export default function FinancialPaymentMethods() {
       if (!data) {
         return;
       }
-      const gridDataValues = data.map(
-        (
-          { id, description, filial_id, filial, bankaccount_id, bankAccount },
-          index
-        ) => {
-          return {
-            show: true,
-            id,
-            fields: [
-              description.slice(0, 50) + "...",
-              filial.name,
-              bankAccount.account + " - " + bankAccount.bank.bank_name,
-            ],
-            page: Math.ceil((index + 1) / limit),
-          };
-        }
-      );
+      const gridDataValues = data
+        .sort((a, b) => a.description > b.description)
+        .map(
+          (
+            {
+              id,
+              description,
+              type_of_payment,
+              platform,
+              payment_details,
+              filial,
+              bankAccount,
+            },
+            index
+          ) => {
+            return {
+              show: true,
+              id,
+              fields: [
+                description,
+                type_of_payment,
+                platform,
+                payment_details,
+                bankAccount.account + " - " + bankAccount.bank.bank_name,
+                filial.name,
+              ],
+              page: Math.ceil((index + 1) / limit),
+            };
+          }
+        );
       setGridData(gridDataValues);
       setLoadingData(false);
     }

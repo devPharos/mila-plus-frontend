@@ -72,9 +72,11 @@ export default function PagePreview({
     status: "Pending",
     entry_date: null,
     due_date: null,
-    amount: null,
-    total: null,
-    balance: null,
+    amount: 0,
+    discount: 0,
+    fee: 0,
+    total: 0,
+    balance: 0,
     memo: "",
     is_recurrence: false,
     contract_number: "",
@@ -270,7 +272,7 @@ export default function PagePreview({
           });
 
         const paymentMethodOptions = paymentMethodData.data
-          .filter((f) => f.id !== id)
+          .filter((f) => f.id !== id && f.type_of_payment !== "Outbounds")
           .map((f) => {
             return { value: f.id, label: f.description.slice(0, 20) };
           });
@@ -377,7 +379,7 @@ export default function PagePreview({
               >
                 <Building size={16} /> General
               </RegisterFormMenu>
-              {pageData.status !== "Pending" && (
+              {pageData.settlements && pageData.settlements.length > 0 && (
                 <RegisterFormMenu
                   setActiveMenu={setActiveMenu}
                   activeMenu={activeMenu}

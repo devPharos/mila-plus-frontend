@@ -21,6 +21,10 @@ import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
 import Textarea from "~/components/RegisterForm/Textarea";
 import { FullGridContext } from "../..";
+import {
+  paymentPlatformOptions,
+  typeOfPaymentOptions,
+} from "~/functions/selectPopoverOptions";
 
 export const InputContext = createContext({});
 
@@ -281,16 +285,44 @@ export default function PagePreview({
                               options={bankAccountOptions}
                               InputContext={InputContext}
                             />
+                            <SelectPopover
+                              name="type_of_payment"
+                              required
+                              title="Apply at"
+                              isSearchable
+                              grow
+                              defaultValue={typeOfPaymentOptions.find(
+                                (opt) => opt.value === pageData.type_of_payment
+                              )}
+                              options={typeOfPaymentOptions}
+                              InputContext={InputContext}
+                            />
+                            <SelectPopover
+                              name="platform"
+                              title="Platform"
+                              isSearchable
+                              grow
+                              defaultValue={paymentPlatformOptions.find(
+                                (opt) => opt.value === pageData.platform
+                              )}
+                              options={paymentPlatformOptions}
+                              InputContext={InputContext}
+                            />
                           </InputLine>
-                          <InputLine title="Description">
-                            <Textarea
+                          <InputLine title="Details">
+                            <Input
                               name="description"
                               required
-                              width={""}
-                              title="Description"
+                              title="Name"
                               grow
-                              rows={3}
                               defaultValue={pageData.description}
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              name="payment_details"
+                              title="Payment Details"
+                              grow
+                              defaultValue={pageData.payment_details}
                               InputContext={InputContext}
                             />
                           </InputLine>

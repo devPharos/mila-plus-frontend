@@ -15,7 +15,6 @@ import {
   invoiceTypesOptions,
   receivableStatusesOptions,
 } from "~/functions/selectPopoverOptions";
-import { date } from "yup";
 
 export default function FinancialReceivables() {
   const filial = useSelector((state) => state.auth.filial);

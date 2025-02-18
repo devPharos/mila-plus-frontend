@@ -207,21 +207,35 @@ export default function PagePreview({
       await getAllChartOfAccountsByIssuer();
       try {
         const { data } = await api.get(`/recurrence/${id}`);
-        api
-          .get(`/receivables?search=${data.issuer.id}`)
-          .then(({ data: receivables }) => {
-            setPageData({
-              ...pageData,
-              ...data,
-              searchFields: {
-                processtype_id: data.processtype_id,
-                processsubstatus_id: data.processsubstatus_id,
-                filial_id: data.filial_id,
-              },
-              receivables,
-              loaded: true,
+        if (data.issuer) {
+          api
+            .get(`/receivables?search=${data.issuer.id}`)
+            .then(({ data: receivables }) => {
+              setPageData({
+                ...pageData,
+                ...data,
+                searchFields: {
+                  processtype_id: data.processtype_id,
+                  processsubstatus_id: data.processsubstatus_id,
+                  filial_id: data.filial_id,
+                },
+                receivables,
+                loaded: true,
+              });
             });
+        } else {
+          setPageData({
+            ...pageData,
+            ...data,
+            searchFields: {
+              processtype_id: data.processtype_id,
+              processsubstatus_id: data.processsubstatus_id,
+              filial_id: data.filial_id,
+            },
+            receivables: [],
+            loaded: true,
           });
+        }
 
         const {
           created_by,

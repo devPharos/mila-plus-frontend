@@ -150,7 +150,10 @@ export default function PagePreview({
                       const receivable = receivables
                         .filter((receivable) => receivable.status === "Pending")
                         .sort((a, b) => a.due_date - b.due_date)[0];
-                      await openPaymentModal(receivable, postedData.id);
+                      await openPaymentModal({
+                        receivable,
+                        recurrence_id: postedData.id,
+                      });
                     },
                   },
                 ],
@@ -544,8 +547,8 @@ export default function PagePreview({
                               <button
                                 type="button"
                                 onClick={() => {
-                                  openPaymentModal(
-                                    pageData?.receivables
+                                  openPaymentModal({
+                                    receivable: pageData?.receivables
                                       .filter(
                                         (receivable) =>
                                           receivable.status === "Pending"
@@ -553,8 +556,9 @@ export default function PagePreview({
                                       .sort(
                                         (a, b) => a.due_date - b.due_date
                                       )[0],
-                                    pageData?.issuer?.issuer_x_recurrence?.id
-                                  );
+                                    recurrence_id:
+                                      pageData?.issuer?.issuer_x_recurrence?.id,
+                                  });
                                 }}
                                 className="text-xs bg-gray-100 px-6 py-3 mt-3 rounded-md border cursor-pointer flex flex-row items-center justify-center gap-2 hover:bg-gray-200"
                               >

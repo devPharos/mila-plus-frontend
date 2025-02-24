@@ -388,7 +388,7 @@ export default function PagePreview({
                   <ReplaceAll size={16} /> Settlements
                 </RegisterFormMenu>
               )}
-              {pageData.status !== "Pending" && (
+              {pageData.status.includes("Paid", "Parcial Paid") && (
                 <RegisterFormMenu
                   setActiveMenu={setActiveMenu}
                   activeMenu={activeMenu}

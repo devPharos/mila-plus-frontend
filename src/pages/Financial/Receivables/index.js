@@ -15,6 +15,7 @@ import {
   invoiceTypesOptions,
   receivableStatusesOptions,
 } from "~/functions/selectPopoverOptions";
+import Renegociation from "./Renegociation";
 
 export default function FinancialReceivables() {
   const filial = useSelector((state) => state.auth.filial);
@@ -97,6 +98,7 @@ export default function FinancialReceivables() {
   const [settlementOpen, setSettlementOpen] = useState(false);
   const [feeAdjustmentOpen, setFeeAdjustmentOpen] = useState(false);
   const [excelOpen, setExcelOpen] = useState(false);
+  const [renegociationOpen, setRenegociationOpen] = useState(false);
   const defaultExcelData = [
     {
       title: "Entry date from",
@@ -168,51 +170,53 @@ export default function FinancialReceivables() {
       if (!data) {
         return;
       }
-      const gridDataValues = data.map(
-        (
-          {
-            id,
-            canceled_at,
-            filial,
-            issuer,
-            invoice_number,
-            entry_date,
-            due_date,
-            amount,
-            discount,
-            fee,
-            total,
-            balance,
-            status,
-            // status_date,
-          },
-          index
-        ) => {
-          const ret = {
-            show: true,
-            id,
-            fields: [
-              issuer.name,
-              filial.name,
-              "I" + invoice_number.toString().padStart(6, "0"),
-              format(parseISO(entry_date), "yyyy-MM-dd"),
-              format(parseISO(due_date), "yyyy-MM-dd"),
-              "$ " + amount.toFixed(2),
-              "$ " + discount.toFixed(2),
-              "$ " + fee.toFixed(2),
-              "$ " + total.toFixed(2),
-              "$ " + balance.toFixed(2),
+      const gridDataValues = data
+        .sort((a, b) => (a.due_date > b.due_date ? 1 : -1))
+        .map(
+          (
+            {
+              id,
+              canceled_at,
+              filial,
+              issuer,
+              invoice_number,
+              entry_date,
+              due_date,
+              amount,
+              discount,
+              fee,
+              total,
+              balance,
               status,
-              // format(parseISO(status_date), "yyyy-MM-dd"),
-              ,
-            ],
-            selectable: status !== "Paid",
-            canceled: canceled_at,
-            page: Math.ceil((index + 1) / limit),
-          };
-          return ret;
-        }
-      );
+              // status_date,
+            },
+            index
+          ) => {
+            const ret = {
+              show: true,
+              id,
+              fields: [
+                issuer.name,
+                filial.name,
+                "I" + invoice_number.toString().padStart(6, "0"),
+                format(parseISO(entry_date), "yyyy-MM-dd"),
+                format(parseISO(due_date), "yyyy-MM-dd"),
+                "$ " + amount.toFixed(2),
+                "$ " + discount.toFixed(2),
+                "$ " + fee.toFixed(2),
+                "$ " + total.toFixed(2),
+                "$ " + balance.toFixed(2),
+                status,
+                // format(parseISO(status_date), "yyyy-MM-dd"),
+                ,
+              ],
+              selectable: status.includes("Pending", "Parcial Paid"),
+              canceled: canceled_at,
+              page: Math.ceil((index + 1) / limit),
+            };
+            return ret;
+          }
+        );
       setGridData(gridDataValues);
       setLoadingData(false);
     }, 500);
@@ -229,6 +233,15 @@ export default function FinancialReceivables() {
     const newVarOpened = !settlementOpen;
     setSettlementOpen(newVarOpened);
     if (!newVarOpened) {
+      loader();
+    }
+  }
+
+  function handleRenegociation() {
+    const newVarOpened = !renegociationOpen;
+    setRenegociationOpen(newVarOpened);
+    if (!newVarOpened) {
+      setSelected([]);
       loader();
     }
   }
@@ -385,6 +398,15 @@ export default function FinancialReceivables() {
             Page: Settlement,
             opened: settlementOpen,
             setOpened: setSettlementOpen,
+            selected,
+          },
+          {
+            title: "Renegociation",
+            fun: handleRenegociation,
+            icon: "Handshake",
+            Page: Renegociation,
+            opened: renegociationOpen,
+            setOpened: setRenegociationOpen,
             selected,
           },
           {

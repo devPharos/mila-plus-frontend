@@ -3,7 +3,6 @@ import api from "~/services/api";
 export async function openPaymentModal({
   receivable = null,
   recurrence_id = null,
-  setPaid = () => null,
 }) {
   await api
     .post(`/emergepay/simple-form`, {

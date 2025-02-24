@@ -150,7 +150,10 @@ export default function PagePreview({
                       const receivable = receivables
                         .filter((receivable) => receivable.status === "Pending")
                         .sort((a, b) => a.due_date - b.due_date)[0];
-                      await openPaymentModal(receivable, postedData.id);
+                      await openPaymentModal({
+                        receivable,
+                        recurrence_id: postedData.id,
+                      });
                     },
                   },
                 ],

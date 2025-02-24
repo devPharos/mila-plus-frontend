@@ -14,6 +14,12 @@ export const optionsTypes = [
   { value: "Non-F1", label: "Non-F1" },
 ];
 
+export const inactiveReasonsOptions = [
+  { value: "", label: "Not Defined" },
+  { value: "Canceled", label: "Canceled" },
+  { value: "Terminated", label: "Terminated" },
+];
+
 export const appliedAtOptions = [
   { value: "Tuition", label: "Tuition" },
   { value: "Registration", label: "Registration" },
@@ -133,6 +139,10 @@ export const subStatusOptions = [
     value: "Late",
     label: "Late",
   },
+  {
+    value: "Renegociated",
+    label: "Renegociated",
+  },
 ];
 
 export const invoiceTypesOptions = [
@@ -176,6 +186,10 @@ export const receivableStatusesOptions = [
   {
     value: "Parcial Paid",
     label: "Parcial Paid",
+  },
+  {
+    value: "Renegociated",
+    label: "Renegociated",
   },
 ];
 

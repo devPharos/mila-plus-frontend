@@ -7,6 +7,8 @@ import {
   Undo,
   UndoDot,
   ReplaceAll,
+  Send,
+  Mail,
 } from "lucide-react";
 import React, {
   createContext,
@@ -40,6 +42,7 @@ import {
 import { FullGridContext } from "../..";
 import { Scope } from "@unform/core";
 import DatePicker from "~/components/RegisterForm/DatePicker";
+import { AlertContext } from "~/App";
 
 export const InputContext = createContext({});
 
@@ -48,6 +51,7 @@ export default function PagePreview({
   id,
   defaultFormType = "preview",
 }) {
+  const { alertBox } = useContext(AlertContext);
   const {
     handleOpened,
     setOpened,
@@ -348,6 +352,38 @@ export default function PagePreview({
     getPageData(id);
   }, [id]);
 
+  async function handleSendInvoice() {
+    alertBox({
+      title: "Attention!",
+      descriptionHTML:
+        "Are you sure you want to send this invoice to the student?",
+      buttons: [
+        {
+          title: "No",
+          class: "cancel",
+        },
+        {
+          title: "Yes",
+          onPress: async () => {
+            api
+              .post(`/receivables/send-invoice/${id}`)
+              .then(() => {
+                toast("Invoice sent!", { autoClose: 1000 });
+              })
+              .catch((err) => {
+                console.log(err);
+                toast(err.response.data.error, {
+                  type: "error",
+                  autoClose: 3000,
+                });
+              });
+            // handleOpened(null);
+          },
+        },
+      ],
+    });
+  }
+
   return (
     <Preview formType={formType} fullscreen={fullscreen}>
       {pageData ? (
@@ -371,7 +407,7 @@ export default function PagePreview({
           </div>
         ) : (
           <div className="flex h-full flex-row items-start justify-between gap-4">
-            <div className="flex flex-col items-center justify-between text-xs w-32 gap-4">
+            <div className="flex flex-col items-center justify-between text-xs w-40 gap-4">
               <RegisterFormMenu
                 setActiveMenu={setActiveMenu}
                 activeMenu={activeMenu}
@@ -379,6 +415,16 @@ export default function PagePreview({
               >
                 <Building size={16} /> General
               </RegisterFormMenu>
+              {pageData.status.includes("Pending") && (
+                <button
+                  type="button"
+                  onClick={() => handleSendInvoice()}
+                  className="w-full bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2"
+                >
+                  <Send size={14} />
+                  <strong>Send Invoice</strong>
+                </button>
+              )}
               {pageData.settlements && pageData.settlements.length > 0 && (
                 <RegisterFormMenu
                   setActiveMenu={setActiveMenu}
@@ -388,7 +434,7 @@ export default function PagePreview({
                   <ReplaceAll size={16} /> Settlements
                 </RegisterFormMenu>
               )}
-              {pageData.status !== "Pending" && (
+              {pageData.status.includes("Paid", "Parcial Paid") && (
                 <RegisterFormMenu
                   setActiveMenu={setActiveMenu}
                   activeMenu={activeMenu}

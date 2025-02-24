@@ -44,6 +44,7 @@ import { useSelector } from "react-redux";
 import { FullGridContext } from "../..";
 import {
   genderOptions,
+  inactiveReasonsOptions,
   optionsCategory,
   optionsStatus,
   optionsSubStatus,
@@ -94,6 +95,7 @@ export default function PagePreview({
     books: 0,
     tuition_original_price: 0,
     tuition_in_advance: false,
+    inactive_reason: "",
     searchFields: {
       filial_id: null,
       processtype_id: null,
@@ -512,6 +514,20 @@ export default function PagePreview({
                               options={optionsStatus}
                               InputContext={InputContext}
                             />
+                            {pageData.status === "Inactive" && (
+                              <SelectPopover
+                                name="inactive_reason"
+                                grow
+                                readOnly
+                                title="Inactive Reason"
+                                defaultValue={inactiveReasonsOptions.find(
+                                  (opt) =>
+                                    opt.value === pageData.inactive_reason
+                                )}
+                                options={inactiveReasonsOptions}
+                                InputContext={InputContext}
+                              />
+                            )}
                             <SelectPopover
                               name="processtype_id"
                               grow

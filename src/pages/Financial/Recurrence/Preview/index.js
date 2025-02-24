@@ -126,7 +126,7 @@ export default function PagePreview({
       setTimeout(async () => {
         const { data: recurrenceData } = await api.get(`/recurrence/${id}`);
         api
-          .get(`/receivables?search=${recurrenceData.name}`)
+          .get(`/receivables?search=${recurrenceData.issuer_id}`)
           .then(async ({ data: receivables }) => {
             setPageData({
               ...pageData,
@@ -222,6 +222,8 @@ export default function PagePreview({
                 receivables,
                 loaded: true,
               });
+              console.log(data);
+              setIsAutoPay(data.issuer?.issuer_x_recurrence?.is_autopay);
             });
         } else {
           setPageData({
@@ -271,7 +273,7 @@ export default function PagePreview({
       try {
         setPaid(false);
         api
-          .get(`/receivables?search=${data.name}`)
+          .get(`/receivables?search=${pageData.issuer.id}`)
           .then(({ data: receivables }) => {
             setPageData({
               ...pageData,

@@ -126,7 +126,7 @@ export default function PagePreview({
       setTimeout(async () => {
         const { data: recurrenceData } = await api.get(`/recurrence/${id}`);
         api
-          .get(`/receivables?search=${recurrenceData.issuer_id}`)
+          .get(`/receivables?search=${recurrenceData.issuer.id}`)
           .then(async ({ data: receivables }) => {
             setPageData({
               ...pageData,

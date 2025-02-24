@@ -344,6 +344,16 @@ export default function PagePreview({
                               InputContext={InputContext}
                             />
                           </InputLine>
+                          <InputLine>
+                            <Textarea
+                              name="late_fee_description"
+                              title="Late Fee Description"
+                              grow
+                              rows={3}
+                              defaultValue={pageData.late_fee_description}
+                              InputContext={InputContext}
+                            />
+                          </InputLine>
                         </InputLineGroup>
                       </>
                     ) : (

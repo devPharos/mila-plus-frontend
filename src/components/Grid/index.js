@@ -107,15 +107,18 @@ export default function Grid({
                           <td
                             className="px-4 pointer "
                             onClick={() =>
-                              selected.find(
-                                (selectedRow) => selectedRow.id === row.id
-                              )
-                                ? setSelected(
-                                    selected.filter(
-                                      (selectedRow) => selectedRow.id !== row.id
-                                    )
+                              selection.multiple
+                                ? selected.find(
+                                    (selectedRow) => selectedRow.id === row.id
                                   )
-                                : setSelected([...selected, row])
+                                  ? setSelected(
+                                      selected.filter(
+                                        (selectedRow) =>
+                                          selectedRow.id !== row.id
+                                      )
+                                    )
+                                  : setSelected([...selected, row])
+                                : setSelected([row])
                             }
                           >
                             {selected.find(

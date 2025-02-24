@@ -23,6 +23,7 @@ import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import PricesSimulation from "~/components/PricesSimulation";
 import { Scope } from "@unform/core";
 import Textarea from "~/components/RegisterForm/Textarea";
+import { AlertContext } from "~/App";
 
 export const InputContext = createContext({});
 
@@ -33,6 +34,7 @@ export default function Renegociation({
   selected,
   handleOpened,
 }) {
+  const { alertBox } = useContext(AlertContext);
   const { successfullyUpdated, setSuccessfullyUpdated } =
     useContext(FullGridContext);
   const [pageData, setPageData] = useState({
@@ -67,12 +69,6 @@ export default function Renegociation({
   async function handleGeneralFormSubmit(data) {
     // return;
     async function handleRenegociation(data) {
-      console.log({
-        ...data,
-        number_of_installments: parseInt(data.number_of_installments),
-        first_due_date: format(data.first_due_date, "yyyyMMdd"),
-        total_amount: parseFloat(data.installment_amount),
-      });
       await api
         .post(`/receivables/renegociation`, {
           ...data,
@@ -88,8 +84,28 @@ export default function Renegociation({
           toast(err.response.data.error, { type: "error", autoClose: 3000 });
         });
     }
-    await handleRenegociation(data);
-    handleOpened(null);
+    alertBox({
+      title: "Attention!",
+      descriptionHTML:
+        "Would you like to send the first invoice to the student?",
+      buttons: [
+        {
+          title: "No",
+          class: "cancel",
+          onPress: async () => {
+            await handleRenegociation({ ...data, send_invoice: false });
+            handleOpened(null);
+          },
+        },
+        {
+          title: "Yes",
+          onPress: async () => {
+            await handleRenegociation({ ...data, send_invoice: true });
+            handleOpened(null);
+          },
+        },
+      ],
+    });
     return;
   }
 

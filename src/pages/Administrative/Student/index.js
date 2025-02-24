@@ -1,9 +1,11 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import PagePreview from "./Preview";
 import { useSelector } from "react-redux";
 import { FullGridContext } from "..";
 import { getData } from "~/functions/gridFunctions";
 import PageContainer from "~/components/PageContainer";
+import Inactivate from "./Inactivate";
+import { AlertContext } from "~/App";
 
 export default function AdministrativeStudent() {
   const filial = useSelector((state) => state.auth.filial);
@@ -52,6 +54,18 @@ export default function AdministrativeStudent() {
       filter: true,
     },
   ];
+  const { alertBox } = useContext(AlertContext);
+  const [selected, setSelected] = useState([]);
+  const [inactivateOpen, setInactivateOpen] = useState(false);
+
+  const handleInactivate = () => {
+    const newVarOpened = !inactivateOpen;
+    setInactivateOpen(newVarOpened);
+    if (!newVarOpened) {
+      setSelected([]);
+      loader();
+    }
+  };
 
   const {
     opened,
@@ -64,59 +78,61 @@ export default function AdministrativeStudent() {
     setLoadingData,
   } = useContext(FullGridContext);
 
-  useEffect(() => {
-    async function loader() {
-      setLoadingData(true);
-      const data = await getData("students", {
-        limit,
-        page,
-        orderBy,
-        setPages,
-        setGridData,
-        search,
-        defaultGridHeader,
-        defaultOrderBy,
-      });
+  async function loader() {
+    setLoadingData(true);
+    const data = await getData("students", {
+      limit,
+      page,
+      orderBy,
+      setPages,
+      setGridData,
+      search,
+      defaultGridHeader,
+      defaultOrderBy,
+    });
 
-      if (!data) {
-        return;
-      }
-      const gridDataValues = data.map(
-        (
-          {
+    if (!data) {
+      return;
+    }
+    const gridDataValues = data.map(
+      (
+        {
+          registration_number,
+          id,
+          name,
+          last_name,
+          email,
+          phone,
+          category,
+          status,
+          canceled_at,
+        },
+        index
+      ) => {
+        const ret = {
+          show: true,
+          id,
+          fields: [
             registration_number,
-            id,
             name,
             last_name,
             email,
             phone,
             category,
             status,
-            canceled_at,
-          },
-          index
-        ) => {
-          const ret = {
-            show: true,
-            id,
-            fields: [
-              registration_number,
-              name,
-              last_name,
-              email,
-              phone,
-              category,
-              status,
-            ],
-            canceled: canceled_at,
-            page: Math.ceil((index + 1) / limit),
-          };
-          return ret;
-        }
-      );
-      setGridData(gridDataValues);
-      setLoadingData(false);
-    }
+          ],
+          selectable: true,
+          canceled: canceled_at,
+          page: Math.ceil((index + 1) / limit),
+        };
+        return ret;
+      }
+    );
+    setGridData(gridDataValues);
+    setLoadingData(false);
+  }
+
+  useEffect(() => {
     loader();
   }, [opened, filial, orderBy, search, limit]);
 
@@ -125,6 +141,22 @@ export default function AdministrativeStudent() {
       FullGridContext={FullGridContext}
       PagePreview={PagePreview}
       defaultGridHeader={defaultGridHeader}
+      selection={{
+        multiple: false,
+        selected,
+        setSelected,
+        functions: [
+          {
+            title: "Inactivate",
+            fun: handleInactivate,
+            icon: "X",
+            Page: Inactivate,
+            opened: inactivateOpen,
+            setOpened: setInactivateOpen,
+            selected,
+          },
+        ],
+      }}
     />
   );
 }

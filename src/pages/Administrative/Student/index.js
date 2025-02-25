@@ -6,6 +6,8 @@ import { getData } from "~/functions/gridFunctions";
 import PageContainer from "~/components/PageContainer";
 import Inactivate from "./Inactivate";
 import { AlertContext } from "~/App";
+import { toast } from "react-toastify";
+import api from "~/services/api";
 
 export default function AdministrativeStudent() {
   const filial = useSelector((state) => state.auth.filial);
@@ -59,12 +61,51 @@ export default function AdministrativeStudent() {
   const [inactivateOpen, setInactivateOpen] = useState(false);
 
   const handleInactivate = () => {
+    if (selected[0].fields[6] === "Inactive") {
+      toast("Only active students can be inactivated!", {
+        autoClose: 3000,
+      });
+      return;
+    }
     const newVarOpened = !inactivateOpen;
     setInactivateOpen(newVarOpened);
     if (!newVarOpened) {
       setSelected([]);
       loader();
     }
+  };
+
+  const handleActivate = () => {
+    if (selected[0].fields[6] !== "Waiting") {
+      toast("Only students on waiting list can be activated!", {
+        autoClose: 3000,
+      });
+      return;
+    }
+    alertBox({
+      title: "Activate",
+      descriptionHTML:
+        "Are you sure you want to activate this student? \n This action will put the student In Class.",
+      buttons: [
+        {
+          title: "Yes",
+          onPress: async () => {
+            const data = await api.post(`/students/activate/${selected[0].id}`);
+            if (data) {
+              toast("Student activated!", { autoClose: 3000 });
+              setSelected([]);
+              loader();
+            }
+          },
+        },
+        {
+          title: "No",
+          onPress: async () => {
+            return;
+          },
+        },
+      ],
+    });
   };
 
   const {
@@ -146,6 +187,15 @@ export default function AdministrativeStudent() {
         selected,
         setSelected,
         functions: [
+          {
+            title: "Put In Class",
+            fun: handleActivate,
+            icon: "School",
+            Page: () => null,
+            opened: inactivateOpen,
+            setOpened: setInactivateOpen,
+            selected,
+          },
           {
             title: "Inactivate",
             fun: handleInactivate,

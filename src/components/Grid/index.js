@@ -118,6 +118,10 @@ export default function Grid({
                                       )
                                     )
                                   : setSelected([...selected, row])
+                                : selected.find(
+                                    (selectedRow) => selectedRow.id === row.id
+                                  )
+                                ? setSelected([])
                                 : setSelected([row])
                             }
                           >

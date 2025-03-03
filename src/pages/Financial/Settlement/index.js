@@ -56,6 +56,12 @@ export default function FinancialSettlement() {
       filter: false,
     },
     {
+      title: "Payment Method",
+      name: ["paymentMethod", "platform"],
+      type: "text",
+      filter: false,
+    },
+    {
       title: "Settlement Date",
       name: "created_at",
       type: "date",
@@ -118,6 +124,7 @@ export default function FinancialSettlement() {
               format(parseISO(receivable.due_date), "yyyy-MM-dd"),
               "$ " + amount.toFixed(2),
               paymentMethod ? paymentMethod.description : "",
+              paymentMethod ? paymentMethod.platform : "",
               format(parseISO(created_at), "yyyy-MM-dd"),
               ,
             ],

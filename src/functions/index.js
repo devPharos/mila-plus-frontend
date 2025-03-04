@@ -281,15 +281,18 @@ export function applyFilters(
         if (Array.isArray(filter.value)) {
         } else if (typeof filter.value === "boolean") {
           if (
+            line.fields &&
             line.fields[fieldPos].toString().search(filter.value.toString()) ===
-            -1
+              -1
           ) {
             line.show = false;
           }
         } else {
           if (
-            !line.fields[fieldPos] ||
-            line.fields[fieldPos].toUpperCase() !== filter.value.toUpperCase()
+            (line.fields && !line.fields[fieldPos]) ||
+            (line.fields &&
+              line.fields[fieldPos].toUpperCase() !==
+                filter.value.toUpperCase())
           ) {
             line.show = false;
           }

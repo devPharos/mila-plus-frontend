@@ -65,27 +65,31 @@ export default function Filters({
     // if(type === 'text') {
     return (
       <div className="absolute top-12 right-2 flex flex-col bg-secondary border border-gray-300 rounded-xl gap-1 shadow-xl p-2 text-xs *:border-b">
-        {options.map((option, elIndex) => {
-          return (
-            <button
-              type="button"
-              key={elIndex}
-              onClick={() => {
-                setActivePopover("");
-                handleFilters({ title, value: option });
-              }}
-              className={`${
-                active.length > 0 && active[0].value === option && "bg-gray-300"
-              } hover:bg-gray-300 px-2 py-2 rounded text-left whitespace-nowrap`}
-            >
-              {typeof option === "boolean"
-                ? option === true
-                  ? "Yes"
-                  : "No"
-                : option}
-            </button>
-          );
-        })}
+        {options
+          .filter((_, i) => i < 10)
+          .map((option, elIndex) => {
+            return (
+              <button
+                type="button"
+                key={elIndex}
+                onClick={() => {
+                  setActivePopover("");
+                  handleFilters({ title, value: option });
+                }}
+                className={`${
+                  active.length > 0 &&
+                  active[0].value === option &&
+                  "bg-gray-300"
+                } hover:bg-gray-300 px-2 py-2 rounded text-left whitespace-nowrap`}
+              >
+                {typeof option === "boolean"
+                  ? option === true
+                    ? "Yes"
+                    : "No"
+                  : option}
+              </button>
+            );
+          })}
         {active.length > 0 && (
           <button
             type="button"
@@ -159,7 +163,7 @@ export default function Filters({
         setPage !== null && (
           <div className="flex flex-row justify-end items-center">
             <p className="text-xs pl-2 text-gray-500">
-              | Page{" "}
+              Page{" "}
               <select className="bg-secondary rounded h-8 px-2 gap-2 m-1">
                 {[...Array(pages).keys()].map((retPage, index) => {
                   return (
@@ -216,12 +220,12 @@ export default function Filters({
             autoFocus={true}
             placeholder="Search..."
           />
-          <button
+          {/* <button
             type="button"
             className="bg-transparent text-xs text-slate-500 border border-slate-500 py-[2px] px-2 rounded focus:outline-none"
           >
             Fix across pages
-          </button>
+          </button> */}
         </div>
       }
       <div className="flex flex-row justify-end items-center">
@@ -268,8 +272,13 @@ export default function Filters({
                     <div
                       className={`bg-transparent min-w-0 text-xs h-full focus:outline-none flex flex-1 justify-start items-center whitespace-nowrap`}
                     >
-                      {/* {console.log(active)} */}
-                      {(active.length > 0 && active[0].value) || head.title}
+                      {active.length > 0
+                        ? active[0].value === false
+                          ? "No"
+                          : active[0].value === true
+                          ? "Yes"
+                          : active[0].value
+                        : head.title}
                     </div>
                   </div>
                 </Popover>

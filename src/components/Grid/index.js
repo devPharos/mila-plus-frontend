@@ -82,7 +82,7 @@ export default function Grid({
         <tbody className="align-center">
           {gridData.length > 0 ? (
             gridData.map((row, index) => {
-              if (!activeFilters.length && page && page !== row.page) {
+              if (page && page !== row.page) {
                 return null;
               }
               return (

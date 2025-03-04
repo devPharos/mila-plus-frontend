@@ -120,6 +120,18 @@ export default function FinancialReceivables() {
     },
     { title: "Due date to", name: "due_date_to", type: "date", value: null },
     {
+      title: "Settlement date from",
+      name: "settlement_from",
+      type: "date",
+      value: null,
+    },
+    {
+      title: "Settlement date to",
+      name: "settlement_to",
+      type: "date",
+      value: null,
+    },
+    {
       title: "Status",
       name: "status",
       type: "select",
@@ -329,9 +341,11 @@ export default function FinancialReceivables() {
           entry_date_to: excelData[1].value,
           due_date_from: excelData[2].value,
           due_date_to: excelData[3].value,
-          status: excelData[4].value,
-          type: excelData[5].value,
-          type_detail: excelData[6].value,
+          settlement_from: excelData[4].value,
+          settlement_to: excelData[5].value,
+          status: excelData[6].value,
+          type: excelData[7].value,
+          type_detail: excelData[8].value,
         })
         .then(({ data }) => {
           saveAs(`${baseURL}/get-file/${data.name}`, `${data.name}.xlsx`);

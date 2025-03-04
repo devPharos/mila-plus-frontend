@@ -223,6 +223,7 @@ export default function PagePreview({
     if (id === "new") {
       try {
         const { date_of_birth, visa_expiration } = data;
+        delete data.id;
         const response = await api.post(`/students`, {
           ...data,
           date_of_birth: date_of_birth
@@ -331,6 +332,8 @@ export default function PagePreview({
                 setActiveMenu={setActiveMenu}
                 activeMenu={activeMenu}
                 name="student-admission"
+                disabled={id === "new"}
+                messageOnDisabled="Create the student to be able to access this menu"
               >
                 <NotebookPen size={16} /> Admission
               </RegisterFormMenu>
@@ -339,6 +342,8 @@ export default function PagePreview({
                 setActiveMenu={setActiveMenu}
                 activeMenu={activeMenu}
                 name="student-academic"
+                disabled={id === "new"}
+                messageOnDisabled="Create the student to be able to access this menu"
               >
                 <Contact size={16} /> Academic
               </RegisterFormMenu>
@@ -414,7 +419,7 @@ export default function PagePreview({
                               type="text"
                               name="registration_number"
                               required
-                              readOnly
+                              readOnly={id !== "new"}
                               title="Registration Number"
                               defaultValue={pageData.registration_number}
                               InputContext={InputContext}
@@ -506,7 +511,7 @@ export default function PagePreview({
                               name="status"
                               required
                               title="Status"
-                              readOnly
+                              readOnly={id !== "new"}
                               isSearchable
                               defaultValue={optionsStatus.find(
                                 (opt) => opt.value === pageData.status
@@ -518,7 +523,7 @@ export default function PagePreview({
                               <SelectPopover
                                 name="inactive_reason"
                                 grow
-                                readOnly
+                                readOnly={id !== "new"}
                                 title="Inactive Reason"
                                 defaultValue={inactiveReasonsOptions.find(
                                   (opt) =>
@@ -532,7 +537,7 @@ export default function PagePreview({
                               name="processtype_id"
                               grow
                               required
-                              readOnly
+                              readOnly={id !== "new"}
                               title="Type"
                               disabled={pageData.enrollmentProcess}
                               onChange={(el) => {
@@ -561,7 +566,7 @@ export default function PagePreview({
                               name="processsubstatus_id"
                               grow
                               required
-                              readOnly
+                              readOnly={id !== "new"}
                               disabled={pageData.enrollmentProcess}
                               title="Sub Status"
                               onChange={(el) => {
@@ -591,7 +596,7 @@ export default function PagePreview({
                               name="category"
                               required
                               title="Category"
-                              readOnly
+                              readOnly={id !== "new"}
                               isSearchable
                               defaultValue={optionsCategory.find(
                                 (opt) => opt.value === pageData.category

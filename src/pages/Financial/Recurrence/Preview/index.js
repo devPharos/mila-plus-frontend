@@ -709,15 +709,17 @@ export default function PagePreview({
                                   )}
                                   InputContext={InputContext}
                                 />
-                                {/* <Input
+                                <Input
                                   type="text"
-                                  name="grid_status"
+                                  name="grid_invoice"
                                   readOnly={true}
                                   grow
-                                  title="Status"
-                                  defaultValue={receivable.status}
+                                  title="Invoice"
+                                  defaultValue={`${receivable.invoice_number
+                                    .toString()
+                                    .padStart(6, "0")}`}
                                   InputContext={InputContext}
-                                /> */}
+                                />
                                 {receivable.status === "Pending" ? (
                                   <button
                                     type="button"

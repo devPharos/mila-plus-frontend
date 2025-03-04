@@ -38,7 +38,7 @@ export default function Administrative() {
 
       return;
     } else {
-      if (value) {
+      if (value === false || value) {
         setActiveFilters([
           ...activeFilters.filter((el) => el.title != title),
           { title, value },

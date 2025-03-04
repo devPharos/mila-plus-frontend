@@ -29,6 +29,7 @@ export default function Financial() {
   );
 
   function handleFilters({ title = "", value = "" }) {
+    console.log(title, value);
     if (title === "search") {
       clearTimeout(delayDebounceFn);
       delayDebounceFn = setTimeout(() => {
@@ -38,7 +39,7 @@ export default function Financial() {
 
       return;
     } else {
-      if (value) {
+      if (value === false || value) {
         setActiveFilters([
           ...activeFilters.filter((el) => el.title != title),
           { title, value },

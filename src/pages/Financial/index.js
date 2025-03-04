@@ -29,7 +29,6 @@ export default function Financial() {
   );
 
   function handleFilters({ title = "", value = "" }) {
-    console.log(title, value);
     if (title === "search") {
       clearTimeout(delayDebounceFn);
       delayDebounceFn = setTimeout(() => {

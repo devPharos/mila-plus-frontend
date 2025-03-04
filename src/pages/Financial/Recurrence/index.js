@@ -43,8 +43,13 @@ export default function FinancialRecurrence() {
     setPages,
     limit,
     search,
+    setActiveFilters,
     setLoadingData,
   } = useContext(FullGridContext);
+
+  useEffect(() => {
+    setActiveFilters([]);
+  }, []);
 
   useEffect(() => {
     async function loader() {
@@ -83,7 +88,6 @@ export default function FinancialRecurrence() {
       setLoadingData(false);
     }
     if (!opened) {
-      console.log("loader", opened);
       loader();
     }
   }, [opened, filial, orderBy, search, limit]);

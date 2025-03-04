@@ -24,6 +24,7 @@ export default function Grid({
     gridData,
     page,
     orderBy,
+    limit,
     setOrderBy,
     opened,
     handleOpened,
@@ -80,81 +81,123 @@ export default function Grid({
           </tr>
         </thead>
         <tbody className="align-center">
-          {gridData.length > 0 ? (
-            gridData.map((row, index) => {
-              if (page && page !== row.page) {
-                return null;
-              }
-              return (
-                row.show && (
-                  <tr
-                    key={index}
-                    className={`${
-                      opened === row.id
-                        ? "bg-mila_orange text-white"
-                        : row.canceled
-                        ? "opacity-40"
-                        : "odd:bg-white"
-                    } h-10  hover:rounded hover:border hover:border-mila_orange cursor-pointer`}
-                  >
-                    {selection !== null && (
-                      <>
-                        {!row.selectable ? (
-                          <td className="px-4">
-                            <Dot size={18} />
-                          </td>
-                        ) : (
-                          <td
-                            className="px-4 pointer "
-                            onClick={() =>
-                              selection.multiple
-                                ? selected.find(
-                                    (selectedRow) => selectedRow.id === row.id
-                                  )
-                                  ? setSelected(
-                                      selected.filter(
-                                        (selectedRow) =>
-                                          selectedRow.id !== row.id
-                                      )
+          {gridData.filter((row) => row.show).length > 0 ? (
+            gridData
+              .filter((row) => row.show)
+              .map((row, index) => {
+                if (page * limit < index + 1 || (page - 1) * limit > index) {
+                  return null;
+                }
+                return (
+                  row.show && (
+                    <tr
+                      key={index}
+                      className={`${
+                        opened === row.id
+                          ? "bg-mila_orange text-white"
+                          : row.canceled
+                          ? "opacity-40"
+                          : "odd:bg-white"
+                      } h-10  hover:rounded hover:border hover:border-mila_orange cursor-pointer`}
+                    >
+                      {selection !== null && (
+                        <>
+                          {!row.selectable ? (
+                            <td className="px-4">
+                              <Dot size={18} />
+                            </td>
+                          ) : (
+                            <td
+                              className="px-4 pointer "
+                              onClick={() =>
+                                selection.multiple
+                                  ? selected.find(
+                                      (selectedRow) => selectedRow.id === row.id
                                     )
-                                  : setSelected([...selected, row])
-                                : selected.find(
-                                    (selectedRow) => selectedRow.id === row.id
-                                  )
-                                ? setSelected([])
-                                : setSelected([row])
-                            }
-                          >
-                            {selected.find(
-                              (selectedRow) => selectedRow.id === row.id
-                            ) ? (
-                              <CheckSquare size={18} />
-                            ) : (
-                              <Square size={18} />
-                            )}
-                          </td>
-                        )}
-                      </>
-                    )}
-                    {row.fields.map((field, index) => {
-                      if (gridHeader[index]?.type === "image") {
-                        return (
-                          <td
-                            className="px-4 w-10"
-                            key={index}
-                            onClick={() =>
-                              handleEdit ? handleOpened(row.id || null) : null
-                            }
-                          >
-                            <img
-                              src={field}
-                              width="30"
-                              className="rounded-md overflow-hidden"
-                            />
-                          </td>
-                        );
-                      }
-                      if (gridHeader[index]?.type === "boolean") {
+                                    ? setSelected(
+                                        selected.filter(
+                                          (selectedRow) =>
+                                            selectedRow.id !== row.id
+                                        )
+                                      )
+                                    : setSelected([...selected, row])
+                                  : selected.find(
+                                      (selectedRow) => selectedRow.id === row.id
+                                    )
+                                  ? setSelected([])
+                                  : setSelected([row])
+                              }
+                            >
+                              {selected.find(
+                                (selectedRow) => selectedRow.id === row.id
+                              ) ? (
+                                <CheckSquare size={18} />
+                              ) : (
+                                <Square size={18} />
+                              )}
+                            </td>
+                          )}
+                        </>
+                      )}
+                      {row.fields.map((field, index) => {
+                        if (gridHeader[index]?.type === "image") {
+                          return (
+                            <td
+                              className="px-4 w-10"
+                              key={index}
+                              onClick={() =>
+                                handleEdit ? handleOpened(row.id || null) : null
+                              }
+                            >
+                              <img
+                                src={field}
+                                width="30"
+                                className="rounded-md overflow-hidden"
+                              />
+                            </td>
+                          );
+                        }
+                        if (gridHeader[index]?.type === "boolean") {
+                          return (
+                            <td
+                              className={`px-4`}
+                              key={index}
+                              onClick={() =>
+                                handleEdit ? handleOpened(row.id || null) : null
+                              }
+                            >
+                              <div
+                                className={`flex flex-row items-center justify-start gap-2`}
+                              >
+                                <span>{field ? "Yes" : "No"}</span>
+                              </div>
+                            </td>
+                          );
+                        }
+                        if (gridHeader[index]?.type === "date") {
+                          return (
+                            <td
+                              className={`px-4`}
+                              key={index}
+                              onClick={() =>
+                                handleEdit ? handleOpened(row.id || null) : null
+                              }
+                            >
+                              <div
+                                className={`flex flex-row items-center justify-start gap-2`}
+                              >
+                                <span>
+                                  {new Date(field).toLocaleDateString("en-US", {
+                                    year: "numeric",
+                                    month: "2-digit",
+                                    day: "2-digit",
+                                    timeZone: "UTC",
+                                  })}
+                                </span>
+                              </div>
+                            </td>
+                          );
+                        }
                         return (
                           <td
                             className={`px-4`}
@@ -166,55 +209,15 @@ export default function Grid({
                             <div
                               className={`flex flex-row items-center justify-start gap-2`}
                             >
-                              <span>{field ? "Yes" : "No"}</span>
+                              <span>{field}</span>
                             </div>
                           </td>
                         );
-                      }
-                      if (gridHeader[index]?.type === "date") {
-                        return (
-                          <td
-                            className={`px-4`}
-                            key={index}
-                            onClick={() =>
-                              handleEdit ? handleOpened(row.id || null) : null
-                            }
-                          >
-                            <div
-                              className={`flex flex-row items-center justify-start gap-2`}
-                            >
-                              <span>
-                                {new Date(field).toLocaleDateString("en-US", {
-                                  year: "numeric",
-                                  month: "2-digit",
-                                  day: "2-digit",
-                                  timeZone: "UTC",
-                                })}
-                              </span>
-                            </div>
-                          </td>
-                        );
-                      }
-                      return (
-                        <td
-                          className={`px-4`}
-                          key={index}
-                          onClick={() =>
-                            handleEdit ? handleOpened(row.id || null) : null
-                          }
-                        >
-                          <div
-                            className={`flex flex-row items-center justify-start gap-2`}
-                          >
-                            <span>{field}</span>
-                          </div>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                )
-              );
-            })
+                      })}
+                    </tr>
+                  )
+                );
+              })
           ) : (
             <tr className={`bg-gray-50 text-gray-500 h-10`}>
               <td className="px-4 w-10" colSpan="100">

@@ -80,8 +80,13 @@ export default function FinancialSettlement() {
     setPages,
     limit,
     search,
+    setActiveFilters,
     setLoadingData,
   } = useContext(FullGridContext);
+
+  useEffect(() => {
+    setActiveFilters([]);
+  }, []);
 
   async function loader() {
     setLoadingData(true);

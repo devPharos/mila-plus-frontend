@@ -180,7 +180,10 @@ export default function Filters({
                   );
                 })}
               </select>{" "}
-              of <span className="font-bold text-sky-700">{pages}</span>
+              of{" "}
+              <span className="font-bold text-sky-700">
+                {Math.ceil(gridData.filter((row) => row.show).length / limit)}
+              </span>
             </p>
             <p className="text-xs pl-1 text-gray-500">
               -

@@ -25,8 +25,13 @@ export default function ProcessSubstatuses() {
     setPages,
     limit,
     search,
+    setActiveFilters,
     setLoadingData,
   } = useContext(FullGridContext);
+
+  useEffect(() => {
+    setActiveFilters([]);
+  }, []);
 
   useEffect(() => {
     async function loader() {

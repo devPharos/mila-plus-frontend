@@ -49,8 +49,13 @@ export default function Workloads() {
     setPages,
     limit,
     search,
+    setActiveFilters,
     setLoadingData,
   } = useContext(FullGridContext);
+
+  useEffect(() => {
+    setActiveFilters([]);
+  }, []);
 
   useEffect(() => {
     async function loader() {

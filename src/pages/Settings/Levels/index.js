@@ -37,8 +37,13 @@ export default function Levels() {
     setPages,
     limit,
     search,
+    setActiveFilters,
     setLoadingData,
   } = useContext(FullGridContext);
+
+  useEffect(() => {
+    setActiveFilters([]);
+  }, []);
 
   useEffect(() => {
     async function loader() {

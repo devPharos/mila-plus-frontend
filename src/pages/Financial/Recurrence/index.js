@@ -92,6 +92,7 @@ export default function FinancialRecurrence() {
     <PageContainer
       FullGridContext={FullGridContext}
       PagePreview={PagePreview}
+      handleNew={false}
       defaultGridHeader={defaultGridHeader}
       selection={null}
     />

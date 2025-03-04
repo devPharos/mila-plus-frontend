@@ -11,11 +11,6 @@ import React, { useContext, useState } from "react";
 import Popover from "../Popover";
 import PopoverAddFilter from "../Popover/PopoverAddFilter";
 import Icon from "../Icon";
-import {
-  invoiceTypeDetailsOptions,
-  invoiceTypesOptions,
-  receivableStatusesOptions,
-} from "~/functions/selectPopoverOptions";
 
 export default function Filters({
   access = { view: false, edit: false, create: false, inactivate: false },
@@ -60,9 +55,8 @@ export default function Filters({
   }
 
   function PopoverFilter(index, options) {
-    const { title, type } = gridHeader[index];
+    const { title } = gridHeader[index];
     const active = activeFilters.filter((el) => el.title === title);
-    // if(type === 'text') {
     return (
       <div className="absolute top-12 right-2 flex flex-col bg-secondary border border-gray-300 rounded-xl gap-1 shadow-xl p-2 text-xs *:border-b">
         {options
@@ -159,13 +153,19 @@ export default function Filters({
         )}
       {((selection && selection.functions && selection.selected.length === 0) ||
         !selection) &&
-        pages > 1 &&
+        Math.ceil(gridData.filter((row) => row.show).length / limit) > 1 &&
         setPage !== null && (
           <div className="flex flex-row justify-end items-center">
             <p className="text-xs pl-2 text-gray-500">
               Page{" "}
               <select className="bg-secondary rounded h-8 px-2 gap-2 m-1">
-                {[...Array(pages).keys()].map((retPage, index) => {
+                {[
+                  ...Array.from({
+                    length: Math.ceil(
+                      gridData.filter((row) => row.show).length / limit
+                    ),
+                  }).keys(),
+                ].map((retPage, index) => {
                   return (
                     <option
                       key={index}

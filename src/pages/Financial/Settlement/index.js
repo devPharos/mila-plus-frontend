@@ -133,7 +133,7 @@ export default function FinancialSettlement() {
               format(parseISO(created_at), "yyyy-MM-dd"),
               ,
             ],
-            selectable: !paymentMethod.platform == "Gravity",
+            selectable: paymentMethod.platform !== "Gravity",
 
             canceled: canceled_at,
             page: Math.ceil((index + 1) / limit),

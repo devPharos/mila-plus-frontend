@@ -40,6 +40,7 @@ export default function Settlement({
     bank_alias: "",
     loaded: true,
   });
+  const [loading, setLoading] = useState(false);
 
   const [registry, setRegistry] = useState({
     created_by: null,
@@ -63,7 +64,7 @@ export default function Settlement({
   }
 
   async function handleGeneralFormSubmit(data) {
-    // return;
+    setLoading(true);
     async function handleSettlement(data) {
       await api
         .post(`/receivables/settlement`, {
@@ -99,6 +100,7 @@ export default function Settlement({
             // (optional) Callback function that gets called after a successful transaction
             onTransactionSuccess: async function (approvalData) {
               await handleSettlement(data);
+              setLoading(false);
               await api
                 .post(`/emergepay/post-back-listener`, approvalData)
                 .then(async () => {
@@ -117,6 +119,7 @@ export default function Settlement({
                 type: "error",
                 autoClose: 3000,
               });
+              setLoading(false);
             },
             // (optional) Callback function that gets called after a user clicks the close button on the modal
             onTransactionCancel: function () {
@@ -124,11 +127,13 @@ export default function Settlement({
                 type: "error",
                 autoClose: 3000,
               });
+              setLoading(false);
             },
           });
         });
     } else {
       await handleSettlement(data);
+      setLoading(false);
     }
     handleOpened(null);
     return;
@@ -238,6 +243,7 @@ export default function Settlement({
                           }
                           registry={registry}
                           InputContext={InputContext}
+                          loading={loading}
                         />
 
                         <InputLineGroup

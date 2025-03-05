@@ -158,18 +158,23 @@ export default function Filters({
           <div className="flex flex-row justify-end items-center">
             <p className="text-xs pl-2 text-gray-500">
               Page{" "}
-              <select className="bg-secondary rounded h-8 px-2 gap-2 m-1">
+              <select
+                className="bg-secondary rounded h-8 px-2 gap-2 m-1"
+                onChange={(el) => setPage(el.target.value)}
+              >
                 {[
-                  ...Array.from({
-                    length: Math.ceil(
-                      gridData.filter((row) => row.show).length / limit
-                    ),
-                  }).keys(),
+                  ...Array.from(
+                    {
+                      length: Math.ceil(
+                        gridData.filter((row) => row.show).length / limit
+                      ),
+                    },
+                    (_, i) => i + 1
+                  ).keys(),
                 ].map((retPage, index) => {
                   return (
                     <option
                       key={index}
-                      onClick={() => setPage(retPage + 1)}
                       selected={page === retPage + 1}
                       className={`${
                         page === retPage + 1 ? "bg-sky-700 text-white" : ""

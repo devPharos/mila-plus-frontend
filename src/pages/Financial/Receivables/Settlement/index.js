@@ -70,7 +70,7 @@ export default function Settlement({
         .post(`/receivables/settlement`, {
           ...data,
           total_amount: parseFloat(data.prices.total_tuition),
-          settlement_date: format(data.settlement_date, "yyyy-MM-dd"),
+          settlement_date: format(data.settlement_date, "yyyyMMdd"),
         })
         .then(({ data }) => {
           toast(data.message, { autoClose: 1000 });

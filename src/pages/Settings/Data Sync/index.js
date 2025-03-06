@@ -22,10 +22,10 @@ export default function DataSync() {
   const [fullscreen, setFullscreen] = useState(false);
   const [pageData, setPageData] = useState({});
   const [activeMenu, setActiveMenu] = useState("general");
+  const [loading, setLoading] = useState(false);
 
   function handleGeneralFormSubmit(data) {
-    // api.defaults.headers.common["Content-Type"] =
-    //   "multipart/form-data; boundary=" + data._boundary;
+    setLoading(true);
     const formData = new FormData();
     formData.append("importType", data.import);
     formData.append("file", data.import_file);
@@ -43,6 +43,7 @@ export default function DataSync() {
           toast("Data not imported!", { autoClose: 1000 });
           setSuccessfullyUpdated(false);
         }
+        setLoading(false);
       })
       .catch((error) => {
         console.log(error);
@@ -101,9 +102,10 @@ export default function DataSync() {
                 />
                 <button
                   type="submit"
+                  disabled={loading}
                   className="text-md font-bold bg-secondary border hover:border-primary hover:text-primary rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1"
                 >
-                  Import file
+                  {loading ? "Loading..." : "Import file"}
                 </button>
               </InputLine>
               {/* <h2 className="text-xl font-bold mt-4">Export Data</h2>

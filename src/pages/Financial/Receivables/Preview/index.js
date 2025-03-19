@@ -719,17 +719,9 @@ export default function PagePreview({
                                           placeholder="0.00"
                                           title="New Fee"
                                           shrink
-                                          defaultValue={
-                                            index > 0
-                                              ? pageData.feeadjustments
-                                                  .sort(
-                                                    (a, b) =>
-                                                      a.created_at <
-                                                      b.created_at
-                                                  )
-                                                  [index - 1].old_fee.toFixed(2)
-                                              : pageData.fee.toFixed(2)
-                                          }
+                                          defaultValue={feeadjustment.new_fee.toFixed(
+                                            2
+                                          )}
                                           InputContext={InputContext}
                                         />
                                         <Input

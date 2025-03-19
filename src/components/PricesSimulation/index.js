@@ -120,7 +120,7 @@ function PricesSimulation({
       }
     }
     loadData();
-  }, [student]);
+  }, [student, totalAmount]);
 
   useEffect(() => {
     function calculateDiscounts() {

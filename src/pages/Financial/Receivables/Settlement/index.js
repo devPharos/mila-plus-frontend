@@ -53,6 +53,7 @@ export default function Settlement({
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
+  const [totalAmount, setTotalAmount] = useState(0);
 
   const generalForm = useRef();
 
@@ -69,7 +70,7 @@ export default function Settlement({
       await api
         .post(`/receivables/settlement`, {
           ...data,
-          total_amount: parseFloat(data.prices.total_tuition),
+          total_amount: totalAmount,
           settlement_date: format(data.settlement_date, "yyyyMMdd"),
         })
         .then(({ data }) => {
@@ -176,10 +177,29 @@ export default function Settlement({
             },
           },
         });
+        setTotalAmount(
+          data.reduce((acc, curr) => {
+            return acc + curr.balance;
+          }, 0)
+        );
       });
     }
     loadData();
   }, []);
+
+  function handleValueChange(value) {
+    const originalValue = pageData.receivables.reduce((acc, curr) => {
+      return acc + curr.balance;
+    }, 0);
+    if (value > originalValue) {
+      toast("Total amount cannot be greater than the sum of receivables.");
+      setTotalAmount(originalValue);
+      generalForm.current.setFieldValue("total_amount", originalValue);
+      return;
+    } else {
+      setTotalAmount(parseFloat(value));
+    }
+  }
 
   return (
     <Preview formType={formType} fullscreen={fullscreen}>
@@ -266,15 +286,13 @@ export default function Settlement({
                                   type="text"
                                   name="total_amount"
                                   shrink
-                                  readOnly
+                                  required
+                                  readOnly={selected.length > 1}
+                                  onlyFloat
                                   title="Total Amount"
-                                  defaultValue={pageData.receivables.reduce(
-                                    (acc, curr) => {
-                                      return acc + curr.balance;
-                                    },
-                                    0
-                                  )}
+                                  defaultValue={totalAmount}
                                   InputContext={InputContext}
+                                  onChange={(value) => handleValueChange(value)}
                                 />
                                 <SelectPopover
                                   name="paymentmethod_id"
@@ -310,12 +328,7 @@ export default function Settlement({
                                 showFinancialDiscounts={true}
                                 isFinancialDiscountChangable={true}
                                 settlement
-                                totalAmount={pageData.receivables.reduce(
-                                  (acc, curr) => {
-                                    return acc + curr.balance;
-                                  },
-                                  0
-                                )}
+                                totalAmount={totalAmount}
                               />
 
                               {pageData.receivables

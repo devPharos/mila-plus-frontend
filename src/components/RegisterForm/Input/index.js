@@ -19,22 +19,12 @@ const Input = ({
   isPhoneNumber = false,
   InputContext = null,
   centeredText = false,
+  onChange = () => null,
   ...rest
 }) => {
   const inputRef = useRef();
   const { fieldName, registerField, error } = useField(name);
   const { disabled, required } = { ...rest };
-
-  function maskZipCode(input) {
-    let output = "";
-    input.replace(/^\D*(\d{0,5})/, function (match, g1) {
-      if (g1.length) {
-        output += g1;
-      }
-    });
-
-    return output;
-  }
 
   useEffect(() => {
     registerField({
@@ -55,20 +45,17 @@ const Input = ({
   const { generalForm, setSuccessfullyUpdated } = useContext(InputContext);
 
   function handleChanged() {
+    const value = generalForm.current.getFieldValue(name);
     if (onlyUpperCase) {
-      const value = generalForm.current.getFieldValue(name);
       generalForm.current.setFieldValue(name, value.toUpperCase());
     }
     if (onlyLowerCase) {
-      const value = generalForm.current.getFieldValue(name);
       generalForm.current.setFieldValue(name, value.toLowerCase());
     }
     if (onlyInt) {
-      const value = generalForm.current.getFieldValue(name);
       generalForm.current.setFieldValue(name, value.replace(/\D/g, ""));
     }
     if (onlyFloat) {
-      const value = generalForm.current.getFieldValue(name);
       generalForm.current.setFieldValue(name, value.match(/^[0-9]*\.?[0-9]*$/));
     }
     if (isPhoneNumber) {
@@ -86,6 +73,10 @@ const Input = ({
         "name",
         `${days_per_week.toString()} day(s) per week, ${hours_per_day.toString()} hour(s) per day.`
       );
+    }
+
+    if (onChange) {
+      onChange(value);
     }
 
     setSuccessfullyUpdated(false);

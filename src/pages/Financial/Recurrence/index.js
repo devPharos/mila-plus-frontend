@@ -56,43 +56,44 @@ export default function FinancialRecurrence() {
     setActiveFilters([]);
   }, []);
 
-  useEffect(() => {
-    async function loader() {
-      setLoadingData(true);
-      const data = await getData("recurrence", {
-        limit,
-        page,
-        orderBy,
-        setPages,
-        setGridData,
-        search,
-        defaultGridHeader,
-        defaultOrderBy,
-      });
-      if (!data) {
-        return;
-      }
-      const gridDataValues = data.map(
-        (
-          { registration_number, id, name, last_name, issuer, canceled_at },
-          index
-        ) => {
-          const hasRecurrence =
-            issuer && issuer.issuer_x_recurrence ? true : false;
-          const ret = {
-            show: true,
-            id,
-            fields: [registration_number, name, last_name, hasRecurrence],
-            selectable: hasRecurrence,
-            canceled: canceled_at,
-            page: Math.ceil((index + 1) / limit),
-          };
-          return ret;
-        }
-      );
-      setGridData(gridDataValues);
-      setLoadingData(false);
+  async function loader() {
+    setLoadingData(true);
+    const data = await getData("recurrence", {
+      limit,
+      page,
+      orderBy,
+      setPages,
+      setGridData,
+      search,
+      defaultGridHeader,
+      defaultOrderBy,
+    });
+    if (!data) {
+      return;
     }
+    const gridDataValues = data.map(
+      (
+        { registration_number, id, name, last_name, issuer, canceled_at },
+        index
+      ) => {
+        const hasRecurrence =
+          issuer && issuer.issuer_x_recurrence ? true : false;
+        const ret = {
+          show: true,
+          id,
+          fields: [registration_number, name, last_name, hasRecurrence],
+          selectable: hasRecurrence,
+          canceled: canceled_at,
+          page: Math.ceil((index + 1) / limit),
+        };
+        return ret;
+      }
+    );
+    setGridData(gridDataValues);
+    setLoadingData(false);
+  }
+
+  useEffect(() => {
     if (!opened) {
       loader();
     }
@@ -105,7 +106,7 @@ export default function FinancialRecurrence() {
     alertBox({
       title: "Attention!",
       descriptionHTML:
-        "Are you sure you want to delete the selected receivables? This action cannot be undone.",
+        "Are you sure you want to stop this recurrence? This action will remove all pending receivables and cannot be undone.",
       buttons: [
         {
           title: "No",
@@ -114,20 +115,21 @@ export default function FinancialRecurrence() {
         {
           title: "Yes",
           onPress: async () => {
-            const promises = [];
             for (let student of selected) {
-              await api
-                .delete(`/recurrence/${student.id}`)
-                .then((response) => {
-                  toast(response.data.message, { autoClose: 1000 });
-                })
-                .catch((err) => {
-                  toast(err.response.data.error, {
-                    type: "error",
-                    autoClose: 3000,
+              try {
+                await api
+                  .delete(`/recurrence/${student.id}`)
+                  .then((response) => {
+                    console.log(response);
+                  })
+                  .catch((err) => {
+                    console.log(err);
                   });
-                });
+              } catch (err) {
+                console.log(err);
+              }
             }
+            toast("Recurrence stopped!", { autoClose: 1000 });
             setSelected([]);
             loader();
           },

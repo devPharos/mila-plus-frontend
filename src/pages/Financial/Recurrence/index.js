@@ -1,9 +1,12 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import PagePreview from "./Preview";
 import { useSelector } from "react-redux";
 import { FullGridContext } from "..";
 import { getData } from "~/functions/gridFunctions";
 import PageContainer from "~/components/PageContainer";
+import { AlertContext } from "~/App";
+import api from "~/services/api";
+import { toast } from "react-toastify";
 
 export default function FinancialRecurrence() {
   const filial = useSelector((state) => state.auth.filial);
@@ -34,6 +37,8 @@ export default function FinancialRecurrence() {
       filter: true,
     },
   ];
+  const [selected, setSelected] = useState([]);
+  const { alertBox } = useContext(AlertContext);
 
   const {
     opened,
@@ -78,6 +83,7 @@ export default function FinancialRecurrence() {
             show: true,
             id,
             fields: [registration_number, name, last_name, hasRecurrence],
+            selectable: hasRecurrence,
             canceled: canceled_at,
             page: Math.ceil((index + 1) / limit),
           };
@@ -92,13 +98,66 @@ export default function FinancialRecurrence() {
     }
   }, [opened, filial, orderBy, search, limit]);
 
+  function handleStopRecurrence() {
+    if (selected.length === 0) {
+      return;
+    }
+    alertBox({
+      title: "Attention!",
+      descriptionHTML:
+        "Are you sure you want to delete the selected receivables? This action cannot be undone.",
+      buttons: [
+        {
+          title: "No",
+          class: "cancel",
+        },
+        {
+          title: "Yes",
+          onPress: async () => {
+            const promises = [];
+            for (let student of selected) {
+              await api
+                .delete(`/recurrence/${student.id}`)
+                .then((response) => {
+                  toast(response.data.message, { autoClose: 1000 });
+                })
+                .catch((err) => {
+                  toast(err.response.data.error, {
+                    type: "error",
+                    autoClose: 3000,
+                  });
+                });
+            }
+            setSelected([]);
+            loader();
+          },
+        },
+      ],
+    });
+  }
+
   return (
     <PageContainer
       FullGridContext={FullGridContext}
       PagePreview={PagePreview}
       handleNew={false}
       defaultGridHeader={defaultGridHeader}
-      selection={null}
+      selection={{
+        multiple: false,
+        selected,
+        setSelected,
+        functions: [
+          {
+            title: "Stop Recurrence",
+            fun: handleStopRecurrence,
+            icon: "X",
+            Page: null,
+            opened: false,
+            setOpened: () => null,
+            selected,
+          },
+        ],
+      }}
     />
   );
 }

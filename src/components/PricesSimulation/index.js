@@ -22,6 +22,7 @@ function PricesSimulation({
   recurrence = false,
   settlement = false,
   totalAmount = 0,
+  setHasDiscount = () => null,
 }) {
   const { setSuccessfullyUpdated } = useContext(FullGridContext);
   const [appliedDiscounts, setAppliedDiscounts] = useState([]);
@@ -125,9 +126,11 @@ function PricesSimulation({
   useEffect(() => {
     function calculateDiscounts() {
       if (!appliedDiscounts.length) {
+        setHasDiscount(false);
         setTotalDiscount(0);
         return;
       }
+      setHasDiscount(true);
       const discountAmount = appliedDiscounts.reduce((acc, curr) => {
         if (curr.percent) {
           if (

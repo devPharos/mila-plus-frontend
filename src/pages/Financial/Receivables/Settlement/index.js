@@ -54,6 +54,7 @@ export default function Settlement({
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
   const [totalAmount, setTotalAmount] = useState(0);
+  const [hasDiscount, setHasDiscount] = useState(false);
 
   const generalForm = useRef();
 
@@ -201,6 +202,16 @@ export default function Settlement({
     }
   }
 
+  useEffect(() => {
+    if (hasDiscount) {
+      const originalValue = pageData.receivables.reduce((acc, curr) => {
+        return acc + curr.balance;
+      }, 0);
+      generalForm.current.setFieldValue("total_amount", originalValue);
+      setTotalAmount(originalValue);
+    }
+  }, [hasDiscount]);
+
   return (
     <Preview formType={formType} fullscreen={fullscreen}>
       {pageData ? (
@@ -287,7 +298,7 @@ export default function Settlement({
                                   name="total_amount"
                                   shrink
                                   required
-                                  readOnly={selected.length > 1}
+                                  readOnly={selected.length > 1 || hasDiscount}
                                   onlyFloat
                                   title="Total Amount"
                                   defaultValue={totalAmount}
@@ -329,6 +340,7 @@ export default function Settlement({
                                 isFinancialDiscountChangable={true}
                                 settlement
                                 totalAmount={totalAmount}
+                                setHasDiscount={setHasDiscount}
                               />
 
                               {pageData.receivables

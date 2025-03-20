@@ -105,6 +105,7 @@ export default function PagePreview({
       type: "Credit Note",
       type_detail: "Other",
     },
+    maillogs: [],
   });
 
   const [registry, setRegistry] = useState({
@@ -441,6 +442,15 @@ export default function PagePreview({
                   name="refund"
                 >
                   <UndoDot size={16} /> Refunds
+                </RegisterFormMenu>
+              )}
+              {pageData.maillogs.length > 0 && (
+                <RegisterFormMenu
+                  setActiveMenu={setActiveMenu}
+                  activeMenu={activeMenu}
+                  name="Mail Logs"
+                >
+                  <Mail size={16} /> Mail Logs
                 </RegisterFormMenu>
               )}
             </div>
@@ -1236,7 +1246,6 @@ export default function PagePreview({
                             title="settlements"
                             activeMenu={activeMenu === "settlements"}
                           >
-                            {console.log(pageData.settlements)}
                             {pageData.settlements &&
                               pageData.settlements.length > 0 &&
                               pageData.settlements.map((settlement, index) => {
@@ -1302,6 +1311,105 @@ export default function PagePreview({
                                             settlement.paymentmethod_id
                                         )}
                                         options={pageData.paymentMethodOptions}
+                                        InputContext={InputContext}
+                                      />
+                                    </InputLine>
+                                  </Scope>
+                                );
+                              })}
+                          </InputLineGroup>
+                        </>
+                      ) : (
+                        <FormLoading />
+                      )}
+                    </InputContext.Provider>
+                  </Form>
+                )}
+
+                {activeMenu === "Mail Logs" && (
+                  <Form
+                    id={`scrollPage-${activeMenu}`}
+                    ref={generalForm}
+                    onSubmit={handleRefundFormSubmit}
+                    className="w-full pb-32 overflow-y-scroll"
+                  >
+                    <InputContext.Provider
+                      value={{
+                        id,
+                        generalForm: refundForm,
+                        setSuccessfullyUpdated,
+                        fullscreen,
+                        setFullscreen,
+                        successfullyUpdated,
+                        handleCloseForm,
+                      }}
+                    >
+                      {id !== "new" && pageData.loaded ? (
+                        <>
+                          <FormHeader
+                            access={access}
+                            title={
+                              pageData.issuer_id
+                                ? pageData.issuerOptions.find(
+                                    (issuer) =>
+                                      issuer.value === pageData.issuer_id
+                                  ).label
+                                : null
+                            }
+                            registry={registry}
+                            InputContext={InputContext}
+                          />
+
+                          <InputLineGroup
+                            title="Mail Logs"
+                            activeMenu={activeMenu === "Mail Logs"}
+                          >
+                            {pageData.maillogs &&
+                              pageData.maillogs.length > 0 &&
+                              pageData.maillogs.map((maillog, index) => {
+                                return (
+                                  <Scope key={index} path={`maillogs.${index}`}>
+                                    <InputLine
+                                      title={
+                                        index === 0
+                                          ? "Mail Logs (" +
+                                            pageData.maillog.length +
+                                            ")"
+                                          : ""
+                                      }
+                                    >
+                                      <div className="mt-2 text-xs text-gray-500">
+                                        #{pageData.maillog.length - index}
+                                      </div>
+
+                                      <Input
+                                        type="text"
+                                        name="log_date"
+                                        readOnly
+                                        title="Date"
+                                        shrink
+                                        defaultValue={format(
+                                          parseISO(maillog.date),
+                                          "MM/dd/yyyy"
+                                        )}
+                                        InputContext={InputContext}
+                                      />
+                                      <Input
+                                        type="text"
+                                        name="time"
+                                        readOnly
+                                        title="Time"
+                                        shrink
+                                        defaultValue={maillog.time}
+                                        InputContext={InputContext}
+                                      />
+                                      <Input
+                                        type="text"
+                                        name="type"
+                                        readOnly
+                                        title="Tyme"
+                                        grow
+                                        defaultValue={maillog.type}
                                         InputContext={InputContext}
                                       />
                                     </InputLine>

@@ -228,7 +228,8 @@ export default function FinancialReceivables() {
                 // format(parseISO(status_date), "yyyy-MM-dd"),
                 ,
               ],
-              selectable: status.includes("Pending", "Parcial Paid"),
+              selectable:
+                status.includes("Pending") || status.includes("Parcial Paid"),
               canceled: canceled_at,
               page: Math.ceil((index + 1) / limit),
             };

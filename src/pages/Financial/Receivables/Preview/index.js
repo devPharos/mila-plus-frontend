@@ -277,10 +277,12 @@ export default function PagePreview({
           });
 
         const paymentMethodOptions = paymentMethodData.data
-          .filter((f) => f.id !== id && f.type_of_payment !== "Outbounds")
+          .filter((f) => f.type_of_payment !== "Outbounds")
           .map((f) => {
             return { value: f.id, label: f.description.slice(0, 20) };
           });
+
+        console.log(paymentMethodData.data);
 
         // const paymentCriteriaOptions = paymentCriteriaData.data
         //   .filter((f) => f.id !== id)
@@ -1314,6 +1316,17 @@ export default function PagePreview({
                                         InputContext={InputContext}
                                       />
                                     </InputLine>
+                                    <InputLine>
+                                      <Textarea
+                                        name="memo"
+                                        InputContext={InputContext}
+                                        grow
+                                        rows={1}
+                                        defaultValue={settlement.memo}
+                                        readOnly
+                                        title="Memo"
+                                      />
+                                    </InputLine>
                                   </Scope>
                                 );
                               })}
@@ -1366,56 +1379,61 @@ export default function PagePreview({
                           >
                             {pageData.maillogs &&
                               pageData.maillogs.length > 0 &&
-                              pageData.maillogs.map((maillog, index) => {
-                                return (
-                                  <Scope key={index} path={`maillogs.${index}`}>
-                                    <InputLine
-                                      title={
-                                        index === 0
-                                          ? "Mail Logs (" +
-                                            pageData.maillog.length +
-                                            ")"
-                                          : ""
-                                      }
+                              pageData.maillogs
+                                .sort((a, b) => a.created_at < b.created_at)
+                                .map((maillog, index) => {
+                                  return (
+                                    <Scope
+                                      key={index}
+                                      path={`maillogs.${index}`}
                                     >
-                                      <div className="mt-2 text-xs text-gray-500">
-                                        #{pageData.maillog.length - index}
-                                      </div>
+                                      <InputLine
+                                        title={
+                                          index === 0
+                                            ? "Mail Logs (" +
+                                              pageData.maillogs.length +
+                                              ")"
+                                            : ""
+                                        }
+                                      >
+                                        <div className="mt-2 text-xs text-gray-500">
+                                          #{pageData.maillogs.length - index}
+                                        </div>
 
-                                      <Input
-                                        type="text"
-                                        name="log_date"
-                                        readOnly
-                                        title="Date"
-                                        shrink
-                                        defaultValue={format(
-                                          parseISO(maillog.date),
-                                          "MM/dd/yyyy"
-                                        )}
-                                        InputContext={InputContext}
-                                      />
-                                      <Input
-                                        type="text"
-                                        name="time"
-                                        readOnly
-                                        title="Time"
-                                        shrink
-                                        defaultValue={maillog.time}
-                                        InputContext={InputContext}
-                                      />
-                                      <Input
-                                        type="text"
-                                        name="type"
-                                        readOnly
-                                        title="Tyme"
-                                        grow
-                                        defaultValue={maillog.type}
-                                        InputContext={InputContext}
-                                      />
-                                    </InputLine>
-                                  </Scope>
-                                );
-                              })}
+                                        <Input
+                                          type="text"
+                                          name="log_date"
+                                          readOnly
+                                          title="Date"
+                                          shrink
+                                          defaultValue={format(
+                                            parseISO(maillog.date),
+                                            "MM/dd/yyyy"
+                                          )}
+                                          InputContext={InputContext}
+                                        />
+                                        <Input
+                                          type="text"
+                                          name="time"
+                                          readOnly
+                                          title="Time"
+                                          shrink
+                                          defaultValue={maillog.time}
+                                          InputContext={InputContext}
+                                        />
+                                        <Input
+                                          type="text"
+                                          name="type"
+                                          readOnly
+                                          title="Type"
+                                          grow
+                                          defaultValue={maillog.type}
+                                          InputContext={InputContext}
+                                        />
+                                      </InputLine>
+                                    </Scope>
+                                  );
+                                })}
                           </InputLineGroup>
                         </>
                       ) : (

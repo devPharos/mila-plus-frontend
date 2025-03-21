@@ -22,6 +22,7 @@ import DatePicker from "~/components/RegisterForm/DatePicker";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import PricesSimulation from "~/components/PricesSimulation";
 import { Scope } from "@unform/core";
+import Textarea from "~/components/RegisterForm/Textarea";
 
 export const InputContext = createContext({});
 
@@ -326,6 +327,16 @@ export default function Settlement({
                                   title="Settlement Date"
                                   placeholderText="MM/DD/YYYY"
                                   InputContext={InputContext}
+                                />
+                              </InputLine>
+                              <InputLine>
+                                <Textarea
+                                  name="settlement_memo"
+                                  InputContext={InputContext}
+                                  grow
+                                  rows={3}
+                                  required
+                                  title="Memo"
                                 />
                               </InputLine>
 

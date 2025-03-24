@@ -293,7 +293,7 @@ export default function Filters({
               );
             }
           })}
-        {((selection &&
+        {/* {((selection &&
           selection.functions &&
           selection.selected.length === 0) ||
           !selection) &&
@@ -322,7 +322,7 @@ export default function Filters({
                 </div>
               </div>
             </Popover>
-          )}
+          )} */}
         {Excel && (
           <div className="relative">
             <button

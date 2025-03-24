@@ -144,22 +144,22 @@ export default function FinancialRecurrence() {
       PagePreview={PagePreview}
       handleNew={false}
       defaultGridHeader={defaultGridHeader}
-      selection={{
-        multiple: false,
-        selected,
-        setSelected,
-        functions: [
-          {
-            title: "Stop Recurrence",
-            fun: handleStopRecurrence,
-            icon: "X",
-            Page: null,
-            opened: false,
-            setOpened: () => null,
-            selected,
-          },
-        ],
-      }}
+      // selection={{
+      //   multiple: false,
+      //   selected,
+      //   setSelected,
+      // functions: [
+      //   {
+      //     title: "Stop Recurrence",
+      //     fun: handleStopRecurrence,
+      //     icon: "X",
+      //     Page: null,
+      //     opened: false,
+      //     setOpened: () => null,
+      //     selected,
+      //   },
+      // ],
+      // }}
     />
   );
 }

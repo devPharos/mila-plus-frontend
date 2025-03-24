@@ -127,7 +127,9 @@ export default function PagePreview({
         const { data: recurrenceData } = await api.get(`/recurrence/${id}`);
         api
           .get(`/receivables?search=${recurrenceData.issuer.id}`)
-          .then(async ({ data: receivables }) => {
+          .then(async ({ data }) => {
+            console.log(data);
+            const receivables = data.rows;
             setPageData({
               ...pageData,
               ...recurrenceData,
@@ -213,7 +215,8 @@ export default function PagePreview({
         if (data.issuer) {
           api
             .get(`/receivables?search=${data.issuer.id}`)
-            .then(({ data: receivables }) => {
+            .then(({ data: dataRec }) => {
+              const receivables = dataRec.rows;
               setPageData({
                 ...pageData,
                 ...data,
@@ -225,7 +228,6 @@ export default function PagePreview({
                 receivables,
                 loaded: true,
               });
-              console.log(data);
               setIsAutoPay(data.issuer?.issuer_x_recurrence?.is_autopay);
             });
         } else {
@@ -721,21 +723,28 @@ export default function PagePreview({
                                   InputContext={InputContext}
                                 />
                                 {receivable.status === "Pending" ? (
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      openPaymentModal({
-                                        receivable,
-                                        recurrence_id:
-                                          pageData?.issuer?.issuer_x_recurrence
-                                            ?.id,
-                                        setPaid,
-                                      })
-                                    }
-                                    className="text-xs bg-gray-800 font-bold text-white px-3 py-2 mt-3 rounded-md border cursor-pointer flex flex-row items-center justify-center gap-2 hover:bg-gray-900"
-                                  >
-                                    <DollarSign size={14} /> Pay
-                                  </button>
+                                  receivable.paymentMethod.platform ===
+                                  "Gravity" ? (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        openPaymentModal({
+                                          receivable,
+                                          recurrence_id:
+                                            pageData?.issuer
+                                              ?.issuer_x_recurrence?.id,
+                                          setPaid,
+                                        })
+                                      }
+                                      className="text-xs bg-gray-800 font-bold text-white px-3 py-2 mt-3 rounded-md border cursor-pointer flex flex-row items-center justify-center gap-2 hover:bg-gray-900"
+                                    >
+                                      <DollarSign size={14} /> Pay
+                                    </button>
+                                  ) : (
+                                    <div className="text-xs bg-gray-500 font-bold text-white px-3 py-2 mt-3 rounded-md border cursor-pointer flex flex-row items-center justify-center gap-2">
+                                      <BadgeDollarSign size={14} /> Pending
+                                    </div>
+                                  )
                                 ) : (
                                   <div className="text-xs bg-green-800 font-bold text-white px-3 py-2 mt-3 rounded-md border cursor-pointer flex flex-row items-center justify-center gap-2">
                                     <BadgeDollarSign size={14} /> Paid

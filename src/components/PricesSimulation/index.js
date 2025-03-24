@@ -101,14 +101,14 @@ function PricesSimulation({
         setAppliedDiscounts(discounts);
       }
 
-      if (student.receivables) {
-        const lastPaidReceivable = student.receivables.filter(
-          (receivable) => receivable.status === "Paid"
-        );
-        if (lastPaidReceivable && lastPaidReceivable.length > 0) {
-          setCanModifyDiscounts(false);
-        }
-      }
+      // if (student.receivables) {
+      //   const lastPaidReceivable = student.receivables.filter(
+      //     (receivable) => receivable.status === "Paid"
+      //   );
+      //   if (lastPaidReceivable && lastPaidReceivable.length > 0) {
+      //     setCanModifyDiscounts(false);
+      //   }
+      // }
       if (
         !settlement &&
         !recurrence &&
@@ -116,7 +116,7 @@ function PricesSimulation({
         student.enrollments.length > 0
       ) {
         if (student.enrollments[0].payment_link_sent_to_student) {
-          setCanModifyDiscounts(false);
+          // setCanModifyDiscounts(false);
         }
       }
     }

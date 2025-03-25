@@ -40,12 +40,6 @@ export default function FinancialReceivables() {
       filter: false,
     },
     {
-      title: "Entry Date",
-      name: "entry_date",
-      type: "date",
-      filter: false,
-    },
-    {
       title: "Due Date",
       name: "due_date",
       type: "date",
@@ -223,7 +217,6 @@ export default function FinancialReceivables() {
                 issuer.name,
                 filial.name,
                 "I" + invoice_number.toString().padStart(6, "0"),
-                format(parseISO(entry_date), "yyyy-MM-dd"),
                 format(parseISO(due_date), "yyyy-MM-dd"),
                 "$ " + amount.toFixed(2),
                 "$ " + discount.toFixed(2),

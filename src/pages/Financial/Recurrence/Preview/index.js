@@ -569,60 +569,57 @@ export default function PagePreview({
                             )}
                         </InputLine>
 
-                        {isAutoPay && (
-                          <>
-                            <InputLine>
-                              <Input
-                                type="text"
-                                name="card_type"
-                                title="Card Type"
-                                grow
-                                readOnly
-                                defaultValue={
-                                  pageData?.issuer?.issuer_x_recurrence
-                                    ?.card_type
-                                }
-                                InputContext={InputContext}
-                              />
-                              <Input
-                                type="text"
-                                name="card_number"
-                                title="Card Number"
-                                grow
-                                readOnly
-                                defaultValue={
-                                  pageData?.issuer?.issuer_x_recurrence
-                                    ?.card_number
-                                }
-                                InputContext={InputContext}
-                              />
-                              <Input
-                                type="text"
-                                name="card_expiration_date"
-                                title="Card Expiration Date"
-                                grow
-                                readOnly
-                                defaultValue={
-                                  pageData?.issuer?.issuer_x_recurrence
-                                    ?.card_expiration_date
-                                }
-                                InputContext={InputContext}
-                              />
-                              <Input
-                                type="text"
-                                name="card_holder_name"
-                                title="Card Holder Name"
-                                grow
-                                readOnly
-                                defaultValue={
-                                  pageData?.issuer?.issuer_x_recurrence
-                                    ?.card_holder_name
-                                }
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-                          </>
-                        )}
+                        <>
+                          <InputLine>
+                            <Input
+                              type="text"
+                              name="card_type"
+                              title="Card Type"
+                              grow
+                              readOnly
+                              defaultValue={
+                                pageData?.issuer?.issuer_x_recurrence?.card_type
+                              }
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              type="text"
+                              name="card_number"
+                              title="Card Number"
+                              grow
+                              readOnly
+                              defaultValue={
+                                pageData?.issuer?.issuer_x_recurrence
+                                  ?.card_number
+                              }
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              type="text"
+                              name="card_expiration_date"
+                              title="Card Expiration Date"
+                              grow
+                              readOnly
+                              defaultValue={
+                                pageData?.issuer?.issuer_x_recurrence
+                                  ?.card_expiration_date
+                              }
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              type="text"
+                              name="card_holder_name"
+                              title="Card Holder Name"
+                              grow
+                              readOnly
+                              defaultValue={
+                                pageData?.issuer?.issuer_x_recurrence
+                                  ?.card_holder_name
+                              }
+                              InputContext={InputContext}
+                            />
+                          </InputLine>
+                        </>
                       </InputLineGroup>
 
                       <InputLineGroup

@@ -91,7 +91,13 @@ export default function DataSync() {
               <InputLine>
                 <Select
                   name="import"
-                  options={[{ label: "Students", value: "Students" }]}
+                  options={[
+                    { label: "Students", value: "Students" },
+                    {
+                      label: "Gravity Transactions",
+                      value: "EmergepayTransactions",
+                    },
+                  ]}
                   InputContext={InputContext}
                 />
                 <FileInput

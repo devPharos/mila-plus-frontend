@@ -31,18 +31,12 @@ export default function FinancialReceivables() {
       title: "Filial Name",
       name: ["filial", "name"],
       type: "text",
-      filter: true,
+      filter: false,
     },
     {
       title: "Invoice Number",
       name: "invoice_number",
       type: "text",
-      filter: false,
-    },
-    {
-      title: "Entry Date",
-      name: "entry_date",
-      type: "date",
       filter: false,
     },
     {
@@ -85,6 +79,12 @@ export default function FinancialReceivables() {
       title: "Status",
       name: "status",
       type: "text",
+      filter: true,
+    },
+    {
+      title: "Autopay",
+      name: "is_autopay",
+      type: "boolean",
       filter: true,
     },
     // {
@@ -217,7 +217,6 @@ export default function FinancialReceivables() {
                 issuer.name,
                 filial.name,
                 "I" + invoice_number.toString().padStart(6, "0"),
-                format(parseISO(entry_date), "yyyy-MM-dd"),
                 format(parseISO(due_date), "yyyy-MM-dd"),
                 "$ " + amount.toFixed(2),
                 "$ " + discount.toFixed(2),
@@ -225,6 +224,11 @@ export default function FinancialReceivables() {
                 "$ " + total.toFixed(2),
                 "$ " + balance.toFixed(2),
                 status,
+                issuer &&
+                issuer.issuer_x_recurrence &&
+                issuer.issuer_x_recurrence.is_autopay
+                  ? true
+                  : false,
                 // format(parseISO(status_date), "yyyy-MM-dd"),
                 ,
               ],

@@ -18,9 +18,23 @@ export async function getData(
           : "DESC"
       }&search=${search}`
     );
-    let pages = Math.ceil(response.data.length / limit);
-    setPages(pages);
-    return response.data;
+    if (response.data.rows) {
+      let pages = Math.ceil(response.data.totalRows / limit);
+      if (response.data.totalRows === 0) {
+        setPages(1);
+      } else {
+        setPages(pages);
+      }
+      return response.data.rows;
+    } else {
+      let pages = Math.ceil(response.data.length / limit);
+      if (response.data.length === 0) {
+        setPages(1);
+      } else {
+        setPages(pages);
+      }
+      return response.data;
+    }
   } catch (err) {
     console.log(err);
     return null;

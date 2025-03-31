@@ -259,7 +259,6 @@ export default function PagePreview({
         const filialData = await api.get(`/filials`);
         const issuerData = await api.get(`/issuers`);
         const paymentMethodData = await api.get(`/paymentmethods`);
-        // const paymentCriteriaData = await api.get(`/paymentcriterias`);
         const chartOfAccountData = await api.get(
           `/chartofaccounts?issuer=${data.issuer_id}`
         );
@@ -282,19 +281,6 @@ export default function PagePreview({
             return { value: f.id, label: f.description.slice(0, 20) };
           });
 
-        console.log(paymentMethodData.data);
-
-        // const paymentCriteriaOptions = paymentCriteriaData.data
-        //   .filter((f) => f.id !== id)
-        //   .map((f) => {
-        //     return {
-        //       value: f.id,
-        //       label:
-        //         f.description.slice(0, 20) +
-        //         (f.recurring_metric ? " - " + f.recurring_metric : ""),
-        //     };
-        //   });
-
         const chartOfAccountOptions = chartOfAccountData.data
           .filter((f) => f.id !== id)
           .map((f) => {
@@ -315,7 +301,6 @@ export default function PagePreview({
           filialOptions,
           issuerOptions,
           paymentMethodOptions,
-          // paymentCriteriaOptions,
           chartOfAccountOptions,
           loaded: true,
           searchfields: {
@@ -480,14 +465,7 @@ export default function PagePreview({
                         <>
                           <FormHeader
                             access={access}
-                            title={
-                              pageData.issuer_id
-                                ? pageData.issuerOptions.find(
-                                    (issuer) =>
-                                      issuer.value === pageData.issuer_id
-                                  ).label
-                                : null
-                            }
+                            title={`Receivable - ${pageData.issuer.name}`}
                             registry={registry}
                             InputContext={InputContext}
                           />
@@ -618,11 +596,11 @@ export default function PagePreview({
                                 }
                                 placeholder="0.00"
                                 title="Amount"
-                                onChange={(el) => {
+                                onChange={(value) => {
                                   setPageData({
                                     ...pageData,
-                                    total: el.target.value,
-                                    balance: el.target.value,
+                                    total: parseFloat(value),
+                                    balance: parseFloat(value),
                                   });
                                   setSuccessfullyUpdated(false);
                                 }}
@@ -1060,14 +1038,7 @@ export default function PagePreview({
                         <>
                           <FormHeader
                             access={access}
-                            title={
-                              pageData.issuer_id
-                                ? pageData.issuerOptions.find(
-                                    (issuer) =>
-                                      issuer.value === pageData.issuer_id
-                                  ).label
-                                : null
-                            }
+                            title={`Refunds - ${pageData.issuer.name}`}
                             registry={registry}
                             InputContext={InputContext}
                           />
@@ -1232,14 +1203,7 @@ export default function PagePreview({
                         <>
                           <FormHeader
                             access={access}
-                            title={
-                              pageData.issuer_id
-                                ? pageData.issuerOptions.find(
-                                    (issuer) =>
-                                      issuer.value === pageData.issuer_id
-                                  ).label
-                                : null
-                            }
+                            title={`Settlements - ${pageData.issuer.name}`}
                             registry={registry}
                             InputContext={InputContext}
                           />
@@ -1361,14 +1325,7 @@ export default function PagePreview({
                         <>
                           <FormHeader
                             access={access}
-                            title={
-                              pageData.issuer_id
-                                ? pageData.issuerOptions.find(
-                                    (issuer) =>
-                                      issuer.value === pageData.issuer_id
-                                  ).label
-                                : null
-                            }
+                            title={`Mail Logs - ${pageData.issuer.name}`}
                             registry={registry}
                             InputContext={InputContext}
                           />

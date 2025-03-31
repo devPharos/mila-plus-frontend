@@ -4,33 +4,28 @@ import { useSelector } from "react-redux";
 import { getData } from "~/functions/gridFunctions";
 import PageContainer from "~/components/PageContainer";
 import { FullGridContext } from "..";
+import { format, parseISO } from "date-fns";
 
 export default function FinancialPayees() {
   const filial = useSelector((state) => state.auth.filial);
-  const defaultOrderBy = { column: "code", asc: true };
+  const defaultOrderBy = { column: "due_date", asc: true };
   const defaultGridHeader = [
     {
       title: "Issuer Name",
-      name: "name",
+      name: ["issuer", "name"],
       type: "text",
-      filter: true,
-    },
-    {
-      title: "Filial Name",
-      name: "filial_name",
-      type: "text",
-      filter: true,
-    },
-    {
-      title: "Entry Date",
-      name: "entry_date",
-      type: "date",
       filter: false,
     },
     {
-      title: "First Due Date",
-      name: "first_due_date",
-      type: "date",
+      title: "Filial Name",
+      name: ["filial", "name"],
+      type: "text",
+      filter: false,
+    },
+    {
+      title: "Invoice Number",
+      name: "invoice_number",
+      type: "text",
       filter: false,
     },
     {
@@ -42,6 +37,12 @@ export default function FinancialPayees() {
     {
       title: "Amount",
       name: "amount",
+      type: "currency",
+      filter: false,
+    },
+    {
+      title: "Discount",
+      name: "discount",
       type: "currency",
       filter: false,
     },
@@ -58,22 +59,16 @@ export default function FinancialPayees() {
       filter: false,
     },
     {
-      title: "Payment Criteria",
-      name: "paymentcriteria_id",
-      type: "text",
+      title: "Balance",
+      name: "balance",
+      type: "currency",
       filter: false,
     },
     {
       title: "Status",
       name: "status",
       type: "text",
-      filter: false,
-    },
-    {
-      title: "Status Date",
-      name: "status_date",
-      type: "date",
-      filter: false,
+      filter: true,
     },
   ];
 
@@ -93,69 +88,65 @@ export default function FinancialPayees() {
     setActiveFilters([]);
   }, []);
 
-  useEffect(() => {
-    async function loader() {
-      setLoadingData(true);
-      const data = await getData("payee", {
-        limit,
-        page,
-        orderBy,
-        setPages,
-        setGridData,
-        search,
-        defaultGridHeader,
-        defaultOrderBy,
-      });
-      if (!data) {
-        return;
-      }
-      const gridDataValues = data.map(
-        (
-          {
-            id,
-            canceled_at,
-            filial,
-            issuer,
-            entry_date,
-            first_due_date,
-            due_date,
-            amount,
-            fee,
-            total,
-            paymentcriteria_id,
-            paymentCriteria,
-            status,
-            status_date,
-          },
-          index
-        ) => {
-          const ret = {
-            show: true,
-            id,
-            fields: [
-              issuer.name,
-              filial.name,
-              format(parseISO(entry_date), "yyyy-MM-dd"),
-              format(parseISO(first_due_date), "yyyy-MM-dd"),
-              format(parseISO(due_date), "yyyy-MM-dd"),
-              amount,
-              fee,
-              total,
-              paymentcriteria_id
-                ? paymentCriteria.description.slice(0, 20)
-                : "",
-              status,
-              format(parseISO(status_date), "yyyy-MM-dd"),
-            ],
-            canceled: canceled_at,
-            page: Math.ceil((index + 1) / limit),
-          };
-          return ret;
-        }
-      );
-      setGridData(gridDataValues);
-      setLoadingData(false);
+  async function loader() {
+    setLoadingData(true);
+    const data = await getData("payee", {
+      limit,
+      page,
+      orderBy,
+      setPages,
+      setGridData,
+      search,
+      defaultGridHeader,
+      defaultOrderBy,
+    });
+    if (!data) {
+      return;
     }
+    const gridDataValues = data.map(
+      (
+        {
+          id,
+          canceled_at,
+          filial,
+          issuer,
+          invoice_number,
+          due_date,
+          amount,
+          discount,
+          fee,
+          total,
+          balance,
+          status,
+        },
+        index
+      ) => {
+        const ret = {
+          show: true,
+          id,
+          fields: [
+            issuer.name,
+            filial.name,
+            "I" + invoice_number.toString().padStart(6, "0"),
+            format(parseISO(due_date), "yyyy-MM-dd"),
+            "$ " + amount.toFixed(2),
+            "$ " + discount.toFixed(2),
+            "$ " + fee.toFixed(2),
+            "$ " + total.toFixed(2),
+            "$ " + balance.toFixed(2),
+            status,
+          ],
+          canceled: canceled_at,
+          page: Math.ceil((index + 1) / limit),
+        };
+        return ret;
+      }
+    );
+    setGridData(gridDataValues);
+    setLoadingData(false);
+  }
+
+  useEffect(() => {
     loader();
   }, [opened, filial, orderBy, search, limit]);
 

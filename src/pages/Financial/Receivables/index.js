@@ -198,7 +198,6 @@ export default function FinancialReceivables() {
               filial,
               issuer,
               invoice_number,
-              entry_date,
               due_date,
               amount,
               discount,

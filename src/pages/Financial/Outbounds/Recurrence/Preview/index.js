@@ -36,6 +36,7 @@ import PricesSimulation from "~/components/PricesSimulation";
 import { FullGridContext } from "../../..";
 import Textarea from "~/components/RegisterForm/Textarea";
 import FindMerchant from "~/components/Finds/Merchant";
+import FindGeneric from "~/components/Finds/FindGeneric";
 
 export const InputContext = createContext({});
 
@@ -44,6 +45,7 @@ export default function PagePreview({
   id,
   defaultFormType = "preview",
 }) {
+  const auth = useSelector((state) => state.auth);
   const { alertBox } = useContext(AlertContext);
   const {
     handleOpened,
@@ -53,9 +55,10 @@ export default function PagePreview({
   } = useContext(FullGridContext);
   const [pageData, setPageData] = useState({
     loaded: false,
-    filial_id: null,
+    filial_id: auth.filial.id !== 1 ? auth.filial.id : null,
     filial: {
-      name: "",
+      id: auth.filial.id !== 1 ? auth.filial.id : null,
+      name: auth.filial.id !== 1 ? auth.filial.name : null,
     },
     searchFields: {
       filial_id: null,
@@ -82,8 +85,6 @@ export default function PagePreview({
   const [chartOfAccountOptions, setChartOfAccountOptions] = useState([]);
   const [paid, setPaid] = useState(false);
 
-  const auth = useSelector((state) => state.auth);
-
   const generalForm = useRef();
 
   function handleCloseForm() {
@@ -94,14 +95,6 @@ export default function PagePreview({
   }
 
   async function handleGeneralFormSubmit(data) {
-    if (!data.merchants.id) {
-      toast("Merchant is required!", {
-        autoClose: 1000,
-        type: "error",
-        transition: Zoom,
-      });
-      return;
-    }
     if (successfullyUpdated) {
       toast("No need to be saved!", {
         autoClose: 1000,
@@ -132,22 +125,9 @@ export default function PagePreview({
       }
       toast("Saved!", { autoClose: 1000 });
       handleCloseForm();
-      setPageData({
-        ...pageData,
-        ...data,
-        loaded: false,
-      });
     } catch (err) {
       console.log(err);
     }
-  }
-
-  async function getDefaultFilialOptions() {
-    const { data } = await api.get("/filials");
-    const retGroupOptions = data.map((filial) => {
-      return { value: filial.id, label: filial.name };
-    });
-    setFilialOptions(retGroupOptions);
   }
 
   async function getPaymentMethodsOptions() {
@@ -170,24 +150,10 @@ export default function PagePreview({
     setPaymentCriterias(retOptions);
   }
 
-  async function getAllChartOfAccountsByIssuer() {
-    const { data } = await api.get("/chartofaccounts/list?type=02");
-    const retOptions = data.map((chartOfAccount) => {
-      return {
-        value: chartOfAccount.id,
-        label: chartOfAccount.name,
-        code: chartOfAccount.code,
-      };
-    });
-    setChartOfAccountOptions(retOptions);
-  }
-
   useEffect(() => {
     async function getPageData() {
-      await getDefaultFilialOptions();
       await getPaymentMethodsOptions();
       await getPaymentCriteriasOptions();
-      await getAllChartOfAccountsByIssuer();
       try {
         if (id !== "new") {
           const { data } = await api
@@ -303,55 +269,52 @@ export default function PagePreview({
                         title="GENERAL"
                         activeMenu={activeMenu === "general"}
                       >
-                        {auth.filial.id === 1 ? (
-                          <InputLine title="Filial">
-                            <SelectPopover
-                              name="filial_id"
-                              required
-                              grow
-                              title="Filial"
-                              isSearchable
-                              defaultValue={filialOptions.filter(
-                                (filial) => filial.value === pageData.filial_id
-                              )}
-                              onChange={(el) => {
-                                setPageData({
-                                  ...pageData,
-                                  searchFields: {
-                                    ...pageData.searchFields,
-                                    filial_id: el.value,
-                                  },
-                                });
-                              }}
-                              options={filialOptions}
-                              InputContext={InputContext}
-                            />
-                          </InputLine>
-                        ) : (
-                          <Input
-                            type="hidden"
-                            name="filial_id"
-                            readOnly
-                            grow
-                            defaultValue={pageData?.filial_id}
-                            InputContext={InputContext}
-                          />
-                        )}
-                        <InputLine title="Merchant">
-                          <FindMerchant
-                            whatToFind="merchants"
-                            name="merchants"
-                            readOnly={true}
-                            grow
-                            defaultValue={{
-                              id: pageData.issuer?.merchant?.id,
-                              name: pageData.issuer?.merchant?.name,
-                              ein: pageData.issuer?.merchant?.ein,
-                              issuer: { id: pageData.issuer?.id },
-                            }}
-                            InputContext={InputContext}
-                          />
-                        </InputLine>
+                        <FindGeneric
+                          route="filials"
+                          title="Filial"
+                          scope="filial"
+                          required
+                          InputContext={InputContext}
+                          defaultValue={{
+                            id: pageData.filial.id,
+                            name: pageData.filial.name,
+                          }}
+                          fields={[
+                            {
+                              title: "Name",
+                              name: "name",
+                            },
+                          ]}
+                        />
+                        <FindGeneric
+                          route="merchants"
+                          title="Merchants"
+                          scope="merchant"
+                          required
+                          InputContext={InputContext}
+                          defaultValue={{
+                            id: pageData.issuer?.merchant?.id,
+                            name: pageData.issuer?.merchant?.name,
+                            ein: pageData.issuer?.merchant?.ein,
+                            issuer: { id: pageData.issuer?.id },
+                          }}
+                          fields={[
+                            {
+                              title: "Name",
+                              name: "name",
+                            },
+                            {
+                              title: "EIN",
+                              name: "ein",
+                            },
+                            {
+                              title: "Issuer",
+                              name: "issuer",
+                              field: "id",
+                              type: "hidden",
+                            },
+                          ]}
+                        />
 
                         <InputLine title="Recurrence Information">
                           <Input
@@ -399,22 +362,46 @@ export default function PagePreview({
                             InputContext={InputContext}
                           />
                         </InputLine>
-                        <InputLine>
-                          <SelectPopover
-                            name="paymentmethod_id"
-                            required
-                            title="Payment Method"
-                            isSearchable
-                            grow
-                            defaultValue={paymentMethods.filter(
-                              (paymentMethod) =>
-                                paymentMethod.value ===
-                                pageData.paymentmethod_id
-                            )}
-                            options={paymentMethods}
-                            InputContext={InputContext}
-                          />
-                          <SelectPopover
+                        <FindGeneric
+                          route="paymentmethods"
+                          title="Payment Methods"
+                          scope="paymentMethod"
+                          required
+                          InputContext={InputContext}
+                          defaultValue={{
+                            id: pageData.paymentMethod?.id,
+                            description: pageData.paymentMethod?.description,
+                            platform: pageData.paymentMethod?.platform,
+                          }}
+                          fields={[
+                            {
+                              title: "Description",
+                              name: "description",
+                            },
+                            {
+                              title: "Platform",
+                              name: "platform",
+                            },
+                          ]}
+                        />
+                        <FindGeneric
+                          route="paymentcriterias"
+                          title="Payment Criterias"
+                          scope="paymentCriteria"
+                          required
+                          InputContext={InputContext}
+                          defaultValue={{
+                            id: pageData.paymentCriteria?.id,
+                            description: pageData.paymentCriteria?.description,
+                          }}
+                          fields={[
+                            {
+                              title: "Description",
+                              name: "description",
+                            },
+                          ]}
+                        />
+                        {/* <SelectPopover
                             name="paymentcriteria_id"
                             required
                             title="Payment Criteria"
@@ -427,11 +414,32 @@ export default function PagePreview({
                             )}
                             options={paymentCriterias}
                             InputContext={InputContext}
-                          />
-                        </InputLine>
-                        <InputLine>
-                          {console.log(pageData)}
-                          <SelectPopover
+                          /> */}
+                        <FindGeneric
+                          route="chartofaccounts"
+                          title="Chart of Accounts"
+                          scope="chartOfAccount"
+                          required
+                          type="expenses"
+                          InputContext={InputContext}
+                          defaultValue={{
+                            id: pageData.chartOfAccount?.id,
+                            code: pageData.chartOfAccount?.code,
+                            name: pageData.chartOfAccount?.name,
+                          }}
+                          fields={[
+                            {
+                              title: "Code",
+                              name: "code",
+                            },
+                            {
+                              title: "Name",
+                              name: "name",
+                            },
+                          ]}
+                        />
+                        {/* <InputLine> */}
+                        {/* <SelectPopover
                             name="chartofaccount_id"
                             required
                             title="Chart of Account"
@@ -444,8 +452,8 @@ export default function PagePreview({
                             )}
                             options={chartOfAccountOptions}
                             InputContext={InputContext}
-                          />
-                        </InputLine>
+                          /> */}
+                        {/* </InputLine> */}
                         <InputLine>
                           <Textarea
                             name="memo"

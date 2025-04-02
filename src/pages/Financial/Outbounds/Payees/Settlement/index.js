@@ -23,6 +23,7 @@ import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import PricesSimulation from "~/components/PricesSimulation";
 import { Scope } from "@unform/core";
 import Textarea from "~/components/RegisterForm/Textarea";
+import FindGeneric from "~/components/Finds/FindGeneric";
 
 export const InputContext = createContext({});
 
@@ -206,12 +207,7 @@ export default function Settlement({
                       <>
                         <FormHeader
                           access={access}
-                          title={
-                            "Settlement - " +
-                            pageData.issuer?.name +
-                            " " +
-                            pageData.issuer?.last_name
-                          }
+                          title={"Settlement"}
                           registry={registry}
                           InputContext={InputContext}
                           loading={loading}
@@ -245,7 +241,7 @@ export default function Settlement({
                                   InputContext={InputContext}
                                   onChange={(value) => handleValueChange(value)}
                                 />
-                                <SelectPopover
+                                {/* <SelectPopover
                                   name="paymentmethod_id"
                                   grow
                                   title="Payment Method"
@@ -258,7 +254,7 @@ export default function Settlement({
                                       pageData.payees[0].paymentmethod_id
                                   )}
                                   InputContext={InputContext}
-                                />
+                                /> */}
                                 <Input
                                   type="text"
                                   name="invoice_number"
@@ -281,6 +277,28 @@ export default function Settlement({
                                   InputContext={InputContext}
                                 />
                               </InputLine>
+                              <FindGeneric
+                                route="paymentmethods"
+                                title="Payment Methods"
+                                scope="paymentMethod"
+                                required
+                                InputContext={InputContext}
+                                defaultValue={{
+                                  id: null,
+                                  description: null,
+                                  platform: null,
+                                }}
+                                fields={[
+                                  {
+                                    title: "Description",
+                                    name: "description",
+                                  },
+                                  {
+                                    title: "Platform",
+                                    name: "platform",
+                                  },
+                                ]}
+                              />
                               <InputLine>
                                 <Textarea
                                   name="settlement_memo"

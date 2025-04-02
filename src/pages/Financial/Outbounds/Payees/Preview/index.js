@@ -381,21 +381,8 @@ export default function PagePreview({
                                 name="amount"
                                 required
                                 placeholder="0.00"
-                                title="Amount"
                                 onlyFloat
-                                onChange={(value) => {
-                                  setPageData({
-                                    ...pageData,
-                                    amount: value ? parseFloat(value) : 0,
-                                    total: value
-                                      ? parseFloat(value)
-                                      : 0 - pageData.discount + pageData.fee,
-                                    balance: value
-                                      ? parseFloat(value)
-                                      : 0 - pageData.discount + pageData.fee,
-                                  });
-                                  setSuccessfullyUpdated(false);
-                                }}
+                                title="Amount"
                                 grow
                                 defaultValue={
                                   pageData.amount > 0
@@ -408,22 +395,8 @@ export default function PagePreview({
                                 type="text"
                                 name="discount"
                                 placeholder="0.00"
+                                onlyFloat
                                 title="Discount"
-                                onChange={(value) => {
-                                  setPageData({
-                                    ...pageData,
-                                    discount: value ? parseFloat(value) : 0,
-                                    total:
-                                      pageData.amount -
-                                      (value ? parseFloat(value) : 0) +
-                                      pageData.fee,
-                                    balance:
-                                      pageData.amount -
-                                      (value ? parseFloat(value) : 0) +
-                                      pageData.fee,
-                                  });
-                                  setSuccessfullyUpdated(false);
-                                }}
                                 grow
                                 defaultValue={
                                   pageData.discount
@@ -436,50 +409,14 @@ export default function PagePreview({
                                 type="text"
                                 name="fee"
                                 placeholder="0.00"
+                                onlyFloat
                                 title="Fee"
-                                onChange={(value) => {
-                                  setPageData({
-                                    ...pageData,
-                                    fee: value ? parseFloat(value) : 0,
-                                    total:
-                                      pageData.amount -
-                                      pageData.discount +
-                                      (value ? parseFloat(value) : 0),
-                                    balance:
-                                      pageData.amount -
-                                      pageData.discount +
-                                      (value ? parseFloat(value) : 0),
-                                  });
-                                  setSuccessfullyUpdated(false);
-                                }}
                                 grow
                                 defaultValue={
                                   pageData.fee ? pageData.fee.toFixed(2) : null
                                 }
                                 InputContext={InputContext}
                               />
-                              <Input
-                                type="text"
-                                name="total"
-                                readOnly
-                                placeholder="0.00"
-                                title="Total"
-                                grow
-                                value={pageData.total.toFixed(2)}
-                                InputContext={InputContext}
-                              />
-                              {id !== "new" && (
-                                <Input
-                                  type="text"
-                                  name="balance"
-                                  readOnly
-                                  placeholder="0.00"
-                                  title="Balance"
-                                  grow
-                                  value={pageData.balance.toFixed(2)}
-                                  InputContext={InputContext}
-                                />
-                              )}
                             </InputLine>
                             <FindGeneric
                               route="merchants"
@@ -495,18 +432,18 @@ export default function PagePreview({
                               }}
                               fields={[
                                 {
-                                  title: "Issuer",
-                                  name: "issuer",
-                                  field: "id",
-                                  type: "hidden",
-                                },
-                                {
                                   title: "Name",
                                   name: "name",
                                 },
                                 {
                                   title: "EIN",
                                   name: "ein",
+                                },
+                                {
+                                  title: "Issuer",
+                                  name: "issuer",
+                                  field: "id",
+                                  type: "hidden",
                                 },
                               ]}
                             />

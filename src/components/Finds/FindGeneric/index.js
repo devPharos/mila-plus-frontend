@@ -59,13 +59,13 @@ const FindGeneric = ({
               defaultValue={selected.id}
               InputContext={InputContext}
             />
-            {fields.map((field) => {
+            {fields.map((field, index) => {
               return (
                 <Input
                   type={field.type || "text"}
                   name={field.name}
                   title={field.title}
-                  required={required}
+                  required={index === 0 ? required : false}
                   readOnlyOnFocus
                   grow
                   defaultValue={

@@ -3,10 +3,10 @@ import PagePreview from "./Preview";
 import { useSelector } from "react-redux";
 import { getData } from "~/functions/gridFunctions";
 import PageContainer from "~/components/PageContainer";
-import { FullGridContext } from "..";
+import { FullGridContext } from "../..";
 import { format, parseISO, set } from "date-fns";
 import Settlement from "./Settlement";
-import { AlertContext } from "~/App";
+import { AlertContext, PageContext } from "~/App";
 import { toast } from "react-toastify";
 import api, { baseURL } from "~/services/api";
 import FeeAdjustment from "./FeeAdjustment";
@@ -16,8 +16,27 @@ import {
   receivableStatusesOptions,
 } from "~/functions/selectPopoverOptions";
 import Renegociation from "./Renegociation";
+import { Outlet, useLocation, useNavigate, useOutlet } from "react-router-dom";
+
+export function FinancialInbounds() {
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { pages } = useContext(PageContext);
+  const paths = pathname.split("/");
+  const redirectRouteName = pages
+    .find((page) => page.name === paths[1])
+    .children.find((page) => page.path === `/${paths[1]}/${paths[2]}`)
+    .children[0].path;
+  useEffect(() => {
+    if (pathname.toUpperCase() === `/${paths[1]}/${paths[2]}`.toUpperCase()) {
+      navigate(`${redirectRouteName}`);
+    }
+  }, [pathname]);
+  return <Outlet />;
+}
 
 export default function FinancialReceivables() {
+  const Outlet = useOutlet();
   const filial = useSelector((state) => state.auth.filial);
   const defaultOrderBy = { column: "due_date", asc: true };
   const defaultGridHeader = [
@@ -87,12 +106,6 @@ export default function FinancialReceivables() {
       type: "boolean",
       filter: true,
     },
-    // {
-    //   title: "Status Date",
-    //   name: "status_date",
-    //   type: "date",
-    //   filter: false,
-    // },
   ];
   const [selected, setSelected] = useState([]);
   const [settlementOpen, setSettlementOpen] = useState(false);
@@ -397,59 +410,61 @@ export default function FinancialReceivables() {
   }
 
   return (
-    <PageContainer
-      FullGridContext={FullGridContext}
-      PagePreview={PagePreview}
-      defaultGridHeader={defaultGridHeader}
-      selection={{
-        multiple: true,
-        selected,
-        setSelected,
-        functions: [
-          {
-            title: "Fee Adjustment",
-            fun: handleFeeAdjustment,
-            icon: "Pencil",
-            Page: FeeAdjustment,
-            opened: feeAdjustmentOpen,
-            setOpened: setFeeAdjustmentOpen,
-            selected,
-          },
-          {
-            title: "Settlement",
-            fun: handleSettlement,
-            icon: "ReplaceAll",
-            Page: Settlement,
-            opened: settlementOpen,
-            setOpened: setSettlementOpen,
-            selected,
-          },
-          {
-            title: "Renegociation",
-            fun: handleRenegociation,
-            icon: "Handshake",
-            Page: Renegociation,
-            opened: renegociationOpen,
-            setOpened: setRenegociationOpen,
-            selected,
-          },
-          {
-            title: "Delete",
-            fun: handleDelete,
-            icon: "X",
-            Page: null,
-            opened: false,
-            setOpened: () => null,
-            selected,
-          },
-        ],
-      }}
-      Excel={{
-        fun: handleExcel,
-        opened: excelOpen,
-        excelData,
-        setExcelData,
-      }}
-    />
+    Outlet || (
+      <PageContainer
+        FullGridContext={FullGridContext}
+        PagePreview={PagePreview}
+        defaultGridHeader={defaultGridHeader}
+        selection={{
+          multiple: true,
+          selected,
+          setSelected,
+          functions: [
+            {
+              title: "Fee Adjustment",
+              fun: handleFeeAdjustment,
+              icon: "Pencil",
+              Page: FeeAdjustment,
+              opened: feeAdjustmentOpen,
+              setOpened: setFeeAdjustmentOpen,
+              selected,
+            },
+            {
+              title: "Settlement",
+              fun: handleSettlement,
+              icon: "ReplaceAll",
+              Page: Settlement,
+              opened: settlementOpen,
+              setOpened: setSettlementOpen,
+              selected,
+            },
+            {
+              title: "Renegociation",
+              fun: handleRenegociation,
+              icon: "Handshake",
+              Page: Renegociation,
+              opened: renegociationOpen,
+              setOpened: setRenegociationOpen,
+              selected,
+            },
+            {
+              title: "Delete",
+              fun: handleDelete,
+              icon: "X",
+              Page: null,
+              opened: false,
+              setOpened: () => null,
+              selected,
+            },
+          ],
+        }}
+        Excel={{
+          fun: handleExcel,
+          opened: excelOpen,
+          excelData,
+          setExcelData,
+        }}
+      />
+    )
   );
 }

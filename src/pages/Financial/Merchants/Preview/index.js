@@ -790,11 +790,12 @@ export default function PagePreview({
                               />
                             </InputLine>
 
-                            <InputLine title="Payees">
+                            {/* <InputLine title="Payees">
                               <Input
                                 type="number"
                                 name="late_payees"
                                 title="Late Payees"
+                                readOnly
                                 grow
                                 defaultValue={pageData.late_payees}
                                 InputContext={InputContext}
@@ -803,11 +804,12 @@ export default function PagePreview({
                                 type="number"
                                 name="balance_payees"
                                 title="Balance Payees"
+                                readOnly
                                 grow
                                 defaultValue={pageData.balance_payees}
                                 InputContext={InputContext}
                               />
-                            </InputLine>
+                            </InputLine> */}
                           </InputLineGroup>
                         </>
                       ) : (

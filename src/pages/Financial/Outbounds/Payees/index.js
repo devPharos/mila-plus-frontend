@@ -1,10 +1,30 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import PagePreview from "./Preview";
 import { useSelector } from "react-redux";
 import { getData } from "~/functions/gridFunctions";
 import PageContainer from "~/components/PageContainer";
-import { FullGridContext } from "..";
+import { FullGridContext } from "../..";
 import { format, parseISO } from "date-fns";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { PageContext } from "~/App";
+import Settlement from "./Settlement";
+
+export function FinancialOutbounds() {
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { pages } = useContext(PageContext);
+  const paths = pathname.split("/");
+  const redirectRouteName = pages
+    .find((page) => page.name === paths[1])
+    .children.find((page) => page.path === `/${paths[1]}/${paths[2]}`)
+    .children[0].path;
+  useEffect(() => {
+    if (pathname.toUpperCase() === `/${paths[1]}/${paths[2]}`.toUpperCase()) {
+      navigate(`${redirectRouteName}`);
+    }
+  }, [pathname]);
+  return <Outlet />;
+}
 
 export default function FinancialPayees() {
   const filial = useSelector((state) => state.auth.filial);
@@ -71,6 +91,8 @@ export default function FinancialPayees() {
       filter: true,
     },
   ];
+  const [settlementOpen, setSettlementOpen] = useState(false);
+  const [selected, setSelected] = useState([]);
 
   const {
     opened,
@@ -83,6 +105,14 @@ export default function FinancialPayees() {
     setActiveFilters,
     setLoadingData,
   } = useContext(FullGridContext);
+
+  function handleSettlement() {
+    const newVarOpened = !settlementOpen;
+    setSettlementOpen(newVarOpened);
+    if (!newVarOpened) {
+      loader();
+    }
+  }
 
   useEffect(() => {
     setActiveFilters([]);
@@ -127,7 +157,7 @@ export default function FinancialPayees() {
           fields: [
             issuer.name,
             filial.name,
-            "I" + invoice_number.toString().padStart(6, "0"),
+            invoice_number ? invoice_number.toString().padStart(9, "0") : null,
             format(parseISO(due_date), "yyyy-MM-dd"),
             "$ " + amount.toFixed(2),
             "$ " + discount.toFixed(2),
@@ -136,6 +166,7 @@ export default function FinancialPayees() {
             "$ " + balance.toFixed(2),
             status,
           ],
+          selectable: !status.includes("Paid"),
           canceled: canceled_at,
           page: Math.ceil((index + 1) / limit),
         };
@@ -147,6 +178,9 @@ export default function FinancialPayees() {
   }
 
   useEffect(() => {
+    if (!settlementOpen) {
+      setSelected([]);
+    }
     loader();
   }, [opened, filial, orderBy, search, limit]);
 
@@ -155,6 +189,31 @@ export default function FinancialPayees() {
       FullGridContext={FullGridContext}
       PagePreview={PagePreview}
       defaultGridHeader={defaultGridHeader}
+      selection={{
+        multiple: false,
+        selected,
+        setSelected,
+        functions: [
+          {
+            title: "Settlement",
+            fun: handleSettlement,
+            icon: "ReplaceAll",
+            Page: Settlement,
+            opened: settlementOpen,
+            setOpened: setSettlementOpen,
+            selected,
+          },
+          // {
+          //   title: "Delete",
+          //   fun: handleDelete,
+          //   icon: "X",
+          //   Page: null,
+          //   opened: false,
+          //   setOpened: () => null,
+          //   selected,
+          // },
+        ],
+      }}
     />
   );
 }

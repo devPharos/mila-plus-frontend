@@ -3,15 +3,15 @@ import PagePreview from "./Preview";
 import { useSelector } from "react-redux";
 import { getData } from "~/functions/gridFunctions";
 import PageContainer from "~/components/PageContainer";
-import { FullGridContext } from "..";
+import { FullGridContext } from "../..";
 import { format, parseISO } from "date-fns";
 import { AlertContext } from "~/App";
 import api from "~/services/api";
 import { toast } from "react-toastify";
 
-export default function FinancialSettlement() {
+export default function PayeesSettlement() {
   const filial = useSelector((state) => state.auth.filial);
-  const defaultOrderBy = { column: "receivable,due_date", asc: true };
+  const defaultOrderBy = { column: "payee,due_date", asc: true };
   const defaultGridHeader = [
     {
       title: "Issuer Name",
@@ -85,7 +85,7 @@ export default function FinancialSettlement() {
   async function loader() {
     setLoadingData(true);
     setTimeout(async () => {
-      const data = await getData("settlements", {
+      const data = await getData("payeesettlements", {
         limit,
         page,
         orderBy,
@@ -103,7 +103,7 @@ export default function FinancialSettlement() {
           {
             id,
             canceled_at,
-            receivable,
+            payee,
             status,
             amount,
             created_at,
@@ -116,13 +116,12 @@ export default function FinancialSettlement() {
             show: true,
             id,
             fields: [
-              receivable.issuer.name,
-              receivable.filial.name,
-              "I" + receivable.invoice_number.toString().padStart(6, "0"),
-              format(parseISO(receivable.entry_date), "yyyy-MM-dd"),
-              format(parseISO(receivable.due_date), "yyyy-MM-dd"),
+              payee.issuer.name,
+              payee.filial.name,
+              "I" + payee.invoice_number.toString().padStart(6, "0"),
+              format(parseISO(payee.entry_date), "yyyy-MM-dd"),
+              format(parseISO(payee.due_date), "yyyy-MM-dd"),
               "$ " + amount.toFixed(2),
-              // paymentMethod ? paymentMethod.description : "",
               paymentMethod ? paymentMethod.platform : "",
               format(parseISO(created_at), "yyyy-MM-dd"),
               ,
@@ -148,19 +147,19 @@ export default function FinancialSettlement() {
     let issuer = null;
     let differentIssuer = null;
     if (selected.length > 0) {
-      selected.map(async (receivable) => {
+      selected.map(async (payee) => {
         if (issuer) {
-          if (receivable.fields[0] !== issuer) {
-            differentIssuer = receivable.fields[0];
+          if (payee.fields[0] !== issuer) {
+            differentIssuer = payee.fields[0];
           }
         }
-        issuer = receivable.fields[0];
+        issuer = payee.fields[0];
       });
     }
     if (differentIssuer) {
       alertBox({
         title: "Attention!",
-        descriptionHTML: `<p>You have selected receivables from different issuers. Please select only receivables from the same issuer.</p>`,
+        descriptionHTML: `<p>You have selected payees from different issuers. Please select only payees from the same issuer.</p>`,
         buttons: [
           {
             title: "Ok",
@@ -169,9 +168,7 @@ export default function FinancialSettlement() {
         ],
       });
       setSelected(
-        selected.filter(
-          (receivable) => receivable.fields[0] !== differentIssuer
-        )
+        selected.filter((payee) => payee.fields[0] !== differentIssuer)
       );
     }
   }, [selected]);
@@ -194,10 +191,10 @@ export default function FinancialSettlement() {
           onPress: async () => {
             try {
               const promises = [];
-              selected.map((receivable) => {
+              selected.map((payee) => {
                 promises.push(
                   api
-                    .delete(`/settlements/${receivable.id}`)
+                    .delete(`/payeesettlements/${payee.id}`)
                     .then((response) => {
                       toast(response.data.message, { autoClose: 1000 });
                     })

@@ -24,7 +24,7 @@ import { useSelector } from "react-redux";
 import Textarea from "~/components/RegisterForm/Textarea";
 import { format, parseISO } from "date-fns";
 import { receivableStatusesOptions } from "~/functions/selectPopoverOptions";
-import { FullGridContext } from "../..";
+import { FullGridContext } from "../../..";
 import { Scope } from "@unform/core";
 
 export const InputContext = createContext({});

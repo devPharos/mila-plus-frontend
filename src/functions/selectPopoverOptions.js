@@ -210,8 +210,12 @@ export const typeOfPaymentOptions = [
 
 export const paymentPlatformOptions = [
   {
-    value: "Gravity",
-    label: "Gravity",
+    value: "Gravity - Online",
+    label: "Gravity - Online",
+  },
+  {
+    value: "Gravity - POS",
+    label: "Gravity - POS",
   },
   {
     value: "Parcelow",

@@ -16,25 +16,23 @@ import Preview from "~/components/Preview";
 import { toast } from "react-toastify";
 import api from "~/services/api";
 import FormLoading from "~/components/RegisterForm/FormLoading";
-import { FullGridContext } from "../..";
+import { FullGridContext } from "../../..";
 import { format, parseISO } from "date-fns";
 import DatePicker from "~/components/RegisterForm/DatePicker";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import PricesSimulation from "~/components/PricesSimulation";
 import { Scope } from "@unform/core";
 import Textarea from "~/components/RegisterForm/Textarea";
-import { AlertContext } from "~/App";
 
 export const InputContext = createContext({});
 
-export default function Renegociation({
+export default function Settlement({
   access,
   id,
   defaultFormType = "preview",
   selected,
   handleOpened,
 }) {
-  const { alertBox } = useContext(AlertContext);
   const { successfullyUpdated, setSuccessfullyUpdated } =
     useContext(FullGridContext);
   const [pageData, setPageData] = useState({
@@ -42,8 +40,8 @@ export default function Renegociation({
     bank_name: "",
     bank_alias: "",
     loaded: true,
-    installment_amount: 0,
   });
+  const [loading, setLoading] = useState(false);
 
   const [registry, setRegistry] = useState({
     created_by: null,
@@ -56,6 +54,8 @@ export default function Renegociation({
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [hasDiscount, setHasDiscount] = useState(false);
 
   const generalForm = useRef();
 
@@ -67,14 +67,13 @@ export default function Renegociation({
   }
 
   async function handleGeneralFormSubmit(data) {
-    // return;
-    async function handleRenegociation(data) {
+    setLoading(true);
+    async function handleSettlement(data) {
       await api
-        .post(`/receivables/renegociation`, {
+        .post(`/receivables/settlement`, {
           ...data,
-          number_of_installments: parseInt(data.number_of_installments),
-          first_due_date: format(data.first_due_date, "yyyy-MM-dd"),
-          total_amount: parseFloat(data.installment_amount),
+          total_amount: totalAmount,
+          settlement_date: format(data.settlement_date, "yyyyMMdd"),
         })
         .then(({ data }) => {
           toast(data.message, { autoClose: 1000 });
@@ -84,28 +83,62 @@ export default function Renegociation({
           toast(err.response.data.error, { type: "error", autoClose: 3000 });
         });
     }
-    alertBox({
-      title: "Attention!",
-      descriptionHTML:
-        "Would you like to send the first invoice to the student?",
-      buttons: [
-        {
-          title: "No",
-          class: "cancel",
-          onPress: async () => {
-            await handleRenegociation({ ...data, send_invoice: false });
-            handleOpened(null);
-          },
-        },
-        {
-          title: "Yes",
-          onPress: async () => {
-            await handleRenegociation({ ...data, send_invoice: true });
-            handleOpened(null);
-          },
-        },
-      ],
-    });
+    if (data.paymentmethod_id === "dcbe2b5b-c088-4107-ae32-efb4e7c4b161") {
+      const receivable = {
+        id: data.receivables[0].id,
+        total: parseFloat(data.prices.total_tuition),
+        memo: "Settlement for " + data.receivables.length + " receivables",
+      };
+      await api
+        .post(`/emergepay/simple-form`, {
+          receivable_id: receivable.id,
+          amount: receivable.total,
+          pageDescription: receivable.memo,
+        })
+        .then(({ data: formData }) => {
+          const { transactionToken } = formData;
+          emergepay.open({
+            // (required) Used to set up the modal
+            transactionToken: transactionToken,
+            // (optional) Callback function that gets called after a successful transaction
+            onTransactionSuccess: async function (approvalData) {
+              // await handleSettlement(data);
+              setLoading(false);
+              await api
+                .post(`/emergepay/post-back-listener`, approvalData)
+                .then(async () => {
+                  return approvalData;
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+              setTimeout(() => {
+                emergepay.close();
+              }, 2000);
+            },
+            // (optional) Callback function that gets called after a failure occurs during the transaction (such as a declined card)
+            onTransactionFailure: function (failureData) {
+              toast("Payment error!", {
+                type: "error",
+                autoClose: 3000,
+              });
+              setLoading(false);
+            },
+            // (optional) Callback function that gets called after a user clicks the close button on the modal
+            onTransactionCancel: function () {
+              toast("Transaction cancelled!", {
+                type: "error",
+                autoClose: 3000,
+              });
+              setLoading(false);
+            },
+          });
+        });
+    } else {
+      await handleSettlement(data);
+      setLoading(false);
+    }
+    handleOpened(null);
     return;
   }
 
@@ -117,18 +150,6 @@ export default function Renegociation({
         .filter((f) => f.id !== id)
         .map((f) => {
           return { value: f.id, label: f.description.slice(0, 20) };
-        });
-      const paymentCriteriaData = await api.get(`/paymentcriterias`);
-
-      const paymentCriteriaOptions = paymentCriteriaData.data
-        .filter((f) => f.id !== id)
-        .map((f) => {
-          return {
-            value: f.id,
-            label:
-              f.description.slice(0, 20) +
-              (f.recurring_metric ? " - " + f.recurring_metric : ""),
-          };
         });
       selected.map((receivable) => {
         promises.push(
@@ -143,16 +164,12 @@ export default function Renegociation({
         );
       });
       Promise.all(promises).then((data) => {
-        if (data.length === 0) {
-          return;
-        }
         const { student } = data[0].issuer;
         setPageData({
           ...pageData,
           receivables: data,
           loaded: true,
           paymentMethodOptions,
-          paymentCriteriaOptions,
           student: {
             ...student,
             searchFields: {
@@ -162,10 +179,39 @@ export default function Renegociation({
             },
           },
         });
+        setTotalAmount(
+          data.reduce((acc, curr) => {
+            return acc + curr.balance;
+          }, 0)
+        );
       });
     }
     loadData();
   }, []);
+
+  function handleValueChange(value) {
+    const originalValue = pageData.receivables.reduce((acc, curr) => {
+      return acc + curr.balance;
+    }, 0);
+    if (value > originalValue) {
+      toast("Total amount cannot be greater than the sum of receivables.");
+      setTotalAmount(originalValue);
+      generalForm.current.setFieldValue("total_amount", originalValue);
+      return;
+    } else {
+      setTotalAmount(parseFloat(value));
+    }
+  }
+
+  useEffect(() => {
+    if (hasDiscount) {
+      const originalValue = pageData.receivables.reduce((acc, curr) => {
+        return acc + curr.balance;
+      }, 0);
+      generalForm.current.setFieldValue("total_amount", originalValue);
+      setTotalAmount(originalValue);
+    }
+  }, [hasDiscount]);
 
   return (
     <Preview formType={formType} fullscreen={fullscreen}>
@@ -222,13 +268,14 @@ export default function Renegociation({
                         <FormHeader
                           access={access}
                           title={
-                            "Renegociation - " +
+                            "Settlement - " +
                             pageData.student?.name +
                             " " +
                             pageData.student?.last_name
                           }
                           registry={registry}
                           InputContext={InputContext}
+                          loading={loading}
                         />
 
                         <InputLineGroup
@@ -251,95 +298,61 @@ export default function Renegociation({
                                   type="text"
                                   name="total_amount"
                                   shrink
-                                  readOnly
-                                  title="Balance Amount"
-                                  defaultValue={pageData.receivables.reduce(
-                                    (acc, curr) => {
-                                      return acc + curr.balance;
-                                    },
-                                    0
+                                  required
+                                  readOnly={selected.length > 1 || hasDiscount}
+                                  onlyFloat
+                                  title="Total Amount"
+                                  defaultValue={totalAmount}
+                                  InputContext={InputContext}
+                                  onChange={(value) => handleValueChange(value)}
+                                />
+                                <SelectPopover
+                                  name="paymentmethod_id"
+                                  grow
+                                  title="Payment Method"
+                                  required
+                                  isSearchable
+                                  options={pageData.paymentMethodOptions}
+                                  defaultValue={pageData.paymentMethodOptions.find(
+                                    (paymentMethod) =>
+                                      paymentMethod.value ===
+                                      pageData.receivables[0].paymentmethod_id
                                   )}
                                   InputContext={InputContext}
                                 />
-                                <Input
-                                  type="text"
-                                  name="installment_amount"
-                                  readOnly
-                                  value={pageData.installment_amount}
-                                  title="Installment Amount Preview"
-                                  InputContext={InputContext}
-                                />
-                                <Input
-                                  type="number"
-                                  name="number_of_installments"
-                                  required
-                                  title="Qty. of new Installments"
-                                  onChange={(el) => {
-                                    setPageData({
-                                      ...pageData,
-                                      installment_amount: (
-                                        pageData.receivables.reduce(
-                                          (acc, curr) => {
-                                            return acc + curr.balance;
-                                          },
-                                          0
-                                        ) / (el.target.value || 1)
-                                      ).toFixed(2),
-                                    });
-                                  }}
-                                  InputContext={InputContext}
-                                />
                                 <DatePicker
-                                  name="first_due_date"
+                                  name="settlement_date"
                                   grow
                                   required
-                                  title="First Due Date"
+                                  title="Settlement Date"
                                   placeholderText="MM/DD/YYYY"
                                   InputContext={InputContext}
                                 />
                               </InputLine>
                               <InputLine>
-                                <SelectPopover
-                                  name="payment_method_id"
-                                  required
-                                  title="Payment Method"
-                                  isSearchable
-                                  grow
-                                  defaultValue={pageData.paymentMethodOptions.filter(
-                                    (paymentMethod) =>
-                                      paymentMethod.value ===
-                                      pageData?.issuer?.issuer_x_recurrence
-                                        ?.paymentmethod_id
-                                  )}
-                                  options={pageData.paymentMethodOptions}
-                                  InputContext={InputContext}
-                                />
-                                <SelectPopover
-                                  name="payment_criteria_id"
-                                  required
-                                  title="Payment Criteria"
-                                  isSearchable
-                                  grow
-                                  defaultValue={pageData.paymentCriteriaOptions.filter(
-                                    (paymentMethod) =>
-                                      paymentMethod.value ===
-                                      pageData?.issuer?.issuer_x_recurrence
-                                        ?.paymentcriteria_id
-                                  )}
-                                  options={pageData.paymentCriteriaOptions}
-                                  InputContext={InputContext}
-                                />
-                              </InputLine>
-                              <InputLine>
                                 <Textarea
-                                  name="observations"
-                                  title="Reasons for Renegociation"
-                                  grow
-                                  required
-                                  rows={3}
+                                  name="settlement_memo"
                                   InputContext={InputContext}
+                                  grow
+                                  rows={3}
+                                  required
+                                  title="Memo"
                                 />
                               </InputLine>
+
+                              <PricesSimulation
+                                student={pageData.student}
+                                InputContext={InputContext}
+                                FullGridContext={FullGridContext}
+                                generalForm={generalForm}
+                                showAdmissionDiscounts={false}
+                                isAdmissionDiscountChangable={false}
+                                showFinancialDiscounts={true}
+                                isFinancialDiscountChangable={true}
+                                settlement
+                                totalAmount={totalAmount}
+                                setHasDiscount={setHasDiscount}
+                              />
 
                               {pageData.receivables
                                 .sort((a, b) => a.due_date > b.due_date)

@@ -21,7 +21,6 @@ export function hasAccessTo(
     inactivate: false,
   };
   if (!accesses || !accesses.hierarchy || !menu_alias) {
-    console.log(accesses, accesses.hierarchy, menu_alias);
     return defaultFalse;
   }
 
@@ -59,8 +58,16 @@ export function getCurrentPage() {
   let currentPage = null;
   if (currentModule) {
     currentPage = currentModule.children.filter(
-      (page) => page.path === pathname
+      (page) => page.path === "/" + paths[0] + "/" + paths[1]
     )[0];
+    if (currentPage.children) {
+      if (pathname.split("/").length === 4) {
+        currentPage = currentPage.children.filter(
+          (page) =>
+            page.path === "/" + paths[0] + "/" + paths[1] + "/" + paths[2]
+        )[0];
+      }
+    }
   }
   return currentPage;
 }

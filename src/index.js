@@ -68,11 +68,17 @@ import FinancialPaymentMethods from "./pages/Financial/PaymentMethods";
 import FinancialPaymentCriteria from "./pages/Financial/PaymentCriterias";
 import FinancialMerchants from "./pages/Financial/Merchants";
 import FinancialIssuers from "./pages/Financial/Issuer";
-import FinancialReceivables from "./pages/Financial/Receivables";
-import FinancialPayees from "./pages/Financial/Payees";
+import FinancialReceivables, {
+  FinancialInbounds,
+} from "./pages/Financial/Inbounds/Receivables";
+import FinancialPayees, {
+  FinancialOutbounds,
+} from "./pages/Financial/Outbounds/Payees";
 import DataSync from "./pages/Settings/Data Sync";
-import FinancialRecurrence from "./pages/Financial/Recurrence";
-import FinancialSettlement from "./pages/Financial/Settlement";
+import FinancialRecurrence from "./pages/Financial/Inbounds/Recurrence";
+import FinancialSettlement from "./pages/Financial/Inbounds/Settlement";
+import PayeesRecurrence from "./pages/Financial/Outbounds/Recurrence";
+import PayeesSettlement from "./pages/Financial/Outbounds/Settlement";
 
 injectStore(store);
 
@@ -256,20 +262,40 @@ const router = createBrowserRouter([
             element: <FinancialIssuers />,
           },
           {
-            path: "/Financial/Recurrence",
-            element: <FinancialRecurrence />,
-          },
-          {
             path: "/Financial/Receivables",
-            element: <FinancialReceivables />,
-          },
-          {
-            path: "/Financial/Settlement",
-            element: <FinancialSettlement />,
+            element: <FinancialInbounds />,
+            children: [
+              {
+                path: "/Financial/Receivables/Receivables",
+                element: <FinancialReceivables />,
+              },
+              {
+                path: "/Financial/Receivables/Recurrence",
+                element: <FinancialRecurrence />,
+              },
+              {
+                path: "/Financial/Receivables/Settlement",
+                element: <FinancialSettlement />,
+              },
+            ],
           },
           {
             path: "/Financial/Payees",
-            element: <FinancialPayees />,
+            element: <FinancialOutbounds />,
+            children: [
+              {
+                path: "/Financial/Payees/Payees",
+                element: <FinancialPayees />,
+              },
+              {
+                path: "/Financial/Payees/Recurrence",
+                element: <PayeesRecurrence />,
+              },
+              {
+                path: "/Financial/Payees/Settlement",
+                element: <PayeesSettlement />,
+              },
+            ],
           },
         ],
       },

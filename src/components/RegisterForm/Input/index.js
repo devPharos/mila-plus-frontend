@@ -10,7 +10,9 @@ const Input = ({
   defaultValueDDI = null,
   workloadUpdateName = false,
   readOnly = false,
-  type,
+  readOnlyOnFocus = false,
+  type = "text",
+  value = null,
   isZipCode = false,
   onlyUpperCase = false,
   onlyLowerCase = false,
@@ -24,7 +26,7 @@ const Input = ({
 }) => {
   const inputRef = useRef();
   const { fieldName, registerField, error } = useField(name);
-  const { disabled, required } = { ...rest };
+  const { disabled, required, defaultValue } = { ...rest };
 
   useEffect(() => {
     registerField({
@@ -81,6 +83,17 @@ const Input = ({
 
     setSuccessfullyUpdated(false);
   }
+
+  useEffect(() => {
+    if (defaultValue) {
+      inputRef.current.value = defaultValue;
+    }
+  }, [defaultValue]);
+
+  function handleFocus(value) {
+    inputRef.current.readOnly = value;
+  }
+
   const width = shrink ? "w-full md:w-auto max-w-32" : "w-full md:w-auto";
   return (
     <div
@@ -107,6 +120,9 @@ const Input = ({
             ref={inputRef}
             type={type}
             readOnly={readOnly}
+            onFocus={readOnlyOnFocus ? () => handleFocus(true) : null}
+            onBlur={readOnlyOnFocus ? () => handleFocus(false) : null}
+            defaultValue={defaultValue}
             {...rest}
             className={`${
               centeredText ? "text-center" : "text-left"

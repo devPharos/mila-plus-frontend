@@ -39,7 +39,7 @@ import {
   receivableStatusesOptions,
   yesOrNoOptions,
 } from "~/functions/selectPopoverOptions";
-import { FullGridContext } from "../..";
+import { FullGridContext } from "../../..";
 import { Scope } from "@unform/core";
 import DatePicker from "~/components/RegisterForm/DatePicker";
 import { AlertContext } from "~/App";

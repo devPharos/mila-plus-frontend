@@ -16,7 +16,7 @@ import Preview from "~/components/Preview";
 import { toast } from "react-toastify";
 import api from "~/services/api";
 import FormLoading from "~/components/RegisterForm/FormLoading";
-import { FullGridContext } from "../..";
+import { FullGridContext } from "../../..";
 import { format, parseISO } from "date-fns";
 import DatePicker from "~/components/RegisterForm/DatePicker";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
@@ -69,8 +69,9 @@ export default function Settlement({
   async function handleGeneralFormSubmit(data) {
     setLoading(true);
     async function handleSettlement(data) {
+      // console.log(data);
       await api
-        .post(`/receivables/settlement`, {
+        .post(`/payee/settlement`, {
           ...data,
           total_amount: totalAmount,
           settlement_date: format(data.settlement_date, "yyyyMMdd"),
@@ -83,61 +84,8 @@ export default function Settlement({
           toast(err.response.data.error, { type: "error", autoClose: 3000 });
         });
     }
-    if (data.paymentmethod_id === "dcbe2b5b-c088-4107-ae32-efb4e7c4b161") {
-      const receivable = {
-        id: data.receivables[0].id,
-        total: parseFloat(data.prices.total_tuition),
-        memo: "Settlement for " + data.receivables.length + " receivables",
-      };
-      await api
-        .post(`/emergepay/simple-form`, {
-          receivable_id: receivable.id,
-          amount: receivable.total,
-          pageDescription: receivable.memo,
-        })
-        .then(({ data: formData }) => {
-          const { transactionToken } = formData;
-          emergepay.open({
-            // (required) Used to set up the modal
-            transactionToken: transactionToken,
-            // (optional) Callback function that gets called after a successful transaction
-            onTransactionSuccess: async function (approvalData) {
-              await handleSettlement(data);
-              setLoading(false);
-              await api
-                .post(`/emergepay/post-back-listener`, approvalData)
-                .then(async () => {
-                  return approvalData;
-                })
-                .catch((err) => {
-                  console.log(err);
-                });
-              setTimeout(() => {
-                emergepay.close();
-              }, 2000);
-            },
-            // (optional) Callback function that gets called after a failure occurs during the transaction (such as a declined card)
-            onTransactionFailure: function (failureData) {
-              toast("Payment error!", {
-                type: "error",
-                autoClose: 3000,
-              });
-              setLoading(false);
-            },
-            // (optional) Callback function that gets called after a user clicks the close button on the modal
-            onTransactionCancel: function () {
-              toast("Transaction cancelled!", {
-                type: "error",
-                autoClose: 3000,
-              });
-              setLoading(false);
-            },
-          });
-        });
-    } else {
-      await handleSettlement(data);
-      setLoading(false);
-    }
+    await handleSettlement(data);
+    setLoading(false);
     handleOpened(null);
     return;
   }
@@ -147,14 +95,14 @@ export default function Settlement({
       const promises = [];
       const paymentMethodData = await api.get(`/paymentmethods`);
       const paymentMethodOptions = paymentMethodData.data
-        .filter((f) => f.id !== id)
+        .filter((f) => f.id !== id && f.type_of_payment.includes("Outbounds"))
         .map((f) => {
           return { value: f.id, label: f.description.slice(0, 20) };
         });
-      selected.map((receivable) => {
+      selected.map((payee) => {
         promises.push(
           api
-            .get(`/receivables/${receivable.id}`)
+            .get(`/payee/${payee.id}`)
             .then(({ data }) => {
               return data;
             })
@@ -164,20 +112,11 @@ export default function Settlement({
         );
       });
       Promise.all(promises).then((data) => {
-        const { student } = data[0].issuer;
         setPageData({
           ...pageData,
-          receivables: data,
+          payees: data,
           loaded: true,
           paymentMethodOptions,
-          student: {
-            ...student,
-            searchFields: {
-              processtype_id: student.processtype_id,
-              processsubstatus_id: student.processsubstatus_id,
-              filial_id: student.filial_id,
-            },
-          },
         });
         setTotalAmount(
           data.reduce((acc, curr) => {
@@ -190,11 +129,11 @@ export default function Settlement({
   }, []);
 
   function handleValueChange(value) {
-    const originalValue = pageData.receivables.reduce((acc, curr) => {
+    const originalValue = pageData.payees.reduce((acc, curr) => {
       return acc + curr.balance;
     }, 0);
     if (value > originalValue) {
-      toast("Total amount cannot be greater than the sum of receivables.");
+      toast("Total amount cannot be greater than the sum of payees.");
       setTotalAmount(originalValue);
       generalForm.current.setFieldValue("total_amount", originalValue);
       return;
@@ -205,7 +144,7 @@ export default function Settlement({
 
   useEffect(() => {
     if (hasDiscount) {
-      const originalValue = pageData.receivables.reduce((acc, curr) => {
+      const originalValue = pageData.payees.reduce((acc, curr) => {
         return acc + curr.balance;
       }, 0);
       generalForm.current.setFieldValue("total_amount", originalValue);
@@ -269,9 +208,9 @@ export default function Settlement({
                           access={access}
                           title={
                             "Settlement - " +
-                            pageData.student?.name +
+                            pageData.issuer?.name +
                             " " +
-                            pageData.student?.last_name
+                            pageData.issuer?.last_name
                           }
                           registry={registry}
                           InputContext={InputContext}
@@ -282,16 +221,16 @@ export default function Settlement({
                           title="GENERAL"
                           activeMenu={activeMenu === "general"}
                         >
-                          {pageData.receivables && (
+                          {pageData.payees && (
                             <>
                               <InputLine title="Settlement Data">
                                 <Input
                                   type="text"
-                                  name="qty_of_receivables"
+                                  name="qty_of_payees"
                                   shrink
                                   readOnly
-                                  title="Qty. of Receivables"
-                                  defaultValue={pageData.receivables.length}
+                                  title="Qty. of Payees"
+                                  defaultValue={pageData.payees.length}
                                   InputContext={InputContext}
                                 />
                                 <Input
@@ -316,8 +255,21 @@ export default function Settlement({
                                   defaultValue={pageData.paymentMethodOptions.find(
                                     (paymentMethod) =>
                                       paymentMethod.value ===
-                                      pageData.receivables[0].paymentmethod_id
+                                      pageData.payees[0].paymentmethod_id
                                   )}
+                                  InputContext={InputContext}
+                                />
+                                <Input
+                                  type="text"
+                                  name="invoice_number"
+                                  required
+                                  title="Invoice Number"
+                                  grow
+                                  defaultValue={
+                                    pageData.payees[0].invoice_number
+                                      ? pageData.payees[0].invoice_number
+                                      : ""
+                                  }
                                   InputContext={InputContext}
                                 />
                                 <DatePicker
@@ -340,34 +292,20 @@ export default function Settlement({
                                 />
                               </InputLine>
 
-                              <PricesSimulation
-                                student={pageData.student}
-                                InputContext={InputContext}
-                                FullGridContext={FullGridContext}
-                                generalForm={generalForm}
-                                showAdmissionDiscounts={false}
-                                isAdmissionDiscountChangable={false}
-                                showFinancialDiscounts={true}
-                                isFinancialDiscountChangable={true}
-                                settlement
-                                totalAmount={totalAmount}
-                                setHasDiscount={setHasDiscount}
-                              />
-
-                              {pageData.receivables
+                              {pageData.payees
                                 .sort((a, b) => a.due_date > b.due_date)
-                                .map((receivable, index) => {
+                                .map((payee, index) => {
                                   return (
                                     <InputLine
                                       key={index}
-                                      title={index === 0 ? "Receivables" : ""}
+                                      title={index === 0 ? "Payees" : ""}
                                     >
                                       <p className="pt-3">#{index + 1}</p>
-                                      <Scope path={`receivables[${index}]`}>
+                                      <Scope path={`payees[${index}]`}>
                                         <Input
                                           type="hidden"
                                           name="id"
-                                          defaultValue={receivable.id}
+                                          defaultValue={payee.id}
                                           InputContext={InputContext}
                                         />
                                         <Input
@@ -376,7 +314,7 @@ export default function Settlement({
                                           grow
                                           readOnly
                                           title="Memo"
-                                          defaultValue={receivable.memo}
+                                          defaultValue={payee.memo}
                                           InputContext={InputContext}
                                         />
                                         <Input
@@ -385,7 +323,7 @@ export default function Settlement({
                                           grow
                                           readOnly
                                           title="Total Amount"
-                                          defaultValue={receivable.total}
+                                          defaultValue={payee.total}
                                           InputContext={InputContext}
                                         />
                                         <Input
@@ -394,7 +332,7 @@ export default function Settlement({
                                           grow
                                           readOnly
                                           title="Balance Amount"
-                                          defaultValue={receivable.balance.toFixed(
+                                          defaultValue={payee.balance.toFixed(
                                             2
                                           )}
                                           InputContext={InputContext}
@@ -405,7 +343,7 @@ export default function Settlement({
                                           disabled
                                           title="Due Date"
                                           defaultValue={format(
-                                            parseISO(receivable.due_date),
+                                            parseISO(payee.due_date),
                                             "yyyy-MM-dd"
                                           )}
                                           placeholderText="MM/DD/YYYY"
@@ -417,7 +355,7 @@ export default function Settlement({
                                           grow
                                           readOnly
                                           title="Status"
-                                          defaultValue={receivable.status}
+                                          defaultValue={payee.status}
                                           InputContext={InputContext}
                                         />
                                       </Scope>

@@ -1,5 +1,5 @@
 import { Form } from "@unform/web";
-import { Building, Pencil, X, ListMinus } from "lucide-react";
+import { Building, Pencil, X } from "lucide-react";
 import React, {
   createContext,
   useContext,
@@ -22,16 +22,10 @@ import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
 import Textarea from "~/components/RegisterForm/Textarea";
-import Grid from "~/components/Grid";
+import { FullGridContext } from "../../..";
+import { receivableStatusesOptions } from "~/functions/selectPopoverOptions";
 import { format, parseISO } from "date-fns";
-import {
-  invoiceTypeDetailsOptions,
-  invoiceTypesOptions,
-  receivableStatusesOptions,
-  yesOrNoOptions,
-} from "~/functions/selectPopoverOptions";
-import { FullGridContext } from "../..";
-import { Scope } from "@unform/core";
+import FindGeneric from "~/components/Finds/FindGeneric";
 
 export const InputContext = createContext({});
 
@@ -40,6 +34,7 @@ export default function PagePreview({
   id,
   defaultFormType = "preview",
 }) {
+  const auth = useSelector((state) => state.auth);
   const {
     handleOpened,
     setOpened,
@@ -48,24 +43,22 @@ export default function PagePreview({
   } = useContext(FullGridContext);
   const [pageData, setPageData] = useState({
     loaded: false,
-    filial_id: null,
     filial: {
-      name: "",
+      id: auth.filial.id !== 1 ? auth.filial.id : null,
+      name: auth.filial.id !== 1 ? auth.filial.name : null,
     },
-    filialOptions: [],
-    issuerOptions: [],
-    paymentMethodOptions: [],
-    // paymentCriteriaOptions: [],
-    chartOfAccountOptions: [],
     issuer_id: null,
     issuer: {
       name: "",
     },
-    status: "Open",
     entry_date: null,
+    first_due_date: null,
     due_date: null,
     amount: 0,
+    fee: 0,
+    discount: 0,
     total: 0,
+    balance: 0,
     memo: "",
     is_recurrence: false,
     contract_number: "",
@@ -73,6 +66,7 @@ export default function PagePreview({
     paymentMethod: {
       description: "",
     },
+    status: "open",
     status_date: null,
     authorization_code: "",
     chartofaccount_id: null,
@@ -83,9 +77,11 @@ export default function PagePreview({
     paymentCriteria: {
       description: "",
     },
+    searchfields: {
+      type: "Credit Note",
+      type_detail: "Other",
+    },
     installment: [],
-    type: "Credit Note",
-    type_detail: "Other",
   });
 
   const [registry, setRegistry] = useState({
@@ -100,8 +96,6 @@ export default function PagePreview({
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
-
-  const auth = useSelector((state) => state.auth);
 
   const generalForm = useRef();
 
@@ -130,9 +124,18 @@ export default function PagePreview({
 
     if (id === "new") {
       try {
-        const response = await api.post(`/receivables`, data);
-        setPageData({ ...pageData, ...response.data });
+        const response = await api.post(`/payee`, data);
+        setPageData({
+          ...pageData,
+          ...response.data,
+          searchfields: {
+            type: response.data.type,
+            type_detail: response.data.type_detail,
+          },
+        });
         setOpened(response.data.id);
+
+        console.log(response.data);
 
         if (response.data.created_by) {
           const registries = await getRegistries({
@@ -143,8 +146,8 @@ export default function PagePreview({
         }
 
         handleOpened(null);
-
         setSuccessfullyUpdated(true);
+
         toast("Created!", { autoClose: 1000 });
       } catch (err) {
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
@@ -156,7 +159,7 @@ export default function PagePreview({
         const objUpdated = Object.fromEntries(updated);
 
         try {
-          await api.put(`/receivables/${id}`, objUpdated);
+          const response = await api.put(`/payee/${id}`, objUpdated);
           setPageData({ ...pageData, ...objUpdated });
           setSuccessfullyUpdated(true);
 
@@ -178,22 +181,21 @@ export default function PagePreview({
   }
 
   useEffect(() => {
-    async function getPageData(id) {
+    async function getPageData() {
       try {
         let data = pageData;
 
         if (id !== "new") {
-          const { data: receivableData } = await api.get(`/receivables/${id}`);
+          const { data: receivableData } = await api.get(`/payee/${id}`);
           data = receivableData;
         }
 
         const filialData = await api.get(`/filials`);
         const issuerData = await api.get(`/issuers`);
         const paymentMethodData = await api.get(`/paymentmethods`);
-        // const paymentCriteriaData = await api.get(`/paymentcriterias`);
-        const chartOfAccountData = await api.get(
-          `/chartofaccounts?issuer=${data.issuer_id}`
-        );
+        // const chartOfAccountData = await api.get(
+        //   `/chartofaccounts?issuer=${data.issuer_id}`
+        // );
 
         const filialOptions = filialData.data
           .filter((f) => f.id !== id)
@@ -208,45 +210,37 @@ export default function PagePreview({
           });
 
         const paymentMethodOptions = paymentMethodData.data
-          .filter((f) => f.id !== id)
+          .filter((f) => f.type_of_payment !== "Inbounds")
           .map((f) => {
             return { value: f.id, label: f.description.slice(0, 20) };
           });
 
-        // const paymentCriteriaOptions = paymentCriteriaData.data
+        // const chartOfAccountOptions = chartOfAccountData.data
         //   .filter((f) => f.id !== id)
         //   .map((f) => {
         //     return {
         //       value: f.id,
-        //       label:
-        //         f.description.slice(0, 20) +
-        //         (f.recurring_metric ? " - " + f.recurring_metric : ""),
+        //       label: `${
+        //         f.Father?.Father?.Father?.name
+        //           ? `${f.Father?.Father?.Father?.name} > `
+        //           : ""
+        //       }${f.Father?.Father?.name ? `${f.Father?.Father?.name} > ` : ""}${
+        //         f.Father?.name ? `${f.Father?.name} > ` : ""
+        //       }${f.name}`,
         //     };
         //   });
-
-        const chartOfAccountOptions = chartOfAccountData.data
-          .filter((f) => f.id !== id)
-          .map((f) => {
-            return {
-              value: f.id,
-              label: `${
-                f.Father?.Father?.Father?.name
-                  ? `${f.Father?.Father?.Father?.name} > `
-                  : ""
-              }${f.Father?.Father?.name ? `${f.Father?.Father?.name} > ` : ""}${
-                f.Father?.name ? `${f.Father?.name} > ` : ""
-              }${f.name}`,
-            };
-          });
 
         setPageData({
           ...data,
           filialOptions,
           issuerOptions,
           paymentMethodOptions,
-          // paymentCriteriaOptions,
-          chartOfAccountOptions,
+          // chartOfAccountOptions,
           loaded: true,
+          searchfields: {
+            type: data.type,
+            type_detail: data.type_detail,
+          },
         });
 
         const {
@@ -335,106 +329,211 @@ export default function PagePreview({
                         <>
                           <FormHeader
                             access={access}
-                            title={
-                              pageData.issuer_id
-                                ? pageData.issuerOptions.find(
-                                    (issuer) =>
-                                      issuer.value === pageData.issuer_id
-                                  ).label
-                                : null
-                            }
+                            title={`Payee - ${pageData?.issuer?.name}`}
                             registry={registry}
                             InputContext={InputContext}
+                            saveText={"Save changes"}
                           />
 
                           <InputLineGroup
                             title="GENERAL"
                             activeMenu={activeMenu === "general"}
                           >
-                            {auth.filial.id === 1 && (
-                              <InputLine title="Filial">
-                                <SelectPopover
-                                  name="filial_id"
-                                  required
-                                  title="Filial"
-                                  readOnly={pageData.is_recurrence}
-                                  isSearchable
-                                  grow
-                                  defaultValue={
-                                    pageData.filial_id
-                                      ? pageData.filialOptions.find(
-                                          (filial) =>
-                                            filial.value === pageData.filial_id
-                                        )
-                                      : null
-                                  }
-                                  options={pageData.filialOptions}
-                                  InputContext={InputContext}
-                                />
-                              </InputLine>
-                            )}
+                            <FindGeneric
+                              route="filials"
+                              title="Filial"
+                              scope="filial"
+                              required
+                              InputContext={InputContext}
+                              defaultValue={{
+                                id: pageData.filial.id,
+                                name: pageData.filial.name,
+                              }}
+                              fields={[
+                                {
+                                  title: "Name",
+                                  name: "name",
+                                },
+                              ]}
+                            />
 
                             <InputLine title="Status">
                               <SelectPopover
                                 name="status"
                                 required
                                 grow
+                                disabled
                                 title="Status"
                                 options={receivableStatusesOptions}
-                                defaultValue={receivableStatusesOptions.find(
-                                  (status) => status.value === pageData.status
-                                )}
+                                defaultValue={
+                                  receivableStatusesOptions.find(
+                                    (status) => status.value === pageData.status
+                                  ) || receivableStatusesOptions[0]
+                                }
                                 InputContext={InputContext}
                                 isSearchable
                               />
                             </InputLine>
 
-                            <InputLine title="Details">
-                              <SelectPopover
-                                name="type"
+                            <InputLine title="Amount">
+                              <Input
+                                type="text"
+                                name="amount"
                                 required
-                                grow
-                                title="Type"
-                                readOnly={pageData.is_recurrence}
-                                options={invoiceTypesOptions}
-                                defaultValue={invoiceTypesOptions.find(
-                                  (invoiceType) =>
-                                    invoiceType.value === pageData.type
-                                )}
-                                onChange={(el) => {
+                                placeholder="0.00"
+                                title="Amount"
+                                onlyFloat
+                                onChange={(value) => {
                                   setPageData({
                                     ...pageData,
-                                    type: el.value,
+                                    amount: value ? parseFloat(value) : 0,
+                                    total: value
+                                      ? parseFloat(value)
+                                      : 0 - pageData.discount + pageData.fee,
+                                    balance: value
+                                      ? parseFloat(value)
+                                      : 0 - pageData.discount + pageData.fee,
                                   });
+                                  setSuccessfullyUpdated(false);
                                 }}
-                                InputContext={InputContext}
-                              />
-                              <SelectPopover
-                                name="type_detail"
-                                required
                                 grow
-                                title="Type Detail"
-                                readOnly={pageData.is_recurrence}
-                                options={invoiceTypeDetailsOptions.filter(
-                                  (typeDetail) =>
-                                    typeDetail.type === pageData.type
-                                )}
                                 defaultValue={
-                                  pageData.type_detail
-                                    ? invoiceTypeDetailsOptions.find(
-                                        (invoiceTypeDetail) =>
-                                          invoiceTypeDetail.value ===
-                                          pageData.type_detail
-                                      )
+                                  pageData.amount > 0
+                                    ? pageData.amount.toFixed(2)
                                     : null
                                 }
                                 InputContext={InputContext}
                               />
                               <Input
                                 type="text"
+                                name="discount"
+                                placeholder="0.00"
+                                title="Discount"
+                                onChange={(value) => {
+                                  setPageData({
+                                    ...pageData,
+                                    discount: value ? parseFloat(value) : 0,
+                                    total:
+                                      pageData.amount -
+                                      (value ? parseFloat(value) : 0) +
+                                      pageData.fee,
+                                    balance:
+                                      pageData.amount -
+                                      (value ? parseFloat(value) : 0) +
+                                      pageData.fee,
+                                  });
+                                  setSuccessfullyUpdated(false);
+                                }}
+                                grow
+                                defaultValue={
+                                  pageData.discount
+                                    ? pageData.discount.toFixed(2)
+                                    : null
+                                }
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="text"
+                                name="fee"
+                                placeholder="0.00"
+                                title="Fee"
+                                onChange={(value) => {
+                                  setPageData({
+                                    ...pageData,
+                                    fee: value ? parseFloat(value) : 0,
+                                    total:
+                                      pageData.amount -
+                                      pageData.discount +
+                                      (value ? parseFloat(value) : 0),
+                                    balance:
+                                      pageData.amount -
+                                      pageData.discount +
+                                      (value ? parseFloat(value) : 0),
+                                  });
+                                  setSuccessfullyUpdated(false);
+                                }}
+                                grow
+                                defaultValue={
+                                  pageData.fee ? pageData.fee.toFixed(2) : null
+                                }
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="text"
+                                name="total"
+                                readOnly
+                                placeholder="0.00"
+                                title="Total"
+                                grow
+                                value={pageData.total.toFixed(2)}
+                                InputContext={InputContext}
+                              />
+                              {id !== "new" && (
+                                <Input
+                                  type="text"
+                                  name="balance"
+                                  readOnly
+                                  placeholder="0.00"
+                                  title="Balance"
+                                  grow
+                                  value={pageData.balance.toFixed(2)}
+                                  InputContext={InputContext}
+                                />
+                              )}
+                            </InputLine>
+                            <FindGeneric
+                              route="merchants"
+                              title="Merchants"
+                              scope="merchant"
+                              required
+                              InputContext={InputContext}
+                              defaultValue={{
+                                id: pageData.issuer?.merchant?.id,
+                                name: pageData.issuer?.merchant?.name,
+                                ein: pageData.issuer?.merchant?.ein,
+                                issuer: { id: pageData.issuer?.id },
+                              }}
+                              fields={[
+                                {
+                                  title: "Issuer",
+                                  name: "issuer",
+                                  field: "id",
+                                  type: "hidden",
+                                },
+                                {
+                                  title: "Name",
+                                  name: "name",
+                                },
+                                {
+                                  title: "EIN",
+                                  name: "ein",
+                                },
+                              ]}
+                            />
+
+                            <InputLine title="Invoice">
+                              <Input
+                                type="text"
+                                name="type"
+                                required
+                                grow
+                                title="Type"
+                                defaultValue={pageData.type}
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="text"
+                                name="type_detail"
+                                required
+                                grow
+                                title="Type Detail"
+                                defaultValue={pageData.type_detail}
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="text"
                                 name="invoice_number"
                                 required
-                                readOnly
                                 title="Invoice Number"
                                 grow
                                 defaultValue={
@@ -445,34 +544,16 @@ export default function PagePreview({
                                 InputContext={InputContext}
                               />
                             </InputLine>
-
-                            <InputLine>
-                              <SelectPopover
-                                name="issuer_id"
-                                required
-                                title="Issuer"
-                                readOnly={pageData.is_recurrence}
-                                isSearchable
-                                grow
-                                defaultValue={
-                                  pageData.issuer_id
-                                    ? pageData.issuerOptions.find(
-                                        (issuer) =>
-                                          issuer.value === pageData.issuer_id
-                                      )
-                                    : null
-                                }
-                                options={pageData.issuerOptions}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
                             <InputLine>
                               <Input
                                 type="date"
                                 name="entry_date"
                                 required
                                 title="Entry Date"
-                                readOnly={pageData.is_recurrence}
+                                readOnly={
+                                  pageData.is_recurrence ||
+                                  pageData.balance !== pageData.total
+                                }
                                 grow
                                 defaultValue={
                                   pageData.entry_date
@@ -490,7 +571,10 @@ export default function PagePreview({
                                 name="due_date"
                                 required
                                 title="Due Date"
-                                readOnly={pageData.is_recurrence}
+                                readOnly={
+                                  pageData.is_recurrence ||
+                                  pageData.balance !== pageData.total
+                                }
                                 grow
                                 defaultValue={
                                   pageData?.due_date
@@ -504,121 +588,37 @@ export default function PagePreview({
                               />
                             </InputLine>
 
-                            <InputLine>
-                              <SelectPopover
-                                name="paymentmethod_id"
-                                title="Payment Method"
-                                isSearchable
-                                grow
-                                required
-                                defaultValue={
-                                  pageData.paymentmethod_id
-                                    ? pageData.paymentMethodOptions.find(
-                                        (paymentMethod) =>
-                                          paymentMethod.value ===
-                                          pageData.paymentmethod_id
-                                      )
-                                    : null
-                                }
-                                options={pageData.paymentMethodOptions}
-                                InputContext={InputContext}
-                              />
-                              <SelectPopover
-                                name="is_recurrence"
-                                title="Is Recurrence?"
-                                readOnly
-                                grow
-                                defaultValue={
-                                  pageData.is_recurrence
-                                    ? yesOrNoOptions.find(
-                                        (type) =>
-                                          type.value === pageData.is_recurrence
-                                      )
-                                    : null
-                                }
-                                options={yesOrNoOptions}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-                            <InputLine title="Amount">
-                              <Input
-                                type="text"
-                                name="amount"
-                                required
-                                readOnly={pageData.is_recurrence}
-                                title="Amount"
-                                grow
-                                defaultValue={pageData.amount}
-                                InputContext={InputContext}
-                              />
-                              <Input
-                                type="text"
-                                name="discount"
-                                readOnly
-                                title="Discount"
-                                grow
-                                defaultValue={pageData.discount}
-                                InputContext={InputContext}
-                              />
-                              <Input
-                                type="text"
-                                name="fee"
-                                readOnly
-                                title="Fee"
-                                grow
-                                defaultValue={pageData.fee}
-                                InputContext={InputContext}
-                              />
-                              <Input
-                                type="text"
-                                name="total"
-                                readOnly
-                                title="Total"
-                                grow
-                                defaultValue={pageData.total}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-
-                            {pageData.discounts &&
-                              pageData.discounts.length > 0 &&
-                              pageData.discounts.map((discount, index) => {
-                                return (
-                                  <Scope path={`discounts.${index}`}>
-                                    <InputLine
-                                      title={
-                                        index === 0 ? "Applied Discounts" : ""
-                                      }
-                                    >
-                                      <Input
-                                        type="text"
-                                        name="name"
-                                        grow
-                                        readOnly
-                                        value={discount.name}
-                                        InputContext={InputContext}
-                                      />
-                                      <Input
-                                        type="text"
-                                        name="value"
-                                        readOnly
-                                        value={
-                                          (discount.percent ? "" : "$ ") +
-                                          discount.value +
-                                          (discount.percent ? " %" : "")
-                                        }
-                                        InputContext={InputContext}
-                                      />
-                                    </InputLine>
-                                  </Scope>
-                                );
-                              })}
+                            <FindGeneric
+                              route="paymentmethods"
+                              title="Payment Methods"
+                              scope="paymentMethod"
+                              required
+                              InputContext={InputContext}
+                              defaultValue={{
+                                id: pageData.paymentMethod.id,
+                                description: pageData.paymentMethod.description,
+                                platform: pageData.paymentMethod.platform,
+                              }}
+                              fields={[
+                                {
+                                  title: "Description",
+                                  name: "description",
+                                },
+                                {
+                                  title: "Platform",
+                                  name: "platform",
+                                },
+                              ]}
+                            />
 
                             <InputLine title="Details">
                               <Textarea
                                 name="memo"
                                 title="Observations"
-                                readOnly={pageData.is_recurrence}
+                                readOnly={
+                                  pageData.is_recurrence ||
+                                  pageData.balance !== pageData.total
+                                }
                                 rows={3}
                                 grow
                                 defaultValue={pageData.memo}
@@ -645,27 +645,29 @@ export default function PagePreview({
                               />
                             </InputLine>
 
-                            <InputLine>
-                              <SelectPopover
-                                name="chartofaccount_id"
-                                title="Chart of Account"
-                                isSearchable
-                                required
-                                readOnly={pageData.is_recurrence}
-                                grow
-                                defaultValue={
-                                  pageData.chartofaccount_id
-                                    ? pageData.chartOfAccountOptions.find(
-                                        (chartOfAccount) =>
-                                          chartOfAccount.value ===
-                                          pageData.chartofaccount_id
-                                      )
-                                    : null
-                                }
-                                options={pageData.chartOfAccountOptions}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
+                            <FindGeneric
+                              route="chartofaccounts"
+                              title="Chart of Accounts"
+                              scope="chartOfAccount"
+                              required
+                              InputContext={InputContext}
+                              type="expenses"
+                              defaultValue={{
+                                id: pageData.chartOfAccount.id,
+                                code: pageData.chartOfAccount.code,
+                                name: pageData.chartOfAccount.name,
+                              }}
+                              fields={[
+                                {
+                                  title: "Code",
+                                  name: "code",
+                                },
+                                {
+                                  title: "Name",
+                                  name: "name",
+                                },
+                              ]}
+                            />
                           </InputLineGroup>
                         </>
                       ) : (

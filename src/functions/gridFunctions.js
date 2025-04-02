@@ -2,7 +2,18 @@ import api from "~/services/api";
 
 export async function getData(
   route,
-  { limit, page, orderBy, setPages, search, defaultOrderBy }
+  {
+    limit = 50,
+    page = 1,
+    orderBy = null,
+    setPages = () => null,
+    search = null,
+    type = null,
+    defaultOrderBy = {
+      column: "created_at",
+      asc: true,
+    },
+  }
 ) {
   try {
     const response = await api.get(
@@ -16,7 +27,7 @@ export async function getData(
           : defaultOrderBy.asc
           ? "ASC"
           : "DESC"
-      }&search=${search}`
+      }&search=${search}&type=${type}`
     );
     if (response.data.rows) {
       let pages = Math.ceil(response.data.totalRows / limit);

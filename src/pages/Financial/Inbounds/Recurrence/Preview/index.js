@@ -4,13 +4,10 @@ import {
   Building,
   DollarSign,
   HandCoins,
-  Pencil,
   Settings,
-  X,
 } from "lucide-react";
 import React, {
   createContext,
-  useCallback,
   useContext,
   useEffect,
   useRef,
@@ -26,7 +23,7 @@ import FormHeader from "~/components/RegisterForm/FormHeader";
 import Preview from "~/components/Preview";
 import { Zoom, toast } from "react-toastify";
 import api from "~/services/api";
-import { formatter, getPriceLists, getRegistries, today } from "~/functions";
+import { formatter, getRegistries, today } from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
@@ -36,7 +33,8 @@ import { yesOrNoOptions } from "~/functions/selectPopoverOptions";
 import { openPaymentModal } from "~/functions/emergepayfn";
 import { AlertContext } from "~/App";
 import PricesSimulation from "~/components/PricesSimulation";
-import { FullGridContext } from "../..";
+import { FullGridContext } from "../../..";
+import Textarea from "~/components/RegisterForm/Textarea";
 
 export const InputContext = createContext({});
 
@@ -65,7 +63,6 @@ export default function PagePreview({
     },
     receivables: [],
   });
-  const buttonRef = useRef(null);
 
   const [registry, setRegistry] = useState({
     created_by: null,
@@ -522,6 +519,19 @@ export default function PagePreview({
                             )}
                             options={chartOfAccountOptions}
                             InputContext={InputContext}
+                          />
+                        </InputLine>
+                        <InputLine>
+                          <Textarea
+                            name="memo"
+                            title="Memo"
+                            grow
+                            rows={5}
+                            onChange={(el) => {
+                              setSuccessfullyUpdated(false);
+                            }}
+                            InputContext={InputContext}
+                            defaultValue={pageData.memo}
                           />
                         </InputLine>
                         <InputLine title="Autopay">

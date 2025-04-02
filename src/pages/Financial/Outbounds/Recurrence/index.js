@@ -1,40 +1,41 @@
 import React, { useContext, useEffect, useState } from "react";
 import PagePreview from "./Preview";
 import { useSelector } from "react-redux";
-import { FullGridContext } from "..";
+import { FullGridContext } from "../..";
 import { getData } from "~/functions/gridFunctions";
 import PageContainer from "~/components/PageContainer";
 import { AlertContext } from "~/App";
 import api from "~/services/api";
 import { toast } from "react-toastify";
+import { format, parseISO } from "date-fns";
 
-export default function FinancialRecurrence() {
+export default function PayeesRecurrence() {
   const filial = useSelector((state) => state.auth.filial);
-  const defaultOrderBy = { column: "name", asc: true };
+  const defaultOrderBy = { column: "first_due_date", asc: true };
   const defaultGridHeader = [
     {
-      title: "Registration Number",
-      name: "registration_number",
+      title: "Memo",
+      name: "memo",
       type: "text",
       filter: false,
     },
     {
-      title: "Name",
-      name: "name",
-      type: "text",
+      title: "Amount",
+      name: "amount",
+      type: "currency",
       filter: false,
     },
     {
-      title: "Last Name",
-      name: "last_name",
-      type: "text",
+      title: "First Due Date",
+      name: "first_due_date",
+      type: "date",
       filter: false,
     },
     {
-      title: "Has Recurrence",
-      name: "has_recurrence",
-      type: "boolean",
-      filter: true,
+      title: "Issuer",
+      name: ["issuer", "name"],
+      type: "text",
+      filter: false,
     },
   ];
   const [selected, setSelected] = useState([]);
@@ -58,7 +59,7 @@ export default function FinancialRecurrence() {
 
   async function loader() {
     setLoadingData(true);
-    const data = await getData("recurrence", {
+    const data = await getData("payeerecurrences", {
       limit,
       page,
       orderBy,
@@ -72,17 +73,12 @@ export default function FinancialRecurrence() {
       return;
     }
     const gridDataValues = data.map(
-      (
-        { registration_number, id, name, last_name, issuer, canceled_at },
-        index
-      ) => {
-        const hasRecurrence =
-          issuer && issuer.issuer_x_recurrence ? true : false;
+      ({ memo, id, first_due_date, amount, issuer, canceled_at }, index) => {
+        first_due_date = format(parseISO(first_due_date), "yyyy-MM-dd");
         const ret = {
           show: true,
           id,
-          fields: [registration_number, name, last_name, hasRecurrence],
-          selectable: hasRecurrence,
+          fields: [memo, amount, first_due_date, issuer.name],
           canceled: canceled_at,
           page: Math.ceil((index + 1) / limit),
         };
@@ -99,50 +95,11 @@ export default function FinancialRecurrence() {
     }
   }, [opened, filial, orderBy, search, limit]);
 
-  function handleStopRecurrence() {
-    if (selected.length === 0) {
-      return;
-    }
-    alertBox({
-      title: "Attention!",
-      descriptionHTML:
-        "Are you sure you want to stop this recurrence? This action will remove all pending receivables and cannot be undone.",
-      buttons: [
-        {
-          title: "No",
-          class: "cancel",
-        },
-        {
-          title: "Yes",
-          onPress: async () => {
-            for (let student of selected) {
-              try {
-                await api
-                  .delete(`/recurrence/${student.id}`)
-                  .then((response) => {
-                    console.log(response);
-                  })
-                  .catch((err) => {
-                    console.log(err);
-                  });
-              } catch (err) {
-                console.log(err);
-              }
-            }
-            toast("Recurrence stopped!", { autoClose: 1000 });
-            setSelected([]);
-            loader();
-          },
-        },
-      ],
-    });
-  }
-
   return (
     <PageContainer
       FullGridContext={FullGridContext}
       PagePreview={PagePreview}
-      handleNew={false}
+      handleNew={true}
       defaultGridHeader={defaultGridHeader}
       // selection={{
       //   multiple: false,

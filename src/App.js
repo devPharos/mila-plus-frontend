@@ -128,28 +128,56 @@ function App() {
           icon: "SatelliteDish",
         },
         {
-          alias: "financial-recurrence",
-          path: "/Financial/Recurrence",
-          title: "Recurrence",
-          icon: "CalendarSync",
-        },
-        {
           alias: "financial-receivables",
           path: "/Financial/Receivables",
           title: "Receivables",
           icon: "HandCoins",
-        },
-        {
-          alias: "financial-settlement",
-          path: "/Financial/Settlement",
-          title: "Settlement",
-          icon: "ReplaceAll",
+          children: [
+            {
+              alias: "financial-receivables",
+              path: "/Financial/Receivables/Receivables",
+              title: "Receivables",
+              icon: "HandCoins",
+            },
+            {
+              alias: "financial-recurrence",
+              path: "/Financial/Receivables/Recurrence",
+              title: "Recurrence",
+              icon: "CalendarSync",
+            },
+            {
+              alias: "financial-settlement",
+              path: "/Financial/Receivables/Settlement",
+              title: "Settlement",
+              icon: "ReplaceAll",
+            },
+          ],
         },
         {
           alias: "financial-payees",
           path: "/Financial/Payees",
           title: "Payees",
           icon: "BadgeDollarSign",
+          children: [
+            {
+              alias: "financial-payees",
+              path: "/Financial/Payees/Payees",
+              title: "Payees",
+              icon: "BadgeDollarSign",
+            },
+            {
+              alias: "payees-recurrence",
+              path: "/Financial/Payees/Recurrence",
+              title: "Recurrence",
+              icon: "CalendarSync",
+            },
+            {
+              alias: "payees-settlement",
+              path: "/Financial/Payees/Settlement",
+              title: "Settlement",
+              icon: "ReplaceAll",
+            },
+          ],
         },
       ],
     },

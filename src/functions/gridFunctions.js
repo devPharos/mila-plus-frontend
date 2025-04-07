@@ -22,11 +22,11 @@ export async function getData(
     let orderFix = defaultOrderBy.column;
     if (orderBy && page === orderBy.page) {
       orderFix = orderBy.column;
-      searchFix = search;
     } else if (orderBy && orderBy.page) {
       setOrderBy(null);
       setSearch(null);
     }
+    searchFix = search;
     const response = await api.get(
       `/${route}?limit=${limit}&page=${page}&orderBy=${orderFix}&orderASC=${
         orderBy

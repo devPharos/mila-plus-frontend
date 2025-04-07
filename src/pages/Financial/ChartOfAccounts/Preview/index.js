@@ -140,7 +140,7 @@ export default function PagePreview({
     async function getDefaultOptions() {
       try {
         const { data } = await api.get(`chartofaccounts`);
-        const chartsOfAccounts = data
+        const chartsOfAccounts = data.rows
           .filter((f) => f.id !== id)
           .map(({ id: chartId, name, code, Father }) => {
             let chartName = "";

@@ -297,7 +297,7 @@ export default function PagePreview({
           `/chartofaccounts?type=expenses`
         );
 
-        const chartOfAccountOptions = chartOfAccountData.data
+        const chartOfAccountOptions = chartOfAccountData.data.rows
           .filter((f) => f.id !== id)
           .map((f) => {
             return {

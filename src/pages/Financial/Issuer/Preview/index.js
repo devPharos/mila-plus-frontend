@@ -179,7 +179,7 @@ export default function PagePreview({
             return { value: f.id, label: f.name };
           });
 
-        const merchantOptions = merchantData.data.map((m) => {
+        const merchantOptions = merchantData.data.rows.map((m) => {
           return { value: m.id, label: m.name };
         });
 

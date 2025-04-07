@@ -132,22 +132,29 @@ export default function PagePreview({
 
   async function getPaymentMethodsOptions() {
     const { data } = await api.get("/paymentmethods");
-    const retOptions = data
-      .filter((paymentMethod) =>
-        paymentMethod.type_of_payment.includes("Outbounds")
-      )
-      .map((paymentMethod) => {
-        return { value: paymentMethod.id, label: paymentMethod.description };
-      });
-    setPaymentMethods(retOptions);
+    if (data.rows) {
+      const retOptions = data.rows
+        .filter((paymentMethod) =>
+          paymentMethod.type_of_payment.includes("Outbounds")
+        )
+        .map((paymentMethod) => {
+          return { value: paymentMethod.id, label: paymentMethod.description };
+        });
+      setPaymentMethods(retOptions);
+    }
   }
 
   async function getPaymentCriteriasOptions() {
     const { data } = await api.get("/paymentcriterias");
-    const retOptions = data.map((paymentCriteria) => {
-      return { value: paymentCriteria.id, label: paymentCriteria.description };
-    });
-    setPaymentCriterias(retOptions);
+    if (data.rows) {
+      const retOptions = data.rows.map((paymentCriteria) => {
+        return {
+          value: paymentCriteria.id,
+          label: paymentCriteria.description,
+        };
+      });
+      setPaymentCriterias(retOptions);
+    }
   }
 
   useEffect(() => {

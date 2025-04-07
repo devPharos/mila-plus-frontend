@@ -85,6 +85,11 @@ const FindGeneric = ({
                 type="text"
                 placeholder="Type to search..."
                 className="bg-white border rounded p-2 flex-1"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    loadData(searchRef.current.value);
+                  }
+                }}
               />
               <button
                 type="button"
@@ -133,7 +138,14 @@ const FindGeneric = ({
                       .filter((field) => !field.field)
                       .map((field) => {
                         return (
-                          <td className="bg-white border rounded p-2 hover:bg-gray-100 text-center">
+                          <td
+                            onClick={() => {
+                              setSelected(row);
+                              handleActive();
+                              setSuccessfullyUpdated(false);
+                            }}
+                            className="cursor-pointer bg-white border rounded p-2 hover:bg-gray-100 text-center"
+                          >
                             {row[field.name]}
                           </td>
                         );

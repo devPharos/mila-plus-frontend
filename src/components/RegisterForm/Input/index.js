@@ -22,6 +22,7 @@ const Input = ({
   InputContext = null,
   centeredText = false,
   onChange = () => null,
+  className = null,
   ...rest
 }) => {
   const inputRef = useRef();
@@ -97,7 +98,7 @@ const Input = ({
   const width = shrink ? "w-full md:w-auto max-w-32" : "w-full md:w-auto";
   return (
     <div
-      className={`${
+      className={`${className} ${
         type === "hidden" ? "hidden" : "flex"
       } flex-col justify-center items-start relative ${width} ${
         grow ? "grow" : ""

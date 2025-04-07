@@ -54,6 +54,7 @@ export default function Grid({
                         setOrderBy({
                           column: head.name,
                           asc: orderBy ? !orderBy.asc : true,
+                          page,
                         })
                       }
                       className={`flex flex-row items-center justify-between w-full ${

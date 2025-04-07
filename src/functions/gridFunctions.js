@@ -6,8 +6,10 @@ export async function getData(
     limit = 50,
     page = 1,
     orderBy = null,
+    setOrderBy = () => null,
     setPages = () => null,
     search = null,
+    setSearch = () => null,
     type = null,
     defaultOrderBy = {
       column: "created_at",
@@ -16,10 +18,17 @@ export async function getData(
   }
 ) {
   try {
+    let searchFix = null;
+    let orderFix = defaultOrderBy.column;
+    if (orderBy && page === orderBy.page) {
+      orderFix = orderBy.column;
+      searchFix = search;
+    } else if (orderBy && orderBy.page) {
+      setOrderBy(null);
+      setSearch(null);
+    }
     const response = await api.get(
-      `/${route}?limit=${limit}&page=${page}&orderBy=${
-        orderBy ? orderBy.column : defaultOrderBy.column
-      }&orderASC=${
+      `/${route}?limit=${limit}&page=${page}&orderBy=${orderFix}&orderASC=${
         orderBy
           ? orderBy.asc
             ? "ASC"
@@ -27,7 +36,7 @@ export async function getData(
           : defaultOrderBy.asc
           ? "ASC"
           : "DESC"
-      }&search=${search}&type=${type}`
+      }&search=${searchFix}&type=${type}`
     );
     if (response.data.rows) {
       let pages = Math.ceil(response.data.totalRows / limit);

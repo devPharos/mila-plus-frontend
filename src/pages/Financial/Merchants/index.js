@@ -7,7 +7,7 @@ import { FullGridContext } from "..";
 
 export default function FinancialMerchants() {
   const filial = useSelector((state) => state.auth.filial);
-  const defaultOrderBy = { column: "description", asc: true };
+  const defaultOrderBy = { column: "name", asc: true };
   const defaultGridHeader = [
     {
       title: "Merchant Name",
@@ -56,11 +56,13 @@ export default function FinancialMerchants() {
   const {
     opened,
     orderBy,
+    setOrderBy,
     setGridData,
     page,
     setPages,
     limit,
     search,
+    setSearch,
     setActiveFilters,
     setLoadingData,
   } = useContext(FullGridContext);
@@ -76,9 +78,11 @@ export default function FinancialMerchants() {
         limit,
         page,
         orderBy,
+        setOrderBy,
         setPages,
         setGridData,
         search,
+        setSearch,
         defaultGridHeader,
         defaultOrderBy,
       });

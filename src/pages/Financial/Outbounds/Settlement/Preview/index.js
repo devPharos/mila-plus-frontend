@@ -194,7 +194,7 @@ export default function PagePreview({
           `/chartofaccounts?issuer=${data.issuer_id}`
         );
 
-        const filialOptions = filialData.data
+        const filialOptions = filialData.data.rows
           .filter((f) => f.id !== id)
           .map((f) => {
             return { value: f.id, label: f.name };
@@ -206,7 +206,7 @@ export default function PagePreview({
             return { value: f.id, label: f.name };
           });
 
-        const paymentMethodOptions = paymentMethodData.data
+        const paymentMethodOptions = paymentMethodData.data.rows
           .filter((f) => f.id !== id)
           .map((f) => {
             return { value: f.id, label: f.description.slice(0, 20) };
@@ -223,7 +223,7 @@ export default function PagePreview({
         //     };
         //   });
 
-        const chartOfAccountOptions = chartOfAccountData.data
+        const chartOfAccountOptions = chartOfAccountData.data.rows
           .filter((f) => f.id !== id)
           .map((f) => {
             return {

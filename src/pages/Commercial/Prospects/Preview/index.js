@@ -142,10 +142,12 @@ export default function PagePreview({
   }
   async function getDefaultFilialOptions() {
     const { data } = await api.get("/filials");
-    const retGroupOptions = data.map((filial) => {
-      return { value: filial.id, label: filial.name };
-    });
-    setFilialOptions(retGroupOptions);
+    if (data.rows) {
+      const retGroupOptions = data.rows.map((filial) => {
+        return { value: filial.id, label: filial.name };
+      });
+      setFilialOptions(retGroupOptions);
+    }
   }
   async function getDefaultAgentOptions() {
     const { data } = await api.get("/agents");

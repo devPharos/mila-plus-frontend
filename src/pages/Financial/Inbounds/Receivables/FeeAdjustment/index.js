@@ -191,7 +191,7 @@ export default function FeeAdjustment({
             return { value: f.id, label: f.name };
           });
 
-        const paymentMethodOptions = paymentMethodData.data
+        const paymentMethodOptions = paymentMethodData.data.rows
           .filter((f) => f.id !== id)
           .map((f) => {
             return { value: f.id, label: f.description.slice(0, 20) };
@@ -208,7 +208,7 @@ export default function FeeAdjustment({
         //     };
         //   });
 
-        const chartOfAccountOptions = chartOfAccountData.data
+        const chartOfAccountOptions = chartOfAccountData.data.rows
           .filter((f) => f.id !== id)
           .map((f) => {
             return {

@@ -95,7 +95,7 @@ export default function Settlement({
     async function loadData() {
       const promises = [];
       const paymentMethodData = await api.get(`/paymentmethods`);
-      const paymentMethodOptions = paymentMethodData.data
+      const paymentMethodOptions = paymentMethodData.data.rows
         .filter((f) => f.id !== id && f.type_of_payment.includes("Outbounds"))
         .map((f) => {
           return { value: f.id, label: f.description.slice(0, 20) };

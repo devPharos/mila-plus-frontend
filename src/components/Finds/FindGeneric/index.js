@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { Search, Square, SquareCheck, X } from "lucide-react";
+import { Search, Square, SquareCheck, Trash, X } from "lucide-react";
 import { getData } from "~/functions/gridFunctions";
 import Input from "../../RegisterForm/Input";
 import { Scope } from "@unform/core";
@@ -13,7 +13,10 @@ const FindGeneric = ({
   route = "",
   title = "",
   scope = "",
+  searchDefault = null,
   required = false,
+  readOnly = false,
+  setReturnFindGeneric = () => null,
   ...rest
 }) => {
   const searchRef = useRef();
@@ -23,7 +26,7 @@ const FindGeneric = ({
   async function loadData(search = null) {
     const data = await getData(route, {
       limit: 10,
-      search,
+      search: searchDefault ? searchDefault : search,
       type,
     });
     if (!data) {
@@ -35,22 +38,45 @@ const FindGeneric = ({
 
   function handleActive() {
     setActive(!active);
-    loadData();
+    if (!active) {
+      loadData();
+    }
   }
 
+  function handleSelect(row) {
+    setSelected(row);
+    handleActive();
+    setSuccessfullyUpdated(false);
+    setReturnFindGeneric(row);
+  }
   const { setSuccessfullyUpdated } = useContext(InputContext);
 
   return (
     <InputLine title={title}>
       <div className="flex flex-col justify-center items-start relative w-full">
         <div className="flex flex-row items-center justify-start gap-2 relative w-full">
-          <button
-            type="button"
-            onClick={handleActive}
-            className="bg-white border rounded p-2 mt-4 hover:bg-gray-100"
-          >
-            {!active ? <Search size={16} /> : <X size={16} />}
-          </button>
+          {!readOnly && (
+            <button
+              type="button"
+              onClick={handleActive}
+              className="bg-white border rounded p-2 mt-4 hover:bg-gray-100"
+            >
+              {!active ? <Search size={16} /> : <X size={16} />}
+            </button>
+          )}
+          {/* {selected && (
+            <button
+              type="button"
+              onClick={() => {
+                setSelected({ id: null, name: "" });
+                handleActive();
+                setSuccessfullyUpdated(false);
+              }}
+              className="bg-white border rounded p-2 mt-4 hover:bg-gray-100"
+            >
+              <Trash size={16} />
+            </button>
+          )} */}
           <Scope path={scope}>
             <Input
               type="hidden"
@@ -67,6 +93,7 @@ const FindGeneric = ({
                   title={field.title}
                   required={index === 0 ? required : false}
                   readOnlyOnFocus
+                  readOnly={readOnly}
                   grow
                   defaultValue={
                     field.field ? selected[field.name].id : selected[field.name]
@@ -120,11 +147,7 @@ const FindGeneric = ({
                     <td>
                       <button
                         type="button"
-                        onClick={() => {
-                          setSelected(row);
-                          handleActive();
-                          setSuccessfullyUpdated(false);
-                        }}
+                        onClick={() => handleSelect(row)}
                         className="bg-transparent border-0 w-full text-center flex flex-row justify-center items-center"
                       >
                         {selected.id === row.id ? (
@@ -139,11 +162,7 @@ const FindGeneric = ({
                       .map((field) => {
                         return (
                           <td
-                            onClick={() => {
-                              setSelected(row);
-                              handleActive();
-                              setSuccessfullyUpdated(false);
-                            }}
+                            onClick={() => handleSelect(row)}
                             className="cursor-pointer bg-white border rounded p-2 hover:bg-gray-100 text-center"
                           >
                             {row[field.name]}

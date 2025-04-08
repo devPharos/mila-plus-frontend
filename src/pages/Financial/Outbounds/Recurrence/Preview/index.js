@@ -281,6 +281,7 @@ export default function PagePreview({
                           title="Filial"
                           scope="filial"
                           required
+                          readOnly={id !== "new"}
                           InputContext={InputContext}
                           defaultValue={{
                             id: pageData.filial.id,
@@ -298,6 +299,7 @@ export default function PagePreview({
                           title="Merchants"
                           scope="merchant"
                           required
+                          readOnly={id !== "new"}
                           InputContext={InputContext}
                           defaultValue={{
                             id: pageData.issuer?.merchant?.id,
@@ -334,7 +336,6 @@ export default function PagePreview({
                             defaultValue={pageData.amount}
                             InputContext={InputContext}
                           />
-                          {console.log(pageData.entry_date)}
                           <DatePicker
                             name="entry_date"
                             grow
@@ -408,20 +409,6 @@ export default function PagePreview({
                             },
                           ]}
                         />
-                        {/* <SelectPopover
-                            name="paymentcriteria_id"
-                            required
-                            title="Payment Criteria"
-                            isSearchable
-                            grow
-                            defaultValue={paymentCriterias.filter(
-                              (paymentMethod) =>
-                                paymentMethod.value ===
-                                pageData.paymentcriteria_id
-                            )}
-                            options={paymentCriterias}
-                            InputContext={InputContext}
-                          /> */}
                         <FindGeneric
                           route="chartofaccounts"
                           title="Chart of Accounts"
@@ -429,6 +416,7 @@ export default function PagePreview({
                           required
                           type="expenses"
                           InputContext={InputContext}
+                          searchDefault={pageData.issuer?.merchant?.id}
                           defaultValue={{
                             id: pageData.chartOfAccount?.id,
                             code: pageData.chartOfAccount?.code,

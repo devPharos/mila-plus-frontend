@@ -35,6 +35,7 @@ import { AlertContext } from "~/App";
 import PricesSimulation from "~/components/PricesSimulation";
 import { FullGridContext } from "../../..";
 import Textarea from "~/components/RegisterForm/Textarea";
+import FindGeneric from "~/components/Finds/FindGeneric";
 
 export const InputContext = createContext({});
 
@@ -211,9 +212,9 @@ export default function PagePreview({
   useEffect(() => {
     async function getPageData() {
       await getDefaultFilialOptions();
-      await getPaymentMethodsOptions();
-      await getPaymentCriteriasOptions();
-      await getAllChartOfAccountsByIssuer();
+      // await getPaymentMethodsOptions();
+      // await getPaymentCriteriasOptions();
+      // await getAllChartOfAccountsByIssuer();
       try {
         const { data } = await api.get(`/recurrence/${id}`);
         if (data.issuer) {
@@ -348,39 +349,23 @@ export default function PagePreview({
                         title="GENERAL"
                         activeMenu={activeMenu === "general"}
                       >
-                        {auth.filial.id === 1 ? (
-                          <InputLine title="Filial">
-                            <SelectPopover
-                              name="filial_id"
-                              required
-                              title="Filial"
-                              isSearchable
-                              defaultValue={filialOptions.filter(
-                                (filial) => filial.value === pageData.filial_id
-                              )}
-                              onChange={(el) => {
-                                setPageData({
-                                  ...pageData,
-                                  searchFields: {
-                                    ...pageData.searchFields,
-                                    filial_id: el.value,
-                                  },
-                                });
-                              }}
-                              options={filialOptions}
-                              InputContext={InputContext}
-                            />
-                          </InputLine>
-                        ) : (
-                          <Input
-                            type="hidden"
-                            name="filial_id"
-                            readOnly
-                            grow
-                            defaultValue={pageData?.filial_id}
-                            InputContext={InputContext}
-                          />
-                        )}
+                        <FindGeneric
+                          route="filials"
+                          title="Filial"
+                          scope="filial"
+                          required
+                          InputContext={InputContext}
+                          defaultValue={{
+                            id: pageData.filial?.id,
+                            name: pageData.filial?.name,
+                          }}
+                          fields={[
+                            {
+                              title: "Name",
+                              name: "name",
+                            },
+                          ]}
+                        />
                         <InputLine title="Student">
                           <Input
                             type="hidden"
@@ -481,7 +466,80 @@ export default function PagePreview({
                             InputContext={InputContext}
                           />
                         </InputLine>
-                        <InputLine>
+                        <FindGeneric
+                          route="paymentmethods"
+                          title="Payment Methods"
+                          scope="paymentMethod"
+                          required
+                          InputContext={InputContext}
+                          defaultValue={{
+                            id: pageData.issuer?.issuer_x_recurrence
+                              ?.paymentMethod?.id,
+                            description:
+                              pageData.issuer?.issuer_x_recurrence
+                                ?.paymentMethod?.description,
+                            platform:
+                              pageData.issuer?.issuer_x_recurrence
+                                ?.paymentMethod?.platform,
+                          }}
+                          fields={[
+                            {
+                              title: "Description",
+                              name: "description",
+                            },
+                            {
+                              title: "Platform",
+                              name: "platform",
+                            },
+                          ]}
+                        />
+                        <FindGeneric
+                          route="paymentcriterias"
+                          title="Payment Criterias"
+                          scope="paymentCriteria"
+                          required
+                          InputContext={InputContext}
+                          defaultValue={{
+                            id: pageData.issuer?.issuer_x_recurrence
+                              ?.paymentCriteria?.id,
+                            description:
+                              pageData.issuer?.issuer_x_recurrence
+                                ?.paymentCriteria?.description,
+                          }}
+                          fields={[
+                            {
+                              title: "Description",
+                              name: "description",
+                            },
+                          ]}
+                        />
+                        <FindGeneric
+                          route="chartofaccounts"
+                          title="Chart of Accounts"
+                          scope="chartOfAccount"
+                          required
+                          type="receivables"
+                          InputContext={InputContext}
+                          defaultValue={{
+                            id: pageData.issuer?.issuer_x_recurrence
+                              ?.chartOfAccount?.id,
+                            code: pageData.issuer?.issuer_x_recurrence
+                              ?.chartOfAccount?.code,
+                            name: pageData.issuer?.issuer_x_recurrence
+                              ?.chartOfAccount?.name,
+                          }}
+                          fields={[
+                            {
+                              title: "Code",
+                              name: "code",
+                            },
+                            {
+                              title: "Name",
+                              name: "name",
+                            },
+                          ]}
+                        />
+                        {/* <InputLine>
                           <SelectPopover
                             name="paymentmethod_id"
                             required
@@ -527,7 +585,7 @@ export default function PagePreview({
                             options={chartOfAccountOptions}
                             InputContext={InputContext}
                           />
-                        </InputLine>
+                        </InputLine> */}
                         <InputLine>
                           <Textarea
                             name="memo"

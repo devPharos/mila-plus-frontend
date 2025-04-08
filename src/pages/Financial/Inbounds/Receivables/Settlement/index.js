@@ -23,6 +23,7 @@ import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import PricesSimulation from "~/components/PricesSimulation";
 import { Scope } from "@unform/core";
 import Textarea from "~/components/RegisterForm/Textarea";
+import FindGeneric from "~/components/Finds/FindGeneric";
 
 export const InputContext = createContext({});
 
@@ -145,12 +146,6 @@ export default function Settlement({
   useEffect(() => {
     async function loadData() {
       const promises = [];
-      const paymentMethodData = await api.get(`/paymentmethods`);
-      const paymentMethodOptions = paymentMethodData.data.rows
-        .filter((f) => f.id !== id)
-        .map((f) => {
-          return { value: f.id, label: f.description.slice(0, 20) };
-        });
       selected.map((receivable) => {
         promises.push(
           api
@@ -169,7 +164,6 @@ export default function Settlement({
           ...pageData,
           receivables: data,
           loaded: true,
-          paymentMethodOptions,
           student: {
             ...student,
             searchFields: {
@@ -306,20 +300,7 @@ export default function Settlement({
                                   InputContext={InputContext}
                                   onChange={(value) => handleValueChange(value)}
                                 />
-                                <SelectPopover
-                                  name="paymentmethod_id"
-                                  grow
-                                  title="Payment Method"
-                                  required
-                                  isSearchable
-                                  options={pageData.paymentMethodOptions}
-                                  defaultValue={pageData.paymentMethodOptions.find(
-                                    (paymentMethod) =>
-                                      paymentMethod.value ===
-                                      pageData.receivables[0].paymentmethod_id
-                                  )}
-                                  InputContext={InputContext}
-                                />
+
                                 <DatePicker
                                   name="settlement_date"
                                   grow
@@ -329,6 +310,33 @@ export default function Settlement({
                                   InputContext={InputContext}
                                 />
                               </InputLine>
+                              <FindGeneric
+                                route="paymentmethods"
+                                title="Payment Methods"
+                                scope="paymentMethod"
+                                required
+                                InputContext={InputContext}
+                                type="Inbounds"
+                                defaultValue={{
+                                  id: pageData.receivables[0].paymentMethod?.id,
+                                  description:
+                                    pageData.receivables[0].paymentMethod
+                                      ?.description,
+                                  platform:
+                                    pageData.receivables[0].paymentMethod
+                                      ?.platform,
+                                }}
+                                fields={[
+                                  {
+                                    title: "Description",
+                                    name: "description",
+                                  },
+                                  {
+                                    title: "Platform",
+                                    name: "platform",
+                                  },
+                                ]}
+                              />
                               <InputLine>
                                 <Textarea
                                   name="settlement_memo"

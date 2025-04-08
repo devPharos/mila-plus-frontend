@@ -18,7 +18,6 @@ export async function getData(
   }
 ) {
   try {
-    let searchFix = null;
     let orderFix = defaultOrderBy.column;
     if (orderBy && page === orderBy.page) {
       orderFix = orderBy.column;
@@ -26,7 +25,6 @@ export async function getData(
       setOrderBy(null);
       setSearch(null);
     }
-    searchFix = search;
     const response = await api.get(
       `/${route}?limit=${limit}&page=${page}&orderBy=${orderFix}&orderASC=${
         orderBy
@@ -36,7 +34,7 @@ export async function getData(
           : defaultOrderBy.asc
           ? "ASC"
           : "DESC"
-      }&search=${searchFix}&type=${type}`
+      }&search=${search}&type=${type}`
     );
     if (response.data.rows) {
       let pages = Math.ceil(response.data.totalRows / limit);

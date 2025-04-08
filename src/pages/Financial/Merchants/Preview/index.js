@@ -1,5 +1,13 @@
 import { Form } from "@unform/web";
-import { Building, ChartGantt, Pencil, Plus, X, Asterisk } from "lucide-react";
+import {
+  Building,
+  ChartGantt,
+  Pencil,
+  Plus,
+  X,
+  Asterisk,
+  Trash,
+} from "lucide-react";
 import React, {
   createContext,
   useContext,
@@ -28,6 +36,8 @@ import { useSelector } from "react-redux";
 import Grid from "~/components/Grid";
 import { FullGridContext } from "../..";
 import PhoneNumberInput from "~/components/RegisterForm/PhoneNumberInput";
+import FindGeneric from "~/components/Finds/FindGeneric";
+import { Scope } from "@unform/core";
 
 export const InputContext = createContext({});
 
@@ -110,6 +120,7 @@ export default function PagePreview({
       filter: true,
     },
   ]);
+  const [returnFindGeneric, setReturnFindGeneric] = useState(null);
 
   const loadOptions = (inputValue, callback) => {
     callback(
@@ -231,10 +242,54 @@ export default function PagePreview({
   }
 
   useEffect(() => {
+    if (returnFindGeneric) {
+      if (
+        pageData.merchantxchartofaccounts.find(
+          (el) => el.id === returnFindGeneric.id
+        )
+      ) {
+        toast("Chart of Account already added!", {
+          autoClose: 1000,
+          type: "info",
+          transition: Zoom,
+        });
+        setReturnFindGeneric(null);
+        return;
+      } else {
+        setPageData({
+          ...pageData,
+          merchantxchartofaccounts: [
+            ...pageData.merchantxchartofaccounts,
+            returnFindGeneric,
+          ],
+        });
+      }
+    }
+  }, [returnFindGeneric]);
+
+  function removeChartOfAccount(id) {
+    setPageData({
+      ...pageData,
+      merchantxchartofaccounts: pageData.merchantxchartofaccounts.filter(
+        (el) => el.id !== id
+      ),
+    });
+  }
+
+  useEffect(() => {
     async function getPageData() {
       try {
         const { data } = await api.get(`/merchants/${id}`);
-        setPageData({ ...data, loaded: true });
+        let { merchantxchartofaccounts } = data;
+        merchantxchartofaccounts = data.merchantxchartofaccounts.map((el) => {
+          console.log(el.chartOfAccount);
+          return {
+            id: el.chartOfAccount.id,
+            code: el.chartOfAccount.code,
+            name: el.chartOfAccount.name,
+          };
+        });
+        setPageData({ ...data, loaded: true, merchantxchartofaccounts });
 
         const {
           created_by,
@@ -255,29 +310,6 @@ export default function PagePreview({
         });
 
         setRegistry(registries);
-
-        const gridDataValue = data?.merchantxchartofaccounts.map(
-          ({ canceled_at, id, chartOfAccount }) => ({
-            show: true,
-            id,
-            fields: [
-              chartOfAccount.code,
-              chartOfAccount.name,
-              chartOfAccount.code.substring(0, 2) === "01"
-                ? "Receipts"
-                : "Expenses",
-              chartOfAccount.visibility,
-            ],
-            canceled: canceled_at,
-          })
-        );
-
-        setNewMerchantxchartofaccounts(
-          data?.merchantxchartofaccounts.map(({ chartOfAccount }) => ({
-            chartofaccount_id: chartOfAccount.id,
-          }))
-        );
-        setGridData(gridDataValue);
       } catch (err) {
         console.log(err);
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
@@ -336,8 +368,6 @@ export default function PagePreview({
           )
       );
 
-      console.log(newChartOfAccountOptions);
-
       setChartOfAccountOptions(newChartOfAccountOptions);
     }
   }, []);
@@ -350,8 +380,6 @@ export default function PagePreview({
             (el2) => el2.chartofaccount_id === el.value
           )
       );
-
-      console.log(newChartOfAccountOptions);
 
       setChartOfAccountOptions(newChartOfAccountOptions);
     }
@@ -428,183 +456,88 @@ export default function PagePreview({
                         title="Chart of Accounts"
                         activeMenu={activeMenu === "Chart of Accounts"}
                       >
-                        <InputLine title="Chart of Accounts">
-                          <div className=" flex flex-col justify-center items-start relative w-full">
-                            <div className="px-1 text-xs flex flex-row justify-between items-center">
-                              Chart of Account
-                            </div>
-                            <div
-                              className={`text-sm focus:outline-none flex-1 w-full bg-transparent`}
-                            >
-                              <AsyncSelect
-                                type="hidden"
-                                id="chartofaccount_id"
-                                name="chartofaccount_id"
-                                cacheOptions
-                                isClearable={false}
-                                loadOptions={loadOptions}
-                                defaultOptions={chartOfAccountOptions}
-                                isSearchable
-                                ref={generalForm}
-                                value={chartOfAccountSelected}
-                                onChange={handleChanged}
-                                classNamePrefix="react-select"
-                                className={`rounded-lg text-sm focus:outline-none flex-1 w-full bg-transparent text-left relative`}
-                              />
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => {
-                              if (chartOfAccountSelected) {
-                                const chartOfAccountDataValue =
-                                  chartOfAccountData.find(
-                                    (el) =>
-                                      el.id === chartOfAccountSelected.value
-                                  );
-
-                                const chartOfAccountDataValueExists =
-                                  newMerchantxchartofaccounts.find(
-                                    (el) =>
-                                      el.chartofaccount_id ===
-                                      chartOfAccountDataValue.id
-                                  );
-
-                                if (chartOfAccountDataValueExists) {
-                                  toast("Chart of Account already added!", {
-                                    autoClose: 1000,
-                                    type: "info",
-                                    transition: Zoom,
-                                  });
-
-                                  const newChartOfAccountOptions =
-                                    chartOfAccountOptions.filter(
-                                      (el) =>
-                                        !newMerchantxchartofaccounts.find(
-                                          (el2) =>
-                                            el2.chartofaccount_id === el.value
-                                        )
-                                    );
-
-                                  console.log(newChartOfAccountOptions);
-
-                                  setChartOfAccountOptions(
-                                    newChartOfAccountOptions
-                                  );
-
-                                  setChartOfAccountSelected(null);
-                                } else if (chartOfAccountDataValue) {
-                                  toast("Chart of Account already added!", {
-                                    autoClose: 1000,
-                                    type: "info",
-                                    transition: Zoom,
-                                  });
-
-                                  // validar se o valor ja esta no grid e se estiver nao adicionar
-                                  const gridDataValue = gridData?.find(
-                                    (el) =>
-                                      el.id === chartOfAccountSelected.value
-                                  );
-
-                                  if (!gridDataValue) {
-                                    setGridData([
-                                      ...gridData,
-                                      {
-                                        show: true,
-                                        id: chartOfAccountDataValue.id,
-                                        fields: [
-                                          chartOfAccountDataValue.code,
-                                          chartOfAccountDataValue.name,
-                                          chartOfAccountDataValue.code.substring(
-                                            0,
-                                            2
-                                          ) === "01"
-                                            ? "Receipts"
-                                            : "Expenses",
-                                          chartOfAccountDataValue.visibility,
-                                        ],
-                                      },
-                                    ]);
-
-                                    setChartOfAccountOptions(
-                                      chartOfAccountOptions.filter(
-                                        (el) =>
-                                          el.value !==
-                                          chartOfAccountDataValue.id
-                                      )
-                                    );
-
-                                    setNewMerchantxchartofaccounts([
-                                      ...newMerchantxchartofaccounts,
-                                      {
-                                        chartofaccount_id:
-                                          chartOfAccountDataValue.id,
-                                      },
-                                    ]);
-
-                                    setSuccessfullyUpdated(false);
-
-                                    setPageData({
-                                      ...pageData,
-                                      merchantxchartofaccounts:
-                                        newMerchantxchartofaccounts,
-                                    });
-
-                                    setChartOfAccountSelected(null);
-                                  }
-                                }
-                              }
-                            }}
-                            type="button"
-                            className="bg-mila_orange text-white rounded-md p-1  h-10 flex flex-row items-center justify-center text-xs gap-1"
-                          >
-                            Add <Plus size={16} />
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (gridData.length > 0) {
-                                setGridData([]);
-
-                                setChartOfAccountOptions([
-                                  ...gridData.map((el) => ({
-                                    value: el.id,
-                                    label: el.fields[1],
-                                  })),
-                                  ...chartOfAccountOptions,
-                                ]);
-
-                                setNewMerchantxchartofaccounts([]);
-
-                                setPageData({
-                                  ...pageData,
-                                  merchantxchartofaccounts: [],
-                                });
-
-                                setChartOfAccountSelected(null);
-
-                                setSuccessfullyUpdated(false);
-
-                                toast("Chart of Accounts cleared!", {
-                                  autoClose: 1000,
-                                  type: "info",
-                                  transition: Zoom,
-                                });
-                              }
-                            }}
-                            type="button"
-                            className="bg-secondary text-white rounded-md p-1  h-10 flex flex-row items-center justify-center text-xs gap-1"
-                          >
-                            Clear <Asterisk size={16} />
-                          </button>
-                        </InputLine>
+                        <FindGeneric
+                          route="chartofaccounts"
+                          title="Search to add a Chart of Account"
+                          scope="chartOfAccount"
+                          type="expenses"
+                          setReturnFindGeneric={setReturnFindGeneric}
+                          InputContext={InputContext}
+                          defaultValue={{
+                            id: pageData.issuer?.issuer_x_recurrence
+                              ?.chartOfAccount?.id,
+                            code: pageData.issuer?.issuer_x_recurrence
+                              ?.chartOfAccount?.code,
+                            name: pageData.issuer?.issuer_x_recurrence
+                              ?.chartOfAccount?.name,
+                          }}
+                          fields={[
+                            {
+                              title: "Code",
+                              name: "code",
+                            },
+                            {
+                              title: "Name",
+                              name: "name",
+                            },
+                          ]}
+                        />
 
                         <InputLine title="Merchant x Chart of Accounts">
-                          <Grid
-                            gridData={gridData}
-                            gridHeader={gridHeader}
-                            orderBy={orderBy}
-                            setOrderBy={setOrderBy}
-                            handleOpened={handleOpened}
-                          />
+                          <div className="flex flex-col justify-center items-start relative w-full">
+                            {pageData.merchantxchartofaccounts
+                              .sort((a, b) => a.code - b.code)
+                              .map((chartofaccount, index) => {
+                                return (
+                                  <div
+                                    className="flex flex-row justify-center items-center relative w-full"
+                                    key={index}
+                                  >
+                                    <button
+                                      className="mt-2"
+                                      type="button"
+                                      onClick={() => {
+                                        removeChartOfAccount(chartofaccount.id);
+                                        setSuccessfullyUpdated(false);
+                                      }}
+                                    >
+                                      <Trash size={18} />
+                                    </button>
+                                    <Scope
+                                      key={index}
+                                      path={`merchantxchartofaccounts[${index}]`}
+                                    >
+                                      <InputLine>
+                                        <Input
+                                          type="hidden"
+                                          name="id"
+                                          defaultValue={chartofaccount.id}
+                                          InputContext={InputContext}
+                                        />
+                                        <Input
+                                          type="text"
+                                          name="code"
+                                          grow
+                                          readOnly
+                                          title="Code"
+                                          defaultValue={chartofaccount.code}
+                                          InputContext={InputContext}
+                                        />
+                                        <Input
+                                          type="text"
+                                          name="name"
+                                          grow
+                                          readOnly
+                                          title="Name"
+                                          defaultValue={chartofaccount.name}
+                                          InputContext={InputContext}
+                                        />
+                                      </InputLine>
+                                    </Scope>
+                                  </div>
+                                );
+                              })}
+                          </div>
                         </InputLine>
                       </InputLineGroup>
                     </InputContext.Provider>
@@ -641,27 +574,23 @@ export default function PagePreview({
                             title="GENERAL"
                             activeMenu={activeMenu === "general"}
                           >
-                            {auth.filial.id === 1 && (
-                              <InputLine title="Filial">
-                                <SelectPopover
-                                  name="filial_id"
-                                  required
-                                  title="Filial"
-                                  isSearchable
-                                  grow
-                                  defaultValue={
-                                    pageData.filial_id
-                                      ? {
-                                          value: pageData.filial_id,
-                                          label: pageData.filial.name,
-                                        }
-                                      : null
-                                  }
-                                  options={filialOptions}
-                                  InputContext={InputContext}
-                                />
-                              </InputLine>
-                            )}
+                            <FindGeneric
+                              route="filials"
+                              title="Filial"
+                              scope="filial"
+                              required
+                              InputContext={InputContext}
+                              defaultValue={{
+                                id: pageData.filial.id,
+                                name: pageData.filial.name,
+                              }}
+                              fields={[
+                                {
+                                  title: "Name",
+                                  name: "name",
+                                },
+                              ]}
+                            />
                             <InputLine title="General data">
                               <Input
                                 type="text"

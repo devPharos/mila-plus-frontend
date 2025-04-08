@@ -11,7 +11,7 @@ import { toast } from "react-toastify";
 
 export default function FinancialSettlement() {
   const filial = useSelector((state) => state.auth.filial);
-  const defaultOrderBy = { column: "receivable,due_date", asc: true };
+  const defaultOrderBy = { column: "settlement_date", asc: true };
   const defaultGridHeader = [
     {
       title: "Issuer Name",

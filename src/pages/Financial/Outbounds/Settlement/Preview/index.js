@@ -194,7 +194,7 @@ export default function PagePreview({
           `/chartofaccounts?issuer=${data.issuer_id}`
         );
 
-        const filialOptions = filialData.data.rows
+        const filialOptions = filialData.data
           .filter((f) => f.id !== id)
           .map((f) => {
             return { value: f.id, label: f.name };

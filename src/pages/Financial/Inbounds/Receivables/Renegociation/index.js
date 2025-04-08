@@ -24,6 +24,7 @@ import PricesSimulation from "~/components/PricesSimulation";
 import { Scope } from "@unform/core";
 import Textarea from "~/components/RegisterForm/Textarea";
 import { AlertContext } from "~/App";
+import FindGeneric from "~/components/Finds/FindGeneric";
 
 export const InputContext = createContext({});
 
@@ -112,24 +113,7 @@ export default function Renegociation({
   useEffect(() => {
     async function loadData() {
       const promises = [];
-      const paymentMethodData = await api.get(`/paymentmethods`);
-      const paymentMethodOptions = paymentMethodData.data.rows
-        .filter((f) => f.id !== id)
-        .map((f) => {
-          return { value: f.id, label: f.description.slice(0, 20) };
-        });
-      const paymentCriteriaData = await api.get(`/paymentcriterias`);
 
-      const paymentCriteriaOptions = paymentCriteriaData.data
-        .filter((f) => f.id !== id)
-        .map((f) => {
-          return {
-            value: f.id,
-            label:
-              f.description.slice(0, 20) +
-              (f.recurring_metric ? " - " + f.recurring_metric : ""),
-          };
-        });
       selected.map((receivable) => {
         promises.push(
           api
@@ -151,8 +135,6 @@ export default function Renegociation({
           ...pageData,
           receivables: data,
           loaded: true,
-          paymentMethodOptions,
-          paymentCriteriaOptions,
           student: {
             ...student,
             searchFields: {
@@ -265,7 +247,7 @@ export default function Renegociation({
                                   type="text"
                                   name="installment_amount"
                                   readOnly
-                                  value={pageData.installment_amount}
+                                  defaultValue={pageData.installment_amount}
                                   title="Installment Amount Preview"
                                   InputContext={InputContext}
                                 />
@@ -274,7 +256,7 @@ export default function Renegociation({
                                   name="number_of_installments"
                                   required
                                   title="Qty. of new Installments"
-                                  onChange={(el) => {
+                                  onChange={(value) => {
                                     setPageData({
                                       ...pageData,
                                       installment_amount: (
@@ -283,7 +265,7 @@ export default function Renegociation({
                                             return acc + curr.balance;
                                           },
                                           0
-                                        ) / (el.target.value || 1)
+                                        ) / (value || 1)
                                       ).toFixed(2),
                                     });
                                   }}
@@ -298,38 +280,54 @@ export default function Renegociation({
                                   InputContext={InputContext}
                                 />
                               </InputLine>
-                              <InputLine>
-                                <SelectPopover
-                                  name="payment_method_id"
-                                  required
-                                  title="Payment Method"
-                                  isSearchable
-                                  grow
-                                  defaultValue={pageData.paymentMethodOptions.filter(
-                                    (paymentMethod) =>
-                                      paymentMethod.value ===
-                                      pageData?.issuer?.issuer_x_recurrence
-                                        ?.paymentmethod_id
-                                  )}
-                                  options={pageData.paymentMethodOptions}
-                                  InputContext={InputContext}
-                                />
-                                <SelectPopover
-                                  name="payment_criteria_id"
-                                  required
-                                  title="Payment Criteria"
-                                  isSearchable
-                                  grow
-                                  defaultValue={pageData.paymentCriteriaOptions.filter(
-                                    (paymentMethod) =>
-                                      paymentMethod.value ===
-                                      pageData?.issuer?.issuer_x_recurrence
-                                        ?.paymentcriteria_id
-                                  )}
-                                  options={pageData.paymentCriteriaOptions}
-                                  InputContext={InputContext}
-                                />
-                              </InputLine>
+                              {console.log(pageData.receivables[0])}
+                              <FindGeneric
+                                route="paymentmethods"
+                                title="Payment Methods"
+                                scope="paymentMethod"
+                                required
+                                type="Inbounds"
+                                InputContext={InputContext}
+                                defaultValue={{
+                                  id: pageData.receivables[0].paymentMethod?.id,
+                                  description:
+                                    pageData.receivables[0].paymentMethod
+                                      ?.description,
+                                  platform:
+                                    pageData.receivables[0].paymentMethod
+                                      ?.platform,
+                                }}
+                                fields={[
+                                  {
+                                    title: "Description",
+                                    name: "description",
+                                  },
+                                  {
+                                    title: "Platform",
+                                    name: "platform",
+                                  },
+                                ]}
+                              />
+                              <FindGeneric
+                                route="paymentcriterias"
+                                title="Payment Criterias"
+                                scope="paymentCriteria"
+                                required
+                                InputContext={InputContext}
+                                defaultValue={{
+                                  id: pageData.receivables[0].paymentCriteria
+                                    ?.id,
+                                  description:
+                                    pageData.receivables[0].paymentCriteria
+                                      ?.description,
+                                }}
+                                fields={[
+                                  {
+                                    title: "Description",
+                                    name: "description",
+                                  },
+                                ]}
+                              />
                               <InputLine>
                                 <Textarea
                                   name="observations"
@@ -344,6 +342,7 @@ export default function Renegociation({
                               {pageData.receivables
                                 .sort((a, b) => a.due_date > b.due_date)
                                 .map((receivable, index) => {
+                                  console.log(receivable);
                                   return (
                                     <InputLine
                                       key={index}

@@ -43,6 +43,7 @@ import { FullGridContext } from "../../..";
 import { Scope } from "@unform/core";
 import DatePicker from "~/components/RegisterForm/DatePicker";
 import { AlertContext } from "~/App";
+import FindGeneric from "~/components/Finds/FindGeneric";
 
 export const InputContext = createContext({});
 
@@ -209,7 +210,7 @@ export default function PagePreview({
       refund_amount,
       total,
       refund_reason,
-      paymentmethod_id,
+      paymentMethod,
     } = data;
 
     if (!total || !receivable_id || !refund_amount || !refund_reason) {
@@ -229,7 +230,7 @@ export default function PagePreview({
           receivable_id,
           refund_amount,
           refund_reason,
-          paymentmethod_id,
+          paymentMethod,
         })
         .then(({ data }) => {
           toast(data.message, { autoClose: 1000 });
@@ -269,7 +270,7 @@ export default function PagePreview({
             return { value: f.id, label: f.name };
           });
 
-        const issuerOptions = issuerData.data
+        const issuerOptions = issuerData.data.rows
           .filter((f) => f.id !== id)
           .map((f) => {
             return { value: f.id, label: f.name };
@@ -474,31 +475,27 @@ export default function PagePreview({
                             title="GENERAL"
                             activeMenu={activeMenu === "general"}
                           >
-                            {auth.filial.id === 1 && (
-                              <InputLine title="Filial">
-                                <SelectPopover
-                                  name="filial_id"
-                                  required
-                                  title="Filial"
-                                  readOnly={
-                                    pageData.is_recurrence ||
-                                    pageData.type === "Invoice"
-                                  }
-                                  isSearchable
-                                  grow
-                                  defaultValue={
-                                    pageData.filial_id
-                                      ? pageData.filialOptions.find(
-                                          (filial) =>
-                                            filial.value === pageData.filial_id
-                                        )
-                                      : null
-                                  }
-                                  options={pageData.filialOptions}
-                                  InputContext={InputContext}
-                                />
-                              </InputLine>
-                            )}
+                            <FindGeneric
+                              route="filials"
+                              title="Filial"
+                              scope="filial"
+                              required
+                              readOnly={
+                                pageData.is_recurrence ||
+                                pageData.status !== "Pending"
+                              }
+                              InputContext={InputContext}
+                              defaultValue={{
+                                id: pageData.filial.id,
+                                name: pageData.filial.name,
+                              }}
+                              fields={[
+                                {
+                                  title: "Name",
+                                  name: "name",
+                                },
+                              ]}
+                            />
 
                             <InputLine title="Status">
                               <SelectPopover
@@ -618,6 +615,7 @@ export default function PagePreview({
                                 defaultValue={pageData.discount.toFixed(2)}
                                 InputContext={InputContext}
                               />
+                              {console.log(pageData)}
                               <Input
                                 type="text"
                                 name="fee"
@@ -631,22 +629,22 @@ export default function PagePreview({
                               <Input
                                 type="text"
                                 name="total"
-                                readOnly
                                 placeholder="0.00"
                                 title="Total"
+                                readOnly
                                 grow
-                                value={pageData.total.toFixed(2)}
+                                defaultValue={pageData.total.toFixed(2)}
                                 InputContext={InputContext}
                               />
                               {id !== "new" && (
                                 <Input
                                   type="text"
                                   name="balance"
-                                  readOnly
                                   placeholder="0.00"
-                                  title="Balance"
+                                  title="Total"
+                                  readOnly
                                   grow
-                                  value={pageData.balance.toFixed(2)}
+                                  defaultValue={pageData.balance.toFixed(2)}
                                   InputContext={InputContext}
                                 />
                               )}
@@ -766,6 +764,37 @@ export default function PagePreview({
                                 );
                               })}
 
+                            <FindGeneric
+                              route="issuers"
+                              title="Issuer"
+                              scope="issuer"
+                              required
+                              readOnly={
+                                pageData.is_recurrence ||
+                                pageData.status !== "Pending"
+                              }
+                              InputContext={InputContext}
+                              defaultValue={{
+                                id: pageData.issuer?.id,
+                                name: pageData.issuer?.name,
+                                city: pageData.issuer?.city,
+                                state: pageData.issuer?.state,
+                              }}
+                              fields={[
+                                {
+                                  title: "Name",
+                                  name: "name",
+                                },
+                                {
+                                  title: "City",
+                                  name: "city",
+                                },
+                                {
+                                  title: "State",
+                                  name: "state",
+                                },
+                              ]}
+                            />
                             <InputLine title="Invoice">
                               <SelectPopover
                                 name="type"
@@ -845,30 +874,6 @@ export default function PagePreview({
                                 />
                               )}
                             </InputLine>
-
-                            <InputLine>
-                              <SelectPopover
-                                name="issuer_id"
-                                required
-                                title="Issuer"
-                                readOnly={
-                                  pageData.is_recurrence ||
-                                  pageData.balance !== pageData.total
-                                }
-                                isSearchable
-                                grow
-                                defaultValue={
-                                  pageData.issuer_id
-                                    ? pageData.issuerOptions.find(
-                                        (issuer) =>
-                                          issuer.value === pageData.issuer_id
-                                      )
-                                    : null
-                                }
-                                options={pageData.issuerOptions}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
                             <InputLine>
                               <Input
                                 type="date"
@@ -913,8 +918,36 @@ export default function PagePreview({
                               />
                             </InputLine>
 
+                            <FindGeneric
+                              route="paymentmethods"
+                              title="Payment Method"
+                              scope="paymentMethod"
+                              required
+                              type="Inbounds"
+                              readOnly={
+                                pageData.is_recurrence ||
+                                pageData.status !== "Pending"
+                              }
+                              InputContext={InputContext}
+                              defaultValue={{
+                                id: pageData.paymentMethod?.id,
+                                description:
+                                  pageData.paymentMethod?.description,
+                                platform: pageData.paymentMethod?.platform,
+                              }}
+                              fields={[
+                                {
+                                  title: "Description",
+                                  name: "description",
+                                },
+                                {
+                                  title: "Platform",
+                                  name: "platform",
+                                },
+                              ]}
+                            />
                             <InputLine>
-                              <SelectPopover
+                              {/* <SelectPopover
                                 name="paymentmethod_id"
                                 title="Payment Method"
                                 isSearchable
@@ -935,7 +968,7 @@ export default function PagePreview({
                                 }
                                 options={pageData.paymentMethodOptions}
                                 InputContext={InputContext}
-                              />
+                              /> */}
                               <SelectPopover
                                 name="is_recurrence"
                                 title="Is Recurrence?"
@@ -970,6 +1003,7 @@ export default function PagePreview({
                                 type="text"
                                 name="contract_number"
                                 title="Contract Number"
+                                readOnly={pageData.status !== "Pending"}
                                 grow
                                 defaultValue={pageData.contract_number}
                                 InputContext={InputContext}
@@ -978,13 +1012,41 @@ export default function PagePreview({
                                 type="text"
                                 name="authorization_code"
                                 title="Authorization Code"
+                                readOnly={pageData.status !== "Pending"}
                                 grow
                                 defaultValue={pageData.authorization_code}
                                 InputContext={InputContext}
                               />
                             </InputLine>
 
-                            <InputLine>
+                            <FindGeneric
+                              route="chartofaccounts"
+                              title="Chart of Account"
+                              scope="chartOfAccount"
+                              required
+                              type="receipts"
+                              readOnly={
+                                pageData.is_recurrence ||
+                                pageData.status !== "Pending"
+                              }
+                              InputContext={InputContext}
+                              defaultValue={{
+                                id: pageData.chartOfAccount?.id,
+                                code: pageData.chartOfAccount?.code,
+                                name: pageData.chartOfAccount?.name,
+                              }}
+                              fields={[
+                                {
+                                  title: "Code",
+                                  name: "code",
+                                },
+                                {
+                                  title: "Name",
+                                  name: "name",
+                                },
+                              ]}
+                            />
+                            {/* <InputLine>
                               <SelectPopover
                                 name="chartofaccount_id"
                                 title="Chart of Account"
@@ -1007,7 +1069,7 @@ export default function PagePreview({
                                 options={pageData.chartOfAccountOptions}
                                 InputContext={InputContext}
                               />
-                            </InputLine>
+                            </InputLine> */}
                           </InputLineGroup>
                         </>
                       ) : (
@@ -1086,25 +1148,30 @@ export default function PagePreview({
                                 grow
                                 InputContext={InputContext}
                               />
-                              <SelectPopover
-                                name="paymentmethod_id"
-                                title="Payment Method"
-                                isSearchable
-                                grow
-                                required
-                                defaultValue={pageData.paymentMethodOptions.find(
-                                  (paymentMethod) =>
-                                    paymentMethod.value ===
-                                    "dcbe2b5b-c088-4107-ae32-efb4e7c4b161"
-                                )}
-                                options={pageData.paymentMethodOptions.filter(
-                                  (paymentMethod) =>
-                                    paymentMethod.value ===
-                                    "dcbe2b5b-c088-4107-ae32-efb4e7c4b161"
-                                )}
-                                InputContext={InputContext}
-                              />
                             </InputLine>
+                            <FindGeneric
+                              route="paymentmethods"
+                              title="Payment Method"
+                              scope="paymentMethod"
+                              required
+                              InputContext={InputContext}
+                              defaultValue={{
+                                id: pageData.paymentMethod?.id,
+                                description:
+                                  pageData.paymentMethod?.description,
+                                platform: pageData.paymentMethod?.platform,
+                              }}
+                              fields={[
+                                {
+                                  title: "Description",
+                                  name: "description",
+                                },
+                                {
+                                  title: "Platform",
+                                  name: "platform",
+                                },
+                              ]}
+                            />
 
                             <InputLine title="Details">
                               <Textarea

@@ -11,7 +11,7 @@ import { toast } from "react-toastify";
 
 export default function PayeesSettlement() {
   const filial = useSelector((state) => state.auth.filial);
-  const defaultOrderBy = { column: "payee,due_date", asc: true };
+  const defaultOrderBy = { column: "created_at", asc: false };
   const defaultGridHeader = [
     {
       title: "Issuer Name",
@@ -118,7 +118,7 @@ export default function PayeesSettlement() {
             fields: [
               payee.issuer.name,
               payee.filial.name,
-              "I" + payee.invoice_number.toString().padStart(6, "0"),
+              payee.invoice_number.toString(),
               format(parseISO(payee.entry_date), "yyyy-MM-dd"),
               format(parseISO(payee.due_date), "yyyy-MM-dd"),
               "$ " + amount.toFixed(2),

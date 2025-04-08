@@ -157,7 +157,7 @@ export default function FinancialPayees() {
           fields: [
             issuer.name,
             filial.name,
-            invoice_number ? invoice_number.toString().padStart(9, "0") : null,
+            invoice_number ? invoice_number.toString() : null,
             format(parseISO(due_date), "yyyy-MM-dd"),
             "$ " + amount.toFixed(2),
             "$ " + discount.toFixed(2),

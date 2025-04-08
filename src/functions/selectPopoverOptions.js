@@ -210,6 +210,10 @@ export const typeOfPaymentOptions = [
 
 export const paymentPlatformOptions = [
   {
+    value: "",
+    label: "Select...",
+  },
+  {
     value: "Gravity - Online",
     label: "Gravity - Online",
   },

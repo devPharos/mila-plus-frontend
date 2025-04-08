@@ -26,6 +26,7 @@ import { format, parseISO } from "date-fns";
 import { receivableStatusesOptions } from "~/functions/selectPopoverOptions";
 import { FullGridContext } from "../../..";
 import { Scope } from "@unform/core";
+import FindGeneric from "~/components/Finds/FindGeneric";
 
 export const InputContext = createContext({});
 
@@ -171,62 +172,8 @@ export default function FeeAdjustment({
           data = receivableData;
         }
 
-        const filialData = await api.get(`/filials`);
-        const issuerData = await api.get(`/issuers`);
-        const paymentMethodData = await api.get(`/paymentmethods`);
-        // const paymentCriteriaData = await api.get(`/paymentcriterias`);
-        const chartOfAccountData = await api.get(
-          `/chartofaccounts?issuer=${data.issuer_id}`
-        );
-
-        const filialOptions = filialData.data
-          .filter((f) => f.id !== id)
-          .map((f) => {
-            return { value: f.id, label: f.name };
-          });
-
-        const issuerOptions = issuerData.data
-          .filter((f) => f.id !== id)
-          .map((f) => {
-            return { value: f.id, label: f.name };
-          });
-
-        const paymentMethodOptions = paymentMethodData.data.rows
-          .filter((f) => f.id !== id)
-          .map((f) => {
-            return { value: f.id, label: f.description.slice(0, 20) };
-          });
-
-        // const paymentCriteriaOptions = paymentCriteriaData.data
-        //   .filter((f) => f.id !== id)
-        //   .map((f) => {
-        //     return {
-        //       value: f.id,
-        //       label:
-        //         f.description.slice(0, 20) +
-        //         (f.recurring_metric ? " - " + f.recurring_metric : ""),
-        //     };
-        //   });
-
-        const chartOfAccountOptions = chartOfAccountData.data.rows
-          .filter((f) => f.id !== id)
-          .map((f) => {
-            return {
-              value: f.id,
-              label: `${
-                f.Father?.Father?.Father?.name
-                  ? `${f.Father?.Father?.Father?.name} > `
-                  : ""
-              }${f.Father?.Father?.name ? `${f.Father?.Father?.name} > ` : ""}${
-                f.Father?.name ? `${f.Father?.name} > ` : ""
-              }${f.name}`,
-            };
-          });
-
         setPageData({
           ...data,
-          filialOptions,
-          issuerOptions,
           loaded: true,
         });
 
@@ -297,14 +244,7 @@ export default function FeeAdjustment({
                       <>
                         <FormHeader
                           access={access}
-                          title={
-                            pageData.issuer_id
-                              ? pageData.issuerOptions.find(
-                                  (issuer) =>
-                                    issuer.value === pageData.issuer_id
-                                ).label
-                              : null
-                          }
+                          title="Fee adjustments"
                           registry={registry}
                           InputContext={InputContext}
                         />
@@ -504,29 +444,34 @@ export default function FeeAdjustment({
                             )}
                           </InputLine>
 
-                          <InputLine>
-                            <SelectPopover
-                              name="issuer_id"
-                              required
-                              title="Issuer"
-                              readOnly={
-                                pageData.is_recurrence ||
-                                pageData.balance !== pageData.total
-                              }
-                              isSearchable
-                              grow
-                              defaultValue={
-                                pageData.issuer_id
-                                  ? pageData.issuerOptions.find(
-                                      (issuer) =>
-                                        issuer.value === pageData.issuer_id
-                                    )
-                                  : null
-                              }
-                              options={pageData.issuerOptions}
-                              InputContext={InputContext}
-                            />
-                          </InputLine>
+                          <FindGeneric
+                            route="issuers"
+                            title="Issuer"
+                            scope="issuer"
+                            required
+                            readOnly
+                            InputContext={InputContext}
+                            defaultValue={{
+                              id: pageData.issuer?.id,
+                              name: pageData.issuer?.name,
+                              city: pageData.issuer?.city,
+                              state: pageData.issuer?.state,
+                            }}
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                              {
+                                title: "City",
+                                name: "city",
+                              },
+                              {
+                                title: "State",
+                                name: "state",
+                              },
+                            ]}
+                          />
                           <InputLine>
                             <Input
                               type="date"

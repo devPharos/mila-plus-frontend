@@ -26,6 +26,7 @@ import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
 import { FullGridContext } from "../..";
 import PhoneNumberInput from "~/components/RegisterForm/PhoneNumberInput";
+import FindGeneric from "~/components/Finds/FindGeneric";
 
 export const InputContext = createContext({});
 
@@ -169,19 +170,7 @@ export default function PagePreview({
     }
     async function getDefaultOptions() {
       try {
-        const filialData = await api.get(`/filials`);
-        const merchantData = await api.get(`/merchants`);
         const studentData = await api.get(`/students`);
-
-        const filialOptions = filialData.data
-          .filter((f) => f.id !== id)
-          .map((f) => {
-            return { value: f.id, label: f.name };
-          });
-
-        const merchantOptions = merchantData.data.rows.map((m) => {
-          return { value: m.id, label: m.name };
-        });
 
         const studentOptions = studentData.data.map((s) => {
           return {
@@ -190,7 +179,6 @@ export default function PagePreview({
           };
         });
 
-        setMerchantOptions(merchantOptions);
         setStudentOptions(studentOptions);
         setFilialOptions(filialOptions);
       } catch (err) {
@@ -269,29 +257,68 @@ export default function PagePreview({
                           title="GENERAL"
                           activeMenu={activeMenu === "general"}
                         >
-                          {auth.filial.id === 1 && (
-                            <InputLine title="Filial">
-                              <SelectPopover
-                                name="filial_id"
-                                required
-                                title="Filial"
-                                isSearchable
-                                grow
-                                defaultValue={
-                                  pageData.filial_id
-                                    ? {
-                                        value: pageData.filial_id,
-                                        label: pageData.filial.name,
-                                      }
-                                    : null
-                                }
-                                options={filialOptions}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-                          )}
-                          <InputLine title="Merchant / Student">
-                            <SelectPopover
+                          <FindGeneric
+                            route="filials"
+                            title="Filial"
+                            scope="filial"
+                            required
+                            InputContext={InputContext}
+                            defaultValue={{
+                              id: pageData.filial?.id,
+                              name: pageData.filial?.name,
+                            }}
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                          />
+                          <FindGeneric
+                            route="merchants"
+                            title="Merchant"
+                            scope="merchant"
+                            InputContext={InputContext}
+                            defaultValue={{
+                              id: pageData.merchant?.id,
+                              name: pageData.merchant?.name,
+                              ein: pageData.merchant?.ein,
+                            }}
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                              {
+                                title: "EIN",
+                                name: "ein",
+                              },
+                            ]}
+                          />
+                          {/* <FindGeneric
+                            route="students"
+                            title="Student"
+                            scope="student"
+                            InputContext={InputContext}
+                            defaultValue={{
+                              id: pageData.student?.id,
+                              name: pageData.student?.name,
+                              registration_number:
+                                pageData.student?.registration_number,
+                            }}
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                              {
+                                title: "Registration Number",
+                                name: "registration_number",
+                              },
+                            ]}
+                          /> */}
+                          {/* <InputLine title="Merchant / Student"> */}
+                          {/* <SelectPopover
                               name="merchant_id"
                               title="Merchant"
                               isSearchable
@@ -302,8 +329,9 @@ export default function PagePreview({
                               )}
                               options={merchantOptions}
                               InputContext={InputContext}
-                            />
-                            <h4 className="text-xs text-zinc-500 mt-4">or</h4>
+                            /> */}
+                          {/* <h4 className="text-xs text-zinc-500 mt-4">or</h4> */}
+                          <InputLine title="Student">
                             <SelectPopover
                               name="student_id"
                               title="Student"
@@ -317,6 +345,7 @@ export default function PagePreview({
                               InputContext={InputContext}
                             />
                           </InputLine>
+                          {/* </InputLine> */}
 
                           <InputLine title="General data">
                             <Input

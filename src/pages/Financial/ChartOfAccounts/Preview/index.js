@@ -19,6 +19,7 @@ import { getRegistries, handleUpdatedFields } from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { FullGridContext } from "../..";
+import FindGeneric from "~/components/Finds/FindGeneric";
 
 export const InputContext = createContext({});
 
@@ -228,8 +229,30 @@ export default function PagePreview({
                           title="GENERAL"
                           activeMenu={activeMenu === "general"}
                         >
+                          <FindGeneric
+                            route="chartofaccounts"
+                            title="Father Account"
+                            scope="Father"
+                            required
+                            InputContext={InputContext}
+                            defaultValue={{
+                              id: pageData.Father?.id,
+                              code: pageData.Father?.code,
+                              name: pageData.Father?.name,
+                            }}
+                            fields={[
+                              {
+                                title: "Code",
+                                name: "code",
+                              },
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                          />
                           <InputLine title="General Data">
-                            <SelectPopover
+                            {/* <SelectPopover
                               type="text"
                               isSearchable
                               name="father_id"
@@ -254,7 +277,7 @@ export default function PagePreview({
                                   : null
                               }
                               InputContext={InputContext}
-                            />
+                            /> */}
                             <Input
                               type="text"
                               name="name"

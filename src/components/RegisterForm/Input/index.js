@@ -48,7 +48,7 @@ const Input = ({
   const { generalForm, setSuccessfullyUpdated } = useContext(InputContext);
 
   function handleChanged() {
-    const value = generalForm.current.getFieldValue(name);
+    const value = generalForm?.current?.getFieldValue(name);
     if (onlyUpperCase) {
       generalForm.current.setFieldValue(name, value.toUpperCase());
     }

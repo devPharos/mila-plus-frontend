@@ -124,7 +124,7 @@ export default function PagePreview({
       setTimeout(async () => {
         const { data: recurrenceData } = await api.get(`/recurrence/${id}`);
         api
-          .get(`/receivables?search=${recurrenceData.issuer.id}`)
+          .get(`/receivables?search=${recurrenceData.issuer.id}&limit=100`)
           .then(async ({ data }) => {
             console.log(data);
             const receivables = data.rows;
@@ -219,7 +219,7 @@ export default function PagePreview({
         const { data } = await api.get(`/recurrence/${id}`);
         if (data.issuer) {
           api
-            .get(`/receivables?search=${data.issuer.id}`)
+            .get(`/receivables?search=${data.issuer.id}&limit=100`)
             .then(({ data: dataRec }) => {
               const receivables = dataRec.rows;
               setPageData({
@@ -283,7 +283,7 @@ export default function PagePreview({
       try {
         setPaid(false);
         api
-          .get(`/receivables?search=${pageData.issuer.id}`)
+          .get(`/receivables?search=${pageData.issuer.id}&limit=100`)
           .then(({ data: receivables }) => {
             setPageData({
               ...pageData,

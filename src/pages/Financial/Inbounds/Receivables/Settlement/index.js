@@ -69,10 +69,11 @@ export default function Settlement({
 
   async function handleGeneralFormSubmit(data) {
     setLoading(true);
-    async function handleSettlement(data) {
+    async function handleSettlement(data, approvalData) {
       await api
         .post(`/receivables/settlement`, {
           ...data,
+          approvalData,
           total_amount: totalAmount,
           settlement_date: format(data.settlement_date, "yyyyMMdd"),
         })
@@ -105,7 +106,7 @@ export default function Settlement({
             // (optional) Callback function that gets called after a successful transaction
             onTransactionSuccess: async function (approvalData) {
               setLoading(false);
-              await handleSettlement(data);
+              await handleSettlement(data, approvalData);
               await api
                 .post(`/emergepay/post-back-listener`, {
                   ...approvalData,

@@ -342,9 +342,11 @@ export default function PagePreview({
                               scope="filial"
                               required
                               readOnly={
-                                pageData.is_recurrence ||
-                                pageData.balance !== pageData.total ||
-                                pageData.status !== "Pending"
+                                id !== "new" &&
+                                id !== "new" &&
+                                (pageData.is_recurrence ||
+                                  pageData.balance !== pageData.total ||
+                                  pageData.status !== "Pending")
                               }
                               InputContext={InputContext}
                               defaultValue={{
@@ -385,9 +387,10 @@ export default function PagePreview({
                                 placeholder="0.00"
                                 onlyFloat
                                 readOnly={
-                                  pageData.is_recurrence ||
-                                  pageData.balance !== pageData.total ||
-                                  pageData.status !== "Pending"
+                                  id !== "new" &&
+                                  (pageData.is_recurrence ||
+                                    pageData.balance !== pageData.total ||
+                                    pageData.status !== "Pending")
                                 }
                                 title="Amount"
                                 grow
@@ -406,9 +409,10 @@ export default function PagePreview({
                                 title="Discount"
                                 grow
                                 readOnly={
-                                  pageData.is_recurrence ||
-                                  pageData.balance !== pageData.total ||
-                                  pageData.status !== "Pending"
+                                  id !== "new" &&
+                                  (pageData.is_recurrence ||
+                                    pageData.balance !== pageData.total ||
+                                    pageData.status !== "Pending")
                                 }
                                 defaultValue={
                                   pageData.discount
@@ -423,9 +427,10 @@ export default function PagePreview({
                                 placeholder="0.00"
                                 onlyFloat
                                 readOnly={
-                                  pageData.is_recurrence ||
-                                  pageData.balance !== pageData.total ||
-                                  pageData.status !== "Pending"
+                                  id !== "new" &&
+                                  (pageData.is_recurrence ||
+                                    pageData.balance !== pageData.total ||
+                                    pageData.status !== "Pending")
                                 }
                                 title="Fee"
                                 grow
@@ -441,9 +446,10 @@ export default function PagePreview({
                               scope="merchant"
                               required
                               readOnly={
-                                pageData.is_recurrence ||
-                                pageData.balance !== pageData.total ||
-                                pageData.status !== "Pending"
+                                id !== "new" &&
+                                (pageData.is_recurrence ||
+                                  pageData.balance !== pageData.total ||
+                                  pageData.status !== "Pending")
                               }
                               InputContext={InputContext}
                               defaultValue={{
@@ -477,9 +483,10 @@ export default function PagePreview({
                                 required
                                 title="Entry Date"
                                 readOnly={
-                                  pageData.is_recurrence ||
-                                  pageData.balance !== pageData.total ||
-                                  pageData.status !== "Pending"
+                                  id !== "new" &&
+                                  (pageData.is_recurrence ||
+                                    pageData.balance !== pageData.total ||
+                                    pageData.status !== "Pending")
                                 }
                                 grow
                                 defaultValue={
@@ -499,9 +506,10 @@ export default function PagePreview({
                                 required
                                 title="Due Date"
                                 readOnly={
-                                  pageData.is_recurrence ||
-                                  pageData.balance !== pageData.total ||
-                                  pageData.status !== "Pending"
+                                  id !== "new" &&
+                                  (pageData.is_recurrence ||
+                                    pageData.balance !== pageData.total ||
+                                    pageData.status !== "Pending")
                                 }
                                 grow
                                 defaultValue={
@@ -517,7 +525,9 @@ export default function PagePreview({
                               <Input
                                 type="text"
                                 name="invoice_number"
-                                readOnly={pageData.status !== "Pending"}
+                                readOnly={
+                                  id !== "new" && pageData.status !== "Pending"
+                                }
                                 title="Invoice Number"
                                 grow
                                 defaultValue={
@@ -535,7 +545,9 @@ export default function PagePreview({
                               scope="paymentMethod"
                               required
                               InputContext={InputContext}
-                              readOnly={pageData.status !== "Pending"}
+                              readOnly={
+                                id !== "new" && pageData.status !== "Pending"
+                              }
                               defaultValue={{
                                 id: pageData.paymentMethod.id,
                                 description: pageData.paymentMethod.description,
@@ -558,9 +570,10 @@ export default function PagePreview({
                                 name="memo"
                                 title="Observations"
                                 readOnly={
-                                  pageData.is_recurrence ||
-                                  pageData.balance !== pageData.total ||
-                                  pageData.status !== "Pending"
+                                  id !== "new" &&
+                                  (pageData.is_recurrence ||
+                                    pageData.balance !== pageData.total ||
+                                    pageData.status !== "Pending")
                                 }
                                 rows={3}
                                 grow
@@ -574,7 +587,9 @@ export default function PagePreview({
                                 type="text"
                                 name="contract_number"
                                 title="Contract Number"
-                                readOnly={pageData.status !== "Pending"}
+                                readOnly={
+                                  id !== "new" && pageData.status !== "Pending"
+                                }
                                 grow
                                 defaultValue={pageData.contract_number}
                                 InputContext={InputContext}
@@ -583,7 +598,9 @@ export default function PagePreview({
                                 type="text"
                                 name="authorization_code"
                                 title="Authorization Code"
-                                readOnly={pageData.status !== "Pending"}
+                                readOnly={
+                                  id !== "new" && pageData.status !== "Pending"
+                                }
                                 grow
                                 defaultValue={pageData.authorization_code}
                                 InputContext={InputContext}
@@ -595,7 +612,9 @@ export default function PagePreview({
                               title="Chart of Accounts"
                               scope="chartOfAccount"
                               required
-                              readOnly={pageData.status !== "Pending"}
+                              readOnly={
+                                id !== "new" && pageData.status !== "Pending"
+                              }
                               searchDefault={pageData.issuer?.merchant?.id}
                               InputContext={InputContext}
                               type="expenses"

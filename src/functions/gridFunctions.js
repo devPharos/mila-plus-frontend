@@ -12,7 +12,7 @@ export async function getData(
     setSearch = () => null,
     type = null,
     defaultOrderBy = {
-      column: "created_at",
+      column: null,
       asc: true,
     },
   }

@@ -25,7 +25,7 @@ const FindGeneric = ({
   const [selected, setSelected] = useState(defaultValue);
   async function loadData(search = null) {
     const data = await getData(route, {
-      limit: 10,
+      limit: 15,
       search: searchDefault ? searchDefault : search,
       type,
     });
@@ -64,19 +64,6 @@ const FindGeneric = ({
               {!active ? <Search size={16} /> : <X size={16} />}
             </button>
           )}
-          {/* {selected && (
-            <button
-              type="button"
-              onClick={() => {
-                setSelected({ id: null, name: "" });
-                handleActive();
-                setSuccessfullyUpdated(false);
-              }}
-              className="bg-white border rounded p-2 mt-4 hover:bg-gray-100"
-            >
-              <Trash size={16} />
-            </button>
-          )} */}
           <Scope path={scope}>
             <Input
               type="hidden"
@@ -96,7 +83,11 @@ const FindGeneric = ({
                   readOnly={readOnly}
                   grow
                   defaultValue={
-                    field.field ? selected[field.name].id : selected[field.name]
+                    field.field
+                      ? selected[field.name].id
+                      : selected[field.name] === ""
+                      ? " "
+                      : selected[field.name]
                   }
                   InputContext={InputContext}
                 />

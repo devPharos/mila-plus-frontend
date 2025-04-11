@@ -112,14 +112,12 @@ export default function Settlement({
                   justTransaction: true,
                 })
                 .then(async () => {
+                  emergepay.close();
                   return approvalData;
                 })
                 .catch((err) => {
                   console.log(err);
                 });
-              setTimeout(() => {
-                emergepay.close();
-              }, 2000);
             },
             // (optional) Callback function that gets called after a failure occurs during the transaction (such as a declined card)
             onTransactionFailure: function (failureData) {

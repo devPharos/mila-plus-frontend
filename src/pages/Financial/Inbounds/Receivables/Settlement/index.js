@@ -104,34 +104,18 @@ export default function Settlement({
             // (optional) Callback function that gets called after a successful transaction
             onTransactionSuccess: async function (approvalData) {
               setLoading(false);
-              for (let receivable of data.receivables) {
-                const receivableApprovalData = { ...approvalData };
-                receivableApprovalData.externalTransactionId = receivable.id;
-                receivableApprovalData.amount = (
-                  approvalData.amount / data.receivables.length
-                ).toFixed(2);
-                receivableApprovalData.amountBalance = (
-                  approvalData.amountBalance / data.receivables.length
-                ).toFixed(2);
-                receivableApprovalData.amountProcessed = (
-                  approvalData.amountProcessed / data.receivables.length
-                ).toFixed(2);
-                receivableApprovalData.amountTaxed = (
-                  approvalData.amountTaxed / data.receivables.length
-                ).toFixed(2);
-                receivableApprovalData.amountTipped = (
-                  approvalData.amountTipped / data.receivables.length
-                ).toFixed(2);
-                await api
-                  .post(`/emergepay/post-back-listener`, receivableApprovalData)
-                  .then(async () => {
-                    return receivableApprovalData;
-                  })
-                  .catch((err) => {
-                    console.log(err);
-                  });
-              }
-              // await handleSettlement(data);
+              await handleSettlement({ ...data, approvalData });
+              await api
+                .post(`/emergepay/post-back-listener`, {
+                  ...approvalData,
+                  justTransaction: true,
+                })
+                .then(async () => {
+                  return approvalData;
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
               setTimeout(() => {
                 emergepay.close();
               }, 2000);

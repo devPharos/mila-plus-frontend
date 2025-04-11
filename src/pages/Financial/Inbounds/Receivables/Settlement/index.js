@@ -104,7 +104,7 @@ export default function Settlement({
             // (optional) Callback function that gets called after a successful transaction
             onTransactionSuccess: async function (approvalData) {
               setLoading(false);
-              await handleSettlement({ ...data, approvalData });
+              await handleSettlement(data);
               await api
                 .post(`/emergepay/post-back-listener`, {
                   ...approvalData,

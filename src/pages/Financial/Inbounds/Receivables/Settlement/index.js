@@ -84,7 +84,7 @@ export default function Settlement({
           toast(err.response.data.error, { type: "error", autoClose: 3000 });
         });
     }
-    if (data.paymentmethod_id === "dcbe2b5b-c088-4107-ae32-efb4e7c4b161") {
+    if (data.paymentMethod.platform.includes("Gravity - Online")) {
       const receivable = {
         id: data.receivables[0].id,
         total: parseFloat(data.prices.total_tuition),
@@ -103,16 +103,30 @@ export default function Settlement({
             transactionToken: transactionToken,
             // (optional) Callback function that gets called after a successful transaction
             onTransactionSuccess: async function (approvalData) {
-              // await handleSettlement(data);
               setLoading(false);
-              await api
-                .post(`/emergepay/post-back-listener`, approvalData)
-                .then(async () => {
-                  return approvalData;
-                })
-                .catch((err) => {
-                  console.log(err);
-                });
+              for (let receivable of data.receivables) {
+                const receivableApprovalData = { ...approvalData };
+                receivableApprovalData.externalTransactionId = receivable.id;
+                receivableApprovalData.amount =
+                  approvalData.amount / data.receivables.length;
+                receivableApprovalData.amount_balance =
+                  approvalData.amount_balance / data.receivables.length;
+                receivableApprovalData.amount_processed =
+                  approvalData.amount_processed / data.receivables.length;
+                receivableApprovalData.amount_taxed =
+                  approvalData.amount_taxed / data.receivables.length;
+                receivableApprovalData.amount_tipped =
+                  approvalData.amount_tipped / data.receivables.length;
+                await api
+                  .post(`/emergepay/post-back-listener`, receivableApprovalData)
+                  .then(async () => {
+                    return receivableApprovalData;
+                  })
+                  .catch((err) => {
+                    console.log(err);
+                  });
+              }
+              // await handleSettlement(data);
               setTimeout(() => {
                 emergepay.close();
               }, 2000);

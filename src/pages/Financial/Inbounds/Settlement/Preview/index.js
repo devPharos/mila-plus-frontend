@@ -186,65 +186,8 @@ export default function PagePreview({
           data = receivableData;
         }
 
-        const filialData = await api.get(`/filials`);
-        const issuerData = await api.get(`/issuers`);
-        const paymentMethodData = await api.get(`/paymentmethods`);
-        // const paymentCriteriaData = await api.get(`/paymentcriterias`);
-        const chartOfAccountData = await api.get(
-          `/chartofaccounts?issuer=${data.issuer_id}`
-        );
-
-        const filialOptions = filialData.data
-          .filter((f) => f.id !== id)
-          .map((f) => {
-            return { value: f.id, label: f.name };
-          });
-
-        const issuerOptions = issuerData.data
-          .filter((f) => f.id !== id)
-          .map((f) => {
-            return { value: f.id, label: f.name };
-          });
-
-        const paymentMethodOptions = paymentMethodData.data.rows
-          .filter((f) => f.id !== id)
-          .map((f) => {
-            return { value: f.id, label: f.description.slice(0, 20) };
-          });
-
-        // const paymentCriteriaOptions = paymentCriteriaData.data
-        //   .filter((f) => f.id !== id)
-        //   .map((f) => {
-        //     return {
-        //       value: f.id,
-        //       label:
-        //         f.description.slice(0, 20) +
-        //         (f.recurring_metric ? " - " + f.recurring_metric : ""),
-        //     };
-        //   });
-
-        const chartOfAccountOptions = chartOfAccountData.data.rows
-          .filter((f) => f.id !== id)
-          .map((f) => {
-            return {
-              value: f.id,
-              label: `${
-                f.Father?.Father?.Father?.name
-                  ? `${f.Father?.Father?.Father?.name} > `
-                  : ""
-              }${f.Father?.Father?.name ? `${f.Father?.Father?.name} > ` : ""}${
-                f.Father?.name ? `${f.Father?.name} > ` : ""
-              }${f.name}`,
-            };
-          });
-
         setPageData({
           ...data,
-          filialOptions,
-          issuerOptions,
-          paymentMethodOptions,
-          // paymentCriteriaOptions,
-          chartOfAccountOptions,
           loaded: true,
         });
 

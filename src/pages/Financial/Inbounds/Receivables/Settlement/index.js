@@ -107,16 +107,21 @@ export default function Settlement({
               for (let receivable of data.receivables) {
                 const receivableApprovalData = { ...approvalData };
                 receivableApprovalData.externalTransactionId = receivable.id;
-                receivableApprovalData.amount =
-                  approvalData.amount / data.receivables.length;
-                receivableApprovalData.amount_balance =
-                  approvalData.amount_balance / data.receivables.length;
-                receivableApprovalData.amount_processed =
-                  approvalData.amount_processed / data.receivables.length;
-                receivableApprovalData.amount_taxed =
-                  approvalData.amount_taxed / data.receivables.length;
-                receivableApprovalData.amount_tipped =
-                  approvalData.amount_tipped / data.receivables.length;
+                receivableApprovalData.amount = (
+                  approvalData.amount / data.receivables.length
+                ).toFixed(2);
+                receivableApprovalData.amountBalance = (
+                  approvalData.amount_balance / data.receivables.length
+                ).toFixed(2);
+                receivableApprovalData.amountProcessed = (
+                  approvalData.amount_processed / data.receivables.length
+                ).toFixed(2);
+                receivableApprovalData.amountTaxed = (
+                  approvalData.amount_taxed / data.receivables.length
+                ).toFixed(2);
+                receivableApprovalData.amountTipped = (
+                  approvalData.amount_tipped / data.receivables.length
+                ).toFixed(2);
                 await api
                   .post(`/emergepay/post-back-listener`, receivableApprovalData)
                   .then(async () => {

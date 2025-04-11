@@ -111,16 +111,16 @@ export default function Settlement({
                   approvalData.amount / data.receivables.length
                 ).toFixed(2);
                 receivableApprovalData.amountBalance = (
-                  approvalData.amount_balance / data.receivables.length
+                  approvalData.amountBalance / data.receivables.length
                 ).toFixed(2);
                 receivableApprovalData.amountProcessed = (
-                  approvalData.amount_processed / data.receivables.length
+                  approvalData.amountProcessed / data.receivables.length
                 ).toFixed(2);
                 receivableApprovalData.amountTaxed = (
-                  approvalData.amount_taxed / data.receivables.length
+                  approvalData.amountTaxed / data.receivables.length
                 ).toFixed(2);
                 receivableApprovalData.amountTipped = (
-                  approvalData.amount_tipped / data.receivables.length
+                  approvalData.amountTipped / data.receivables.length
                 ).toFixed(2);
                 await api
                   .post(`/emergepay/post-back-listener`, receivableApprovalData)

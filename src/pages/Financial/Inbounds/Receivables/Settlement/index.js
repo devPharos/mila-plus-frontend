@@ -81,7 +81,8 @@ export default function Settlement({
           handleOpened(null);
         })
         .catch((err) => {
-          toast(err.response.data.error, { type: "error", autoClose: 3000 });
+          console.log(err);
+          // toast(err.response.data.error, { type: "error", autoClose: 3000 });
         });
     }
     if (data.paymentMethod.platform.includes("Gravity - Online")) {
@@ -137,6 +138,9 @@ export default function Settlement({
               setLoading(false);
             },
           });
+        })
+        .catch((err) => {
+          console.log(err);
         });
     } else {
       await handleSettlement(data);

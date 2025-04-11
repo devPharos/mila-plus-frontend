@@ -267,7 +267,7 @@ export default function PagePreview({
                     <>
                       <FormHeader
                         access={access}
-                        title={pageData?.name}
+                        title={`Recurrence - ${pageData?.issuer?.name ?? ""}`}
                         registry={registry}
                         InputContext={InputContext}
                       />

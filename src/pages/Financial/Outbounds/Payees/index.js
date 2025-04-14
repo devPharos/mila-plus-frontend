@@ -78,11 +78,23 @@ export default function FinancialPayees() {
       type: "currency",
       filter: false,
     },
+    // {
+    //   title: "Balance",
+    //   name: "balance",
+    //   type: "currency",
+    //   filter: false,
+    // },
     {
-      title: "Balance",
-      name: "balance",
-      type: "currency",
+      title: "Memo",
+      name: "memo",
+      type: "text",
       filter: false,
+    },
+    {
+      title: "Chart of Account",
+      name: "chartOfAccount",
+      type: "text",
+      filter: true,
     },
     {
       title: "Status",
@@ -146,11 +158,14 @@ export default function FinancialPayees() {
           discount,
           fee,
           total,
-          balance,
+          // balance,
+          memo,
           status,
+          chartOfAccount,
         },
         index
       ) => {
+        const { name: chartOfAccountName } = chartOfAccount;
         const ret = {
           show: true,
           id,
@@ -163,7 +178,9 @@ export default function FinancialPayees() {
             "$ " + discount.toFixed(2),
             "$ " + fee.toFixed(2),
             "$ " + total.toFixed(2),
-            "$ " + balance.toFixed(2),
+            // "$ " + balance.toFixed(2),
+            memo,
+            chartOfAccountName,
             status,
           ],
           selectable: !status.includes("Paid"),

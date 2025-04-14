@@ -96,6 +96,7 @@ export default function PagePreview({
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
+  const [merchantId, setMerchantId] = useState(null);
 
   const generalForm = useRef();
 
@@ -229,6 +230,8 @@ export default function PagePreview({
         //       }${f.name}`,
         //     };
         //   });
+
+        setMerchantId(data.issuer?.merchant?.id);
 
         setPageData({
           ...data,
@@ -474,6 +477,9 @@ export default function PagePreview({
                                   type: "hidden",
                                 },
                               ]}
+                              setReturnFindGeneric={(merchant) => {
+                                setMerchantId(merchant.id);
+                              }}
                             />
 
                             <InputLine title="Invoice">
@@ -615,7 +621,7 @@ export default function PagePreview({
                               readOnly={
                                 id !== "new" && pageData.status !== "Pending"
                               }
-                              searchDefault={pageData.issuer?.merchant?.id}
+                              searchDefault={merchantId}
                               InputContext={InputContext}
                               type="expenses"
                               defaultValue={{

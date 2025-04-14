@@ -8,6 +8,8 @@ import { format, parseISO } from "date-fns";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { PageContext } from "~/App";
 import Settlement from "./Settlement";
+import { receivableStatusesOptions } from "~/functions/selectPopoverOptions";
+import api, { baseURL } from "~/services/api";
 
 export function FinancialOutbounds() {
   const { pathname } = useLocation();
@@ -105,6 +107,48 @@ export default function FinancialPayees() {
   ];
   const [settlementOpen, setSettlementOpen] = useState(false);
   const [selected, setSelected] = useState([]);
+  const [excelOpen, setExcelOpen] = useState(false);
+  const defaultExcelData = [
+    {
+      title: "Entry date from",
+      name: "entry_date_from",
+      type: "date",
+      value: null,
+    },
+    {
+      title: "Entry date to",
+      name: "entry_date_to",
+      type: "date",
+      value: null,
+    },
+    {
+      title: "Due date from",
+      name: "due_date_from",
+      type: "date",
+      value: null,
+    },
+    { title: "Due date to", name: "due_date_to", type: "date", value: null },
+    {
+      title: "Settlement date from",
+      name: "settlement_from",
+      type: "date",
+      value: null,
+    },
+    {
+      title: "Settlement date to",
+      name: "settlement_to",
+      type: "date",
+      value: null,
+    },
+    {
+      title: "Status",
+      name: "status",
+      type: "select",
+      options: receivableStatusesOptions,
+      value: "All",
+    },
+  ];
+  const [excelData, setExcelData] = useState(defaultExcelData);
 
   const {
     opened,
@@ -201,6 +245,29 @@ export default function FinancialPayees() {
     loader();
   }, [opened, filial, orderBy, search, limit]);
 
+  async function handleExcel(generate = true) {
+    if (excelOpen && generate) {
+      api
+        .post(`/payee/excel`, {
+          entry_date_from: excelData[0].value,
+          entry_date_to: excelData[1].value,
+          due_date_from: excelData[2].value,
+          due_date_to: excelData[3].value,
+          settlement_from: excelData[4].value,
+          settlement_to: excelData[5].value,
+          status: excelData[6].value,
+        })
+        .then(({ data }) => {
+          saveAs(`${baseURL}/get-file/${data.name}`, `${data.name}.xlsx`);
+          // setExcelData(defaultExcelData);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+    setExcelOpen(!excelOpen);
+  }
+
   return (
     <PageContainer
       FullGridContext={FullGridContext}
@@ -230,6 +297,12 @@ export default function FinancialPayees() {
           //   selected,
           // },
         ],
+      }}
+      Excel={{
+        fun: handleExcel,
+        opened: excelOpen,
+        excelData,
+        setExcelData,
       }}
     />
   );

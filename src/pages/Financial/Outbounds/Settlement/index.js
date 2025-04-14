@@ -106,8 +106,9 @@ export default function PayeesSettlement() {
             payee,
             status,
             amount,
-            created_at,
+            settlement_date,
             paymentMethod,
+            created_at,
             // status_date,
           },
           index
@@ -123,7 +124,9 @@ export default function PayeesSettlement() {
               format(parseISO(payee.due_date), "yyyy-MM-dd"),
               "$ " + amount.toFixed(2),
               paymentMethod ? paymentMethod.platform : "",
-              format(parseISO(created_at), "yyyy-MM-dd"),
+              settlement_date
+                ? format(parseISO(settlement_date), "yyyy-MM-dd")
+                : format(parseISO(created_at), "yyyy-MM-dd"),
               ,
             ],
             selectable: paymentMethod.platform !== "Gravity",

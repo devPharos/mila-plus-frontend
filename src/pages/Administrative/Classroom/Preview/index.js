@@ -214,7 +214,7 @@ export default function PagePreview({
                           readOnly={pageData.studentgroups.length > 0}
                           InputContext={InputContext}
                           defaultValue={
-                            id === "new"
+                            id === "new" && auth.filial.id !== 1
                               ? {
                                   id: auth.filial.id,
                                   name: auth.filial.name,

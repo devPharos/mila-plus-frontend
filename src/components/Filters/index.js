@@ -62,27 +62,29 @@ export default function Filters({
         {options
           .filter((_, i) => i < 10)
           .map((option, elIndex) => {
-            return (
-              <button
-                type="button"
-                key={elIndex}
-                onClick={() => {
-                  setActivePopover("");
-                  handleFilters({ title, value: option });
-                }}
-                className={`${
-                  active.length > 0 &&
-                  active[0].value === option &&
-                  "bg-gray-300"
-                } hover:bg-gray-300 px-2 py-2 rounded text-left whitespace-nowrap`}
-              >
-                {typeof option === "boolean"
-                  ? option === true
-                    ? "Yes"
-                    : "No"
-                  : option}
-              </button>
-            );
+            if (option !== null && option !== undefined && option !== "") {
+              return (
+                <button
+                  type="button"
+                  key={elIndex}
+                  onClick={() => {
+                    setActivePopover("");
+                    handleFilters({ title, value: option });
+                  }}
+                  className={`${
+                    active.length > 0 &&
+                    active[0].value === option &&
+                    "bg-gray-300"
+                  } hover:bg-gray-300 px-2 py-2 rounded text-left whitespace-nowrap`}
+                >
+                  {typeof option === "boolean"
+                    ? option === true
+                      ? "Yes"
+                      : "No"
+                    : option}
+                </button>
+              );
+            }
           })}
         {active.length > 0 && (
           <button
@@ -96,7 +98,7 @@ export default function Filters({
             <Eraser size={12} /> Clear
           </button>
         )}
-        {active.length === 0 && (
+        {/* {active.length === 0 && (
           <button
             type="button"
             onClick={() => {
@@ -106,7 +108,7 @@ export default function Filters({
           >
             <EyeOff size={12} /> Hide Filter
           </button>
-        )}
+        )} */}
       </div>
     );
   }

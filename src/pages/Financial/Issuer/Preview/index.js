@@ -79,9 +79,6 @@ export default function PagePreview({
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
-  const [filialOptions, setFilialOptions] = useState([]);
-  const [merchantOptions, setMerchantOptions] = useState([]);
-  const [studentOptions, setStudentOptions] = useState([]);
 
   const auth = useSelector((state) => state.auth);
 
@@ -168,30 +165,12 @@ export default function PagePreview({
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     }
-    // async function getDefaultOptions() {
-    //   try {
-    //     const studentData = await api.get(`/students`);
-
-    //     const studentOptions = studentData.data.map((s) => {
-    //       return {
-    //         value: s.id,
-    //         label: s.name + " " + s.last_name + " - " + s.registration_number,
-    //       };
-    //     });
-
-    //     setStudentOptions(studentOptions);
-    //     setFilialOptions(filialOptions);
-    //   } catch (err) {
-    //     toast(err.response.data.error, { type: "error", autoClose: 3000 });
-    //   }
-    // }
 
     if (id === "new") {
       setFormType("full");
     } else if (id) {
       getPageData();
     }
-    // getDefaultOptions();
   }, []);
 
   return (
@@ -319,40 +298,15 @@ export default function PagePreview({
                                 name: "name",
                               },
                               {
+                                title: "Last Name",
+                                name: "last_name",
+                              },
+                              {
                                 title: "Registration Number",
                                 name: "registration_number",
                               },
                             ]}
                           />
-                          {/* <InputLine title="Merchant / Student"> */}
-                          {/* <SelectPopover
-                              name="merchant_id"
-                              title="Merchant"
-                              isSearchable
-                              isClearable
-                              grow
-                              value={merchantOptions.find(
-                                (m) => m.value === pageData.merchant_id
-                              )}
-                              options={merchantOptions}
-                              InputContext={InputContext}
-                            /> */}
-                          {/* <h4 className="text-xs text-zinc-500 mt-4">or</h4> */}
-                          {/* <InputLine title="Student">
-                            <SelectPopover
-                              name="student_id"
-                              title="Student"
-                              isSearchable
-                              isClearable
-                              grow
-                              value={studentOptions.find(
-                                (s) => s.value === pageData.student_id
-                              )}
-                              options={studentOptions}
-                              InputContext={InputContext}
-                            />
-                          </InputLine> */}
-                          {/* </InputLine> */}
 
                           <InputLine title="General data">
                             <Input

@@ -32,16 +32,16 @@ export default function AdministrativeStudent() {
       filter: false,
     },
     {
-      title: "E-mail",
-      name: "email",
+      title: "Group",
+      name: ["studentgroup", "name"],
       type: "text",
       filter: false,
     },
     {
-      title: "Phone",
-      name: "phone",
+      title: "Teacher",
+      name: ["teacher", "name"],
       type: "text",
-      filter: false,
+      filter: true,
     },
     {
       title: "Category",
@@ -144,12 +144,22 @@ export default function AdministrativeStudent() {
           last_name,
           email,
           phone,
+          studentgroup,
+          teacher,
           category,
           status,
           canceled_at,
         },
         index
       ) => {
+        let studentgroup_name = "";
+        if (studentgroup) {
+          studentgroup_name = studentgroup.name;
+        }
+        let teacher_name = "";
+        if (teacher) {
+          teacher_name = teacher.name;
+        }
         const ret = {
           show: true,
           id,
@@ -157,8 +167,8 @@ export default function AdministrativeStudent() {
             registration_number,
             name,
             last_name,
-            email,
-            phone,
+            studentgroup_name,
+            teacher_name,
             category,
             status,
           ],

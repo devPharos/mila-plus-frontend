@@ -382,7 +382,6 @@ export default function PagePreview({
                           scope="classroom"
                           required
                           InputContext={InputContext}
-                          readOnly={pageData.students.length > 0}
                           type="Active"
                           defaultValue={{
                             id: pageData.classroom?.id,
@@ -474,10 +473,6 @@ export default function PagePreview({
                           }}
                           fields={[
                             {
-                              title: "Registration Number",
-                              name: "registration_number",
-                            },
-                            {
                               title: "Name",
                               name: "name",
                             },
@@ -486,15 +481,24 @@ export default function PagePreview({
                               name: "last_name",
                             },
                             {
+                              title: "Registration Number",
+                              name: "registration_number",
+                            },
+                            {
                               title: "Status",
                               name: "status",
                             },
                           ]}
                         />
-                        <InputLine title="Students in Group">
+                        <InputLine
+                          title={`Students in Group: (${pageData.students.length})`}
+                        >
                           <div className="flex flex-col justify-center items-start relative w-full">
                             {pageData.students
-                              .sort((a, b) => a.name > b.name)
+                              .sort(
+                                (a, b) =>
+                                  a.name + a.last_name > b.name + b.last_name
+                              )
                               .map((student, index) => {
                                 return (
                                   <div
@@ -524,17 +528,6 @@ export default function PagePreview({
                                         />
                                         <Input
                                           type="text"
-                                          name="registration_number"
-                                          grow
-                                          readOnly
-                                          title="Registration Number"
-                                          defaultValue={
-                                            student.registration_number
-                                          }
-                                          InputContext={InputContext}
-                                        />
-                                        <Input
-                                          type="text"
                                           name="name"
                                           grow
                                           readOnly
@@ -549,6 +542,17 @@ export default function PagePreview({
                                           readOnly
                                           title="Last Name"
                                           defaultValue={student.last_name}
+                                          InputContext={InputContext}
+                                        />
+                                        <Input
+                                          type="text"
+                                          name="registration_number"
+                                          grow
+                                          readOnly
+                                          title="Registration Number"
+                                          defaultValue={
+                                            student.registration_number
+                                          }
                                           InputContext={InputContext}
                                         />
                                         <Input

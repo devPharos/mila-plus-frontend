@@ -280,7 +280,6 @@ export default function Renegociation({
                                   InputContext={InputContext}
                                 />
                               </InputLine>
-                              {console.log(pageData.receivables[0])}
                               <FindGeneric
                                 route="paymentmethods"
                                 title="Payment Methods"

@@ -213,10 +213,17 @@ export default function PagePreview({
                           required
                           readOnly={pageData.studentgroups.length > 0}
                           InputContext={InputContext}
-                          defaultValue={{
-                            id: pageData.filial?.id,
-                            name: pageData.filial?.name,
-                          }}
+                          defaultValue={
+                            id === "new"
+                              ? {
+                                  id: auth.filial.id,
+                                  name: auth.filial.name,
+                                }
+                              : {
+                                  id: pageData.filial?.id,
+                                  name: pageData.filial?.name,
+                                }
+                          }
                           fields={[
                             {
                               title: "Name",

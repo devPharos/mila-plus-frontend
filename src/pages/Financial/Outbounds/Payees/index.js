@@ -234,6 +234,7 @@ export default function FinancialPayees() {
         return ret;
       }
     );
+    console.log(gridDataValues);
     setGridData(gridDataValues);
     setLoadingData(false);
   }
@@ -287,15 +288,6 @@ export default function FinancialPayees() {
             setOpened: setSettlementOpen,
             selected,
           },
-          // {
-          //   title: "Delete",
-          //   fun: handleDelete,
-          //   icon: "X",
-          //   Page: null,
-          //   opened: false,
-          //   setOpened: () => null,
-          //   selected,
-          // },
         ],
       }}
       Excel={{

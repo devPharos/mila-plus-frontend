@@ -90,7 +90,7 @@ const FindGeneric = ({
               let retValue = selected[field.name];
               if (field.model && selected[field.model]) {
                 retValue = selected[field.model][field.name];
-              } else if (field.field) {
+              } else if (field.field && selected[field.field]) {
                 retValue = selected[field.field].id;
               }
               if (retValue === "") {

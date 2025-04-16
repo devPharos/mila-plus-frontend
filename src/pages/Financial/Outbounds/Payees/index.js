@@ -209,7 +209,10 @@ export default function FinancialPayees() {
         },
         index
       ) => {
-        const { name: chartOfAccountName } = chartOfAccount;
+        let chartOfAccountName = "";
+        if (chartOfAccount) {
+          chartOfAccountName = chartOfAccount.name;
+        }
         const ret = {
           show: true,
           id,

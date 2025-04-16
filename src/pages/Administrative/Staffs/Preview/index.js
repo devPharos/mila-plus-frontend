@@ -34,18 +34,28 @@ import { Scope } from "@unform/core";
 import FileInputMultiple from "~/components/RegisterForm/FileInputMultiple";
 import { organizeMultiAndSingleFiles } from "~/functions/uploadFile";
 import PhoneNumberInput from "~/components/RegisterForm/PhoneNumberInput";
+import { FullGridContext } from "../..";
+import FindGeneric from "~/components/Finds/FindGeneric";
+import {
+  employeeSubtypeOptions,
+  employeeTypeOptions,
+  wageTypeOptions,
+  yesOrNoOptions,
+} from "~/functions/selectPopoverOptions";
 
 export const InputContext = createContext({});
 
 export default function PagePreview({
   access,
   id,
-  handleOpened,
-  setOpened,
   defaultFormType = "preview",
-  successfullyUpdated,
-  setSuccessfullyUpdated,
 }) {
+  const {
+    handleOpened,
+    setOpened,
+    successfullyUpdated,
+    setSuccessfullyUpdated,
+  } = useContext(FullGridContext);
   const [pageData, setPageData] = useState({
     documents: [],
     name: "",
@@ -75,28 +85,10 @@ export default function PagePreview({
     canceled_by: null,
     canceled_at: null,
   });
-  const [filialOptions, setFilialOptions] = useState([]);
   const generalForm = useRef();
   const auth = useSelector((state) => state.auth);
   const { alertBox } = useContext(AlertContext);
   const [loading, setLoading] = useState(false);
-
-  const employeeTypeOptions = [
-    { value: "Staff", label: "Staff" },
-    { value: "Faculty", label: "Faculty" },
-  ];
-  const employeeSubtypeOptions = [
-    { value: "Pay Roll", label: "Pay Roll" },
-    { value: "Contract", label: "Contract" },
-  ];
-  const wageTypeOptions = [
-    { value: "Hourly", label: "Hourly" },
-    { value: "Salary", label: "Salary" },
-  ];
-  const isOrNotOptions = [
-    { value: true, label: "Yes" },
-    { value: false, label: "No" },
-  ];
 
   const countriesOptions = countries_list.map((country) => {
     return { value: country, label: country };
@@ -115,19 +107,11 @@ export default function PagePreview({
 
       return countriesList;
     }
-    async function getDefaultFilialOptions() {
-      const { data } = await api.get("/filials");
-      const retGroupOptions = data.map((filial) => {
-        return { value: filial.id, label: filial.name };
-      });
-      setFilialOptions(retGroupOptions);
-    }
     async function getPageData() {
-      const filialOptions = await getDefaultFilialOptions();
       if (id !== "new") {
         try {
           const { data } = await api.get(`/staffs/${id}`);
-          setPageData({ ...data, loaded: true, filialOptions });
+          setPageData({ ...data, loaded: true });
           const {
             created_by,
             created_at,
@@ -149,7 +133,7 @@ export default function PagePreview({
           toast(err.response.data.error, { type: "error", autoClose: 3000 });
         }
       } else {
-        setPageData({ ...pageData, loaded: true, filialOptions });
+        setPageData({ ...pageData, loaded: true });
         setFormType("full");
       }
     }
@@ -182,18 +166,16 @@ export default function PagePreview({
     if (id === "new") {
       try {
         const { date_of_birth } = data;
-        const response = await api.post(`/staffs`, {
+        await api.post(`/staffs`, {
           ...data,
           date_of_birth: date_of_birth
             ? format(date_of_birth, "yyyy-MM-dd")
             : null,
         });
-        setOpened(response.data.id);
-        setPageData({ ...pageData, ...data });
+        handleOpened(null);
         setSuccessfullyUpdated(true);
         toast("Saved!", { autoClose: 1000 });
         setLoading(false);
-        // handleOpened(null)
       } catch (err) {
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
         setLoading(false);
@@ -269,10 +251,9 @@ export default function PagePreview({
                 ? format(date_of_birth, "yyyy-MM-dd")
                 : null,
             });
-            setPageData({ ...pageData, ...objUpdated });
+            handleOpened(null);
             setSuccessfullyUpdated(true);
             toast("Saved!", { autoClose: 1000 });
-            handleOpened(null);
             setLoading(false);
           });
         } else {
@@ -284,14 +265,13 @@ export default function PagePreview({
                 ? format(date_of_birth, "yyyy-MM-dd")
                 : null,
             });
-            setPageData({ ...pageData, ...objUpdated });
+            handleOpened(null);
             setSuccessfullyUpdated(true);
             toast("Saved!", { autoClose: 1000 });
-            handleOpened(null);
             setLoading(false);
           } catch (err) {
             console.log(err);
-            toast(err.response.data.error, { type: "error", autoClose: 3000 });
+            // toast(err.response.data.error, { type: "error", autoClose: 3000 });
             setLoading(false);
           }
         }
@@ -500,27 +480,29 @@ export default function PagePreview({
                           title={pageData.name}
                           registry={registry}
                           InputContext={InputContext}
+                          emailButtonText="Send registration mail to staff"
                         />
                         <InputLineGroup
                           title="GENERAL"
                           activeMenu={activeMenu === "general"}
                         >
-                          {auth.filial.id === 1 && (
-                            <InputLine title="Filial">
-                              <SelectPopover
-                                name="filial_id"
-                                required
-                                title="Filial"
-                                isSearchable
-                                defaultValue={filialOptions.filter(
-                                  (filial) =>
-                                    filial.value === pageData.filial_id
-                                )}
-                                options={filialOptions}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-                          )}
+                          <FindGeneric
+                            route="filials"
+                            title="Filial"
+                            scope="filial"
+                            required
+                            InputContext={InputContext}
+                            defaultValue={{
+                              id: pageData.filial?.id,
+                              name: pageData.filial?.name,
+                            }}
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                          />
                           <InputLine title="General Data">
                             <Input
                               type="text"
@@ -552,6 +534,7 @@ export default function PagePreview({
                               name="birth_country"
                               grow
                               title="Nationality"
+                              required
                               options={countriesOptions}
                               isSearchable
                               defaultValue={countriesOptions.find(
@@ -563,7 +546,8 @@ export default function PagePreview({
                             <DatePicker
                               name="date_of_birth"
                               grow
-                              title="Birthday "
+                              title="Birthday"
+                              required
                               defaultValue={
                                 pageData.date_of_birth
                                   ? parseISO(pageData.date_of_birth)
@@ -578,9 +562,9 @@ export default function PagePreview({
                               name="is_student"
                               grow
                               title="Is Student?"
-                              options={isOrNotOptions}
+                              options={yesOrNoOptions}
                               isSearchable
-                              defaultValue={isOrNotOptions.find(
+                              defaultValue={yesOrNoOptions.find(
                                 (type) => type.value === pageData.is_student
                               )}
                               InputContext={InputContext}
@@ -589,9 +573,9 @@ export default function PagePreview({
                               name="is_us_citizen"
                               grow
                               title="Is US Citizen?"
-                              options={isOrNotOptions}
+                              options={yesOrNoOptions}
                               isSearchable
-                              defaultValue={isOrNotOptions.find(
+                              defaultValue={yesOrNoOptions.find(
                                 (type) => type.value === pageData.is_us_citizen
                               )}
                               InputContext={InputContext}
@@ -630,6 +614,7 @@ export default function PagePreview({
                               name="address"
                               title="Address"
                               rows={5}
+                              grow
                               defaultValue={pageData.address}
                               InputContext={InputContext}
                             />
@@ -674,6 +659,7 @@ export default function PagePreview({
                             <SelectPopover
                               name="employee_type"
                               grow
+                              required
                               title="Employee Type"
                               options={employeeTypeOptions}
                               isSearchable
@@ -685,6 +671,7 @@ export default function PagePreview({
                             <SelectPopover
                               name="employee_subtype"
                               grow
+                              required
                               title="Employee Subtype"
                               options={employeeSubtypeOptions}
                               isSearchable
@@ -697,6 +684,7 @@ export default function PagePreview({
                             <DatePicker
                               name="admission_date"
                               grow
+                              required
                               title="Admission Date"
                               defaultValue={
                                 pageData.admission_date
@@ -747,6 +735,7 @@ export default function PagePreview({
                               name="comments"
                               title="Comments"
                               rows={5}
+                              grow
                               defaultValue={pageData.comments}
                               InputContext={InputContext}
                             />

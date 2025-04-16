@@ -136,8 +136,6 @@ export default function PagePreview({
         });
         setOpened(response.data.id);
 
-        console.log(response.data);
-
         if (response.data.created_by) {
           const registries = await getRegistries({
             created_by: response.data.created_by,

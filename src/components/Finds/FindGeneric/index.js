@@ -1,5 +1,14 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { Search, Square, SquareCheck, Trash, X } from "lucide-react";
+import {
+  Eye,
+  EyeClosed,
+  EyeOff,
+  Search,
+  Square,
+  SquareCheck,
+  Trash,
+  X,
+} from "lucide-react";
 import { getData } from "~/functions/gridFunctions";
 import Input from "../../RegisterForm/Input";
 import { Scope } from "@unform/core";
@@ -23,9 +32,10 @@ const FindGeneric = ({
   const [active, setActive] = useState(false);
   const [rows, setRows] = useState([]);
   const [selected, setSelected] = useState(defaultValue);
+  const [limit, setLimit] = useState(10);
   async function loadData(search = null) {
     const data = await getData(route, {
-      limit: 15,
+      limit,
       search: searchDefault ? searchDefault : search,
       type,
     });
@@ -35,6 +45,10 @@ const FindGeneric = ({
     }
     setRows(data);
   }
+
+  useEffect(() => {
+    loadData();
+  }, [limit]);
 
   function handleActive() {
     setActive(!active);
@@ -120,12 +134,12 @@ const FindGeneric = ({
             <table className="w-full">
               <thead>
                 <tr>
-                  <th className="bg-transparent border-0 rounded p-2 hover:bg-gray-100 w-[43px] "></th>
+                  <th className="bg-transparent border-0 rounded p-2 hover:bg-gray-100 w-[43px]"></th>
                   {fields
                     .filter((field) => !field.field)
                     .map((field) => {
                       return (
-                        <th className="bg-white border rounded p-2 hover:bg-gray-100">
+                        <th className="bg-white border rounded p-2 hover:bg-gray-100 text-left">
                           {field.title}
                         </th>
                       );
@@ -154,7 +168,7 @@ const FindGeneric = ({
                         return (
                           <td
                             onClick={() => handleSelect(row)}
-                            className="cursor-pointer bg-white border rounded p-2 hover:bg-gray-100 text-center"
+                            className={`cursor-pointer bg-white border rounded p-2 hover:bg-gray-100 text-left`}
                           >
                             {row[field.name]}
                           </td>
@@ -164,6 +178,31 @@ const FindGeneric = ({
                 );
               })}
             </table>
+            {rows.length >= 10 && (
+              <div className="flex flex-row items-center justify-start gap-2 relative w-full">
+                <button
+                  type="button"
+                  disabled={rows.length < limit}
+                  onClick={() => setLimit(limit + 10)}
+                  className={`border rounded p-2 bg-secondary ${
+                    rows.length < limit ? "text-gray-400" : "text-gray-800"
+                  } text-xs flex flex-row items-center gap-2`}
+                >
+                  <Eye size={14} /> Show more
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setLimit(10)}
+                  disabled={limit === 10}
+                  className={`border rounded p-2 bg-secondary ${
+                    limit === 10 ? "text-gray-400" : "text-gray-800"
+                  } text-xs flex flex-row items-center gap-2`}
+                >
+                  <EyeOff size={14} /> Minimize
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

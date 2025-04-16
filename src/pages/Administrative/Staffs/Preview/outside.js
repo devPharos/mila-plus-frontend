@@ -35,6 +35,7 @@ import FileInputMultiple from "~/components/RegisterForm/FileInputMultiple";
 import { organizeMultiAndSingleFiles } from "~/functions/uploadFile";
 import { useSearchParams } from "react-router-dom";
 import PhoneNumberInput from "~/components/RegisterForm/PhoneNumberInput";
+import { yesOrNoOptions } from "~/functions/selectPopoverOptions";
 
 export const InputContext = createContext({});
 
@@ -106,11 +107,6 @@ export default function PagePreviewOutside({
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
 
-  const isOrNotOptions = [
-    { value: true, label: "Yes" },
-    { value: false, label: "No" },
-  ];
-
   const countriesOptions = countries_list.map((country) => {
     return { value: country, label: country };
   });
@@ -167,7 +163,6 @@ export default function PagePreviewOutside({
   }, []);
 
   useEffect(() => {
-    console.log(pageData);
     if (pageData.employee_type && pageData.employee_subtype) {
       getDocuments();
     }
@@ -270,8 +265,10 @@ export default function PagePreviewOutside({
           });
         } else {
           try {
-            delete objUpdated.documents;
-            await api.put(`/staffs/${id}`, {
+            if (objUpdated.documents) {
+              delete objUpdated.documents;
+            }
+            await api.put(`/outside/staffs/${id}`, {
               ...objUpdated,
               date_of_birth: date_of_birth
                 ? format(date_of_birth, "yyyy-MM-dd")
@@ -389,10 +386,6 @@ export default function PagePreviewOutside({
     }
   }
 
-  function handleInactivate() {}
-
-  function handleOutsideMail() {}
-
   return (
     <Preview formType={formType} fullscreen={fullscreen}>
       {sent && (
@@ -431,8 +424,8 @@ export default function PagePreviewOutside({
                     setFullscreen,
                     successfullyUpdated,
                     handleCloseForm,
-                    handleInactivate,
-                    handleOutsideMail,
+                    handleInactivate: () => null,
+                    handleOutsideMail: () => null,
                     canceled: pageData.canceled_at,
                   }}
                 >
@@ -451,6 +444,18 @@ export default function PagePreviewOutside({
                         activeMenu={activeMenu === "general"}
                       >
                         <InputLine title="General Data">
+                          <SelectPopover
+                            name="is_us_citizen"
+                            required
+                            grow
+                            title="Is US Citizen?"
+                            options={yesOrNoOptions}
+                            isSearchable
+                            defaultValue={yesOrNoOptions.find(
+                              (type) => type.value === pageData.is_us_citizen
+                            )}
+                            InputContext={InputContext}
+                          />
                           <SelectPopover
                             name="birth_country"
                             required
@@ -475,32 +480,6 @@ export default function PagePreviewOutside({
                                 : null
                             }
                             placeholderText="MM/DD/YYYY"
-                            InputContext={InputContext}
-                          />
-                        </InputLine>
-                        <InputLine>
-                          <SelectPopover
-                            name="is_student"
-                            required
-                            grow
-                            title="Is Student?"
-                            options={isOrNotOptions}
-                            isSearchable
-                            defaultValue={isOrNotOptions.find(
-                              (type) => type.value === pageData.is_student
-                            )}
-                            InputContext={InputContext}
-                          />
-                          <SelectPopover
-                            name="is_us_citizen"
-                            required
-                            grow
-                            title="Is US Citizen?"
-                            options={isOrNotOptions}
-                            isSearchable
-                            defaultValue={isOrNotOptions.find(
-                              (type) => type.value === pageData.is_us_citizen
-                            )}
                             InputContext={InputContext}
                           />
                         </InputLine>

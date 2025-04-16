@@ -168,30 +168,30 @@ export default function PagePreview({
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     }
-    async function getDefaultOptions() {
-      try {
-        const studentData = await api.get(`/students`);
+    // async function getDefaultOptions() {
+    //   try {
+    //     const studentData = await api.get(`/students`);
 
-        const studentOptions = studentData.data.map((s) => {
-          return {
-            value: s.id,
-            label: s.name + " " + s.last_name + " - " + s.registration_number,
-          };
-        });
+    //     const studentOptions = studentData.data.map((s) => {
+    //       return {
+    //         value: s.id,
+    //         label: s.name + " " + s.last_name + " - " + s.registration_number,
+    //       };
+    //     });
 
-        setStudentOptions(studentOptions);
-        setFilialOptions(filialOptions);
-      } catch (err) {
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
-      }
-    }
+    //     setStudentOptions(studentOptions);
+    //     setFilialOptions(filialOptions);
+    //   } catch (err) {
+    //     toast(err.response.data.error, { type: "error", autoClose: 3000 });
+    //   }
+    // }
 
     if (id === "new") {
       setFormType("full");
     } else if (id) {
       getPageData();
     }
-    getDefaultOptions();
+    // getDefaultOptions();
   }, []);
 
   return (
@@ -295,7 +295,7 @@ export default function PagePreview({
                               },
                             ]}
                           />
-                          {/* <FindGeneric
+                          <FindGeneric
                             route="students"
                             title="Student"
                             scope="student"
@@ -316,7 +316,7 @@ export default function PagePreview({
                                 name: "registration_number",
                               },
                             ]}
-                          /> */}
+                          />
                           {/* <InputLine title="Merchant / Student"> */}
                           {/* <SelectPopover
                               name="merchant_id"
@@ -331,7 +331,7 @@ export default function PagePreview({
                               InputContext={InputContext}
                             /> */}
                           {/* <h4 className="text-xs text-zinc-500 mt-4">or</h4> */}
-                          <InputLine title="Student">
+                          {/* <InputLine title="Student">
                             <SelectPopover
                               name="student_id"
                               title="Student"
@@ -344,7 +344,7 @@ export default function PagePreview({
                               options={studentOptions}
                               InputContext={InputContext}
                             />
-                          </InputLine>
+                          </InputLine> */}
                           {/* </InputLine> */}
 
                           <InputLine title="General data">

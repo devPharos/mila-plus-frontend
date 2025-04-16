@@ -16,8 +16,14 @@ export default function FinancialMerchants() {
       filter: true,
     },
     {
-      title: "Full Address",
-      name: "full_address",
+      title: "City",
+      name: "city",
+      type: "text",
+      filter: false,
+    },
+    {
+      title: "State",
+      name: "state",
       type: "text",
       filter: false,
     },
@@ -115,9 +121,8 @@ export default function FinancialMerchants() {
             id,
             fields: [
               name,
-              address || city || state || zip || country
-                ? `${address}, ${city}, ${state}, ${zip}, ${country} `
-                : "",
+              city,
+              state,
               email,
               phone_number,
               bank_name,

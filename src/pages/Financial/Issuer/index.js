@@ -16,8 +16,14 @@ export default function FinancialIssuers() {
       filter: true,
     },
     {
-      title: "Full Address",
-      name: "full_address",
+      title: "City",
+      name: "city",
+      type: "text",
+      filter: false,
+    },
+    {
+      title: "State",
+      name: "state",
       type: "text",
       filter: false,
     },
@@ -92,15 +98,7 @@ export default function FinancialIssuers() {
           return {
             show: true,
             id,
-            fields: [
-              name,
-              address || city || state || zip || country
-                ? `${address}, ${city}, ${state}, ${zip}, ${country}`
-                : "",
-              email,
-              phone_number,
-              bank_name,
-            ],
+            fields: [name, city, state, email, phone_number, bank_name],
             page: Math.ceil((index + 1) / limit),
           };
         }

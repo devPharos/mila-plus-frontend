@@ -32,8 +32,8 @@ export default function Studentgroups() {
       filter: true,
     },
     {
-      title: "Program Category",
-      name: "programcategory_name",
+      title: "Level",
+      name: ["level", "name"],
       type: "text",
       filter: false,
     },
@@ -115,7 +115,7 @@ export default function Studentgroups() {
           name,
           status,
           private: privateStatus,
-          programcategory,
+          level,
           languagemode,
           classroom,
           workload,
@@ -130,7 +130,7 @@ export default function Studentgroups() {
         const { class_number: classroom_name } = classroom;
         const { name: workload_name } = workload;
         const { name: staff_name } = staff;
-        const { name: programcategory_name } = programcategory;
+        const { name: level_name } = level;
         const { name: languagemode_name } = languagemode;
 
         const ret = {
@@ -140,7 +140,7 @@ export default function Studentgroups() {
             name,
             status,
             privateStatus,
-            programcategory_name,
+            level_name,
             languagemode_name,
             classroom_name,
             workload_name,

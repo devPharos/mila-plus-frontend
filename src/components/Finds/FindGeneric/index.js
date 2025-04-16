@@ -87,6 +87,15 @@ const FindGeneric = ({
               InputContext={InputContext}
             />
             {fields.map((field, index) => {
+              let retValue = selected[field.name];
+              if (field.model && selected[field.model]) {
+                retValue = selected[field.model][field.name];
+              } else if (field.field) {
+                retValue = selected[field.field].id;
+              }
+              if (retValue === "") {
+                retValue = " ";
+              }
               return (
                 <Input
                   type={field.type || "text"}
@@ -96,13 +105,7 @@ const FindGeneric = ({
                   readOnlyOnFocus
                   readOnly={readOnly}
                   grow
-                  defaultValue={
-                    field.field
-                      ? selected[field.name].id
-                      : selected[field.name] === ""
-                      ? " "
-                      : selected[field.name]
-                  }
+                  defaultValue={retValue}
                   InputContext={InputContext}
                 />
               );
@@ -170,7 +173,9 @@ const FindGeneric = ({
                             onClick={() => handleSelect(row)}
                             className={`cursor-pointer bg-white border rounded p-2 hover:bg-gray-100 text-left`}
                           >
-                            {row[field.name]}
+                            {field.model
+                              ? row[field.model][field.name]
+                              : row[field.name]}
                           </td>
                         );
                       })}

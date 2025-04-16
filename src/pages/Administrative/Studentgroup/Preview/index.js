@@ -47,7 +47,7 @@ export default function PagePreview({
     name: "",
     status: "",
     private: false,
-    programcategory: null,
+    level: null,
     languagemode: null,
     classroom: null,
     workload: null,
@@ -67,10 +67,13 @@ export default function PagePreview({
     canceled_by: null,
     canceled_at: null,
   });
-  const [filialOptions, setFilialOptions] = useState([]);
   const generalForm = useRef();
   const auth = useSelector((state) => state.auth);
   const [returnStudent, setReturnStudent] = useState(null);
+  const [returnToWorkload, setReturnToWorkload] = useState({
+    level_id: null,
+    languagemode_id: null,
+  });
 
   useEffect(() => {
     async function getPageData() {
@@ -341,20 +344,33 @@ export default function PagePreview({
                           />
                         </InputLine>
                         <FindGeneric
-                          route="programcategories"
-                          title="Program Category"
-                          scope="programcategory"
+                          route="levels"
+                          title="Level"
+                          scope="level"
                           readOnly={pageData.students.length > 0}
                           required
                           InputContext={InputContext}
                           defaultValue={{
-                            id: pageData.programcategory?.id,
-                            name: pageData.programcategory?.name,
+                            id: pageData.level?.id,
+                            name: pageData.level?.name,
+                            programcategory:
+                              pageData.level?.Programcategory?.name,
                           }}
+                          setReturnFindGeneric={(level) =>
+                            setReturnToWorkload({
+                              ...returnToWorkload,
+                              level_id: level.id,
+                            })
+                          }
                           fields={[
                             {
                               title: "Name",
                               name: "name",
+                            },
+                            {
+                              title: "Program Category",
+                              name: "name",
+                              model: "Programcategory",
                             },
                           ]}
                         />
@@ -369,6 +385,12 @@ export default function PagePreview({
                             id: pageData.languagemode?.id,
                             name: pageData.languagemode?.name,
                           }}
+                          setReturnFindGeneric={(level) =>
+                            setReturnToWorkload({
+                              ...returnToWorkload,
+                              languagemode_id: level.id,
+                            })
+                          }
                           fields={[
                             {
                               title: "Name",
@@ -405,13 +427,18 @@ export default function PagePreview({
                           title="Workload"
                           scope="workload"
                           required
+                          type={
+                            returnToWorkload.level_id +
+                            "," +
+                            returnToWorkload.languagemode_id
+                          }
                           InputContext={InputContext}
                           readOnly={pageData.students.length > 0}
                           defaultValue={{
                             id: pageData.workload?.id,
                             name: pageData.workload?.name,
-                            days_per_week: pageData.workload?.days_per_week,
-                            hours_per_day: pageData.workload?.hours_per_day,
+                            level: pageData.workload?.level?.name,
+                            languagemode: pageData.workload?.languagemode?.name,
                           }}
                           fields={[
                             {
@@ -419,12 +446,14 @@ export default function PagePreview({
                               name: "name",
                             },
                             {
-                              title: "Days per Week",
-                              name: "days_per_week",
+                              title: "Level",
+                              name: "name",
+                              model: "Level",
                             },
                             {
-                              title: "Hours per Day",
-                              name: "hours_per_day",
+                              title: "Language Mode",
+                              name: "name",
+                              model: "Languagemode",
                             },
                           ]}
                         />

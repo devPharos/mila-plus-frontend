@@ -580,10 +580,17 @@ export default function PagePreview({
                               scope="filial"
                               required
                               InputContext={InputContext}
-                              defaultValue={{
-                                id: pageData.filial.id,
-                                name: pageData.filial.name,
-                              }}
+                              defaultValue={
+                                id === "new" && auth.filial.id !== 1
+                                  ? {
+                                      id: auth.filial.id,
+                                      name: auth.filial.name,
+                                    }
+                                  : {
+                                      id: pageData.filial?.id,
+                                      name: pageData.filial?.name,
+                                    }
+                              }
                               fields={[
                                 {
                                   title: "Name",

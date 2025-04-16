@@ -3,22 +3,11 @@ import { Form } from "@unform/web";
 import {
   Building,
   CheckCircle,
-  CircleCheckBig,
-  CircleDashed,
-  CircleEllipsis,
   CirclePlay,
   CircleX,
   Contact,
-  Edit,
-  Files,
-  GitMerge,
   ListMinus,
-  Loader2,
-  LoaderCircle,
-  Mail,
   Pencil,
-  Play,
-  Send,
   X,
 } from "lucide-react";
 import React, {
@@ -45,7 +34,6 @@ import {
 } from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import DatePicker from "~/components/RegisterForm/DatePicker";
-import SelectCountry from "~/components/RegisterForm/SelectCountry";
 import { differenceInDays, format, parseISO } from "date-fns";
 import CountryList from "country-list-with-dial-code-and-flag";
 import FormLoading from "~/components/RegisterForm/FormLoading";
@@ -57,11 +45,10 @@ import { FullGridContext } from "../..";
 import {
   genderOptions,
   optionsSubStatus,
-  yesOrNoOptions,
 } from "~/functions/selectPopoverOptions";
-import { Scope } from "@unform/core";
 import PricesSimulation from "~/components/PricesSimulation";
 import PhoneNumberInput from "~/components/RegisterForm/PhoneNumberInput";
+import FindGeneric from "~/components/Finds/FindGeneric";
 
 export const InputContext = createContext({});
 
@@ -115,8 +102,6 @@ export default function PagePreview({
     canceled_by: null,
     canceled_at: null,
   });
-  const [countriesList, setCountriesList] = useState([]);
-  const [filialOptions, setFilialOptions] = useState([]);
   const [agentOptions, setAgentOptions] = useState([]);
   const generalForm = useRef();
   const auth = useSelector((state) => state.auth);
@@ -129,59 +114,7 @@ export default function PagePreview({
     return { value: country, label: country };
   });
 
-  async function getCountriesList() {
-    const getList = CountryList.getAll().map((country) => {
-      return {
-        value: country.dial_code,
-        label: country.flag + " " + country.dial_code + " " + country.name,
-        code: country.dial_code,
-        name: country.name,
-      };
-    });
-    setCountriesList(getList);
-  }
-  async function getDefaultFilialOptions() {
-    const { data } = await api.get("/filials");
-    if (data.rows) {
-      const retGroupOptions = data.rows.map((filial) => {
-        return { value: filial.id, label: filial.name };
-      });
-      setFilialOptions(retGroupOptions);
-    }
-  }
-  async function getDefaultAgentOptions() {
-    const { data } = await api.get("/agents");
-    const retAgentOptions = data.map((agent) => {
-      return { value: agent.id, label: agent.name };
-    });
-    setAgentOptions(retAgentOptions);
-  }
-  async function getTypesOptions() {
-    const { data } = await api.get("/processtypes");
-    const retTypesOptions = data.map((type) => {
-      return { value: type.id, label: type.name };
-    });
-    return retTypesOptions;
-  }
-  async function getSubStatusOptions() {
-    const { data } = await api.get("/processsubstatuses");
-    const retSubStatusOptions = data.map((subStatus) => {
-      return {
-        value: subStatus.id,
-        label: subStatus.name,
-        father_id: subStatus.processtype_id,
-      };
-    });
-    retSubStatusOptions.push({ value: 0, label: "Select..." });
-    return retSubStatusOptions;
-  }
-
   async function getPageData(prospectId = null) {
-    const filialOptions = await getDefaultFilialOptions();
-    const agentOptions = await getDefaultAgentOptions();
-    const ddiOptions = await getCountriesList();
-    const typesOptions = await getTypesOptions();
-    const subStatusOptions = await getSubStatusOptions();
     if (!prospectId) {
       prospectId = id;
     }
@@ -197,11 +130,6 @@ export default function PagePreview({
           },
           find_processtype_id: data.processtype_id,
           loaded: true,
-          ddiOptions,
-          filialOptions,
-          agentOptions,
-          typesOptions,
-          subStatusOptions,
           transferEligibility: data.enrollments.find(
             (enrollment) => enrollment.application === "Transfer Eligibility"
           ),
@@ -237,10 +165,6 @@ export default function PagePreview({
       setPageData({
         ...pageData,
         loaded: true,
-        ddiOptions,
-        filialOptions,
-        typesOptions,
-        subStatusOptions,
       });
       setFormType("full");
     }
@@ -275,21 +199,6 @@ export default function PagePreview({
   ]);
 
   async function handleGeneralFormSubmit(data) {
-    // console.log(data.whatsapp);
-    // return;
-    if (
-      data.processsubstatus_id &&
-      optionsSubStatus.find(
-        (subStatus) => subStatus.value === data.processsubstatus_id
-      ).type_id !== data.processtype_id
-    ) {
-      toast("Sub Status is not valid for this Type!", {
-        autoClose: 1000,
-        type: "error",
-        transition: Zoom,
-      });
-      return;
-    }
     if (successfullyUpdated) {
       toast("No need to be saved!", {
         autoClose: 1000,
@@ -322,37 +231,23 @@ export default function PagePreview({
         // toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     } else if (id !== "new") {
-      const updated = handleUpdatedFields(data, pageData);
-
-      if (updated.length > 0) {
-        const objUpdated = Object.fromEntries(updated);
-        const { date_of_birth, visa_expiration } = objUpdated;
-        try {
-          await api.put(`/students/${id}`, {
-            ...objUpdated,
-            date_of_birth: date_of_birth
-              ? format(date_of_birth, "yyyy-MM-dd")
-              : null,
-            visa_expiration: visa_expiration
-              ? format(visa_expiration, "yyyy-MM-dd")
-              : null,
-          });
-          setPageData({ ...pageData, ...objUpdated });
-          setSuccessfullyUpdated(true);
-          toast("Saved!", { autoClose: 1000 });
-          handleOpened(null);
-        } catch (err) {
-          console.log(err);
-          // toast(err.response.data.error, { type: "error", autoClose: 3000 });
-        }
-      } else {
-        toast("No need to be saved!", {
-          autoClose: 1000,
-          type: "info",
-          transition: Zoom,
+      const { date_of_birth, visa_expiration } = data;
+      try {
+        await api.put(`/prospects/${id}`, {
+          ...data,
+          date_of_birth: date_of_birth
+            ? format(date_of_birth, "yyyy-MM-dd")
+            : null,
+          visa_expiration: visa_expiration
+            ? format(visa_expiration, "yyyy-MM-dd")
+            : null,
         });
         setSuccessfullyUpdated(true);
+        toast("Saved!", { autoClose: 1000 });
         handleOpened(null);
+      } catch (err) {
+        console.log(err);
+        // toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     }
   }
@@ -562,44 +457,47 @@ export default function PagePreview({
                           title="GENERAL"
                           activeMenu={activeMenu === "general"}
                         >
-                          {auth.filial.id === 1 && (
-                            <InputLine title="Filial">
-                              <SelectPopover
-                                name="filial_id"
-                                required
-                                title="Filial"
-                                isSearchable
-                                defaultValue={filialOptions.filter(
-                                  (filial) =>
-                                    filial.value === pageData.filial_id
-                                )}
-                                onChange={(el) => {
-                                  setPageData({
-                                    ...pageData,
-                                    searchFields: {
-                                      ...pageData.searchFields,
-                                      filial_id: el.value,
-                                    },
-                                  });
-                                }}
-                                options={filialOptions}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-                          )}
-                          <InputLine title="Agent">
-                            <SelectPopover
-                              name="agent_id"
-                              required
-                              title="Responsible Agent"
-                              isSearchable
-                              defaultValue={agentOptions.filter(
-                                (agent) => agent.value === pageData.agent_id
-                              )}
-                              options={agentOptions}
-                              InputContext={InputContext}
-                            />
-                          </InputLine>
+                          <FindGeneric
+                            route="filials"
+                            title="Filial"
+                            scope="filial"
+                            required
+                            InputContext={InputContext}
+                            defaultValue={
+                              id === "new" && auth.filial.id !== 1
+                                ? {
+                                    id: auth.filial.id,
+                                    name: auth.filial.name,
+                                  }
+                                : {
+                                    id: pageData.filial?.id,
+                                    name: pageData.filial?.name,
+                                  }
+                            }
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                          />
+                          <FindGeneric
+                            route="agents"
+                            title="Responsible Agent"
+                            scope="agent"
+                            required
+                            InputContext={InputContext}
+                            defaultValue={{
+                              id: pageData.agent?.id,
+                              name: pageData.agent?.name,
+                            }}
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                          />
                           <InputLine title="General Data">
                             <Input
                               type="hidden"
@@ -703,7 +601,41 @@ export default function PagePreview({
                               InputContext={InputContext}
                             />
                           </InputLine>
-                          <InputLine title="Enrollment">
+                          <FindGeneric
+                            route="processtypes"
+                            title="Type"
+                            scope="processtypes"
+                            required
+                            InputContext={InputContext}
+                            defaultValue={{
+                              id: pageData.processtypes?.id,
+                              name: pageData.processtypes?.name,
+                            }}
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                          />
+                          <FindGeneric
+                            route="processsubstatuses"
+                            title="Sub Status"
+                            scope="processsubstatuses"
+                            required
+                            InputContext={InputContext}
+                            defaultValue={{
+                              id: pageData.processsubstatuses?.id,
+                              name: pageData.processsubstatuses?.name,
+                            }}
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                          />
+                          {/* <InputLine title="Enrollment">
                             <SelectPopover
                               name="processtype_id"
                               grow
@@ -762,7 +694,7 @@ export default function PagePreview({
                               )}
                               InputContext={InputContext}
                             />
-                          </InputLine>
+                          </InputLine> */}
 
                           <PricesSimulation
                             student={pageData}
@@ -874,19 +806,9 @@ export default function PagePreview({
                         >
                           <div className="px-4 w-full flex flex-col">
                             <h2 className="text-xl font-bold w-full text-left pb-4">
-                              {pageData.typesOptions.length > 0 &&
-                                pageData.processtype_id &&
-                                pageData.typesOptions.find(
-                                  (type) =>
-                                    type.value === pageData.processtype_id
-                                ).label}
+                              {pageData.processtypes?.name}
                               {" - "}
-                              {pageData.processsubstatus_id &&
-                                pageData.subStatusOptions.find(
-                                  (subStatus) =>
-                                    subStatus.value ===
-                                    pageData.processsubstatus_id
-                                ).label}
+                              {pageData.processsubstatuses?.name}
                             </h2>
                             <div className="w-full flex flex-col items-center justify-start text-center border border-gray-200 border-b-0">
                               {pageData.enrollmentProcess &&

@@ -79,6 +79,8 @@ import FinancialRecurrence from "./pages/Financial/Inbounds/Recurrence";
 import FinancialSettlement from "./pages/Financial/Inbounds/Settlement";
 import PayeesRecurrence from "./pages/Financial/Outbounds/Recurrence";
 import PayeesSettlement from "./pages/Financial/Outbounds/Settlement";
+import Classrooms from "./pages/Administrative/Classroom";
+import Studentgroups from "./pages/Administrative/Studentgroup";
 
 injectStore(store);
 
@@ -166,6 +168,14 @@ const router = createBrowserRouter([
           {
             path: "/Administrative/Staffs",
             element: <AdministrativeStaffs />,
+          },
+          {
+            path: "/Administrative/Classrooms",
+            element: <Classrooms />,
+          },
+          {
+            path: "/Administrative/StudentGroups",
+            element: <Studentgroups />,
           },
           {
             path: "/Administrative/*",

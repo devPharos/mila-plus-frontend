@@ -29,7 +29,7 @@ export const optionsStatus = [
 ];
 export const optionsCategory = [
   { value: "Student", label: "Student" },
-  { value: "Ex-Student", label: "Ex-Student" },
+  { value: "Ex-student", label: "Ex-student" },
 ];
 export const optionsSubStatus = [
   { value: 1, label: "Initial Visa", type_id: 1 },
@@ -225,4 +225,8 @@ export const employeeSubtypeOptions = [
 export const wageTypeOptions = [
   { value: "Hourly", label: "Hourly" },
   { value: "Salary", label: "Salary" },
+];
+export const classroomStatusOptions = [
+  { value: "Active", label: "Active" },
+  { value: "Inactive", label: "Inactive" },
 ];

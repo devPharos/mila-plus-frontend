@@ -51,6 +51,18 @@ function App() {
           title: "Staff",
           icon: "Users",
         },
+        {
+          alias: "classrooms",
+          path: "/Administrative/Classrooms",
+          title: "Classrooms",
+          icon: "Armchair",
+        },
+        {
+          alias: "studentgroups",
+          path: "/Administrative/StudentGroups",
+          title: "Student Groups",
+          icon: "GraduationCap",
+        },
       ],
     },
     {

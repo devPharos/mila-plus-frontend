@@ -95,7 +95,12 @@ const Input = ({
     inputRef.current.readOnly = value;
   }
 
-  const width = shrink ? "w-full md:w-auto max-w-32" : "w-full md:w-auto";
+  const width =
+    shrink === 2
+      ? "w-full md:w-auto max-w-8"
+      : shrink
+      ? "w-full md:w-auto max-w-32"
+      : "w-full md:w-auto";
   return (
     <div
       className={`${className} ${

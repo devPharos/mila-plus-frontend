@@ -1,5 +1,5 @@
 import { Form } from "@unform/web";
-import { GraduationCap, Trash } from "lucide-react";
+import { Calendar, GraduationCap, Trash } from "lucide-react";
 import React, {
   createContext,
   useContext,
@@ -54,6 +54,7 @@ export default function PagePreview({
     students: [],
     start_date: null,
     end_date: null,
+    classes: [],
   });
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
@@ -210,6 +211,15 @@ export default function PagePreview({
               messageOnDisabled="Create the student group to have access to students."
             >
               <GraduationCap size={16} /> Students
+            </RegisterFormMenu>
+            <RegisterFormMenu
+              setActiveMenu={setActiveMenu}
+              activeMenu={activeMenu}
+              name="Class Dates"
+              disabled={pageData.classes.length === 0}
+              messageOnDisabled="Create the student group to have access to class dates."
+            >
+              <Calendar size={16} /> Class Dates
             </RegisterFormMenu>
           </div>
           <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
@@ -707,6 +717,48 @@ export default function PagePreview({
                               })}
                           </div>
                         </InputLine>
+                      </InputLineGroup>
+                      <InputLineGroup
+                        title="Class Dates"
+                        activeMenu={activeMenu === "Class Dates"}
+                      >
+                        {pageData.classes.map((classDate, index) => {
+                          return (
+                            <InputLine
+                              key={index}
+                              title={index === 0 && "Class Dates"}
+                            >
+                              <div className="mt-3 text-xs">#{index + 1}</div>
+                              <Input
+                                type="date"
+                                name="day"
+                                title="Date"
+                                readOnly
+                                shrink
+                                defaultValue={classDate.date}
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="text"
+                                name="weekday"
+                                title="Weekday"
+                                readOnly
+                                shrink
+                                defaultValue={classDate.weekday}
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="text"
+                                name="shift"
+                                title="Shift"
+                                readOnly
+                                grow
+                                defaultValue={classDate.shift}
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+                          );
+                        })}
                       </InputLineGroup>
                     </>
                   ) : (

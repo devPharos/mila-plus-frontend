@@ -1,12 +1,9 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect } from "react";
 import PagePreview from "./Preview";
 import { useSelector } from "react-redux";
 import { FullGridContext } from "..";
 import { getData } from "~/functions/gridFunctions";
 import PageContainer from "~/components/PageContainer";
-import { AlertContext } from "~/App";
-import { toast } from "react-toastify";
-import api from "~/services/api";
 import { format, parseISO } from "date-fns";
 
 export default function Studentgroups() {
@@ -147,7 +144,7 @@ export default function Studentgroups() {
             staff_name,
             students.length,
             format(parseISO(start_date), "MM/dd/yyyy"),
-            format(parseISO(end_date), "MM/dd/yyyy"),
+            end_date ? format(parseISO(end_date), "MM/dd/yyyy") : "",
           ],
           selectable: true,
           canceled: canceled_at,

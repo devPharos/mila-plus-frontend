@@ -89,7 +89,10 @@ const FindGeneric = ({
             {fields.map((field, index) => {
               let retValue = selected[field.name];
               if (field.model && selected[field.model]) {
-                retValue = selected[field.model][field.name];
+                retValue = selected[field.model];
+                if (typeof selected[field.model] === "object") {
+                  retValue = selected[field.model][field.name];
+                }
               } else if (field.field && selected[field.field]) {
                 retValue = selected[field.field].id;
               }
@@ -103,7 +106,7 @@ const FindGeneric = ({
                   title={field.title}
                   required={index === 0 ? required : false}
                   readOnlyOnFocus
-                  readOnly={readOnly}
+                  readOnly={index === 0 ? readOnly : true}
                   grow
                   defaultValue={retValue}
                   InputContext={InputContext}

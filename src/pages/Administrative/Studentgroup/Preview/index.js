@@ -1,5 +1,5 @@
 import { Form } from "@unform/web";
-import { Armchair, GraduationCap, Trash } from "lucide-react";
+import { GraduationCap, Trash } from "lucide-react";
 import React, {
   createContext,
   useContext,
@@ -15,7 +15,7 @@ import InputLine from "~/components/RegisterForm/InputLine";
 import InputLineGroup from "~/components/RegisterForm/InputLineGroup";
 import FormHeader from "~/components/RegisterForm/FormHeader";
 import Preview from "~/components/Preview";
-import { getRegistries, handleUpdatedFields } from "~/functions";
+import { getRegistries } from "~/functions";
 import { format, parseISO } from "date-fns";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
@@ -24,10 +24,8 @@ import FindGeneric from "~/components/Finds/FindGeneric";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import {
   classroomStatusOptions,
-  optionsStatus,
   yesOrNoOptions,
 } from "~/functions/selectPopoverOptions";
-import DatePicker from "~/components/RegisterForm/DatePicker";
 import { Scope } from "@unform/core";
 
 export const InputContext = createContext({});
@@ -123,13 +121,9 @@ export default function PagePreview({
       });
       return;
     }
-    const { start_date, end_date } = data;
-    console.log({ start_date, end_date });
+    const { start_date } = data;
     if (start_date) {
       data.start_date = format(parseISO(start_date), "yyyyMMdd");
-    }
-    if (end_date) {
-      data.end_date = format(parseISO(end_date), "yyyyMMdd");
     }
     if (id === "new") {
       try {
@@ -287,9 +281,14 @@ export default function PagePreview({
                             title="Status"
                             readOnly={pageData.students.length > 0}
                             isSearchable
-                            defaultValue={classroomStatusOptions.find(
-                              (opt) => opt.value === pageData.status
-                            )}
+                            defaultValue={
+                              classroomStatusOptions.find(
+                                (opt) => opt.value === pageData.status
+                              ) ||
+                              classroomStatusOptions.find(
+                                (opt) => opt.value === "In Formation"
+                              )
+                            }
                             options={classroomStatusOptions}
                             InputContext={InputContext}
                           />
@@ -328,10 +327,9 @@ export default function PagePreview({
                           <Input
                             type="date"
                             name="end_date"
-                            required
+                            readOnly
                             grow
                             title="End Date"
-                            readOnly={pageData.students.length > 0}
                             defaultValue={
                               pageData?.end_date
                                 ? format(
@@ -353,7 +351,7 @@ export default function PagePreview({
                           defaultValue={{
                             id: pageData.level?.id,
                             name: pageData.level?.name,
-                            programcategory:
+                            Programcategory:
                               pageData.level?.Programcategory?.name,
                           }}
                           setReturnFindGeneric={(level) =>
@@ -399,6 +397,185 @@ export default function PagePreview({
                           ]}
                         />
                         <FindGeneric
+                          route="workloads"
+                          title="Workload"
+                          scope="workload"
+                          required
+                          type={
+                            returnToWorkload.level_id +
+                            "," +
+                            returnToWorkload.languagemode_id
+                          }
+                          InputContext={InputContext}
+                          readOnly={pageData.students.length > 0}
+                          defaultValue={{
+                            id: pageData.workload?.id,
+                            name: pageData.workload?.name,
+                            Level: pageData.level?.name,
+                            Languagemode: pageData.languagemode?.name,
+                          }}
+                          fields={[
+                            {
+                              title: "Name",
+                              name: "name",
+                            },
+                            {
+                              title: "Level",
+                              name: "name",
+                              model: "Level",
+                            },
+                            {
+                              title: "Language Mode",
+                              name: "name",
+                              model: "Languagemode",
+                            },
+                          ]}
+                        />
+                        <InputLine title="Week days">
+                          <SelectPopover
+                            name="monday"
+                            grow
+                            title="Monday"
+                            readOnly={pageData.students.length > 0}
+                            options={yesOrNoOptions}
+                            isSearchable
+                            defaultValue={
+                              yesOrNoOptions.find(
+                                (type) => type.value === pageData.monday
+                              ) || yesOrNoOptions[1]
+                            }
+                            InputContext={InputContext}
+                          />
+                          <SelectPopover
+                            name="tuesday"
+                            grow
+                            title="Tuesday"
+                            readOnly={pageData.students.length > 0}
+                            options={yesOrNoOptions}
+                            isSearchable
+                            defaultValue={
+                              yesOrNoOptions.find(
+                                (type) => type.value === pageData.tuesday
+                              ) || yesOrNoOptions[1]
+                            }
+                            InputContext={InputContext}
+                          />
+                          <SelectPopover
+                            name="wednesday"
+                            grow
+                            title="Wednesday"
+                            readOnly={pageData.students.length > 0}
+                            options={yesOrNoOptions}
+                            isSearchable
+                            defaultValue={
+                              yesOrNoOptions.find(
+                                (type) => type.value === pageData.wednesday
+                              ) || yesOrNoOptions[1]
+                            }
+                            InputContext={InputContext}
+                          />
+                          <SelectPopover
+                            name="thursday"
+                            grow
+                            title="Thursday"
+                            readOnly={pageData.students.length > 0}
+                            options={yesOrNoOptions}
+                            isSearchable
+                            defaultValue={
+                              yesOrNoOptions.find(
+                                (type) => type.value === pageData.thursday
+                              ) || yesOrNoOptions[1]
+                            }
+                            InputContext={InputContext}
+                          />
+                          <SelectPopover
+                            name="friday"
+                            grow
+                            title="Friday"
+                            readOnly={pageData.students.length > 0}
+                            options={yesOrNoOptions}
+                            isSearchable
+                            defaultValue={
+                              yesOrNoOptions.find(
+                                (type) => type.value === pageData.friday
+                              ) || yesOrNoOptions[1]
+                            }
+                            InputContext={InputContext}
+                          />
+                          <SelectPopover
+                            name="saturday"
+                            grow
+                            title="Saturday"
+                            readOnly={pageData.students.length > 0}
+                            options={yesOrNoOptions}
+                            isSearchable
+                            defaultValue={
+                              yesOrNoOptions.find(
+                                (type) => type.value === pageData.saturday
+                              ) || yesOrNoOptions[1]
+                            }
+                            InputContext={InputContext}
+                          />
+                          <SelectPopover
+                            name="sunday"
+                            grow
+                            title="Sunday"
+                            readOnly={pageData.students.length > 0}
+                            options={yesOrNoOptions}
+                            isSearchable
+                            defaultValue={
+                              yesOrNoOptions.find(
+                                (type) => type.value === pageData.sunday
+                              ) || yesOrNoOptions[1]
+                            }
+                            InputContext={InputContext}
+                          />
+                        </InputLine>
+                        <InputLine title="Shift">
+                          <SelectPopover
+                            name="morning"
+                            grow
+                            title="Morning"
+                            readOnly={pageData.students.length > 0}
+                            options={yesOrNoOptions}
+                            isSearchable
+                            defaultValue={
+                              yesOrNoOptions.find(
+                                (type) => type.value === pageData.morning
+                              ) || yesOrNoOptions[1]
+                            }
+                            InputContext={InputContext}
+                          />
+                          <SelectPopover
+                            name="afternoon"
+                            grow
+                            title="Afternoon"
+                            readOnly={pageData.students.length > 0}
+                            options={yesOrNoOptions}
+                            isSearchable
+                            defaultValue={
+                              yesOrNoOptions.find(
+                                (type) => type.value === pageData.afternoon
+                              ) || yesOrNoOptions[1]
+                            }
+                            InputContext={InputContext}
+                          />
+                          <SelectPopover
+                            name="evening"
+                            grow
+                            title="Evening"
+                            readOnly={pageData.students.length > 0}
+                            options={yesOrNoOptions}
+                            isSearchable
+                            defaultValue={
+                              yesOrNoOptions.find(
+                                (type) => type.value === pageData.evening
+                              ) || yesOrNoOptions[1]
+                            }
+                            InputContext={InputContext}
+                          />
+                        </InputLine>
+                        <FindGeneric
                           route="classrooms"
                           title="Classroom"
                           scope="classroom"
@@ -419,41 +596,6 @@ export default function PagePreview({
                             {
                               title: "Quantity of Students",
                               name: "quantity_of_students",
-                            },
-                          ]}
-                        />
-                        <FindGeneric
-                          route="workloads"
-                          title="Workload"
-                          scope="workload"
-                          required
-                          type={
-                            returnToWorkload.level_id +
-                            "," +
-                            returnToWorkload.languagemode_id
-                          }
-                          InputContext={InputContext}
-                          readOnly={pageData.students.length > 0}
-                          defaultValue={{
-                            id: pageData.workload?.id,
-                            name: pageData.workload?.name,
-                            level: pageData.workload?.level?.name,
-                            languagemode: pageData.workload?.languagemode?.name,
-                          }}
-                          fields={[
-                            {
-                              title: "Name",
-                              name: "name",
-                            },
-                            {
-                              title: "Level",
-                              name: "name",
-                              model: "Level",
-                            },
-                            {
-                              title: "Language Mode",
-                              name: "name",
-                              model: "Languagemode",
                             },
                           ]}
                         />

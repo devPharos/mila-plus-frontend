@@ -769,15 +769,19 @@ export default function PagePreview({
                                   <td className="text-xs px-1 py-2">
                                     <div className="flex flex-row items-center justify-start gap-2">
                                       {classDate.paceguides &&
-                                        classDate.paceguides.map(
-                                          (paceGuide) => {
+                                        classDate.paceguides
+                                          .sort((a, b) =>
+                                            a.description < b.description
+                                              ? -1
+                                              : 1
+                                          )
+                                          .map((paceGuide) => {
                                             return (
                                               <div className="text-xs px-2 py-1 bg-gray-100 transition-all ease-in hover:bg-primary hover:text-white border rounded-md">
                                                 {paceGuide.description}
                                               </div>
                                             );
-                                          }
-                                        )}
+                                          })}
                                     </div>
                                   </td>
                                 </tr>

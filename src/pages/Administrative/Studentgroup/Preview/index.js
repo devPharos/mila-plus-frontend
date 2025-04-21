@@ -756,6 +756,15 @@ export default function PagePreview({
                                 defaultValue={classDate.shift}
                                 InputContext={InputContext}
                               />
+                              <Input
+                                type="text"
+                                name="notes"
+                                title="Notes"
+                                readOnly
+                                grow
+                                defaultValue={classDate.notes}
+                                InputContext={InputContext}
+                              />
                             </InputLine>
                           );
                         })}

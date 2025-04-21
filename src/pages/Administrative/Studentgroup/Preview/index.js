@@ -727,10 +727,10 @@ export default function PagePreview({
                         <table className="w-full">
                           <thead>
                             <tr>
-                              <th className="text-xs bg-white border rounded p-2 hover:bg-gray-100 text-left">
+                              <th className="text-xs bg-white border rounded p-2 hover:bg-gray-100 text-center">
                                 #
                               </th>
-                              <th className="text-xs bg-white border rounded p-2 hover:bg-gray-100 text-left">
+                              <th className="text-xs bg-white border rounded p-2 hover:bg-gray-100 text-center">
                                 Date
                               </th>
                               <th className="text-xs bg-white border rounded p-2 hover:bg-gray-100 text-left">
@@ -753,11 +753,13 @@ export default function PagePreview({
                                       {index + 1}
                                     </div>
                                   </td>
-                                  <td className="text-xs px-1 py-2">
-                                    {format(
-                                      parseISO(classDate.date),
-                                      "MM/dd/yyyy"
-                                    )}
+                                  <td className="text-xs px-1 py-2 text-center">
+                                    <strong className="text-sm">
+                                      {format(
+                                        parseISO(classDate.date),
+                                        "MM/dd"
+                                      )}
+                                    </strong>
                                     <br />
                                     {classDate.weekday}
                                   </td>

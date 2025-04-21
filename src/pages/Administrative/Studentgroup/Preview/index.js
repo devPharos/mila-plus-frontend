@@ -82,6 +82,10 @@ export default function PagePreview({
             ...data,
             loaded: true,
           });
+          setReturnToWorkload({
+            level_id: data.level?.id,
+            languagemode_id: data.languagemode?.id,
+          });
           const {
             created_by,
             created_at,

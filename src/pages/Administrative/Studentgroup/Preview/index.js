@@ -677,7 +677,7 @@ export default function PagePreview({
                                           name="name"
                                           grow
                                           readOnly
-                                          title="Name"
+                                          title={index === 0 && "Name"}
                                           defaultValue={student.name}
                                           InputContext={InputContext}
                                         />
@@ -686,7 +686,7 @@ export default function PagePreview({
                                           name="last_name"
                                           grow
                                           readOnly
-                                          title="Last Name"
+                                          title={index === 0 && "Last Name"}
                                           defaultValue={student.last_name}
                                           InputContext={InputContext}
                                         />
@@ -695,7 +695,9 @@ export default function PagePreview({
                                           name="registration_number"
                                           grow
                                           readOnly
-                                          title="Registration Number"
+                                          title={
+                                            index === 0 && "Registration Number"
+                                          }
                                           defaultValue={
                                             student.registration_number
                                           }
@@ -706,7 +708,7 @@ export default function PagePreview({
                                           name="status"
                                           grow
                                           readOnly
-                                          title="Status"
+                                          title={index === 0 && "Status"}
                                           defaultValue={student.status}
                                           InputContext={InputContext}
                                         />
@@ -722,52 +724,65 @@ export default function PagePreview({
                         title="Class Dates"
                         activeMenu={activeMenu === "Class Dates"}
                       >
-                        {pageData.classes.map((classDate, index) => {
-                          return (
-                            <InputLine
-                              key={index}
-                              title={index === 0 && "Class Dates"}
-                            >
-                              <div className="mt-3 text-xs">#{index + 1}</div>
-                              <Input
-                                type="date"
-                                name="day"
-                                title="Date"
-                                readOnly
-                                shrink
-                                defaultValue={classDate.date}
-                                InputContext={InputContext}
-                              />
-                              <Input
-                                type="text"
-                                name="weekday"
-                                title="Weekday"
-                                readOnly
-                                shrink
-                                defaultValue={classDate.weekday}
-                                InputContext={InputContext}
-                              />
-                              {/* <Input
-                                type="text"
-                                name="shift"
-                                title="Shift"
-                                readOnly
-                                grow
-                                defaultValue={classDate.shift}
-                                InputContext={InputContext}
-                              /> */}
-                              <Input
-                                type="text"
-                                name="notes"
-                                title="Notes"
-                                readOnly
-                                grow
-                                defaultValue={classDate.notes}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-                          );
-                        })}
+                        <table className="w-full">
+                          <thead>
+                            <tr>
+                              <th className="text-xs bg-white border rounded p-2 hover:bg-gray-100 text-left">
+                                #
+                              </th>
+                              <th className="text-xs bg-white border rounded p-2 hover:bg-gray-100 text-left">
+                                Date
+                              </th>
+                              <th className="text-xs bg-white border rounded p-2 hover:bg-gray-100 text-left">
+                                Notes
+                              </th>
+                              <th className="text-xs bg-white border rounded p-2 hover:bg-gray-100 text-left">
+                                Content Planned
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {pageData.classes.map((classDate, index) => {
+                              return (
+                                <tr
+                                  key={index}
+                                  className="text-xs hover:bg-gray-50 border-b"
+                                >
+                                  <td className="text-xs px-1 py-2">
+                                    <div className="text-center">
+                                      {index + 1}
+                                    </div>
+                                  </td>
+                                  <td className="text-xs px-1 py-2">
+                                    {format(
+                                      parseISO(classDate.date),
+                                      "MM/dd/yyyy"
+                                    )}
+                                    <br />
+                                    {classDate.weekday}
+                                  </td>
+                                  <td className="text-xs px-1 py-2">
+                                    {classDate.notes}
+                                  </td>
+                                  <td className="text-xs px-1 py-2">
+                                    <div className="flex flex-row items-center justify-start gap-2">
+                                      {classDate.paceguides &&
+                                        classDate.paceguides.map(
+                                          (paceGuide) => {
+                                            return (
+                                              <div className="text-xs px-2 py-1 bg-gray-100 transition-all ease-in hover:bg-primary hover:text-white border rounded-md">
+                                                {paceGuide.description}
+                                              </div>
+                                            );
+                                          }
+                                        )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
                       </InputLineGroup>
                     </>
                   ) : (

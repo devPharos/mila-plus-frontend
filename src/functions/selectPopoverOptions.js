@@ -232,3 +232,11 @@ export const classroomStatusOptions = [
   { value: "In Formation", label: "In Formation" },
   { value: "Ongoing", label: "Ongoing" },
 ];
+export const typeOptions = [
+  { value: "Administrative", label: "Administrative" },
+  { value: "Academic", label: "Academic" },
+];
+export const dateTypeOptions = [
+  { value: "Break", label: "Break" },
+  { value: "Holiday", label: "Holiday" },
+];

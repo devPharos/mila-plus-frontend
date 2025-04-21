@@ -74,7 +74,7 @@ const CheckboxInput = ({
         />{" "}
         <label
           htmlFor={name}
-          className="cursor-pointer text-md flex-1 flex flex-row"
+          className="cursor-pointer text-xs flex-1 flex flex-row"
         >
           {title} {required && <Asterisk color="#e00" size={12} />}
         </label>

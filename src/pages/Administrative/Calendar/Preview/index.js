@@ -22,6 +22,7 @@ import { useSelector } from "react-redux";
 import DatePicker from "~/components/RegisterForm/DatePicker";
 import { format, parseISO } from "date-fns";
 import { FullGridContext } from "../..";
+import { dateTypeOptions, typeOptions } from "~/functions/selectPopoverOptions";
 
 export const InputContext = createContext({});
 
@@ -58,7 +59,6 @@ export default function PagePreview({
   const [filialOptions, setFilialOptions] = useState([]);
   const generalForm = useRef();
   const auth = useSelector((state) => state.auth);
-  const typeOptions = [{ value: "Administrative", label: "Administrative" }];
 
   useEffect(() => {
     async function getDefaultFilialOptions() {
@@ -298,6 +298,16 @@ export default function PagePreview({
                                 (type) => type.value === pageData.type
                               )}
                               options={typeOptions}
+                              InputContext={InputContext}
+                            />
+                            <SelectPopover
+                              name="date_type"
+                              required
+                              title="Date Type"
+                              defaultValue={dateTypeOptions.find(
+                                (type) => type.value === pageData.date_type
+                              )}
+                              options={dateTypeOptions}
                               InputContext={InputContext}
                             />
                             <Input

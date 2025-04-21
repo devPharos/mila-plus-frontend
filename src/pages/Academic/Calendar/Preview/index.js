@@ -21,6 +21,7 @@ import FormLoading from "~/components/RegisterForm/FormLoading";
 import { format, parseISO } from "date-fns";
 import { FullGridContext } from "../..";
 import FindGeneric from "~/components/Finds/FindGeneric";
+import { dateTypeOptions, typeOptions } from "~/functions/selectPopoverOptions";
 
 export const InputContext = createContext({});
 
@@ -50,10 +51,6 @@ export default function PagePreview({
     canceled_at: null,
   });
   const generalForm = useRef();
-  const typeOptions = [
-    { value: "Administrative", label: "Administrative" },
-    { value: "Academic", label: "Academic" },
-  ];
 
   useEffect(() => {
     async function getPageData() {
@@ -281,6 +278,16 @@ export default function PagePreview({
                                 (type) => type.value === pageData.type
                               )}
                               options={typeOptions}
+                              InputContext={InputContext}
+                            />
+                            <SelectPopover
+                              name="date_type"
+                              required
+                              title="Date Type"
+                              defaultValue={dateTypeOptions.find(
+                                (type) => type.value === pageData.date_type
+                              )}
+                              options={dateTypeOptions}
                               InputContext={InputContext}
                             />
                             <Input

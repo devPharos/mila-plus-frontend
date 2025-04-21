@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { useField } from "@unform/core";
 import { Asterisk } from "lucide-react";
 
@@ -13,7 +13,9 @@ const CheckboxInput = ({
 }) => {
   const inputRef = useRef();
   const { fieldName, registerField, error } = useField(name);
-  const { disabled, required, defaultValue } = { ...rest };
+  const { disabled, required, defaultValue, value, onChange } = { ...rest };
+
+  const [checkedValue, setCheckedValue] = useState(defaultValue || false);
 
   useEffect(() => {
     registerField({
@@ -31,11 +33,24 @@ const CheckboxInput = ({
     });
   }, [fieldName, registerField]);
 
-  const { setSuccessfullyUpdated } = useContext(InputContext);
+  useEffect(() => {
+    if (defaultValue) {
+      inputRef.current.value = defaultValue;
+      setCheckedValue(defaultValue);
+    }
+  }, []);
+
+  const { generalForm, setSuccessfullyUpdated } = useContext(InputContext);
+
+  function handleChange(e, inputRef) {
+    inputRef.current.value = e.target.checked;
+    setSuccessfullyUpdated(false);
+    setCheckedValue(e.target.checked);
+  }
 
   return (
     <div
-      className={`${
+      className={`cursor-pointer ${
         type === "hidden" ? "hidden" : "flex"
       } flex-col justify-center items-start relative ${shrink ? "w-32" : ""} ${
         grow ? "grow" : "max-w-48"
@@ -43,21 +58,24 @@ const CheckboxInput = ({
     >
       <div
         htmlFor={name}
-        className={`w-full border rounded-lg p-2 px-4 text-sm flex flex-row justify-start items-center gap-2 ${
+        className={`w-full border-b hover:bg-gray-50 rounded-lg p-2 px-4 text-sm flex flex-row justify-start items-center gap-2 ${
           disabled && "bg-gray-100"
         } ${error && "border-red-300"}`}
       >
+        <input type="hidden" name={name} ref={inputRef} value={checkedValue} />
         <input
           id={name}
-          name={name}
-          ref={inputRef}
+          name={name + "_checkbox"}
           type="checkbox"
-          checked={defaultValue}
-          onChange={() => setSuccessfullyUpdated(false)}
+          checked={checkedValue}
+          onChange={(e) => handleChange(e, inputRef)}
           {...rest}
-          className="text-sm focus:outline-none bg-transparent"
+          className="cursor-pointer text-sm focus:outline-none bg-transparent"
         />{" "}
-        <label htmlFor={name} className="text-md flex-1 flex flex-row">
+        <label
+          htmlFor={name}
+          className="cursor-pointer text-md flex-1 flex flex-row"
+        >
           {title} {required && <Asterisk color="#e00" size={12} />}
         </label>
       </div>

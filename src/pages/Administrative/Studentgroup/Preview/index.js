@@ -27,6 +27,7 @@ import {
   yesOrNoOptions,
 } from "~/functions/selectPopoverOptions";
 import { Scope } from "@unform/core";
+import CheckboxInput from "~/components/RegisterForm/CheckboxInput";
 
 export const InputContext = createContext({});
 
@@ -435,147 +436,107 @@ export default function PagePreview({
                             },
                           ]}
                         />
-                        <InputLine title="Week days">
-                          <SelectPopover
+                        <InputLine title="Week days" left>
+                          <CheckboxInput
                             name="monday"
-                            grow
+                            shrink
                             title="Monday"
                             readOnly={pageData.students.length > 0}
                             options={yesOrNoOptions}
                             isSearchable
-                            defaultValue={
-                              yesOrNoOptions.find(
-                                (type) => type.value === pageData.monday
-                              ) || yesOrNoOptions[1]
-                            }
+                            defaultValue={pageData.monday}
                             InputContext={InputContext}
                           />
-                          <SelectPopover
+                          <CheckboxInput
                             name="tuesday"
-                            grow
+                            shrink
                             title="Tuesday"
                             readOnly={pageData.students.length > 0}
                             options={yesOrNoOptions}
-                            isSearchable
-                            defaultValue={
-                              yesOrNoOptions.find(
-                                (type) => type.value === pageData.tuesday
-                              ) || yesOrNoOptions[1]
-                            }
+                            isSearchable={false}
+                            defaultValue={pageData.tuesday}
                             InputContext={InputContext}
                           />
-                          <SelectPopover
+                          <CheckboxInput
                             name="wednesday"
-                            grow
+                            shrink
                             title="Wednesday"
                             readOnly={pageData.students.length > 0}
                             options={yesOrNoOptions}
-                            isSearchable
-                            defaultValue={
-                              yesOrNoOptions.find(
-                                (type) => type.value === pageData.wednesday
-                              ) || yesOrNoOptions[1]
-                            }
+                            isSearchable={false}
+                            defaultValue={pageData.wednesday}
                             InputContext={InputContext}
                           />
-                          <SelectPopover
+                          <CheckboxInput
                             name="thursday"
-                            grow
+                            shrink
                             title="Thursday"
                             readOnly={pageData.students.length > 0}
                             options={yesOrNoOptions}
-                            isSearchable
-                            defaultValue={
-                              yesOrNoOptions.find(
-                                (type) => type.value === pageData.thursday
-                              ) || yesOrNoOptions[1]
-                            }
+                            isSearchable={false}
+                            defaultValue={pageData.thursday}
                             InputContext={InputContext}
                           />
-                          <SelectPopover
+                          <CheckboxInput
                             name="friday"
-                            grow
+                            shrink
                             title="Friday"
                             readOnly={pageData.students.length > 0}
                             options={yesOrNoOptions}
-                            isSearchable
-                            defaultValue={
-                              yesOrNoOptions.find(
-                                (type) => type.value === pageData.friday
-                              ) || yesOrNoOptions[1]
-                            }
+                            isSearchable={false}
+                            defaultValue={pageData.friday}
                             InputContext={InputContext}
                           />
-                          <SelectPopover
+                          <CheckboxInput
                             name="saturday"
-                            grow
+                            shrink
                             title="Saturday"
                             readOnly={pageData.students.length > 0}
                             options={yesOrNoOptions}
-                            isSearchable
-                            defaultValue={
-                              yesOrNoOptions.find(
-                                (type) => type.value === pageData.saturday
-                              ) || yesOrNoOptions[1]
-                            }
+                            isSearchable={false}
+                            defaultValue={pageData.saturday}
                             InputContext={InputContext}
                           />
-                          <SelectPopover
+                          <CheckboxInput
                             name="sunday"
-                            grow
+                            shrink
                             title="Sunday"
                             readOnly={pageData.students.length > 0}
                             options={yesOrNoOptions}
-                            isSearchable
-                            defaultValue={
-                              yesOrNoOptions.find(
-                                (type) => type.value === pageData.sunday
-                              ) || yesOrNoOptions[1]
-                            }
+                            isSearchable={false}
+                            defaultValue={pageData.sunday}
                             InputContext={InputContext}
                           />
                         </InputLine>
-                        <InputLine title="Shift">
-                          <SelectPopover
+                        <InputLine title="Shift" left>
+                          <CheckboxInput
                             name="morning"
-                            grow
+                            shrink
                             title="Morning"
                             readOnly={pageData.students.length > 0}
                             options={yesOrNoOptions}
-                            isSearchable
-                            defaultValue={
-                              yesOrNoOptions.find(
-                                (type) => type.value === pageData.morning
-                              ) || yesOrNoOptions[1]
-                            }
+                            isSearchable={false}
+                            defaultValue={pageData.morning}
                             InputContext={InputContext}
                           />
-                          <SelectPopover
+                          <CheckboxInput
                             name="afternoon"
-                            grow
+                            shrink
                             title="Afternoon"
                             readOnly={pageData.students.length > 0}
                             options={yesOrNoOptions}
-                            isSearchable
-                            defaultValue={
-                              yesOrNoOptions.find(
-                                (type) => type.value === pageData.afternoon
-                              ) || yesOrNoOptions[1]
-                            }
+                            isSearchable={false}
+                            defaultValue={pageData.afternoon}
                             InputContext={InputContext}
                           />
-                          <SelectPopover
+                          <CheckboxInput
                             name="evening"
-                            grow
+                            shrink
                             title="Evening"
                             readOnly={pageData.students.length > 0}
                             options={yesOrNoOptions}
-                            isSearchable
-                            defaultValue={
-                              yesOrNoOptions.find(
-                                (type) => type.value === pageData.evening
-                              ) || yesOrNoOptions[1]
-                            }
+                            isSearchable={false}
+                            defaultValue={pageData.evening}
                             InputContext={InputContext}
                           />
                         </InputLine>

@@ -747,7 +747,7 @@ export default function PagePreview({
                                 defaultValue={classDate.weekday}
                                 InputContext={InputContext}
                               />
-                              <Input
+                              {/* <Input
                                 type="text"
                                 name="shift"
                                 title="Shift"
@@ -755,7 +755,7 @@ export default function PagePreview({
                                 grow
                                 defaultValue={classDate.shift}
                                 InputContext={InputContext}
-                              />
+                              /> */}
                               <Input
                                 type="text"
                                 name="notes"

@@ -727,10 +727,10 @@ export default function PagePreview({
                         <table className="w-full relative overflow-hidden">
                           <thead className="sticky top-[95px] border-b bg-white">
                             <tr>
-                              <th className="text-xs bg-white border rounded p-2 hover:bg-gray-100 text-center">
+                              <th className="text-xs max-w-8 w-8 bg-white border rounded p-2 hover:bg-gray-100 text-center">
                                 #
                               </th>
-                              <th className="text-xs bg-white border rounded p-2 hover:bg-gray-100 text-center">
+                              <th className="text-xs max-w-10 w-10 bg-white border rounded p-2 hover:bg-gray-100 text-center">
                                 Date
                               </th>
                               <th className="text-xs bg-white border rounded p-2 hover:bg-gray-100 text-left">

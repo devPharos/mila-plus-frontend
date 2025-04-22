@@ -742,51 +742,53 @@ export default function PagePreview({
                             </tr>
                           </thead>
                           <tbody>
-                            {pageData.classes.map((classDate, index) => {
-                              return (
-                                <tr
-                                  key={index}
-                                  className="text-xs hover:bg-gray-50 border-b"
-                                >
-                                  <td className="text-xs px-1 py-2">
-                                    <div className="text-center">
-                                      {index + 1}
-                                    </div>
-                                  </td>
-                                  <td className="text-xs px-1 py-2 text-center">
-                                    <strong className="text-sm">
-                                      {format(
-                                        parseISO(classDate.date),
-                                        "MM/dd"
-                                      )}
-                                    </strong>
-                                    <br />
-                                    {classDate.weekday}
-                                  </td>
-                                  <td className="text-xs px-1 py-2">
-                                    {classDate.notes}
-                                  </td>
-                                  <td className="text-xs px-1 py-2">
-                                    <div className="flex flex-row items-center justify-start gap-2">
-                                      {classDate.paceguides &&
-                                        classDate.paceguides
-                                          .sort((a, b) =>
-                                            a.description < b.description
-                                              ? -1
-                                              : 1
-                                          )
-                                          .map((paceGuide) => {
-                                            return (
-                                              <div className="text-xs px-2 py-1 bg-gray-100 transition-all ease-in hover:bg-primary hover:text-white border rounded-md">
-                                                {paceGuide.description}
-                                              </div>
-                                            );
-                                          })}
-                                    </div>
-                                  </td>
-                                </tr>
-                              );
-                            })}
+                            {pageData.classes
+                              .sort((a, b) => (a.date < b.date ? -1 : 1))
+                              .map((classDate, index) => {
+                                return (
+                                  <tr
+                                    key={index}
+                                    className="text-xs hover:bg-gray-50 border-b"
+                                  >
+                                    <td className="text-xs px-1 py-2">
+                                      <div className="text-center">
+                                        {index + 1}
+                                      </div>
+                                    </td>
+                                    <td className="text-xs px-1 py-2 text-center">
+                                      <strong className="text-sm">
+                                        {format(
+                                          parseISO(classDate.date),
+                                          "MM/dd"
+                                        )}
+                                      </strong>
+                                      <br />
+                                      {classDate.weekday}
+                                    </td>
+                                    <td className="text-xs px-1 py-2">
+                                      {classDate.notes}
+                                    </td>
+                                    <td className="text-xs px-1 py-2">
+                                      <div className="flex flex-row items-center justify-start gap-2">
+                                        {classDate.paceguides &&
+                                          classDate.paceguides
+                                            .sort((a, b) =>
+                                              a.description < b.description
+                                                ? -1
+                                                : 1
+                                            )
+                                            .map((paceGuide) => {
+                                              return (
+                                                <div className="text-xs px-2 py-1 bg-gray-100 transition-all ease-in hover:bg-primary hover:text-white border rounded-md">
+                                                  {paceGuide.description}
+                                                </div>
+                                              );
+                                            })}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
                           </tbody>
                         </table>
                       </InputLineGroup>

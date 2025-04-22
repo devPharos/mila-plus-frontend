@@ -724,8 +724,8 @@ export default function PagePreview({
                         title="Class Dates"
                         activeMenu={activeMenu === "Class Dates"}
                       >
-                        <table className="w-full">
-                          <thead>
+                        <table className="w-full relative overflow-hidden">
+                          <thead className="sticky top-[95px] border-b bg-white">
                             <tr>
                               <th className="text-xs bg-white border rounded p-2 hover:bg-gray-100 text-center">
                                 #

@@ -294,7 +294,7 @@ export default function PagePreview({
                             required
                             grow
                             title="Status"
-                            readOnly={pageData.students.length > 0}
+                            readOnly
                             isSearchable
                             defaultValue={
                               classroomStatusOptions.find(

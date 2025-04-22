@@ -13,7 +13,9 @@ const CheckboxInput = ({
 }) => {
   const inputRef = useRef();
   const { fieldName, registerField, error } = useField(name);
-  const { disabled, required, defaultValue, value, onChange } = { ...rest };
+  const { disabled, required, defaultValue, readOnly, value, onChange } = {
+    ...rest,
+  };
 
   const [checkedValue, setCheckedValue] = useState(defaultValue || false);
 
@@ -68,6 +70,7 @@ const CheckboxInput = ({
           name={name + "_checkbox"}
           type="checkbox"
           checked={checkedValue}
+          disabled={readOnly}
           onChange={(e) => handleChange(e, inputRef)}
           {...rest}
           className="cursor-pointer text-sm focus:outline-none bg-transparent"

@@ -52,6 +52,7 @@ export default function PagePreview({
     workload: null,
     staff: null,
     students: [],
+    studentxgroups: [],
     start_date: null,
     end_date: null,
     classes: [],
@@ -74,6 +75,7 @@ export default function PagePreview({
     level_id: null,
     languagemode_id: null,
   });
+  const [filter, setFilter] = useState(null);
 
   useEffect(() => {
     async function getPageData() {
@@ -215,11 +217,11 @@ export default function PagePreview({
             <RegisterFormMenu
               setActiveMenu={setActiveMenu}
               activeMenu={activeMenu}
-              name="Class Dates"
+              name="Class Planning"
               disabled={pageData.classes.length === 0}
-              messageOnDisabled="Create the student group to have access to class dates."
+              messageOnDisabled="Create the student group to have access to Class Planning."
             >
-              <Calendar size={16} /> Class Dates
+              <Calendar size={16} /> Class Planning
             </RegisterFormMenu>
           </div>
           <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
@@ -259,7 +261,7 @@ export default function PagePreview({
                           title="Filial"
                           scope="filial"
                           required
-                          readOnly={pageData.students.length > 0}
+                          readOnly={pageData.status !== "In Formation"}
                           InputContext={InputContext}
                           defaultValue={
                             id === "new" && auth.filial.id !== 1
@@ -312,7 +314,7 @@ export default function PagePreview({
                             required
                             grow
                             title="Private"
-                            readOnly={pageData.students.length > 0}
+                            readOnly={pageData.status !== "In Formation"}
                             options={yesOrNoOptions}
                             isSearchable
                             defaultValue={yesOrNoOptions.find(
@@ -328,7 +330,7 @@ export default function PagePreview({
                             required
                             grow
                             title="Start Date"
-                            readOnly={pageData.students.length > 0}
+                            readOnly={pageData.status !== "In Formation"}
                             defaultValue={
                               pageData?.start_date
                                 ? format(
@@ -360,7 +362,7 @@ export default function PagePreview({
                           route="levels"
                           title="Level"
                           scope="level"
-                          readOnly={pageData.students.length > 0}
+                          readOnly={pageData.status !== "In Formation"}
                           required
                           InputContext={InputContext}
                           defaultValue={{
@@ -391,7 +393,7 @@ export default function PagePreview({
                           route="languagemodes"
                           title="Language Mode"
                           scope="languagemode"
-                          readOnly={pageData.students.length > 0}
+                          readOnly={pageData.status !== "In Formation"}
                           required
                           InputContext={InputContext}
                           defaultValue={{
@@ -422,7 +424,7 @@ export default function PagePreview({
                             returnToWorkload.languagemode_id
                           }
                           InputContext={InputContext}
-                          readOnly={pageData.students.length > 0}
+                          readOnly={pageData.status !== "In Formation"}
                           defaultValue={{
                             id: pageData.workload?.id,
                             name: pageData.workload?.name,
@@ -451,7 +453,7 @@ export default function PagePreview({
                             name="monday"
                             shrink
                             title="Monday"
-                            readOnly={pageData.students.length > 0}
+                            readOnly={pageData.status !== "In Formation"}
                             options={yesOrNoOptions}
                             isSearchable
                             defaultValue={pageData.monday}
@@ -461,7 +463,7 @@ export default function PagePreview({
                             name="tuesday"
                             shrink
                             title="Tuesday"
-                            readOnly={pageData.students.length > 0}
+                            readOnly={pageData.status !== "In Formation"}
                             options={yesOrNoOptions}
                             isSearchable={false}
                             defaultValue={pageData.tuesday}
@@ -471,7 +473,7 @@ export default function PagePreview({
                             name="wednesday"
                             shrink
                             title="Wednesday"
-                            readOnly={pageData.students.length > 0}
+                            readOnly={pageData.status !== "In Formation"}
                             options={yesOrNoOptions}
                             isSearchable={false}
                             defaultValue={pageData.wednesday}
@@ -481,7 +483,7 @@ export default function PagePreview({
                             name="thursday"
                             shrink
                             title="Thursday"
-                            readOnly={pageData.students.length > 0}
+                            readOnly={pageData.status !== "In Formation"}
                             options={yesOrNoOptions}
                             isSearchable={false}
                             defaultValue={pageData.thursday}
@@ -491,7 +493,7 @@ export default function PagePreview({
                             name="friday"
                             shrink
                             title="Friday"
-                            readOnly={pageData.students.length > 0}
+                            readOnly={pageData.status !== "In Formation"}
                             options={yesOrNoOptions}
                             isSearchable={false}
                             defaultValue={pageData.friday}
@@ -501,7 +503,7 @@ export default function PagePreview({
                             name="saturday"
                             shrink
                             title="Saturday"
-                            readOnly={pageData.students.length > 0}
+                            readOnly={pageData.status !== "In Formation"}
                             options={yesOrNoOptions}
                             isSearchable={false}
                             defaultValue={pageData.saturday}
@@ -511,7 +513,7 @@ export default function PagePreview({
                             name="sunday"
                             shrink
                             title="Sunday"
-                            readOnly={pageData.students.length > 0}
+                            readOnly={pageData.status !== "In Formation"}
                             options={yesOrNoOptions}
                             isSearchable={false}
                             defaultValue={pageData.sunday}
@@ -523,7 +525,7 @@ export default function PagePreview({
                             name="morning"
                             shrink
                             title="Morning"
-                            readOnly={pageData.students.length > 0}
+                            readOnly={pageData.status !== "In Formation"}
                             options={yesOrNoOptions}
                             isSearchable={false}
                             defaultValue={pageData.morning}
@@ -533,7 +535,7 @@ export default function PagePreview({
                             name="afternoon"
                             shrink
                             title="Afternoon"
-                            readOnly={pageData.students.length > 0}
+                            readOnly={pageData.status !== "In Formation"}
                             options={yesOrNoOptions}
                             isSearchable={false}
                             defaultValue={pageData.afternoon}
@@ -543,7 +545,7 @@ export default function PagePreview({
                             name="evening"
                             shrink
                             title="Evening"
-                            readOnly={pageData.students.length > 0}
+                            readOnly={pageData.status !== "In Formation"}
                             options={yesOrNoOptions}
                             isSearchable={false}
                             defaultValue={pageData.evening}
@@ -602,45 +604,207 @@ export default function PagePreview({
                         title="students"
                         activeMenu={activeMenu === "students"}
                       >
-                        <FindGeneric
-                          route="students"
-                          title="Find student to add to the group"
-                          scope="student"
-                          type="Waiting"
-                          setReturnFindGeneric={setReturnStudent}
-                          InputContext={InputContext}
-                          defaultValue={{
-                            id: pageData.student?.id,
-                            name: pageData.student?.name,
-                            last_name: pageData.student?.last_name,
-                            registration_number:
-                              pageData.student?.registration_number,
-                            status: pageData.student?.status,
-                          }}
-                          fields={[
-                            {
-                              title: "Name",
-                              name: "name",
-                            },
-                            {
-                              title: "Last Name",
-                              name: "last_name",
-                            },
-                            {
-                              title: "Registration Number",
-                              name: "registration_number",
-                            },
-                            {
-                              title: "Status",
-                              name: "status",
-                            },
-                          ]}
-                        />
-                        <InputLine
-                          title={`Students in Group: (${pageData.students.length})`}
-                        >
-                          <div className="flex flex-col justify-center items-start relative w-full">
-                            {pageData.students
+                        {/* {pageData.status === "In Formation" && (
+                          <FindGeneric
+                            route="students"
+                            title="Find student to add to the group"
+                            scope="student"
+                            type="Waiting"
+                            setReturnFindGeneric={setReturnStudent}
+                            InputContext={InputContext}
+                            defaultValue={{
+                              id: pageData.student?.id,
+                              name: pageData.student?.name,
+                              last_name: pageData.student?.last_name,
+                              registration_number:
+                                pageData.student?.registration_number,
+                              status: pageData.student?.status,
+                            }}
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                              {
+                                title: "Last Name",
+                                name: "last_name",
+                              },
+                              {
+                                title: "Registration Number",
+                                name: "registration_number",
+                              },
+                              {
+                                title: "Status",
+                                name: "status",
+                              },
+                            ]}
+                          />
+                        )} */}
+                        {/* Legendas */}
+                        <div className="flex flex-row justify-evenly w-full items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFilter(filter === "Left" ? null : "Left")
+                            }
+                            className={`${
+                              filter === "Left"
+                                ? "border border-dashed rounded-md border-gray-500 "
+                                : ""
+                            }`}
+                          >
+                            <div className="flex flex-row items-center rounded-md hover:bg-gray-50 justify-start gap-2 p-2">
+                              <div className="w-4 h-4 border border-gray-500 bg-gray-200 rounded-sm"></div>
+                              <div className="text-xs text-gray-400">
+                                Left the group
+                              </div>
+                            </div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFilter(
+                                filter === "Not started" ? null : "Not started"
+                              )
+                            }
+                            className={`${
+                              filter === "Not started"
+                                ? "border border-dashed rounded-md border-gray-500 "
+                                : ""
+                            }`}
+                          >
+                            <div className="flex flex-row items-center rounded-md hover:bg-gray-50 justify-start gap-2 p-2">
+                              <div className="w-4 h-4 border border-gray-500 bg-amber-50 rounded-sm"></div>
+                              <div className="text-xs text-amber-700">
+                                Not started yet
+                              </div>
+                            </div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFilter(filter === "Ongoing" ? null : "Ongoing")
+                            }
+                            className={`${
+                              filter === "Ongoing"
+                                ? "border border-dashed rounded-md border-gray-500 "
+                                : ""
+                            }`}
+                          >
+                            <div className="flex flex-row items-center rounded-md hover:bg-gray-50 justify-start gap-2 p-2">
+                              <div className="w-4 h-4 border border-gray-500 bg-gray-50 rounded-sm"></div>
+                              <div className="text-xs text-gray-600">
+                                Ongoing
+                              </div>
+                            </div>
+                          </button>
+                        </div>
+                        <table className="w-full relative overflow-hidden">
+                          <thead className="sticky top-[95px] border-b bg-white">
+                            <tr>
+                              <th className="text-xs border rounded p-2 hover:bg-gray-100 text-left">
+                                name
+                              </th>
+                              <th className="text-xs border rounded p-2 hover:bg-gray-100 text-left">
+                                Last Name
+                              </th>
+                              <th className="text-xs border rounded p-2 hover:bg-gray-100 text-center">
+                                Registration Number
+                              </th>
+                              <th className="text-xs border rounded p-2 hover:bg-gray-100 text-center">
+                                Start Date
+                              </th>
+                              <th className="text-xs border rounded p-2 hover:bg-gray-100 text-center">
+                                End Date
+                              </th>
+                              <th className="text-xs border rounded p-2 hover:bg-gray-100 text-center">
+                                Status
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {pageData.studentxgroups
+                              .sort((a, b) =>
+                                a.student.name +
+                                  a.student.last_name +
+                                  a.start_date +
+                                  a.end_date >
+                                b.student.name +
+                                  b.student.last_name +
+                                  b.start_date +
+                                  b.end_date
+                                  ? 1
+                                  : -1
+                              )
+                              .filter((studentGroup) => {
+                                if (filter) {
+                                  if (filter === "Ongoing") {
+                                    return (
+                                      parseISO(studentGroup.start_date) <=
+                                        new Date() && !studentGroup.end_date
+                                    );
+                                  } else if (filter === "Not started") {
+                                    return (
+                                      parseISO(studentGroup.start_date) >
+                                      new Date()
+                                    );
+                                  } else if (filter === "Left") {
+                                    return (
+                                      studentGroup.end_date &&
+                                      parseISO(studentGroup.end_date) <=
+                                        new Date()
+                                    );
+                                  } else {
+                                    return false;
+                                  }
+                                }
+                                return true;
+                              })
+                              .map((studentGroup) => {
+                                return (
+                                  <tr
+                                    key={studentGroup.id}
+                                    className={`text-xs hover:bg-gray-50 border-b ${
+                                      parseISO(studentGroup.start_date) >
+                                      new Date()
+                                        ? "bg-amber-50 text-amber-700"
+                                        : studentGroup.end_date &&
+                                          parseISO(studentGroup.end_date) <=
+                                            new Date()
+                                        ? "bg-gray-100 text-gray-400"
+                                        : ""
+                                    }`}
+                                  >
+                                    <td className="text-xs px-2 py-2">
+                                      {studentGroup.student.name}
+                                    </td>
+                                    <td className="text-xs px-2 py-2">
+                                      {studentGroup.student.last_name}
+                                    </td>
+                                    <td className="text-xs px-2 py-2 text-center">
+                                      {studentGroup.student.registration_number}
+                                    </td>
+                                    <td className="text-xs px-2 py-2 text-center">
+                                      {format(
+                                        parseISO(studentGroup.start_date),
+                                        "MM/dd/yyyy"
+                                      )}
+                                    </td>
+                                    <td className="text-xs px-1 py-2 text-center">
+                                      {studentGroup.end_date
+                                        ? format(
+                                            parseISO(studentGroup.end_date),
+                                            "MM/dd/yyyy"
+                                          )
+                                        : null}
+                                    </td>
+                                    <td className="text-xs px-1 py-2 text-center">
+                                      {studentGroup.student.status}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            {/* {pageData.students
                               .sort(
                                 (a, b) =>
                                   a.name + a.last_name > b.name + b.last_name
@@ -651,16 +815,6 @@ export default function PagePreview({
                                     className="flex flex-row justify-center items-center relative w-full"
                                     key={index}
                                   >
-                                    <button
-                                      className="mt-2"
-                                      type="button"
-                                      onClick={() => {
-                                        removeStudent(student.id);
-                                        setSuccessfullyUpdated(false);
-                                      }}
-                                    >
-                                      <Trash size={18} />
-                                    </button>
                                     <Scope
                                       key={index}
                                       path={`students[${index}]`}
@@ -716,13 +870,13 @@ export default function PagePreview({
                                     </Scope>
                                   </div>
                                 );
-                              })}
-                          </div>
-                        </InputLine>
+                              })} */}
+                          </tbody>
+                        </table>
                       </InputLineGroup>
                       <InputLineGroup
-                        title="Class Dates"
-                        activeMenu={activeMenu === "Class Dates"}
+                        title="Class Planning"
+                        activeMenu={activeMenu === "Class Planning"}
                       >
                         <table className="w-full relative overflow-hidden">
                           <thead className="sticky top-[95px] border-b bg-white">

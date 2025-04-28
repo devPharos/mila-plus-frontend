@@ -1,10 +1,12 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import PagePreview from "./Preview";
 import { useSelector } from "react-redux";
 import { FullGridContext } from "..";
 import { getData } from "~/functions/gridFunctions";
 import PageContainer from "~/components/PageContainer";
 import { format, parseISO } from "date-fns";
+import { toast } from "react-toastify";
+import api from "~/services/api";
 
 export default function Studentgroups() {
   const filial = useSelector((state) => state.auth.filial);
@@ -77,6 +79,40 @@ export default function Studentgroups() {
       filter: false,
     },
   ];
+  const [selected, setSelected] = useState([]);
+  const [startGroup, setStartGroup] = useState(false);
+
+  async function handleStart() {
+    if (selected[0].fields[1] !== "In Formation") {
+      toast("Only in formation groups can be started!", {
+        autoClose: 3000,
+      });
+      return;
+    }
+    try {
+      await api.post(`/studentgroups/start/${selected[0].id}`);
+      toast("Group started!", { autoClose: 3000 });
+    } catch (err) {
+      toast(err.response.data.error, { type: "error", autoClose: 3000 });
+    }
+    setSelected([]);
+  }
+
+  async function handlePause() {
+    if (selected[0].fields[1] !== "Ongoing") {
+      toast("Only ongoing groups can be paused!", {
+        autoClose: 3000,
+      });
+      return;
+    }
+    try {
+      await api.post(`/studentgroups/pause/${selected[0].id}`);
+      toast("Group paused!", { autoClose: 3000 });
+    } catch (err) {
+      toast(err.response.data.error, { type: "error", autoClose: 3000 });
+    }
+    setSelected([]);
+  }
 
   const {
     opened,
@@ -158,14 +194,47 @@ export default function Studentgroups() {
   }
 
   useEffect(() => {
-    loader();
-  }, [opened, filial, orderBy, search, limit]);
+    if (selected.length === 0) {
+      loader();
+    }
+  }, [opened, filial, orderBy, search, limit, selected]);
+
+  const selectionFunctions = [];
+
+  if (selected.length === 0 || selected[0].fields[1] === "In Formation") {
+    selectionFunctions.push({
+      title: "Start Group",
+      fun: handleStart,
+      icon: "Play",
+      Page: () => null,
+      opened: startGroup,
+      setOpened: setStartGroup,
+      selected,
+    });
+  }
+  if (selected.length > 0 && selected[0].fields[1] === "Ongoing") {
+    selectionFunctions.push({
+      title: "Pause Group",
+      fun: handlePause,
+      icon: "Pause",
+      Page: () => null,
+      opened: startGroup,
+      setOpened: setStartGroup,
+      selected,
+    });
+  }
 
   return (
     <PageContainer
       FullGridContext={FullGridContext}
       PagePreview={PagePreview}
       defaultGridHeader={defaultGridHeader}
+      selection={{
+        multiple: false,
+        selected,
+        setSelected,
+        functions: selectionFunctions,
+      }}
     />
   );
 }

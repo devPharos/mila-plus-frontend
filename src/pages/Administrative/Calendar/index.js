@@ -1,18 +1,19 @@
-// eslint-disable-next-line
 import "rsuite/Calendar/styles/index.css";
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import Breadcrumbs from "~/components/Breadcrumbs";
 import api from "~/services/api";
 import { getCurrentPage, hasAccessTo } from "~/functions";
 import { useSelector } from "react-redux";
 import PageHeader from "~/components/PageHeader";
 import { Badge, Calendar } from "rsuite";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, addYears, subYears } from "date-fns";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import { Form } from "@unform/web";
-import PagePreview from "./Preview";
 import Icon from "~/components/Icon";
 import PreviewController from "~/components/PreviewController";
+import PagePreview from "./Preview";
+import { FullGridContext } from "..";
+import PageContainer from "~/components/PageContainer";
 
 export const InputContext = createContext({});
 
@@ -22,28 +23,32 @@ export default function AdministrativeCalendar() {
   const [date, setDate] = useState(new Date());
   const [successfullyUpdated, setSuccessfullyUpdated] = useState(true);
   const [year, setYear] = useState(new Date().getFullYear());
-  const [opened, setOpened] = useState(false);
   const accesses = useSelector((state) => state.auth.accesses);
   const [freeDays, setFreeDays] = useState([]);
+
+  const { opened, handleOpened } = useContext(FullGridContext);
 
   useEffect(() => {
     async function getData() {
       const { data } = await api.get(`/calendar-days`);
       setFreeDays(
-        data.filter(
-          (freeDay) =>
-            freeDay.day.substring(0, 4) == year &&
-            freeDay.type == "Administrative"
-        )
+        data.filter((freeDay) => freeDay.day.substring(0, 4) == year)
       );
     }
     getData();
   }, [filial, year, opened]);
 
+  // This year, next year, and last year
   const yearsOptions = [
-    { label: "2025", value: "2025" },
-    { label: "2024", value: "2024" },
-    { label: "2023", value: "2023" },
+    {
+      label: format(addYears(new Date(), 1), "yyyy"),
+      value: format(addYears(new Date(), 1), "yyyy"),
+    },
+    { label: format(new Date(), "yyyy"), value: format(new Date(), "yyyy") },
+    {
+      label: format(subYears(new Date(), 1), "yyyy"),
+      value: format(subYears(new Date(), 1), "yyyy"),
+    },
   ];
 
   function getTodoList(date) {
@@ -88,13 +93,6 @@ export default function AdministrativeCalendar() {
     return null;
   }
 
-  function handleOpened(id) {
-    if (!id) {
-      setSuccessfullyUpdated(true);
-    }
-    setOpened(id);
-  }
-
   useEffect(() => {
     if (date && year) {
       const day = date.getDate().toString().padStart(2, "0");
@@ -104,7 +102,7 @@ export default function AdministrativeCalendar() {
     }
   }, [year]);
 
-  function handleSelect(date) {
+  function handleSelect(date = null) {
     const day = date.getDate().toString().padStart(2, "0");
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
     const year = date.getFullYear().toString().padStart(4, "0");
@@ -112,14 +110,18 @@ export default function AdministrativeCalendar() {
       if (freeDay.dayto) {
         if (
           `${year}-${month}-${day}` >= freeDay.day &&
-          `${year}-${month}-${day}` <= freeDay.dayto
+          `${year}-${month}-${day}` <= freeDay.dayto &&
+          freeDay.type === "Administrative"
         ) {
           return freeDays.filter(
             (freeDay) => freeDay.day.substring(5, 10) == `${month}/${day}`
           );
         }
       } else {
-        if (`${year}-${month}-${day}` == freeDay.day) {
+        if (
+          `${year}-${month}-${day}` == freeDay.day &&
+          freeDay.type === "Administrative"
+        ) {
           return freeDays.filter(
             (freeDay) => freeDay.day.substring(5, 10) == `${month}/${day}`
           );
@@ -127,10 +129,10 @@ export default function AdministrativeCalendar() {
       }
     });
     if (founded.length == 0) {
-      setOpened(null);
+      handleOpened(null);
       return;
     }
-    setOpened(founded[0].id);
+    handleOpened(founded[0].id);
   }
 
   return (
@@ -138,11 +140,11 @@ export default function AdministrativeCalendar() {
       <PageHeader>
         <Breadcrumbs currentPage={currentPage} />
       </PageHeader>
-
       <div className="relative flex flex-1 justify-start w-full h-screen overflow-y-scroll">
         <div className="relative flex flex-1 flex-row justify-between items-start rounded-tr-2xl px-4">
           <Calendar
             value={date}
+            compact={false}
             onSelect={handleSelect}
             onChange={setDate}
             renderCell={renderCell}
@@ -177,7 +179,7 @@ export default function AdministrativeCalendar() {
               <button
                 type="button"
                 key={index}
-                onClick={() => setDate(parseISO(freeDay.date))}
+                onClick={() => handleOpened(freeDay.id)}
                 className={`w-48 text-xs text-center text-zinc-500 py-1 px-2 my-1 ${
                   freeDay.type == "Academic" ? "bg-yellow-100" : "bg-green-100"
                 } transition hover:bg-zinc-500 hover:text-white rounded-md`}
@@ -201,21 +203,16 @@ export default function AdministrativeCalendar() {
           ></div>
         )}
         {opened && (
-          <PreviewController>
-            <PagePreview
-              access={hasAccessTo(
-                accesses,
-                currentPage.path.split("/")[1],
-                currentPage.alias
-              )}
-              id={opened}
-              handleOpened={handleOpened}
-              setOpened={setOpened}
-              defaultFormType="full"
-              successfullyUpdated={successfullyUpdated}
-              setSuccessfullyUpdated={setSuccessfullyUpdated}
-            />
-          </PreviewController>
+          <PagePreview
+            access={hasAccessTo(
+              accesses,
+              currentPage.path.split("/")[1],
+              currentPage.alias
+            )}
+            id={opened}
+            FullGridContext={FullGridContext}
+            defaultFormType="full"
+          />
         )}
       </div>
     </div>

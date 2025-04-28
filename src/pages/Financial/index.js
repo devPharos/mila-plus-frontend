@@ -8,7 +8,6 @@ export const FullGridContext = createContext();
 
 export default function Financial() {
   const { pages } = useContext(PageContext);
-  const { pathname } = useLocation();
   const navigate = useNavigate();
   const [activeFilters, setActiveFilters] = useState([]);
   const [opened, setOpened] = useState(false);
@@ -22,10 +21,11 @@ export default function Financial() {
   const [limit, setLimit] = useState(50);
   const [search, setSearch] = useState("");
   let delayDebounceFn = null;
+  const { pathname } = useLocation();
   const paths = pathname.split("/");
   const routeName = capitalizeFirstLetter(paths[1]);
   const finalRouteName = capitalizeFirstLetter(
-    paths.length > 2 ? paths[2] : "Bank"
+    paths.length === 3 ? paths[2] : paths.length === 4 ? paths[3] : "Bank"
   );
 
   function handleFilters({ title = "", value = "" }) {

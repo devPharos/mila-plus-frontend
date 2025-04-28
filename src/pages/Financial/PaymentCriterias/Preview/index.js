@@ -21,6 +21,7 @@ import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
 import Textarea from "~/components/RegisterForm/Textarea";
 import { FullGridContext } from "../..";
+import FindGeneric from "~/components/Finds/FindGeneric";
 
 export const InputContext = createContext({});
 
@@ -238,27 +239,30 @@ export default function PagePreview({
                           title="GENERAL"
                           activeMenu={activeMenu === "general"}
                         >
-                          {auth.filial.id === 1 && (
-                            <InputLine title="Filial">
-                              <SelectPopover
-                                name="filial_id"
-                                required
-                                title="Filial"
-                                isSearchable
-                                grow
-                                defaultValue={
-                                  pageData.filial_id
-                                    ? {
-                                        value: pageData.filial_id,
-                                        label: pageData.filial.name,
-                                      }
-                                    : null
-                                }
-                                options={filialOptions}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-                          )}
+                          <FindGeneric
+                            route="filials"
+                            title="Filial"
+                            scope="filial"
+                            required
+                            InputContext={InputContext}
+                            defaultValue={
+                              id === "new" && auth.filial.id !== 1
+                                ? {
+                                    id: auth.filial.id,
+                                    name: auth.filial.name,
+                                  }
+                                : {
+                                    id: pageData.filial?.id,
+                                    name: pageData.filial?.name,
+                                  }
+                            }
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                          />
                           <InputLine title="Description">
                             <Textarea
                               name="description"

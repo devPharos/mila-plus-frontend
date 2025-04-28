@@ -280,7 +280,7 @@ function PricesSimulation({
                 <Input
                   type="text"
                   name="tuition_original_price"
-                  value={
+                  defaultValue={
                     totalAmount
                       ? totalAmount.toFixed(2)
                       : priceLists.tuition.toFixed(2)
@@ -296,7 +296,7 @@ function PricesSimulation({
                 <Input
                   type="text"
                   name="total_discount"
-                  value={totalDiscount.toFixed(2)}
+                  defaultValue={totalDiscount.toFixed(2)}
                   centeredText={true}
                   placeholder="$ 0.00"
                   className="text-center"
@@ -308,7 +308,7 @@ function PricesSimulation({
                 <Input
                   type="text"
                   name="total_tuition"
-                  value={(!recurrence && !settlement
+                  defaultValue={(!recurrence && !settlement
                     ? priceLists.registration_fee +
                       priceLists.book +
                       (totalAmount ? totalAmount : priceLists.tuition) -
@@ -368,19 +368,19 @@ function PricesSimulation({
                           <Input
                             type="hidden"
                             name="filial_discount_list_id"
-                            value={discount.id}
+                            defaultValue={discount.id}
                             InputContext={InputContext}
                           />
                           <Input
                             type="hidden"
                             name="start_date"
-                            value={discount.start_date}
+                            defaultValue={discount.start_date}
                             InputContext={InputContext}
                           />
                           <Input
                             type="hidden"
                             name="end_date"
-                            value={discount.end_date}
+                            defaultValue={discount.end_date}
                             InputContext={InputContext}
                           />
                           <td>{discount.name}</td>

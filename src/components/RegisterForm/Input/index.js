@@ -10,7 +10,9 @@ const Input = ({
   defaultValueDDI = null,
   workloadUpdateName = false,
   readOnly = false,
-  type,
+  readOnlyOnFocus = false,
+  type = "text",
+  value = null,
   isZipCode = false,
   onlyUpperCase = false,
   onlyLowerCase = false,
@@ -20,11 +22,12 @@ const Input = ({
   InputContext = null,
   centeredText = false,
   onChange = () => null,
+  className = null,
   ...rest
 }) => {
   const inputRef = useRef();
   const { fieldName, registerField, error } = useField(name);
-  const { disabled, required } = { ...rest };
+  const { disabled, required, defaultValue } = { ...rest };
 
   useEffect(() => {
     registerField({
@@ -45,7 +48,7 @@ const Input = ({
   const { generalForm, setSuccessfullyUpdated } = useContext(InputContext);
 
   function handleChanged() {
-    const value = generalForm.current.getFieldValue(name);
+    const value = generalForm?.current?.getFieldValue(name);
     if (onlyUpperCase) {
       generalForm.current.setFieldValue(name, value.toUpperCase());
     }
@@ -81,10 +84,26 @@ const Input = ({
 
     setSuccessfullyUpdated(false);
   }
-  const width = shrink ? "w-full md:w-auto max-w-32" : "w-full md:w-auto";
+
+  useEffect(() => {
+    if (defaultValue) {
+      inputRef.current.value = defaultValue;
+    }
+  }, [defaultValue]);
+
+  function handleFocus(value) {
+    inputRef.current.readOnly = value;
+  }
+
+  const width =
+    shrink === 2
+      ? "w-full md:w-auto max-w-8"
+      : shrink
+      ? "w-full md:w-auto max-w-32"
+      : "w-full md:w-auto";
   return (
     <div
-      className={`${
+      className={`${className} ${
         type === "hidden" ? "hidden" : "flex"
       } flex-col justify-center items-start relative ${width} ${
         grow ? "grow" : ""
@@ -107,6 +126,9 @@ const Input = ({
             ref={inputRef}
             type={type}
             readOnly={readOnly}
+            onFocus={readOnlyOnFocus ? () => handleFocus(true) : null}
+            onBlur={readOnlyOnFocus ? () => handleFocus(false) : null}
+            defaultValue={defaultValue}
             {...rest}
             className={`${
               centeredText ? "text-center" : "text-left"

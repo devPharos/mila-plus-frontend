@@ -8,6 +8,8 @@ import Inactivate from "./Inactivate";
 import { AlertContext } from "~/App";
 import { toast } from "react-toastify";
 import api from "~/services/api";
+import Activate from "./Activate";
+import Transfer from "./Transfer";
 
 export default function AdministrativeStudent() {
   const filial = useSelector((state) => state.auth.filial);
@@ -32,16 +34,16 @@ export default function AdministrativeStudent() {
       filter: false,
     },
     {
-      title: "E-mail",
-      name: "email",
+      title: "Group",
+      name: ["studentgroup", "name"],
       type: "text",
       filter: false,
     },
     {
-      title: "Phone",
-      name: "phone",
+      title: "Teacher",
+      name: ["teacher", "name"],
       type: "text",
-      filter: false,
+      filter: true,
     },
     {
       title: "Category",
@@ -59,14 +61,10 @@ export default function AdministrativeStudent() {
   const { alertBox } = useContext(AlertContext);
   const [selected, setSelected] = useState([]);
   const [inactivateOpen, setInactivateOpen] = useState(false);
+  const [activateOpen, setActivateOpen] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
 
   const handleInactivate = () => {
-    if (selected[0].fields[6] === "Inactive") {
-      toast("Only active students can be inactivated!", {
-        autoClose: 3000,
-      });
-      return;
-    }
     const newVarOpened = !inactivateOpen;
     setInactivateOpen(newVarOpened);
     if (!newVarOpened) {
@@ -74,39 +72,56 @@ export default function AdministrativeStudent() {
       loader();
     }
   };
-
   const handleActivate = () => {
-    if (selected[0].fields[6] !== "Waiting") {
-      toast("Only students on waiting list can be activated!", {
-        autoClose: 3000,
-      });
-      return;
+    const newVarOpened = !activateOpen;
+    setActivateOpen(newVarOpened);
+    if (!newVarOpened) {
+      setSelected([]);
+      loader();
     }
-    alertBox({
-      title: "Activate",
-      descriptionHTML:
-        "Are you sure you want to activate this student? \n This action will put the student In Class.",
-      buttons: [
-        {
-          title: "Yes",
-          onPress: async () => {
-            const data = await api.post(`/students/activate/${selected[0].id}`);
-            if (data) {
-              toast("Student activated!", { autoClose: 3000 });
-              setSelected([]);
-              loader();
-            }
-          },
-        },
-        {
-          title: "No",
-          onPress: async () => {
-            return;
-          },
-        },
-      ],
-    });
   };
+
+  const handleTransfer = () => {
+    const newVarOpened = !transferOpen;
+    setTransferOpen(newVarOpened);
+    if (!newVarOpened) {
+      setSelected([]);
+      loader();
+    }
+  };
+
+  // const handleActivate = () => {
+  //   if (selected[0].fields[6] !== "Waiting") {
+  //     toast("Only students on waiting list can be activated!", {
+  //       autoClose: 3000,
+  //     });
+  //     return;
+  //   }
+  //   alertBox({
+  //     title: "Activate",
+  //     descriptionHTML:
+  //       "Are you sure you want to activate this student? \n This action will put the student In Class.",
+  //     buttons: [
+  //       {
+  //         title: "Yes",
+  //         onPress: async () => {
+  //           const data = await api.post(`/students/activate/${selected[0].id}`);
+  //           if (data) {
+  //             toast("Student activated!", { autoClose: 3000 });
+  //             setSelected([]);
+  //             loader();
+  //           }
+  //         },
+  //       },
+  //       {
+  //         title: "No",
+  //         onPress: async () => {
+  //           return;
+  //         },
+  //       },
+  //     ],
+  //   });
+  // };
 
   const {
     opened,
@@ -142,14 +157,22 @@ export default function AdministrativeStudent() {
           id,
           name,
           last_name,
-          email,
-          phone,
+          studentgroup,
+          teacher,
           category,
           status,
           canceled_at,
         },
         index
       ) => {
+        let studentgroup_name = "";
+        if (studentgroup) {
+          studentgroup_name = studentgroup.name;
+        }
+        let teacher_name = "";
+        if (teacher) {
+          teacher_name = teacher.name;
+        }
         const ret = {
           show: true,
           id,
@@ -157,12 +180,12 @@ export default function AdministrativeStudent() {
             registration_number,
             name,
             last_name,
-            email,
-            phone,
+            studentgroup_name,
+            teacher_name,
             category,
             status,
           ],
-          selectable: true,
+          selectable: "In Class;Waiting".includes(status),
           canceled: canceled_at,
           page: Math.ceil((index + 1) / limit),
         };
@@ -177,6 +200,45 @@ export default function AdministrativeStudent() {
     loader();
   }, [opened, filial, orderBy, search, limit]);
 
+  const selectionFunctions = [];
+
+  if (selected.length > 0) {
+    const statusIndex = defaultGridHeader.findIndex(
+      (el) => el.name === "status"
+    );
+    if (selected[0].fields[statusIndex] === "Waiting") {
+      selectionFunctions.push({
+        title: "Activate",
+        fun: handleActivate,
+        icon: "School",
+        Page: Activate,
+        opened: activateOpen,
+        setOpened: setActivateOpen,
+        selected,
+      });
+    }
+    if (selected[0].fields[statusIndex] === "In Class") {
+      selectionFunctions.push({
+        title: "Inactivate",
+        fun: handleInactivate,
+        icon: "X",
+        Page: Inactivate,
+        opened: inactivateOpen,
+        setOpened: setInactivateOpen,
+        selected,
+      });
+      selectionFunctions.push({
+        title: "Transfer",
+        fun: handleTransfer,
+        icon: "Replace",
+        Page: Transfer,
+        opened: transferOpen,
+        setOpened: setTransferOpen,
+        selected,
+      });
+    }
+  }
+
   return (
     <PageContainer
       FullGridContext={FullGridContext}
@@ -186,26 +248,7 @@ export default function AdministrativeStudent() {
         multiple: false,
         selected,
         setSelected,
-        functions: [
-          {
-            title: "Put In Class",
-            fun: handleActivate,
-            icon: "School",
-            Page: () => null,
-            opened: inactivateOpen,
-            setOpened: setInactivateOpen,
-            selected,
-          },
-          {
-            title: "Inactivate",
-            fun: handleInactivate,
-            icon: "X",
-            Page: Inactivate,
-            opened: inactivateOpen,
-            setOpened: setInactivateOpen,
-            selected,
-          },
-        ],
+        functions: selectionFunctions,
       }}
     />
   );

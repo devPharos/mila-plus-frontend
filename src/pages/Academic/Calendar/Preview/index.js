@@ -18,10 +18,10 @@ import Preview from "~/components/Preview";
 import { getRegistries, handleUpdatedFields } from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";
-import { useSelector } from "react-redux";
-import DatePicker from "~/components/RegisterForm/DatePicker";
 import { format, parseISO } from "date-fns";
-import { FullGridContext } from "~/pages/Administrative";
+import { FullGridContext } from "../..";
+import FindGeneric from "~/components/Finds/FindGeneric";
+import { dateTypeOptions, typeOptions } from "~/functions/selectPopoverOptions";
 
 export const InputContext = createContext({});
 
@@ -30,16 +30,12 @@ export default function PagePreview({
   id,
   defaultFormType = "preview",
 }) {
-  const {
-    handleOpened,
-    setOpened,
-    successfullyUpdated,
-    setSuccessfullyUpdated,
-  } = useContext(FullGridContext);
+  const { handleOpened, successfullyUpdated, setSuccessfullyUpdated } =
+    useContext(FullGridContext);
   const [pageData, setPageData] = useState({
     title: "",
-    day: new Date().toISOString().split("T")[0],
-    dayto: null,
+    day: format(new Date(), "yyyy-MM-dd"),
+    dayto: format(new Date(), "yyyy-MM-dd"),
     type: null,
     loaded: false,
   });
@@ -54,28 +50,14 @@ export default function PagePreview({
     canceled_by: null,
     canceled_at: null,
   });
-  const [filialOptions, setFilialOptions] = useState([]);
   const generalForm = useRef();
-  const auth = useSelector((state) => state.auth);
-  const typeOptions = [
-    { value: "Administrative", label: "Administrative" },
-    { value: "Academic", label: "Academic" },
-  ];
 
   useEffect(() => {
-    async function getDefaultFilialOptions() {
-      const { data } = await api.get("/filials");
-      const retGroupOptions = data.map((filial) => {
-        return { value: filial.id, label: filial.name };
-      });
-      setFilialOptions(retGroupOptions);
-    }
     async function getPageData() {
-      const filialOptions = await getDefaultFilialOptions();
-      if (id !== "new") {
+      if (id !== "new" && id !== undefined) {
         try {
           const { data } = await api.get(`/calendar-days/${id}`);
-          setPageData({ ...data, loaded: true, filialOptions });
+          setPageData({ ...data, loaded: true });
           const {
             created_by,
             created_at,
@@ -97,7 +79,7 @@ export default function PagePreview({
           toast(err.response.data.error, { type: "error", autoClose: 3000 });
         }
       } else {
-        setPageData({ ...pageData, loaded: true, filialOptions });
+        setPageData({ ...pageData, loaded: true });
         setFormType("full");
       }
     }
@@ -115,13 +97,9 @@ export default function PagePreview({
     }
     if (id === "new") {
       try {
-        const { day, dayto } = data;
-        const response = await api.post(`/calendar-days`, {
+        await api.post(`/calendar-days`, {
           ...data,
-          day: day ? format(day, "yyyy-MM-dd") : null,
-          dayto: dayto ? format(dayto, "yyyy-MM-dd") : null,
         });
-        setOpened(response.data.id);
         setPageData({ ...pageData, ...data });
         setSuccessfullyUpdated(true);
         toast("Saved!", { autoClose: 1000 });
@@ -130,27 +108,17 @@ export default function PagePreview({
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     } else if (id !== "new") {
-      const updated = handleUpdatedFields(data, pageData);
-
-      if (updated.length > 0) {
-        const objUpdated = Object.fromEntries(updated);
-        try {
-          const { day, dayto } = data;
-          await api.put(`/calendar-days/${id}`, {
-            ...objUpdated,
-            day: day ? format(day, "yyyy-MM-dd") : null,
-            dayto: dayto ? format(dayto, "yyyy-MM-dd") : null,
-          });
-          setPageData({ ...pageData, ...objUpdated });
-          setSuccessfullyUpdated(true);
-          toast("Saved!", { autoClose: 1000 });
-          handleOpened(null);
-        } catch (err) {
-          console.log(err);
-          toast(err.response.data.error, { type: "error", autoClose: 3000 });
-        }
-      } else {
-        // console.log(updated)
+      try {
+        await api.put(`/calendar-days/${id}`, {
+          ...data,
+        });
+        setPageData({ ...pageData, ...data });
+        setSuccessfullyUpdated(true);
+        toast("Saved!", { autoClose: 1000 });
+        handleOpened(null);
+      } catch (err) {
+        console.log(err);
+        toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     }
   }
@@ -240,7 +208,7 @@ export default function PagePreview({
                       setFullscreen,
                       successfullyUpdated,
                       handleCloseForm,
-                      handleInactivate,
+                      handleInactivate: () => null,
                       canceled: pageData.canceled_at,
                     }}
                   >
@@ -256,50 +224,70 @@ export default function PagePreview({
                           title="GENERAL"
                           activeMenu={activeMenu === "general"}
                         >
-                          {auth.filial.id === 1 && (
-                            <InputLine title="Filial">
-                              <SelectPopover
-                                name="filial_id"
-                                required
-                                title="Filial"
-                                isSearchable
-                                defaultValue={filialOptions.find(
-                                  (filial) =>
-                                    filial.value === pageData.filial_id
-                                )}
-                                options={filialOptions}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-                          )}
+                          <FindGeneric
+                            route="filials"
+                            title="Filial"
+                            scope="filial"
+                            required
+                            InputContext={InputContext}
+                            defaultValue={{
+                              id: pageData.filial?.id,
+                              name: pageData.filial?.name,
+                            }}
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                          />
                           <InputLine title="General Data">
-                            <DatePicker
+                            <Input
+                              type="date"
                               name="day"
-                              title="Date"
+                              title="From Date"
                               required
                               defaultValue={
-                                pageData.day ? parseISO(pageData.day) : null
+                                pageData.day
+                                  ? format(parseISO(pageData.day), "yyyy-MM-dd")
+                                  : ""
                               }
-                              placeholderText="MM/DD/YYYY"
                               InputContext={InputContext}
                             />
-                            <DatePicker
+                            <Input
+                              type="date"
                               name="dayto"
-                              title="Date"
+                              title="Until Date"
+                              required
                               defaultValue={
-                                pageData.dayto ? parseISO(pageData.dayto) : null
+                                pageData.dayto
+                                  ? format(
+                                      parseISO(pageData.dayto),
+                                      "yyyy-MM-dd"
+                                    )
+                                  : ""
                               }
-                              placeholderText="MM/DD/YYYY"
                               InputContext={InputContext}
                             />
                             <SelectPopover
                               name="type"
                               required
                               title="Type"
+                              grow
                               defaultValue={typeOptions.find(
                                 (type) => type.value === pageData.type
                               )}
                               options={typeOptions}
+                              InputContext={InputContext}
+                            />
+                            <SelectPopover
+                              name="date_type"
+                              required
+                              title="Date Type"
+                              defaultValue={dateTypeOptions.find(
+                                (type) => type.value === pageData.date_type
+                              )}
+                              options={dateTypeOptions}
                               InputContext={InputContext}
                             />
                             <Input

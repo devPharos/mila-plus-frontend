@@ -25,6 +25,7 @@ import {
   paymentPlatformOptions,
   typeOfPaymentOptions,
 } from "~/functions/selectPopoverOptions";
+import FindGeneric from "~/components/Finds/FindGeneric";
 
 export const InputContext = createContext({});
 
@@ -148,36 +149,12 @@ export default function PagePreview({
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     }
-    async function getDefaultOptions() {
-      try {
-        const filialData = await api.get(`/filials`);
-        const filialOptions = filialData.data
-          .filter((f) => f.id !== id)
-          .map((f) => {
-            return { value: f.id, label: f.name };
-          });
-
-        setFilialOptions(filialOptions);
-
-        const bankAccountData = await api.get(`/bankaccounts`);
-        const bankaccountOptionsValue = bankAccountData.data
-          .filter((f) => f.id !== id)
-          .map((f) => {
-            return { value: f.id, label: f.bank.bank_name + " - " + f.account };
-          });
-
-        setBankAccountOptions(bankaccountOptionsValue);
-      } catch (err) {
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
-      }
-    }
 
     if (id === "new") {
       setFormType("full");
     } else if (id) {
       getPageData();
     }
-    getDefaultOptions();
   }, []);
 
   return (
@@ -243,48 +220,55 @@ export default function PagePreview({
                           title="GENERAL"
                           activeMenu={activeMenu === "general"}
                         >
-                          {auth.filial.id === 1 && (
-                            <InputLine title="Filial">
-                              <SelectPopover
-                                name="filial_id"
-                                required
-                                title="Filial"
-                                isSearchable
-                                grow
-                                defaultValue={
-                                  pageData.filial_id
-                                    ? {
-                                        value: pageData.filial_id,
-                                        label: pageData.filial.name,
-                                      }
-                                    : null
-                                }
-                                options={filialOptions}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-                          )}
+                          <FindGeneric
+                            route="filials"
+                            title="Filial"
+                            scope="filial"
+                            required
+                            InputContext={InputContext}
+                            defaultValue={
+                              id === "new" && auth.filial.id !== 1
+                                ? {
+                                    id: auth.filial.id,
+                                    name: auth.filial.name,
+                                  }
+                                : {
+                                    id: pageData.filial?.id,
+                                    name: pageData.filial?.name,
+                                  }
+                            }
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                          />
+
+                          <FindGeneric
+                            route="bankaccounts"
+                            title="Bank Account"
+                            scope="bankAccount"
+                            required
+                            InputContext={InputContext}
+                            defaultValue={{
+                              id: pageData.bankAccount.id,
+                              account: pageData.bankAccount.account,
+                              routing_number:
+                                pageData.bankAccount.routing_number,
+                            }}
+                            fields={[
+                              {
+                                title: "Account",
+                                name: "account",
+                              },
+                              {
+                                title: "Routing Number",
+                                name: "routing_number",
+                              },
+                            ]}
+                          />
                           <InputLine title="Bank Account">
-                            <SelectPopover
-                              name="bankaccount_id"
-                              required
-                              title="Bank Account"
-                              isSearchable
-                              grow
-                              defaultValue={
-                                pageData.bankaccount_id
-                                  ? {
-                                      value: pageData.bankaccount_id,
-                                      label:
-                                        pageData.bankAccount.bank.bank_name +
-                                        " - " +
-                                        pageData.bankAccount.account,
-                                    }
-                                  : null
-                              }
-                              options={bankAccountOptions}
-                              InputContext={InputContext}
-                            />
                             <SelectPopover
                               name="type_of_payment"
                               required

@@ -20,6 +20,7 @@ import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
 import { FullGridContext } from "../..";
+import FindGeneric from "~/components/Finds/FindGeneric";
 
 export const InputContext = createContext({});
 
@@ -155,7 +156,7 @@ export default function PagePreview({
 
       try {
         const { data } = await api.get(`/bank`);
-        const bankOptions = data
+        const bankOptions = data.rows
           .filter((f) => f.id !== id)
           .map((f) => {
             return { value: f.id, label: f.bank_name };
@@ -243,28 +244,48 @@ export default function PagePreview({
                           title="GENERAL"
                           activeMenu={activeMenu === "general"}
                         >
-                          {auth.filial.id === 1 && (
-                            <InputLine title="Filial">
-                              <SelectPopover
-                                name="filial_id"
-                                required
-                                title="Filial"
-                                isSearchable
-                                grow
-                                defaultValue={
-                                  pageData.filial_id
-                                    ? {
-                                        value: pageData.filial_id,
-                                        label: pageData.filial.name,
-                                      }
-                                    : null
-                                }
-                                options={filialOptions}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-                          )}
-                          <InputLine title="Bank">
+                          <FindGeneric
+                            route="filials"
+                            title="Filial"
+                            scope="filial"
+                            required
+                            InputContext={InputContext}
+                            defaultValue={
+                              id === "new" && auth.filial.id !== 1
+                                ? {
+                                    id: auth.filial.id,
+                                    name: auth.filial.name,
+                                  }
+                                : {
+                                    id: pageData.filial?.id,
+                                    name: pageData.filial?.name,
+                                  }
+                            }
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                          />
+                          <FindGeneric
+                            route="bank"
+                            title="Bank"
+                            scope="bank"
+                            required
+                            InputContext={InputContext}
+                            defaultValue={{
+                              id: pageData.bank.id,
+                              bank_name: pageData.bank.bank_name,
+                            }}
+                            fields={[
+                              {
+                                title: "Bank Name",
+                                name: "bank_name",
+                              },
+                            ]}
+                          />
+                          {/* <InputLine title="Bank">
                             <SelectPopover
                               type="text"
                               isSearchable
@@ -283,7 +304,7 @@ export default function PagePreview({
                               }
                               InputContext={InputContext}
                             />
-                          </InputLine>
+                          </InputLine> */}
                           <InputLine title="General Data">
                             <Input
                               type="number"

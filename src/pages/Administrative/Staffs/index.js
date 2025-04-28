@@ -22,10 +22,16 @@ export default function AdministrativeStudent() {
       filter: false,
     },
     {
-      title: "Academic Formation",
-      name: "academic_formation",
+      title: "Type",
+      name: "employee_type",
       type: "text",
-      filter: false,
+      filter: true,
+    },
+    {
+      title: "Subtype",
+      name: "employee_subtype",
+      type: "text",
+      filter: true,
     },
   ];
   const {
@@ -57,11 +63,14 @@ export default function AdministrativeStudent() {
         return;
       }
       const gridDataValues = data.map(
-        ({ id, name, last_name, academic_formation, canceled_at }, index) => {
+        (
+          { id, name, last_name, employee_type, employee_subtype, canceled_at },
+          index
+        ) => {
           const ret = {
             show: true,
             id,
-            fields: [name, last_name, academic_formation],
+            fields: [name, last_name, employee_type, employee_subtype],
             canceled: canceled_at,
             page: Math.ceil((index + 1) / limit),
           };

@@ -61,7 +61,7 @@ function EnrollmentProcess({
     async function loadData() {
       const paymentMethodData = await api.get(`/paymentmethods`);
 
-      const paymentMethodOptions = paymentMethodData.data.map((f) => {
+      const paymentMethodOptions = paymentMethodData.data.rows.map((f) => {
         return { value: f.id, label: f.description.slice(0, 20) };
       });
 

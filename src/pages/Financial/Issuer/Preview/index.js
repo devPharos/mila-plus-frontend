@@ -26,6 +26,7 @@ import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
 import { FullGridContext } from "../..";
 import PhoneNumberInput from "~/components/RegisterForm/PhoneNumberInput";
+import FindGeneric from "~/components/Finds/FindGeneric";
 
 export const InputContext = createContext({});
 
@@ -78,9 +79,6 @@ export default function PagePreview({
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
-  const [filialOptions, setFilialOptions] = useState([]);
-  const [merchantOptions, setMerchantOptions] = useState([]);
-  const [studentOptions, setStudentOptions] = useState([]);
 
   const auth = useSelector((state) => state.auth);
 
@@ -167,43 +165,12 @@ export default function PagePreview({
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     }
-    async function getDefaultOptions() {
-      try {
-        const filialData = await api.get(`/filials`);
-        const merchantData = await api.get(`/merchants`);
-        const studentData = await api.get(`/students`);
-
-        const filialOptions = filialData.data
-          .filter((f) => f.id !== id)
-          .map((f) => {
-            return { value: f.id, label: f.name };
-          });
-
-        const merchantOptions = merchantData.data.map((m) => {
-          return { value: m.id, label: m.name };
-        });
-
-        const studentOptions = studentData.data.map((s) => {
-          return {
-            value: s.id,
-            label: s.name + " " + s.last_name + " - " + s.registration_number,
-          };
-        });
-
-        setMerchantOptions(merchantOptions);
-        setStudentOptions(studentOptions);
-        setFilialOptions(filialOptions);
-      } catch (err) {
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
-      }
-    }
 
     if (id === "new") {
       setFormType("full");
     } else if (id) {
       getPageData();
     }
-    getDefaultOptions();
   }, []);
 
   return (
@@ -269,54 +236,77 @@ export default function PagePreview({
                           title="GENERAL"
                           activeMenu={activeMenu === "general"}
                         >
-                          {auth.filial.id === 1 && (
-                            <InputLine title="Filial">
-                              <SelectPopover
-                                name="filial_id"
-                                required
-                                title="Filial"
-                                isSearchable
-                                grow
-                                defaultValue={
-                                  pageData.filial_id
-                                    ? {
-                                        value: pageData.filial_id,
-                                        label: pageData.filial.name,
-                                      }
-                                    : null
-                                }
-                                options={filialOptions}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-                          )}
-                          <InputLine title="Merchant / Student">
-                            <SelectPopover
-                              name="merchant_id"
-                              title="Merchant"
-                              isSearchable
-                              isClearable
-                              grow
-                              value={merchantOptions.find(
-                                (m) => m.value === pageData.merchant_id
-                              )}
-                              options={merchantOptions}
-                              InputContext={InputContext}
-                            />
-                            <h4 className="text-xs text-zinc-500 mt-4">or</h4>
-                            <SelectPopover
-                              name="student_id"
-                              title="Student"
-                              isSearchable
-                              isClearable
-                              grow
-                              value={studentOptions.find(
-                                (s) => s.value === pageData.student_id
-                              )}
-                              options={studentOptions}
-                              InputContext={InputContext}
-                            />
-                          </InputLine>
+                          <FindGeneric
+                            route="filials"
+                            title="Filial"
+                            scope="filial"
+                            required
+                            InputContext={InputContext}
+                            defaultValue={
+                              id === "new" && auth.filial.id !== 1
+                                ? {
+                                    id: auth.filial.id,
+                                    name: auth.filial.name,
+                                  }
+                                : {
+                                    id: pageData.filial?.id,
+                                    name: pageData.filial?.name,
+                                  }
+                            }
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                          />
+                          <FindGeneric
+                            route="merchants"
+                            title="Merchant"
+                            scope="merchant"
+                            InputContext={InputContext}
+                            defaultValue={{
+                              id: pageData.merchant?.id,
+                              name: pageData.merchant?.name,
+                              ein: pageData.merchant?.ein,
+                            }}
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                              {
+                                title: "EIN",
+                                name: "ein",
+                              },
+                            ]}
+                          />
+                          <FindGeneric
+                            route="students"
+                            title="Student"
+                            scope="student"
+                            InputContext={InputContext}
+                            defaultValue={{
+                              id: pageData.student?.id,
+                              name: pageData.student?.name,
+                              registration_number:
+                                pageData.student?.registration_number,
+                            }}
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                              {
+                                title: "Last Name",
+                                name: "last_name",
+                              },
+                              {
+                                title: "Registration Number",
+                                name: "registration_number",
+                              },
+                            ]}
+                          />
 
                           <InputLine title="General data">
                             <Input

@@ -48,11 +48,13 @@ import {
   optionsCategory,
   optionsStatus,
   optionsSubStatus,
+  optionsTypes,
   yesOrNoOptions,
 } from "~/functions/selectPopoverOptions";
 import { app } from "~/services/firebase";
 import PricesSimulation from "~/components/PricesSimulation";
 import PhoneNumberInput from "~/components/RegisterForm/PhoneNumberInput";
+import FindGeneric from "~/components/Finds/FindGeneric";
 
 export const InputContext = createContext({});
 
@@ -101,6 +103,8 @@ export default function PagePreview({
       processtype_id: null,
       processsubstatus_id: null,
     },
+    classroom: null,
+    studentgroup: null,
   });
   const [countriesList, setCountriesList] = useState([]);
   const [formType, setFormType] = useState(defaultFormType);
@@ -134,37 +138,9 @@ export default function PagePreview({
       });
       setCountriesList(getList);
     }
-    async function getDefaultFilialOptions() {
-      const { data } = await api.get("/filials");
-      const retGroupOptions = data.map((filial) => {
-        return { value: filial.id, label: filial.name };
-      });
-      setFilialOptions(retGroupOptions);
-    }
-    async function getTypesOptions() {
-      const { data } = await api.get("/processtypes");
-      const retTypesOptions = data.map((type) => {
-        return { value: type.id, label: type.name };
-      });
-      return retTypesOptions;
-    }
-    async function getSubStatusOptions() {
-      const { data } = await api.get("/processsubstatuses");
-      const retSubStatusOptions = data.map((subStatus) => {
-        return {
-          value: subStatus.id,
-          label: subStatus.name,
-          father_id: subStatus.processtype_id,
-        };
-      });
-      retSubStatusOptions.push({ value: 0, label: "Select..." });
-      return retSubStatusOptions;
-    }
+
     async function getPageData() {
-      const filialOptions = await getDefaultFilialOptions();
       const ddiOptions = await getCountriesList();
-      const typesOptions = await getTypesOptions();
-      const subStatusOptions = await getSubStatusOptions();
       if (id !== "new") {
         try {
           const { data } = await api.get(`/students/${id}`);
@@ -175,11 +151,8 @@ export default function PagePreview({
               processsubstatus_id: data.processsubstatus_id,
               filial_id: data.filial_id,
             },
-            typesOptions,
-            subStatusOptions,
             loaded: true,
             ddiOptions,
-            filialOptions,
           });
           const {
             created_by,
@@ -203,7 +176,7 @@ export default function PagePreview({
           // toast(err.response.data.error, { type: "error", autoClose: 3000 });
         }
       } else {
-        setPageData({ ...pageData, loaded: true, ddiOptions, filialOptions });
+        setPageData({ ...pageData, loaded: true, ddiOptions });
         setFormType("full");
       }
     }
@@ -380,31 +353,30 @@ export default function PagePreview({
                           title="student-information"
                           activeMenu={activeMenu === "student-information"}
                         >
-                          {auth.filial.id === 1 && (
-                            <InputLine title="Filial">
-                              <SelectPopover
-                                name="filial_id"
-                                required
-                                title="Filial"
-                                isSearchable
-                                defaultValue={filialOptions.filter(
-                                  (filial) =>
-                                    filial.value === pageData.filial_id
-                                )}
-                                onChange={(el) => {
-                                  setPageData({
-                                    ...pageData,
-                                    searchFields: {
-                                      ...pageData.searchFields,
-                                      filial_id: el.value,
-                                    },
-                                  });
-                                }}
-                                options={filialOptions}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-                          )}
+                          <FindGeneric
+                            route="filials"
+                            title="Filial"
+                            scope="filial"
+                            required
+                            InputContext={InputContext}
+                            defaultValue={
+                              id === "new" && auth.filial.id !== 1
+                                ? {
+                                    id: auth.filial.id,
+                                    name: auth.filial.name,
+                                  }
+                                : {
+                                    id: pageData.filial?.id,
+                                    name: pageData.filial?.name,
+                                  }
+                            }
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                          />
                           <InputLine title="General Data">
                             <Input
                               type="hidden"
@@ -534,65 +506,6 @@ export default function PagePreview({
                               />
                             )}
                             <SelectPopover
-                              name="processtype_id"
-                              grow
-                              required
-                              readOnly={id !== "new"}
-                              title="Type"
-                              disabled={pageData.enrollmentProcess}
-                              onChange={(el) => {
-                                setPageData({
-                                  ...pageData,
-                                  searchFields: {
-                                    ...pageData.searchFields,
-                                    processsubstatus_id: null,
-                                    processtype_id: el.value,
-                                  },
-                                });
-                                setSuccessfullyUpdated(false);
-                              }}
-                              defaultValue={
-                                pageData.processtype_id
-                                  ? pageData.typesOptions.find(
-                                      (type) =>
-                                        type.value === pageData.processtype_id
-                                    )
-                                  : null
-                              }
-                              options={pageData.typesOptions}
-                              InputContext={InputContext}
-                            />
-                            <SelectPopover
-                              name="processsubstatus_id"
-                              grow
-                              required
-                              readOnly={id !== "new"}
-                              disabled={pageData.enrollmentProcess}
-                              title="Sub Status"
-                              onChange={(el) => {
-                                setSuccessfullyUpdated(false);
-                                setPageData({
-                                  ...pageData,
-                                  searchFields: {
-                                    ...pageData.searchFields,
-                                    processsubstatus_id: el.value,
-                                  },
-                                });
-                              }}
-                              isSearchable
-                              defaultValue={optionsSubStatus.find(
-                                (substatus) =>
-                                  substatus.value ===
-                                  pageData.processsubstatus_id
-                              )}
-                              options={optionsSubStatus.filter(
-                                (type) =>
-                                  type.type_id ===
-                                  pageData.searchFields.processtype_id
-                              )}
-                              InputContext={InputContext}
-                            />
-                            <SelectPopover
                               name="category"
                               required
                               title="Category"
@@ -605,6 +518,42 @@ export default function PagePreview({
                               InputContext={InputContext}
                             />
                           </InputLine>
+                          <FindGeneric
+                            route="processtypes"
+                            title="Process Type"
+                            scope="processtypes"
+                            required
+                            readOnly={id !== "new"}
+                            InputContext={InputContext}
+                            defaultValue={{
+                              id: pageData.processtypes?.id,
+                              name: pageData.processtypes?.name,
+                            }}
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                          />
+                          <FindGeneric
+                            route="processsubstatuses"
+                            title="Process Sub Status"
+                            scope="processsubstatuses"
+                            required
+                            readOnly={id !== "new"}
+                            InputContext={InputContext}
+                            defaultValue={{
+                              id: pageData.processsubstatuses?.id,
+                              name: pageData.processsubstatuses?.name,
+                            }}
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                          />
 
                           <PricesSimulation
                             student={pageData}

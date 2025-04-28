@@ -1,10 +1,7 @@
-import api from "~/services/api";
-
 export const yesOrNoOptions = [
   { value: true, label: "Yes" },
   { value: false, label: "No" },
 ];
-
 export const optionsCategories = [
   { value: "Student", label: "Student" },
   { value: "Ex-Student", label: "Ex-Student" },
@@ -13,13 +10,11 @@ export const optionsTypes = [
   { value: "F1", label: "F1" },
   { value: "Non-F1", label: "Non-F1" },
 ];
-
 export const inactiveReasonsOptions = [
   { value: "", label: "Not Defined" },
   { value: "Canceled", label: "Canceled" },
   { value: "Terminated", label: "Terminated" },
 ];
-
 export const appliedAtOptions = [
   { value: "Tuition", label: "Tuition" },
   { value: "Registration", label: "Registration" },
@@ -32,12 +27,10 @@ export const optionsStatus = [
   { value: "Waiting", label: "Waiting" },
   { value: "Inactive", label: "Inactive" },
 ];
-
 export const optionsCategory = [
   { value: "Student", label: "Student" },
-  { value: "Ex-Student", label: "Ex-Student" },
+  { value: "Ex-student", label: "Ex-student" },
 ];
-
 export const optionsSubStatus = [
   { value: 1, label: "Initial Visa", type_id: 1 },
   { value: 2, label: "Change of Status", type_id: 1 },
@@ -46,7 +39,6 @@ export const optionsSubStatus = [
   { value: 5, label: "Private", type_id: 2 },
   { value: 6, label: "Regular", type_id: 2 },
 ];
-
 export const genderOptions = [
   { value: "Male", label: "Male" },
   { value: "Female", label: "Female" },
@@ -67,12 +59,10 @@ export const relationshipTypeOptions = [
   { value: "Husband or Wife", label: "Husband/Wife" },
   { value: "Other", label: "Other" },
 ];
-
 export const dependentRelationshipTypeOptions = [
   { value: "Husband/Wife", label: "Husband/Wife" },
   { value: "Son/Daughter", label: "Son/Daughter" },
 ];
-
 export const sponsorRelationshipTypeOptions = [
   { value: "Parents", label: "Parents" },
   { value: "Family", label: "Family" },
@@ -117,7 +107,6 @@ export const discountTypesOptions = [
   { value: "Admission", label: "Admission" },
   { value: "Financial", label: "Financial" },
 ];
-
 export const subStatusOptions = [
   {
     value: "Pending",
@@ -144,7 +133,6 @@ export const subStatusOptions = [
     label: "Renegociated",
   },
 ];
-
 export const invoiceTypesOptions = [
   {
     value: "Invoice",
@@ -155,7 +143,6 @@ export const invoiceTypesOptions = [
     label: "Credit Note",
   },
 ];
-
 export const invoiceTypeDetailsOptions = [
   {
     value: "Tuition fee",
@@ -173,7 +160,6 @@ export const invoiceTypeDetailsOptions = [
     type: "Credit Note",
   },
 ];
-
 export const receivableStatusesOptions = [
   {
     value: "Pending",
@@ -192,7 +178,6 @@ export const receivableStatusesOptions = [
     label: "Renegociated",
   },
 ];
-
 export const typeOfPaymentOptions = [
   {
     value: "Inbounds & Outbounds",
@@ -207,11 +192,18 @@ export const typeOfPaymentOptions = [
     label: "Outbounds Only",
   },
 ];
-
 export const paymentPlatformOptions = [
   {
-    value: "Gravity",
-    label: "Gravity",
+    value: "",
+    label: "Select...",
+  },
+  {
+    value: "Gravity - Online",
+    label: "Gravity - Online",
+  },
+  {
+    value: "Gravity - POS",
+    label: "Gravity - POS",
   },
   {
     value: "Parcelow",
@@ -221,4 +213,30 @@ export const paymentPlatformOptions = [
     value: "Zelle",
     label: "Zelle",
   },
+];
+export const employeeTypeOptions = [
+  { value: "Staff", label: "Staff" },
+  { value: "Faculty", label: "Faculty" },
+];
+export const employeeSubtypeOptions = [
+  { value: "Pay Roll", label: "Pay Roll" },
+  { value: "Contract", label: "Contract" },
+];
+export const wageTypeOptions = [
+  { value: "Hourly", label: "Hourly" },
+  { value: "Salary", label: "Salary" },
+];
+export const classroomStatusOptions = [
+  { value: "Canceled", label: "Canceled" },
+  { value: "Finished", label: "Finished" },
+  { value: "In Formation", label: "In Formation" },
+  { value: "Ongoing", label: "Ongoing" },
+];
+export const typeOptions = [
+  { value: "Administrative", label: "Administrative" },
+  { value: "Academic", label: "Academic" },
+];
+export const dateTypeOptions = [
+  { value: "Break", label: "Break" },
+  { value: "Holiday", label: "Holiday" },
 ];

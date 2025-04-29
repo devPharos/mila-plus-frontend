@@ -261,7 +261,9 @@ export default function PagePreview({
                           title="Filial"
                           scope="filial"
                           required
-                          readOnly={pageData.status !== "In Formation"}
+                          readOnly={
+                            id !== "new" && pageData.status !== "In Formation"
+                          }
                           InputContext={InputContext}
                           defaultValue={
                             id === "new" && auth.filial.id !== 1
@@ -314,7 +316,9 @@ export default function PagePreview({
                             required
                             grow
                             title="Private"
-                            readOnly={pageData.status !== "In Formation"}
+                            readOnly={
+                              id !== "new" && pageData.status !== "In Formation"
+                            }
                             options={yesOrNoOptions}
                             isSearchable
                             defaultValue={yesOrNoOptions.find(
@@ -330,7 +334,9 @@ export default function PagePreview({
                             required
                             grow
                             title="Start Date"
-                            readOnly={pageData.status !== "In Formation"}
+                            readOnly={
+                              id !== "new" && pageData.status !== "In Formation"
+                            }
                             defaultValue={
                               pageData?.start_date
                                 ? format(
@@ -362,7 +368,9 @@ export default function PagePreview({
                           route="levels"
                           title="Level"
                           scope="level"
-                          readOnly={pageData.status !== "In Formation"}
+                          readOnly={
+                            id !== "new" && pageData.status !== "In Formation"
+                          }
                           required
                           InputContext={InputContext}
                           defaultValue={{
@@ -393,7 +401,9 @@ export default function PagePreview({
                           route="languagemodes"
                           title="Language Mode"
                           scope="languagemode"
-                          readOnly={pageData.status !== "In Formation"}
+                          readOnly={
+                            id !== "new" && pageData.status !== "In Formation"
+                          }
                           required
                           InputContext={InputContext}
                           defaultValue={{
@@ -424,7 +434,9 @@ export default function PagePreview({
                             returnToWorkload.languagemode_id
                           }
                           InputContext={InputContext}
-                          readOnly={pageData.status !== "In Formation"}
+                          readOnly={
+                            id !== "new" && pageData.status !== "In Formation"
+                          }
                           defaultValue={{
                             id: pageData.workload?.id,
                             name: pageData.workload?.name,
@@ -453,7 +465,9 @@ export default function PagePreview({
                             name="monday"
                             shrink
                             title="Monday"
-                            readOnly={pageData.status !== "In Formation"}
+                            readOnly={
+                              id !== "new" && pageData.status !== "In Formation"
+                            }
                             options={yesOrNoOptions}
                             isSearchable
                             defaultValue={pageData.monday}
@@ -463,7 +477,9 @@ export default function PagePreview({
                             name="tuesday"
                             shrink
                             title="Tuesday"
-                            readOnly={pageData.status !== "In Formation"}
+                            readOnly={
+                              id !== "new" && pageData.status !== "In Formation"
+                            }
                             options={yesOrNoOptions}
                             isSearchable={false}
                             defaultValue={pageData.tuesday}
@@ -473,7 +489,9 @@ export default function PagePreview({
                             name="wednesday"
                             shrink
                             title="Wednesday"
-                            readOnly={pageData.status !== "In Formation"}
+                            readOnly={
+                              id !== "new" && pageData.status !== "In Formation"
+                            }
                             options={yesOrNoOptions}
                             isSearchable={false}
                             defaultValue={pageData.wednesday}
@@ -483,7 +501,9 @@ export default function PagePreview({
                             name="thursday"
                             shrink
                             title="Thursday"
-                            readOnly={pageData.status !== "In Formation"}
+                            readOnly={
+                              id !== "new" && pageData.status !== "In Formation"
+                            }
                             options={yesOrNoOptions}
                             isSearchable={false}
                             defaultValue={pageData.thursday}
@@ -493,7 +513,9 @@ export default function PagePreview({
                             name="friday"
                             shrink
                             title="Friday"
-                            readOnly={pageData.status !== "In Formation"}
+                            readOnly={
+                              id !== "new" && pageData.status !== "In Formation"
+                            }
                             options={yesOrNoOptions}
                             isSearchable={false}
                             defaultValue={pageData.friday}
@@ -503,7 +525,9 @@ export default function PagePreview({
                             name="saturday"
                             shrink
                             title="Saturday"
-                            readOnly={pageData.status !== "In Formation"}
+                            readOnly={
+                              id !== "new" && pageData.status !== "In Formation"
+                            }
                             options={yesOrNoOptions}
                             isSearchable={false}
                             defaultValue={pageData.saturday}
@@ -513,7 +537,9 @@ export default function PagePreview({
                             name="sunday"
                             shrink
                             title="Sunday"
-                            readOnly={pageData.status !== "In Formation"}
+                            readOnly={
+                              id !== "new" && pageData.status !== "In Formation"
+                            }
                             options={yesOrNoOptions}
                             isSearchable={false}
                             defaultValue={pageData.sunday}
@@ -525,7 +551,9 @@ export default function PagePreview({
                             name="morning"
                             shrink
                             title="Morning"
-                            readOnly={pageData.status !== "In Formation"}
+                            readOnly={
+                              id !== "new" && pageData.status !== "In Formation"
+                            }
                             options={yesOrNoOptions}
                             isSearchable={false}
                             defaultValue={pageData.morning}
@@ -535,7 +563,9 @@ export default function PagePreview({
                             name="afternoon"
                             shrink
                             title="Afternoon"
-                            readOnly={pageData.status !== "In Formation"}
+                            readOnly={
+                              id !== "new" && pageData.status !== "In Formation"
+                            }
                             options={yesOrNoOptions}
                             isSearchable={false}
                             defaultValue={pageData.afternoon}
@@ -545,7 +575,9 @@ export default function PagePreview({
                             name="evening"
                             shrink
                             title="Evening"
-                            readOnly={pageData.status !== "In Formation"}
+                            readOnly={
+                              id !== "new" && pageData.status !== "In Formation"
+                            }
                             options={yesOrNoOptions}
                             isSearchable={false}
                             defaultValue={pageData.evening}
@@ -723,87 +755,92 @@ export default function PagePreview({
                             </tr>
                           </thead>
                           <tbody>
-                            {pageData.studentxgroups
-                              .sort((a, b) =>
-                                a.student.name +
-                                  a.student.last_name +
-                                  a.start_date +
-                                  a.end_date >
-                                b.student.name +
-                                  b.student.last_name +
-                                  b.start_date +
-                                  b.end_date
-                                  ? 1
-                                  : -1
-                              )
-                              .filter((studentGroup) => {
-                                if (filter) {
-                                  if (filter === "Ongoing") {
-                                    return (
-                                      parseISO(studentGroup.start_date) <=
-                                        new Date() && !studentGroup.end_date
-                                    );
-                                  } else if (filter === "Not started") {
-                                    return (
-                                      parseISO(studentGroup.start_date) >
-                                      new Date()
-                                    );
-                                  } else if (filter === "Left") {
-                                    return (
-                                      studentGroup.end_date &&
-                                      parseISO(studentGroup.end_date) <=
+                            {pageData.studentxgroups &&
+                              pageData.studentxgroups.length > 0 &&
+                              pageData.studentxgroups
+                                .sort((a, b) =>
+                                  a.student.name +
+                                    a.student.last_name +
+                                    a.start_date +
+                                    a.end_date >
+                                  b.student.name +
+                                    b.student.last_name +
+                                    b.start_date +
+                                    b.end_date
+                                    ? 1
+                                    : -1
+                                )
+                                .filter((studentGroup) => {
+                                  if (filter) {
+                                    if (filter === "Ongoing") {
+                                      return (
+                                        parseISO(studentGroup.start_date) <=
+                                          new Date() && !studentGroup.end_date
+                                      );
+                                    } else if (filter === "Not started") {
+                                      return (
+                                        parseISO(studentGroup.start_date) >
                                         new Date()
-                                    );
-                                  } else {
-                                    return false;
+                                      );
+                                    } else if (filter === "Left") {
+                                      return (
+                                        studentGroup.end_date &&
+                                        parseISO(studentGroup.end_date) <=
+                                          new Date()
+                                      );
+                                    } else {
+                                      return false;
+                                    }
                                   }
-                                }
-                                return true;
-                              })
-                              .map((studentGroup) => {
-                                return (
-                                  <tr
-                                    key={studentGroup.id}
-                                    className={`text-xs hover:bg-gray-50 border-b ${
-                                      parseISO(studentGroup.start_date) >
-                                      new Date()
-                                        ? "bg-amber-50 text-amber-700"
-                                        : studentGroup.end_date &&
-                                          parseISO(studentGroup.end_date) <=
-                                            new Date()
-                                        ? "bg-gray-100 text-gray-400"
-                                        : ""
-                                    }`}
-                                  >
-                                    <td className="text-xs px-2 py-2">
-                                      {studentGroup.student.name}
-                                    </td>
-                                    <td className="text-xs px-2 py-2">
-                                      {studentGroup.student.last_name}
-                                    </td>
-                                    <td className="text-xs px-2 py-2 text-center">
-                                      {studentGroup.student.registration_number}
-                                    </td>
-                                    <td className="text-xs px-2 py-2 text-center">
-                                      {format(
-                                        parseISO(studentGroup.start_date),
-                                        "MM/dd/yyyy"
-                                      )}
-                                    </td>
-                                    <td className="text-xs px-1 py-2 text-center">
-                                      {studentGroup.end_date
-                                        ? format(
-                                            parseISO(studentGroup.end_date),
-                                            "MM/dd/yyyy"
-                                          )
-                                        : null}
-                                    </td>
-                                    <td className="text-xs px-1 py-2 text-center">
-                                      {studentGroup.student.status}
-                                    </td>
-                                  </tr>
-                                );
-                              })}
+                                  return true;
+                                })
+                                .map((studentGroup) => {
+                                  return (
+                                    <tr
+                                      key={studentGroup.id}
+                                      className={`text-xs hover:bg-gray-50 border-b ${
+                                        parseISO(studentGroup.start_date) >
+                                        new Date()
+                                          ? "bg-amber-50 text-amber-700"
+                                          : studentGroup.end_date &&
+                                            parseISO(studentGroup.end_date) <=
+                                              new Date()
+                                          ? "bg-gray-100 text-gray-400"
+                                          : ""
+                                      }`}
+                                    >
+                                      <td className="text-xs px-2 py-2">
+                                        {studentGroup.student.name}
+                                      </td>
+                                      <td className="text-xs px-2 py-2">
+                                        {studentGroup.student.last_name}
+                                      </td>
+                                      <td className="text-xs px-2 py-2 text-center">
+                                        {
+                                          studentGroup.student
+                                            .registration_number
+                                        }
+                                      </td>
+                                      <td className="text-xs px-2 py-2 text-center">
+                                        {format(
+                                          parseISO(studentGroup.start_date),
+                                          "MM/dd/yyyy"
+                                        )}
+                                      </td>
+                                      <td className="text-xs px-1 py-2 text-center">
+                                        {studentGroup.end_date
+                                          ? format(
+                                              parseISO(studentGroup.end_date),
+                                              "MM/dd/yyyy"
+                                            )
+                                          : null}
+                                      </td>
+                                      <td className="text-xs px-1 py-2 text-center">
+                                        {studentGroup.student.status}
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
                             {/* {pageData.students
                               .sort(
                                 (a, b) =>

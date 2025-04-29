@@ -97,9 +97,9 @@ const FindGeneric = ({
                 retValue = selected[field.field].id;
               }
               if (
-                retValue.trim() === "" ||
                 retValue === undefined ||
-                retValue === null
+                retValue === null ||
+                retValue === ""
               ) {
                 retValue = " ";
               }

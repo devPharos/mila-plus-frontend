@@ -123,7 +123,7 @@ export default function Transfer({
                       <FormHeader
                         access={access}
                         title={
-                          "Inactivation - " +
+                          "Transfer - " +
                           pageData.name +
                           " " +
                           pageData.last_name
@@ -138,7 +138,24 @@ export default function Transfer({
                       >
                         <FindGeneric
                           route="studentgroups"
-                          title="Student Group"
+                          title="Student Group From"
+                          scope="studentgroup"
+                          readOnly
+                          InputContext={InputContext}
+                          defaultValue={{
+                            id: pageData.studentgroup?.id,
+                            name: pageData.studentgroup?.name,
+                          }}
+                          fields={[
+                            {
+                              title: "Name",
+                              name: "name",
+                            },
+                          ]}
+                        />
+                        <FindGeneric
+                          route="studentgroups"
+                          title="Student Group To"
                           scope="studentgroup"
                           required
                           InputContext={InputContext}
@@ -153,7 +170,7 @@ export default function Transfer({
                             },
                           ]}
                         />
-                        <InputLine title="Details">
+                        <InputLine>
                           <DatePicker
                             name="date"
                             grow

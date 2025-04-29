@@ -248,7 +248,9 @@ export default function FinancialReceivables() {
                 status.includes("Pending") || status.includes("Parcial Paid"),
               attention: {
                 title: "Due Date",
-                show: due_date < format(new Date(), "yyyyMMdd"),
+                show:
+                  status.includes("Pending") &&
+                  due_date < format(new Date(), "yyyyMMdd"),
               },
               canceled: canceled_at,
               page: Math.ceil((index + 1) / limit),

@@ -194,7 +194,7 @@ export default function FinancialReceivables() {
         orderBy,
         setPages,
         setGridData,
-        search,
+        search: search || "Pending",
         defaultGridHeader,
         defaultOrderBy,
       });
@@ -228,7 +228,7 @@ export default function FinancialReceivables() {
               fields: [
                 issuer.name,
                 filial.name,
-                "I" + invoice_number.toString().padStart(6, "0"),
+                invoice_number.toString(),
                 format(parseISO(due_date), "yyyy-MM-dd"),
                 "$ " + amount.toFixed(2),
                 "$ " + discount.toFixed(2),
@@ -246,6 +246,10 @@ export default function FinancialReceivables() {
               ],
               selectable:
                 status.includes("Pending") || status.includes("Parcial Paid"),
+              attention: {
+                title: "Due Date",
+                show: due_date < format(new Date(), "yyyyMMdd"),
+              },
               canceled: canceled_at,
               page: Math.ceil((index + 1) / limit),
             };

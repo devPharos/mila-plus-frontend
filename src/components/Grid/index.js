@@ -1,4 +1,11 @@
-import { ArrowUpDown, CheckSquare, Dot, Square } from "lucide-react";
+import {
+  AlertCircle,
+  AlertTriangle,
+  ArrowUpDown,
+  CheckSquare,
+  Dot,
+  Square,
+} from "lucide-react";
 import React, { useContext } from "react";
 import Icon from "../Icon";
 
@@ -63,7 +70,7 @@ export default function Grid({
                         "text-primary"
                       }`}
                     >
-                      <div className="flex flex-row items-center gap-2">
+                      <div className={`flex flex-row items-center gap-2`}>
                         {head.title}{" "}
                         {gridHeader[index].action && (
                           <Icon
@@ -187,13 +194,22 @@ export default function Grid({
                               <div
                                 className={`flex flex-row items-center justify-start gap-2`}
                               >
-                                <span>
+                                <span
+                                  className={`${
+                                    row.attention && row.attention.show
+                                      ? "text-red-500 flex flex-row items-center gap-1"
+                                      : ""
+                                  }`}
+                                >
                                   {new Date(field).toLocaleDateString("en-US", {
                                     year: "numeric",
                                     month: "2-digit",
                                     day: "2-digit",
                                     timeZone: "UTC",
                                   })}
+                                  {row.attention && row.attention.show && (
+                                    <AlertTriangle size={12} />
+                                  )}
                                 </span>
                               </div>
                             </td>

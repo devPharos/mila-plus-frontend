@@ -96,7 +96,11 @@ const FindGeneric = ({
               } else if (field.field && selected[field.field]) {
                 retValue = selected[field.field].id;
               }
-              if (retValue === "") {
+              if (
+                retValue.trim() === "" ||
+                retValue === undefined ||
+                retValue === null
+              ) {
                 retValue = " ";
               }
               return (

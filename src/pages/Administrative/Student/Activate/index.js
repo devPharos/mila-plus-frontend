@@ -123,7 +123,7 @@ export default function Activate({
                       <FormHeader
                         access={access}
                         title={
-                          "Inactivation - " +
+                          "Activation - " +
                           pageData.name +
                           " " +
                           pageData.last_name

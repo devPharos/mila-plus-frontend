@@ -696,9 +696,7 @@ export default function PagePreview({
                               name="how_did_you_hear_about_mila"
                               grow
                               title="How did you hear about MILA?"
-                              defaultValue={
-                                pageData.how_did_you_hear_about_mila
-                              }
+                              defaultValue={pageData.how_did_you_hear_about_us}
                               InputContext={InputContext}
                             />
                           </InputLine>

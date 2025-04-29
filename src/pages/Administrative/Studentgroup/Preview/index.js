@@ -703,7 +703,7 @@ export default function PagePreview({
                           <thead className="sticky top-[95px] border-b bg-white">
                             <tr>
                               <th className="text-xs border rounded p-2 hover:bg-gray-100 text-left">
-                                name
+                                Name
                               </th>
                               <th className="text-xs border rounded p-2 hover:bg-gray-100 text-left">
                                 Last Name

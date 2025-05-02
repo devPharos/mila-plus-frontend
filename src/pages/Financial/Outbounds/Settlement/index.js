@@ -129,7 +129,7 @@ export default function PayeesSettlement() {
                 : format(parseISO(created_at), "yyyy-MM-dd"),
               ,
             ],
-            selectable: paymentMethod.platform !== "Gravity",
+            selectable: paymentMethod.platform !== "Gravity - Online",
 
             canceled: canceled_at,
             page: Math.ceil((index + 1) / limit),

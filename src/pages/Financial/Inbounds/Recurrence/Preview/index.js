@@ -750,7 +750,7 @@ export default function PagePreview({
                                 />
                                 {receivable.status === "Pending" ? (
                                   receivable.paymentMethod.platform ===
-                                  "Gravity" ? (
+                                  "Gravity - Online" ? (
                                     <button
                                       type="button"
                                       onClick={() =>

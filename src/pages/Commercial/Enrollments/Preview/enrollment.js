@@ -2170,6 +2170,12 @@ export default function EnrollmentOutside({
                             pageData.activeMenu === "student-signature"
                           }
                         >
+                          {console.log(
+                            pageData.contracts.find(
+                              (contract) =>
+                                contract.file.document.subtype === "F1 Contract"
+                            ).file.url
+                          )}
                           {!pageData.signature ? (
                             <InputLine title="Student Signature">
                               {pageData.contracts &&

@@ -166,60 +166,16 @@ export default function PagePreview({
     }
   }
 
-  async function getDefaultFilialOptions() {
-    const { data } = await api.get("/filials");
-    const retGroupOptions = data.map((filial) => {
-      return { value: filial.id, label: filial.name };
-    });
-    setFilialOptions(retGroupOptions);
-  }
-
-  async function getPaymentMethodsOptions() {
-    const { data } = await api.get("/paymentmethods");
-    if (data.rows) {
-      const retOptions = data.rows.map((paymentMethod) => {
-        return { value: paymentMethod.id, label: paymentMethod.description };
-      });
-      setPaymentMethods(retOptions);
-    }
-  }
-
-  async function getPaymentCriteriasOptions() {
-    const { data } = await api.get("/paymentcriterias");
-    if (data.rows) {
-      const retOptions = data.rows.map((paymentCriteria) => {
-        return {
-          value: paymentCriteria.id,
-          label: paymentCriteria.description,
-        };
-      });
-      setPaymentCriterias(retOptions);
-    }
-  }
-
-  async function getAllChartOfAccountsByIssuer() {
-    const { data } = await api.get("/chartofaccounts/list?type=01");
-    const retOptions = data.map((chartOfAccount) => {
-      return {
-        value: chartOfAccount.id,
-        label: chartOfAccount.name,
-        code: chartOfAccount.code,
-      };
-    });
-    setChartOfAccountOptions(retOptions);
-  }
-
   useEffect(() => {
     async function getPageData() {
-      await getDefaultFilialOptions();
-      // await getPaymentMethodsOptions();
-      // await getPaymentCriteriasOptions();
-      // await getAllChartOfAccountsByIssuer();
       try {
         const { data } = await api.get(`/recurrence/${id}`);
+
         if (data.issuer) {
           api
-            .get(`/receivables?search=${data.issuer.id}&limit=100`)
+            .get(
+              `/recurrence/receivables/${data.issuer.issuer_x_recurrence.id}`
+            )
             .then(({ data: dataRec }) => {
               const receivables = dataRec.rows;
               setPageData({

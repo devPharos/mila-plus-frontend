@@ -84,6 +84,7 @@ export default function PagePreview({
   const [paymentCriterias, setPaymentCriterias] = useState([]);
   const [chartOfAccountOptions, setChartOfAccountOptions] = useState([]);
   const [paid, setPaid] = useState(false);
+  const [merchantId, setMerchantId] = useState(null);
 
   const generalForm = useRef();
 
@@ -167,6 +168,8 @@ export default function PagePreview({
             .get(`/payeerecurrences/${id}`)
             .then((response) => {
               const { data } = response;
+
+              setMerchantId(data.issuer?.merchant?.id);
               // console.log(data);
               setPageData({
                 ...pageData,
@@ -330,6 +333,9 @@ export default function PagePreview({
                               type: "hidden",
                             },
                           ]}
+                          setReturnFindGeneric={(merchant) => {
+                            setMerchantId(merchant.id);
+                          }}
                         />
 
                         <InputLine title="Recurrence Information">
@@ -423,7 +429,7 @@ export default function PagePreview({
                           required
                           type="expenses"
                           InputContext={InputContext}
-                          searchDefault={pageData.issuer?.merchant?.id}
+                          searchDefault={merchantId}
                           defaultValue={{
                             id: pageData.chartOfAccount?.id,
                             code: pageData.chartOfAccount?.code,

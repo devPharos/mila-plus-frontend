@@ -165,68 +165,66 @@ export default function PagePreview({
       console.log(err);
     }
   }
+  async function getPageData() {
+    try {
+      const { data } = await api.get(`/recurrence/${id}`);
+
+      if (data.issuer) {
+        api
+          .get(`/recurrence/receivables/${data.issuer.issuer_x_recurrence.id}`)
+          .then(({ data: dataRec }) => {
+            const receivables = dataRec.rows;
+            setPageData({
+              ...pageData,
+              ...data,
+              searchFields: {
+                processtype_id: data.processtype_id,
+                processsubstatus_id: data.processsubstatus_id,
+                filial_id: data.filial_id,
+              },
+              receivables,
+              loaded: true,
+            });
+            setIsAutoPay(data.issuer?.issuer_x_recurrence?.is_autopay);
+          });
+      } else {
+        setPageData({
+          ...pageData,
+          ...data,
+          searchFields: {
+            processtype_id: data.processtype_id,
+            processsubstatus_id: data.processsubstatus_id,
+            filial_id: data.filial_id,
+          },
+          receivables: [],
+          loaded: true,
+        });
+      }
+
+      const {
+        created_by,
+        created_at,
+        updated_by,
+        updated_at,
+        canceled_by,
+        canceled_at,
+      } = data;
+      const registries = await getRegistries({
+        created_by,
+        created_at,
+        updated_by,
+        updated_at,
+        canceled_by,
+        canceled_at,
+      });
+      setRegistry(registries);
+    } catch (err) {
+      console.log(err);
+      toast(err.response.data.error, { type: "error", autoClose: 3000 });
+    }
+  }
 
   useEffect(() => {
-    async function getPageData() {
-      try {
-        const { data } = await api.get(`/recurrence/${id}`);
-
-        if (data.issuer) {
-          api
-            .get(
-              `/recurrence/receivables/${data.issuer.issuer_x_recurrence.id}`
-            )
-            .then(({ data: dataRec }) => {
-              const receivables = dataRec.rows;
-              setPageData({
-                ...pageData,
-                ...data,
-                searchFields: {
-                  processtype_id: data.processtype_id,
-                  processsubstatus_id: data.processsubstatus_id,
-                  filial_id: data.filial_id,
-                },
-                receivables,
-                loaded: true,
-              });
-              setIsAutoPay(data.issuer?.issuer_x_recurrence?.is_autopay);
-            });
-        } else {
-          setPageData({
-            ...pageData,
-            ...data,
-            searchFields: {
-              processtype_id: data.processtype_id,
-              processsubstatus_id: data.processsubstatus_id,
-              filial_id: data.filial_id,
-            },
-            receivables: [],
-            loaded: true,
-          });
-        }
-
-        const {
-          created_by,
-          created_at,
-          updated_by,
-          updated_at,
-          canceled_by,
-          canceled_at,
-        } = data;
-        const registries = await getRegistries({
-          created_by,
-          created_at,
-          updated_by,
-          updated_at,
-          canceled_by,
-          canceled_at,
-        });
-        setRegistry(registries);
-      } catch (err) {
-        console.log(err);
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
-      }
-    }
     getPageData();
   }, []);
 
@@ -238,15 +236,7 @@ export default function PagePreview({
       });
       try {
         setPaid(false);
-        api
-          .get(`/receivables?search=${pageData.issuer.id}&limit=100`)
-          .then(({ data: receivables }) => {
-            setPageData({
-              ...pageData,
-              receivables,
-              loaded: true,
-            });
-          });
+        getPageData();
       } catch (err) {
         console.log(err);
       }

@@ -777,7 +777,7 @@ export default function PagePreview({
                           title="student-academic"
                           activeMenu={activeMenu === "student-academic"}
                         >
-                          <InputLine title="Academic">
+                          {/* <InputLine title="Academic">
                             <DatePicker
                               name="program_start_date"
                               grow
@@ -802,7 +802,7 @@ export default function PagePreview({
                               placeholderText="MM/DD/YYYY"
                               InputContext={InputContext}
                             />
-                          </InputLine>
+                          </InputLine> */}
                           <InputLine title="Placement Test">
                             <Input
                               type="text"

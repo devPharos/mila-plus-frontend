@@ -1,12 +1,19 @@
 import { Form } from "@unform/web";
+import { deleteObject, getStorage, ref } from "firebase/storage";
 import {
+  BookMarked,
   Building,
   Contact,
+  ExternalLink,
   GraduationCap,
   Loader2,
   NotebookPen,
   NotebookTabs,
   Pencil,
+  Plus,
+  Save,
+  SaveAll,
+  Send,
   Trash,
   Trash2,
   User,
@@ -55,6 +62,9 @@ import { app } from "~/services/firebase";
 import PricesSimulation from "~/components/PricesSimulation";
 import PhoneNumberInput from "~/components/RegisterForm/PhoneNumberInput";
 import FindGeneric from "~/components/Finds/FindGeneric";
+import { Scope } from "@unform/core";
+import FileInput from "~/components/RegisterForm/FileInput";
+import { organizeMultiAndSingleFiles } from "~/functions/uploadFile";
 
 export const InputContext = createContext({});
 
@@ -184,7 +194,6 @@ export default function PagePreview({
   }, []);
 
   async function handleGeneralFormSubmit(data) {
-    // return;
     if (successfullyUpdated) {
       toast("No need to be saved!", {
         autoClose: 1000,
@@ -193,37 +202,64 @@ export default function PagePreview({
       });
       return;
     }
-    if (id === "new") {
-      try {
-        const { date_of_birth, visa_expiration } = data;
-        delete data.id;
-        const response = await api.post(`/students`, {
-          ...data,
-          date_of_birth: date_of_birth
-            ? format(date_of_birth, "yyyy-MM-dd")
-            : null,
-          visa_expiration: visa_expiration
-            ? format(visa_expiration, "yyyy-MM-dd")
-            : null,
+    if (data.new_program.file_id) {
+      const allPromises = organizeMultiAndSingleFiles(
+        [data.new_program],
+        "StudentPrograms"
+      );
+      let toastId = toast.loading("Files are being uploaded...");
+      Promise.all(allPromises).then(async (files) => {
+        files.map(async (file) => {
+          if (!file) {
+            return;
+          }
+          try {
+            const { data: newprogram } = await api.post(`/studentprogram`, {
+              student_id: id,
+              file_id: file,
+              start_date: data.new_program.start_date,
+              end_date: data.new_program.end_date,
+            });
+            if (toastId) {
+              toast.update(toastId, {
+                render: "All files have been uploaded!",
+                type: "success",
+                autoClose: 3000,
+                isLoading: false,
+              });
+            }
+            setPageData({
+              ...pageData,
+              programs: [...pageData.programs, newprogram],
+              start_date: pageData.start_date
+                ? pageData.start_date
+                : newprogram.start_date,
+            });
+            generalForm.current.setFieldValue("new_program.file_id", null);
+            generalForm.current.setFieldValue("new_program.start_date", null);
+            generalForm.current.setFieldValue("new_program.end_date", null);
+          } catch (err) {
+            toast.update(toastId, {
+              render: err.response.data.error,
+              type: "error",
+              autoClose: 3000,
+              isLoading: false,
+            });
+            const storage = getStorage(app);
+            const local = "StudentPrograms/" + file.key;
+            const imageRef = ref(storage, local);
+            deleteObject(imageRef);
+          }
         });
-        setOpened(response.data.id);
-        setPageData({ ...pageData, ...data });
-        setSuccessfullyUpdated(true);
-        toast("Saved!", { autoClose: 1000 });
-        handleOpened(null);
-      } catch (err) {
-        console.log(err);
-        // toast(err.response.data.error, { type: "error", autoClose: 3000 });
-      }
-    } else if (id !== "new") {
-      const updated = handleUpdatedFields(data, pageData);
-
-      if (updated.length > 0) {
-        const objUpdated = Object.fromEntries(updated);
-        const { date_of_birth, visa_expiration } = objUpdated;
+      });
+    } else {
+      delete data.new_program;
+      if (id === "new") {
         try {
-          await api.put(`/students/${id}`, {
-            ...objUpdated,
+          const { date_of_birth, visa_expiration } = data;
+          delete data.id;
+          const response = await api.post(`/students`, {
+            ...data,
             date_of_birth: date_of_birth
               ? format(date_of_birth, "yyyy-MM-dd")
               : null,
@@ -231,7 +267,8 @@ export default function PagePreview({
               ? format(visa_expiration, "yyyy-MM-dd")
               : null,
           });
-          setPageData({ ...pageData, ...objUpdated });
+          setOpened(response.data.id);
+          setPageData({ ...pageData, ...data });
           setSuccessfullyUpdated(true);
           toast("Saved!", { autoClose: 1000 });
           handleOpened(null);
@@ -239,8 +276,33 @@ export default function PagePreview({
           console.log(err);
           // toast(err.response.data.error, { type: "error", autoClose: 3000 });
         }
-      } else {
-        // console.log(updated)
+      } else if (id !== "new") {
+        const updated = handleUpdatedFields(data, pageData);
+
+        if (updated.length > 0) {
+          const objUpdated = Object.fromEntries(updated);
+          const { date_of_birth, visa_expiration } = objUpdated;
+          try {
+            await api.put(`/students/${id}`, {
+              ...objUpdated,
+              date_of_birth: date_of_birth
+                ? format(date_of_birth, "yyyy-MM-dd")
+                : null,
+              visa_expiration: visa_expiration
+                ? format(visa_expiration, "yyyy-MM-dd")
+                : null,
+            });
+            setPageData({ ...pageData, ...objUpdated });
+            setSuccessfullyUpdated(true);
+            toast("Saved!", { autoClose: 1000 });
+            handleOpened(null);
+          } catch (err) {
+            console.log(err);
+            // toast(err.response.data.error, { type: "error", autoClose: 3000 });
+          }
+        } else {
+          // console.log(updated)
+        }
       }
     }
   }
@@ -319,6 +381,16 @@ export default function PagePreview({
                 messageOnDisabled="Create the student to be able to access this menu"
               >
                 <Contact size={16} /> Academic
+              </RegisterFormMenu>
+
+              <RegisterFormMenu
+                setActiveMenu={setActiveMenu}
+                activeMenu={activeMenu}
+                name="student-dso"
+                disabled={id === "new"}
+                messageOnDisabled="Create the student to be able to access this menu"
+              >
+                <BookMarked size={16} /> DSO
               </RegisterFormMenu>
             </div>
             <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
@@ -756,15 +828,206 @@ export default function PagePreview({
                               InputContext={InputContext}
                             />
                           </InputLine>
-                          <InputLine title="Group">
+                          {pageData.studentgroup && (
+                            <Scope path="studentgroup">
+                              <InputLine title="Group">
+                                <Input
+                                  name="name"
+                                  grow
+                                  readOnly
+                                  title="Group Name"
+                                  defaultValue={pageData.studentgroup.name}
+                                  InputContext={InputContext}
+                                />
+                                <Input
+                                  type="date"
+                                  name="start_date"
+                                  grow
+                                  readOnly
+                                  title="Group Start Date"
+                                  defaultValue={format(
+                                    parseISO(pageData.studentgroup.start_date),
+                                    "yyyy-MM-dd"
+                                  )}
+                                  InputContext={InputContext}
+                                />
+                                <Input
+                                  type="date"
+                                  name="end_date"
+                                  grow
+                                  readOnly
+                                  title="Group End Date"
+                                  defaultValue={format(
+                                    parseISO(pageData.studentgroup.end_date),
+                                    "yyyy-MM-dd"
+                                  )}
+                                  InputContext={InputContext}
+                                />
+                                <Input
+                                  type="text"
+                                  name="status"
+                                  grow
+                                  readOnly
+                                  title="Status"
+                                  defaultValue={pageData.studentgroup.status}
+                                  InputContext={InputContext}
+                                />
+                              </InputLine>
+                              <InputLine>
+                                <Input
+                                  type="date"
+                                  name="start_date"
+                                  grow
+                                  readOnly
+                                  title="Student Start Date in Group"
+                                  defaultValue={format(
+                                    parseISO(
+                                      pageData.studentgroup.studentxgroups[0]
+                                        .start_date
+                                    ),
+                                    "yyyy-MM-dd"
+                                  )}
+                                  InputContext={InputContext}
+                                />
+                                <Input
+                                  type="text"
+                                  name="teacher"
+                                  grow
+                                  readOnly
+                                  title="Teacher"
+                                  defaultValue={pageData.teacher.name}
+                                  InputContext={InputContext}
+                                />
+                              </InputLine>
+                            </Scope>
+                          )}
+                        </InputLineGroup>
+                        <InputLineGroup
+                          title="student-dso"
+                          activeMenu={activeMenu === "student-dso"}
+                        >
+                          {console.log(pageData)}
+                          <InputLine title="DSO Information">
                             <Input
-                              name="group"
+                              type="date"
+                              name="start_date"
                               grow
-                              title="Group Name"
-                              defaultValue={pageData.group}
+                              readOnly
+                              title="Student start tate"
+                              defaultValue={
+                                pageData.start_date
+                                  ? format(
+                                      parseISO(pageData.start_date),
+                                      "yyyy-MM-dd"
+                                    )
+                                  : null
+                              }
+                              InputContext={InputContext}
+                            />
+
+                            <Input
+                              type="date"
+                              name="program_start_date"
+                              grow
+                              readOnly
+                              title="Program Start Date"
+                              defaultValue={
+                                pageData.programs.length > 0
+                                  ? pageData.programs[0].start_date
+                                  : null
+                              }
+                              InputContext={InputContext}
+                            />
+
+                            <Input
+                              type="date"
+                              name="program_end_date"
+                              grow
+                              readOnly
+                              title="Program End Date"
+                              defaultValue={
+                                pageData.programs.length > 0
+                                  ? pageData.programs[0].end_date
+                                  : null
+                              }
                               InputContext={InputContext}
                             />
                           </InputLine>
+                          <Scope path="new_program">
+                            <InputLine title="New i20">
+                              <FileInput
+                                name="file_id"
+                                title="i20"
+                                grow
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="date"
+                                name="start_date"
+                                grow
+                                title="Program Start Date"
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="date"
+                                name="end_date"
+                                grow
+                                title="Program End Date"
+                                InputContext={InputContext}
+                              />
+                              <button className="bg-mila_orange text-white rounded-md p-1 px-2 h-8 mt-3 flex flex-row items-center justify-center text-xs gap-1">
+                                <Send size={16} /> Add i20
+                              </button>
+                            </InputLine>
+                          </Scope>
+                          {pageData.programs.length > 0 &&
+                            pageData.programs
+                              .sort((a, b) =>
+                                b.created_at > a.created_at ? 1 : -1
+                              )
+                              .map((program, index) => (
+                                <InputLine
+                                  key={index}
+                                  title={index === 0 ? "Last i20 Files" : ""}
+                                >
+                                  <a
+                                    type="button"
+                                    href={program.i20.url}
+                                    target="_blank"
+                                    className="bg-primary text-white rounded-md p-1 px-2 h-8 mt-3 flex flex-row items-center justify-center text-xs gap-1"
+                                  >
+                                    <ExternalLink size={16} />
+                                    Open File
+                                  </a>
+                                  <Input
+                                    type="text"
+                                    name="file_id"
+                                    grow
+                                    readOnly
+                                    title="i20"
+                                    defaultValue={program.i20.name}
+                                    InputContext={InputContext}
+                                  />
+                                  <Input
+                                    type="date"
+                                    name="start_date"
+                                    grow
+                                    readOnly
+                                    title="Program Start Date"
+                                    defaultValue={program.start_date}
+                                    InputContext={InputContext}
+                                  />
+                                  <Input
+                                    type="date"
+                                    name="end_date"
+                                    grow
+                                    readOnly
+                                    title="Program End Date"
+                                    defaultValue={program.end_date}
+                                    InputContext={InputContext}
+                                  />
+                                </InputLine>
+                              ))}
                         </InputLineGroup>
                       </>
                     ) : (

@@ -1,5 +1,5 @@
 import { Form } from "@unform/web";
-import { Building } from "lucide-react";
+import { Building, History, Trash } from "lucide-react";
 import React, {
   createContext,
   useContext,
@@ -22,6 +22,7 @@ import { AlertContext } from "~/App";
 import { inactiveReasonsOptions } from "~/functions/selectPopoverOptions";
 import { format, parseISO } from "date-fns";
 import FindGeneric from "~/components/Finds/FindGeneric";
+import Input from "~/components/RegisterForm/Input";
 
 export const InputContext = createContext({});
 
@@ -41,6 +42,7 @@ export default function Transfer({
     bank_alias: "",
     loaded: true,
     installment_amount: 0,
+    studentxgroups: [],
   });
 
   const [registry, setRegistry] = useState({
@@ -77,6 +79,36 @@ export default function Transfer({
       console.log(err);
       // toast(err.response.data.error, { type: "error", autoClose: 3000 });
     }
+  }
+
+  async function handleRemove(transfer_id) {
+    alertBox({
+      title: "Attention!",
+      descriptionHTML:
+        "Are you sure you want to delete this transfer? \n This operation cannot be undone.",
+      buttons: [
+        {
+          title: "No",
+          class: "cancel",
+        },
+        {
+          title: "Yes",
+          onPress: async () => {
+            try {
+              await api.delete(`/students/transfer/${transfer_id}`);
+              toast("Transfer removed!", { autoClose: 1000 });
+              setPageData({ ...pageData, studentxgroups: [], loaded: true });
+            } catch (err) {
+              console.log(err);
+              toast(err.response.data.error, {
+                type: "error",
+                autoClose: 3000,
+              });
+            }
+          },
+        },
+      ],
+    });
   }
 
   useEffect(() => {
@@ -136,51 +168,129 @@ export default function Transfer({
                         title="GENERAL"
                         activeMenu={activeMenu === "general"}
                       >
-                        <FindGeneric
-                          route="studentgroups"
-                          title="Student Group From"
-                          scope="studentgroup"
-                          readOnly
-                          InputContext={InputContext}
-                          defaultValue={{
-                            id: pageData.studentgroup?.id,
-                            name: pageData.studentgroup?.name,
-                          }}
-                          fields={[
-                            {
-                              title: "Name",
-                              name: "name",
-                            },
-                          ]}
-                        />
-                        <FindGeneric
-                          route="studentgroups"
-                          title="Student Group To"
-                          scope="studentgroup"
-                          required
-                          InputContext={InputContext}
-                          defaultValue={{
-                            id: pageData.studentgroup?.id,
-                            name: pageData.studentgroup?.name,
-                          }}
-                          fields={[
-                            {
-                              title: "Name",
-                              name: "name",
-                            },
-                          ]}
-                        />
-                        <InputLine>
-                          <DatePicker
-                            name="date"
-                            grow
-                            required
-                            title="Date"
-                            defaultValue={pageData.date}
-                            placeholderText="MM/DD/YYYY"
-                            InputContext={InputContext}
-                          />
-                        </InputLine>
+                        {pageData.studentxgroups.length > 0 ? (
+                          <InputLine title="Pending...">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleRemove(pageData.studentxgroups[0].id)
+                              }
+                            >
+                              <Trash size={16} className="mt-3" />
+                            </button>
+                            <Input
+                              type="text"
+                              name="transfer_student"
+                              required
+                              grow
+                              title="Status"
+                              defaultValue={pageData.studentxgroups[0].status}
+                              InputContext={InputContext}
+                              readOnly
+                            />
+                            <Input
+                              type="text"
+                              name="transfer_group"
+                              required
+                              grow
+                              title="To Group"
+                              defaultValue={
+                                pageData.studentxgroups[0].group.name
+                              }
+                              InputContext={InputContext}
+                              readOnly
+                            />
+                            <Input
+                              type="date"
+                              name="transfer_date"
+                              required
+                              grow
+                              title="Transfer Date"
+                              defaultValue={
+                                pageData.studentxgroups[0].start_date
+                              }
+                              placeholderText="MM/DD/YYYY"
+                              InputContext={InputContext}
+                              readOnly
+                            />
+                          </InputLine>
+                        ) : (
+                          <>
+                            {pageData.studentgroup && (
+                              <FindGeneric
+                                route="studentgroups"
+                                title="Student Group From"
+                                scope="studentgroup_from"
+                                readOnly
+                                InputContext={InputContext}
+                                defaultValue={{
+                                  id: pageData.studentgroup?.id,
+                                  name: pageData.studentgroup?.name,
+                                  start_date: format(
+                                    parseISO(pageData.studentgroup?.start_date),
+                                    "MM/dd/yyyy"
+                                  ),
+                                  end_date: format(
+                                    parseISO(pageData.studentgroup?.end_date),
+                                    "MM/dd/yyyy"
+                                  ),
+                                }}
+                                fields={[
+                                  {
+                                    title: "Name",
+                                    name: "name",
+                                  },
+                                  {
+                                    title: "Start Date",
+                                    name: "start_date",
+                                  },
+                                  {
+                                    title: "End Date",
+                                    name: "end_date",
+                                  },
+                                ]}
+                              />
+                            )}
+                            <FindGeneric
+                              route="studentgroups"
+                              title="Student Group To"
+                              scope="studentgroup"
+                              required
+                              InputContext={InputContext}
+                              defaultValue={{
+                                id: null,
+                                name: null,
+                                start_date: null,
+                                end_date: null,
+                              }}
+                              fields={[
+                                {
+                                  title: "Name",
+                                  name: "name",
+                                },
+                                {
+                                  title: "Start Date",
+                                  name: "start_date",
+                                },
+                                {
+                                  title: "End Date",
+                                  name: "end_date",
+                                },
+                              ]}
+                            />
+                            <InputLine>
+                              <DatePicker
+                                name="date"
+                                grow
+                                required
+                                title="Transfer Date"
+                                defaultValue={pageData.date}
+                                placeholderText="MM/DD/YYYY"
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+                          </>
+                        )}
                       </InputLineGroup>
                     </>
                   ) : (

@@ -677,10 +677,12 @@ export default function PagePreview({
                           <button
                             type="button"
                             onClick={() =>
-                              setFilter(filter === "Left" ? null : "Left")
+                              setFilter(
+                                filter === "Terminated" ? null : "Terminated"
+                              )
                             }
                             className={`${
-                              filter === "Left"
+                              filter === "Terminated"
                                 ? "border border-dashed rounded-md border-gray-500 "
                                 : ""
                             }`}
@@ -688,7 +690,27 @@ export default function PagePreview({
                             <div className="flex flex-row items-center rounded-md hover:bg-gray-50 justify-start gap-2 p-2">
                               <div className="w-4 h-4 border border-gray-500 bg-gray-200 rounded-sm"></div>
                               <div className="text-xs text-gray-400">
-                                Left the group
+                                Terminated/Canceled
+                              </div>
+                            </div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFilter(
+                                filter === "Transferred" ? null : "Transferred"
+                              )
+                            }
+                            className={`${
+                              filter === "Transferred"
+                                ? "border border-dashed rounded-md border-sky-500 "
+                                : ""
+                            }`}
+                          >
+                            <div className="flex flex-row items-center rounded-md hover:bg-sky-50 justify-start gap-2 p-2">
+                              <div className="w-4 h-4 border border-gray-500 bg-sky-200 rounded-sm"></div>
+                              <div className="text-xs text-sky-400">
+                                Transferred
                               </div>
                             </div>
                           </button>
@@ -715,10 +737,10 @@ export default function PagePreview({
                           <button
                             type="button"
                             onClick={() =>
-                              setFilter(filter === "Ongoing" ? null : "Ongoing")
+                              setFilter(filter === "Active" ? null : "Active")
                             }
                             className={`${
-                              filter === "Ongoing"
+                              filter === "Active"
                                 ? "border border-dashed rounded-md border-gray-500 "
                                 : ""
                             }`}
@@ -726,7 +748,7 @@ export default function PagePreview({
                             <div className="flex flex-row items-center rounded-md hover:bg-gray-50 justify-start gap-2 p-2">
                               <div className="w-4 h-4 border border-gray-500 bg-gray-50 rounded-sm"></div>
                               <div className="text-xs text-gray-600">
-                                Ongoing
+                                Active
                               </div>
                             </div>
                           </button>
@@ -772,7 +794,7 @@ export default function PagePreview({
                                 )
                                 .filter((studentGroup) => {
                                   if (filter) {
-                                    if (filter === "Ongoing") {
+                                    if (filter === "Active") {
                                       return (
                                         parseISO(studentGroup.start_date) <=
                                           new Date() && !studentGroup.end_date
@@ -782,11 +804,16 @@ export default function PagePreview({
                                         parseISO(studentGroup.start_date) >
                                         new Date()
                                       );
-                                    } else if (filter === "Left") {
+                                    } else if (filter === "Terminated") {
                                       return (
-                                        studentGroup.end_date &&
-                                        parseISO(studentGroup.end_date) <=
-                                          new Date()
+                                        studentGroup.student.inactivation &&
+                                        studentGroup.student.inactivation
+                                          .reason === "Terminated"
+                                      );
+                                    } else if (filter === "Transferred") {
+                                      return (
+                                        studentGroup.end_date <=
+                                        format(new Date(), "yyyy-MM-dd")
                                       );
                                     } else {
                                       return false;
@@ -795,17 +822,45 @@ export default function PagePreview({
                                   return true;
                                 })
                                 .map((studentGroup) => {
+                                  let studentGroupStatus = "Not defined";
+                                  if (
+                                    studentGroup.student.inactivation &&
+                                    studentGroup.student.inactivation.reason ===
+                                      "Terminated"
+                                  ) {
+                                    studentGroupStatus = "Terminated";
+                                  } else if (
+                                    studentGroup.end_date <=
+                                    format(new Date(), "yyyy-MM-dd")
+                                  ) {
+                                    studentGroupStatus = "Transferred";
+                                  } else if (
+                                    parseISO(studentGroup.start_date) >
+                                    new Date()
+                                  ) {
+                                    studentGroupStatus = "Not started";
+                                  } else if (
+                                    parseISO(studentGroup.start_date) <=
+                                      new Date() &&
+                                    (!studentGroup.end_date ||
+                                      studentGroup.end_date >
+                                        format(new Date(), "yyyy-MM-dd"))
+                                  ) {
+                                    studentGroupStatus = "Active";
+                                  }
+
                                   return (
                                     <tr
                                       key={studentGroup.id}
                                       className={`text-xs hover:bg-gray-50 border-b ${
-                                        parseISO(studentGroup.start_date) >
-                                        new Date()
+                                        studentGroupStatus === "Not started"
                                           ? "bg-amber-50 text-amber-700"
-                                          : studentGroup.end_date &&
-                                            parseISO(studentGroup.end_date) <=
-                                              new Date()
+                                          : studentGroupStatus === "Terminated"
                                           ? "bg-gray-100 text-gray-400"
+                                          : studentGroupStatus === "Transferred"
+                                          ? "bg-sky-50 text-sky-700"
+                                          : studentGroupStatus === "Active"
+                                          ? ""
                                           : ""
                                       }`}
                                     >
@@ -836,78 +891,11 @@ export default function PagePreview({
                                           : null}
                                       </td>
                                       <td className="text-xs px-1 py-2 text-center">
-                                        {studentGroup.student.status}
+                                        {studentGroupStatus}
                                       </td>
                                     </tr>
                                   );
                                 })}
-                            {/* {pageData.students
-                              .sort(
-                                (a, b) =>
-                                  a.name + a.last_name > b.name + b.last_name
-                              )
-                              .map((student, index) => {
-                                return (
-                                  <div
-                                    className="flex flex-row justify-center items-center relative w-full"
-                                    key={index}
-                                  >
-                                    <Scope
-                                      key={index}
-                                      path={`students[${index}]`}
-                                    >
-                                      <InputLine>
-                                        <Input
-                                          type="hidden"
-                                          name="id"
-                                          defaultValue={student.id}
-                                          InputContext={InputContext}
-                                        />
-                                        <Input
-                                          type="text"
-                                          name="name"
-                                          grow
-                                          readOnly
-                                          title={index === 0 && "Name"}
-                                          defaultValue={student.name}
-                                          InputContext={InputContext}
-                                        />
-                                        <Input
-                                          type="text"
-                                          name="last_name"
-                                          grow
-                                          readOnly
-                                          title={index === 0 && "Last Name"}
-                                          defaultValue={student.last_name}
-                                          InputContext={InputContext}
-                                        />
-                                        <Input
-                                          type="text"
-                                          name="registration_number"
-                                          grow
-                                          readOnly
-                                          title={
-                                            index === 0 && "Registration Number"
-                                          }
-                                          defaultValue={
-                                            student.registration_number
-                                          }
-                                          InputContext={InputContext}
-                                        />
-                                        <Input
-                                          type="text"
-                                          name="status"
-                                          grow
-                                          readOnly
-                                          title={index === 0 && "Status"}
-                                          defaultValue={student.status}
-                                          InputContext={InputContext}
-                                        />
-                                      </InputLine>
-                                    </Scope>
-                                  </div>
-                                );
-                              })} */}
                           </tbody>
                         </table>
                       </InputLineGroup>

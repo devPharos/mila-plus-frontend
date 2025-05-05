@@ -75,7 +75,7 @@ export default function Activate({
       handleOpened(null);
     } catch (err) {
       console.log(err);
-      // toast(err.response.data.error, { type: "error", autoClose: 3000 });
+      toast(err.response.data.error, { type: "error", autoClose: 3000 });
     }
   }
 

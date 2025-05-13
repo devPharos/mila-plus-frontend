@@ -40,6 +40,7 @@ export default function Attendance({
   const [pageData, setPageData] = useState({
     attendance: {
       date: null,
+      paceguides: [],
     },
     pending_paceguides: [],
     pendingPaceguides: [],
@@ -62,8 +63,6 @@ export default function Attendance({
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
   const [attendanceId, setAttendanceId] = useState(null);
-  const [contentPercentage, setContentPercentage] = useState(0);
-  const [classPercentage, setClassPercentage] = useState(0);
 
   const generalForm = useRef();
 
@@ -75,6 +74,24 @@ export default function Attendance({
   }
 
   function handleGeneralFormSubmit(data) {
+    if (data.lock && data.grades) {
+      api
+        .post(`/studentgroups/grades/${selected[0].id}`, {
+          grades: data.grades,
+          studentgroupclass_id: data.studentgroupclass_id,
+        })
+        .then((res) => {
+          toast("Grades saved!", { autoClose: 1000 });
+          handleOpened(null);
+        })
+        .catch((err) => {
+          toast(err.response.data.error, {
+            type: "error",
+            autoClose: 1000,
+          });
+        });
+      return;
+    }
     function exect() {
       api
         .post(`/studentgroups/attendance/${selected[0].id}`, data)
@@ -90,7 +107,7 @@ export default function Attendance({
         });
     }
     if (
-      data.paceguides.filter((paceguide) => paceguide.status === "Done")
+      data.paceguides.filter((paceguide) => paceguide.checked === "true")
         .length === 0
     ) {
       toast("At least one content must be marked as Done!", {
@@ -151,8 +168,21 @@ export default function Attendance({
               activeMenu={activeMenu}
               name="general"
             >
-              <Building size={16} /> General
+              <Building size={16} /> Attendance
             </RegisterFormMenu>
+            {pageData.attendance?.paceguides?.find((paceguide) =>
+              paceguide.type.includes("Test")
+            ) && (
+              <RegisterFormMenu
+                setActiveMenu={setActiveMenu}
+                activeMenu={activeMenu}
+                disabled={!pageData.attendance.locked_at}
+                messageOnDisabled="Avaiable only on locked attendances that have given tests."
+                name="grades"
+              >
+                <Building size={16} /> Grades
+              </RegisterFormMenu>
+            )}
           </div>
           <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
             <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll">
@@ -302,6 +332,7 @@ export default function Attendance({
                             name="lock"
                             grow
                             title="Lock this attendance?"
+                            readOnly={pageData.attendance.locked_at}
                             InputContext={InputContext}
                             options={yesOrNoOptions}
                             defaultValue={
@@ -407,6 +438,9 @@ export default function Attendance({
                                                   "Present",
                                                   "Absent",
                                                 ]}
+                                                readOnly={
+                                                  pageData.attendance.locked_at
+                                                }
                                                 InputContext={InputContext}
                                                 defaultValue={
                                                   first_check || "Absent"
@@ -421,6 +455,9 @@ export default function Attendance({
                                                   "Present",
                                                   "Absent",
                                                 ]}
+                                                readOnly={
+                                                  pageData.attendance.locked_at
+                                                }
                                                 InputContext={InputContext}
                                                 defaultValue={
                                                   second_check || "Absent"
@@ -505,6 +542,9 @@ export default function Attendance({
                                             <CheckboxInput
                                               name={`paceguides.${index}.checked`}
                                               InputContext={InputContext}
+                                              readOnly={
+                                                pageData.attendance.locked_at
+                                              }
                                               defaultValue={
                                                 (!pageData.attendance?.status &&
                                                   index <
@@ -526,6 +566,129 @@ export default function Attendance({
                             </table>
                           </div>
                         </InputLine>
+                      </InputLineGroup>
+                      <InputLineGroup
+                        title="Grades"
+                        activeMenu={activeMenu === "grades"}
+                      >
+                        {pageData.attendance?.paceguides
+                          ?.filter((paceguide) =>
+                            paceguide.type.includes("Test")
+                          )
+                          .map((paceguide, index) => {
+                            return (
+                              <Scope path={`grades`} key={index}>
+                                <InputLine title={paceguide.description}>
+                                  <Input
+                                    type="hidden"
+                                    name="id"
+                                    defaultValue={paceguide.id}
+                                    InputContext={InputContext}
+                                  />
+                                  <table className="w-full text-sm text-center">
+                                    <thead>
+                                      <tr className="bg-gray-100">
+                                        <th className="px-2 h-8 text-left">
+                                          Student
+                                        </th>
+                                        <th className="w-36 bg-emerald-400">
+                                          Score
+                                        </th>
+                                        <th className="w-36 bg-red-400">
+                                          Discard Score
+                                        </th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {pageData.attendance?.studentgroup?.students.map(
+                                        (student, index) => {
+                                          const {
+                                            first_check = null,
+                                            second_check = null,
+                                          } =
+                                            pageData.attendance?.attendances?.find(
+                                              (attendance) =>
+                                                attendance.student_id ===
+                                                student.id
+                                            ) || {};
+                                          if (
+                                            first_check === "Absent" &&
+                                            second_check === "Absent"
+                                          ) {
+                                            return null;
+                                          }
+                                          return (
+                                            <Scope
+                                              path={`students.${index}`}
+                                              key={index}
+                                            >
+                                              <tr
+                                                key={index}
+                                                className={`text-xs hover:bg-gray-100 ${
+                                                  student.id ===
+                                                  pageData.attendance
+                                                    ?.student_id
+                                                    ? "bg-gray-100"
+                                                    : ""
+                                                } even:bg-gray-50`}
+                                              >
+                                                <td className="px-2 py-2 text-left">
+                                                  <Input
+                                                    type="hidden"
+                                                    name="id"
+                                                    defaultValue={student.id}
+                                                    InputContext={InputContext}
+                                                  />
+                                                  {student.name}{" "}
+                                                  {student.last_name}
+                                                </td>
+                                                <td>
+                                                  <Input
+                                                    type="text"
+                                                    name="score"
+                                                    centeredText
+                                                    grow
+                                                    defaultValue={
+                                                      paceguide.grades?.find(
+                                                        (grade) =>
+                                                          grade.student_id ===
+                                                          student.id
+                                                      )?.score || "0"
+                                                    }
+                                                    InputContext={InputContext}
+                                                  />
+                                                </td>
+                                                <td>
+                                                  <SelectPopover
+                                                    name="discarded"
+                                                    grow
+                                                    readOnly
+                                                    options={yesOrNoOptions}
+                                                    defaultValue={
+                                                      yesOrNoOptions.find(
+                                                        (type) =>
+                                                          type.value ===
+                                                          paceguide.grades?.find(
+                                                            (grade) =>
+                                                              grade.student_id ===
+                                                              student.id
+                                                          )?.discarded
+                                                      ) || yesOrNoOptions[1]
+                                                    }
+                                                    InputContext={InputContext}
+                                                  />
+                                                </td>
+                                              </tr>
+                                            </Scope>
+                                          );
+                                        }
+                                      )}
+                                    </tbody>
+                                  </table>
+                                </InputLine>
+                              </Scope>
+                            );
+                          })}
                       </InputLineGroup>
                     </>
                   ) : (

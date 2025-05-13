@@ -906,7 +906,6 @@ export default function PagePreview({
                           title="student-dso"
                           activeMenu={activeMenu === "student-dso"}
                         >
-                          {console.log(pageData)}
                           <InputLine title="DSO Information">
                             <Input
                               type="date"

@@ -48,6 +48,10 @@ const CheckboxInput = ({
     inputRef.current.value = e.target.checked;
     setSuccessfullyUpdated(false);
     setCheckedValue(e.target.checked);
+
+    if (onChange) {
+      onChange(e.target.checked);
+    }
   }
 
   return (

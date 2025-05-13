@@ -154,6 +154,7 @@ export default function Studentgroups() {
           name,
           status,
           private: privateStatus,
+          classes,
           level,
           languagemode,
           classroom,
@@ -188,6 +189,9 @@ export default function Studentgroups() {
             format(parseISO(start_date), "MM/dd/yyyy"),
             end_date ? format(parseISO(end_date), "MM/dd/yyyy") : "",
           ],
+          others: {
+            classes: classes.length,
+          },
           selectable: true,
           canceled: canceled_at,
           page: Math.ceil((index + 1) / limit),
@@ -219,15 +223,17 @@ export default function Studentgroups() {
     });
   }
   if (selected.length > 0 && selected[0].fields[1] === "Ongoing") {
-    selectionFunctions.push({
-      title: "Pause Group",
-      fun: handlePause,
-      icon: "Pause",
-      Page: () => null,
-      opened: startGroup,
-      setOpened: setStartGroup,
-      selected,
-    });
+    if (selected[0].others.classes === 0) {
+      selectionFunctions.push({
+        title: "Pause Group",
+        fun: handlePause,
+        icon: "Pause",
+        Page: () => null,
+        opened: startGroup,
+        setOpened: setStartGroup,
+        selected,
+      });
+    }
     selectionFunctions.push({
       title: "Attendance",
       fun: handleAttendance,

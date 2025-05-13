@@ -60,9 +60,11 @@ const CheckboxInput = ({
     >
       <div
         htmlFor={name}
-        className={`w-full border-b hover:bg-gray-50 rounded-lg p-2 px-4 text-sm flex flex-row justify-start items-center gap-2 ${
-          disabled && "bg-gray-100"
-        } ${error && "border-red-300"}`}
+        className={`w-full ${
+          title ? "border-b" : ""
+        } hover:bg-gray-50 rounded-lg p-2 px-4 text-sm flex flex-row justify-center items-center gap-2 ${
+          disabled ? "bg-gray-100" : ""
+        } ${error ? "border-red-300" : ""}`}
       >
         <input type="hidden" name={name} ref={inputRef} value={checkedValue} />
         <input
@@ -75,12 +77,14 @@ const CheckboxInput = ({
           {...rest}
           className="cursor-pointer text-sm focus:outline-none bg-transparent"
         />{" "}
-        <label
-          htmlFor={name}
-          className="cursor-pointer text-xs flex-1 flex flex-row"
-        >
-          {title} {required && <Asterisk color="#e00" size={12} />}
-        </label>
+        {title && (
+          <label
+            htmlFor={name}
+            className="cursor-pointer text-xs flex-1 flex flex-row"
+          >
+            {title} {required && <Asterisk color="#e00" size={12} />}
+          </label>
+        )}
       </div>
       {error && (
         <span

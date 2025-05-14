@@ -12,14 +12,17 @@ export function* login({ payload }) {
 
     const { data } = yield call(api.post, "sessions", {
       email,
-      password
+      password,
     });
 
     const { token, user } = data;
 
     api.defaults.headers.authorization = `Bearer ${token}`;
 
-    const { data: accesses } = yield call(api.get, "MenuHierarchy/user/" + user.id)
+    const { data: accesses } = yield call(
+      api.get,
+      "MenuHierarchy/user/" + user.id
+    );
 
     let firstFilial = null;
     if (user.filials.length > 0 && user.filials[0].filial) {
@@ -47,7 +50,7 @@ export function* register({ payload }) {
       nome,
       email,
       password,
-      provider: true
+      provider: true,
     });
 
     history.push("/");
@@ -61,8 +64,6 @@ export function* register({ payload }) {
 export function setToken({ payload }) {
   if (!payload) return;
 
-  // console.log(api.defaults.headers.authorization)
-
   const { token } = payload.auth;
 
   if (token) {
@@ -72,11 +73,10 @@ export function setToken({ payload }) {
 
 export function setFilial({ payload }) {
   if (!payload) return;
-
 }
 
 export function setDepartment({ payload }) {
-  console.log('setDepartment', payload)
+  console.log("setDepartment", payload);
 }
 
 export default all([
@@ -85,5 +85,5 @@ export default all([
   takeLatest("@auth/REGISTER_REQUEST", register),
   takeLatest("@auth/DEPARTMENT_CHANGE", setDepartment),
   takeLatest("@auth/FILIAL_CHANGE", setFilial),
-  takeLatest("@auth/LOGOUT", logout)
+  takeLatest("@auth/LOGOUT", logout),
 ]);

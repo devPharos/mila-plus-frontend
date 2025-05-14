@@ -90,7 +90,11 @@ export default function Header() {
 
               <div className="hidden md:flex flex flex-row justify-between items-center gap-x-8 text-xl">
                 {modules.map((module, index) => {
-                  if (hasAccessTo(auth.accesses, null, module.alias).view) {
+                  if (
+                    auth.accesses?.hierarchy?.find(
+                      (access) => access.alias === module.alias
+                    )?.children.length > 0
+                  ) {
                     return (
                       <NavLink
                         key={index}

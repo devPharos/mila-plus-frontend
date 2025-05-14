@@ -324,6 +324,13 @@ export default function PagePreview({
                                             defaultValue={menu.id}
                                             InputContext={InputContext}
                                           />
+                                          <Input
+                                            type="hidden"
+                                            name="fatherId"
+                                            required
+                                            defaultValue={menu.father_id}
+                                            InputContext={InputContext}
+                                          />
 
                                           <SelectPopover
                                             name="view"

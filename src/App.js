@@ -98,6 +98,12 @@ function App() {
       name: "Financial",
       children: [
         {
+          alias: "financial-dashboard",
+          path: "/Financial/Dashboard",
+          title: "Dashboard",
+          icon: "LayoutDashboard",
+        },
+        {
           alias: "financial-bank",
           path: "/Financial/Bank",
           title: "Bank",

@@ -906,14 +906,13 @@ export default function PagePreview({
                           title="student-dso"
                           activeMenu={activeMenu === "student-dso"}
                         >
-                          {console.log(pageData)}
                           <InputLine title="DSO Information">
                             <Input
                               type="date"
                               name="start_date"
                               grow
                               readOnly
-                              title="Student start tate"
+                              title="Student Start Date"
                               defaultValue={
                                 pageData.start_date
                                   ? format(
@@ -954,10 +953,10 @@ export default function PagePreview({
                             />
                           </InputLine>
                           <Scope path="new_program">
-                            <InputLine title="New i20">
+                            <InputLine title="New I20">
                               <FileInput
                                 name="file_id"
-                                title="i20"
+                                title="I20"
                                 grow
                                 InputContext={InputContext}
                               />
@@ -976,7 +975,7 @@ export default function PagePreview({
                                 InputContext={InputContext}
                               />
                               <button className="bg-mila_orange text-white rounded-md p-1 px-2 h-8 mt-3 flex flex-row items-center justify-center text-xs gap-1">
-                                <Send size={16} /> Add i20
+                                <Send size={16} /> Add I20
                               </button>
                             </InputLine>
                           </Scope>
@@ -988,7 +987,7 @@ export default function PagePreview({
                               .map((program, index) => (
                                 <InputLine
                                   key={index}
-                                  title={index === 0 ? "Last i20 Files" : ""}
+                                  title={index === 0 ? "Last I20 Files" : ""}
                                 >
                                   <a
                                     type="button"
@@ -1004,7 +1003,7 @@ export default function PagePreview({
                                     name="file_id"
                                     grow
                                     readOnly
-                                    title="i20"
+                                    title="I20"
                                     defaultValue={program.i20.name}
                                     InputContext={InputContext}
                                   />

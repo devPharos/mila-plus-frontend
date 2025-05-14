@@ -8,10 +8,11 @@ function InputLine({
   subtitle = "",
   disabled = false,
   left = false,
+  className = "",
 }) {
   return (
     <div
-      className={`w-full ${subtitle ? "px-8" : "px-4"} ${
+      className={`${className} w-full ${subtitle ? "px-8" : "px-4"} ${
         disabled ? "opacity-50" : ""
       }`}
     >

@@ -636,43 +636,6 @@ export default function PagePreview({
                         title="students"
                         activeMenu={activeMenu === "students"}
                       >
-                        {/* {pageData.status === "In Formation" && (
-                          <FindGeneric
-                            route="students"
-                            title="Find student to add to the group"
-                            scope="student"
-                            type="Waiting"
-                            setReturnFindGeneric={setReturnStudent}
-                            InputContext={InputContext}
-                            defaultValue={{
-                              id: pageData.student?.id,
-                              name: pageData.student?.name,
-                              last_name: pageData.student?.last_name,
-                              registration_number:
-                                pageData.student?.registration_number,
-                              status: pageData.student?.status,
-                            }}
-                            fields={[
-                              {
-                                title: "Name",
-                                name: "name",
-                              },
-                              {
-                                title: "Last Name",
-                                name: "last_name",
-                              },
-                              {
-                                title: "Registration Number",
-                                name: "registration_number",
-                              },
-                              {
-                                title: "Status",
-                                name: "status",
-                              },
-                            ]}
-                          />
-                        )} */}
-                        {/* Legendas */}
                         <div className="flex flex-row justify-evenly w-full items-center gap-2">
                           <button
                             type="button"
@@ -754,7 +717,7 @@ export default function PagePreview({
                           </button>
                         </div>
                         <table className="w-full relative overflow-hidden">
-                          <thead className="sticky top-[95px] border-b bg-white">
+                          <thead className="sticky top-0 border-b bg-white">
                             <tr>
                               <th className="text-xs border rounded p-2 hover:bg-gray-100 text-left">
                                 Name
@@ -796,13 +759,16 @@ export default function PagePreview({
                                   if (filter) {
                                     if (filter === "Active") {
                                       return (
+                                        studentGroup.start_date &&
                                         parseISO(studentGroup.start_date) <=
-                                          new Date() && !studentGroup.end_date
+                                          new Date() &&
+                                        !studentGroup.end_date
                                       );
                                     } else if (filter === "Not started") {
                                       return (
+                                        studentGroup.start_date &&
                                         parseISO(studentGroup.start_date) >
-                                        new Date()
+                                          new Date()
                                       );
                                     } else if (filter === "Terminated") {
                                       return (
@@ -835,11 +801,13 @@ export default function PagePreview({
                                   ) {
                                     studentGroupStatus = "Transferred";
                                   } else if (
+                                    studentGroup.start_date &&
                                     parseISO(studentGroup.start_date) >
-                                    new Date()
+                                      new Date()
                                   ) {
                                     studentGroupStatus = "Not started";
                                   } else if (
+                                    studentGroup.start_date &&
                                     parseISO(studentGroup.start_date) <=
                                       new Date() &&
                                     (!studentGroup.end_date ||
@@ -877,18 +845,18 @@ export default function PagePreview({
                                         }
                                       </td>
                                       <td className="text-xs px-2 py-2 text-center">
-                                        {format(
-                                          parseISO(studentGroup.start_date),
-                                          "MM/dd/yyyy"
-                                        )}
+                                        {studentGroup.start_date &&
+                                          format(
+                                            parseISO(studentGroup.start_date),
+                                            "MM/dd/yyyy"
+                                          )}
                                       </td>
                                       <td className="text-xs px-1 py-2 text-center">
-                                        {studentGroup.end_date
-                                          ? format(
-                                              parseISO(studentGroup.end_date),
-                                              "MM/dd/yyyy"
-                                            )
-                                          : null}
+                                        {studentGroup.end_date &&
+                                          format(
+                                            parseISO(studentGroup.end_date),
+                                            "MM/dd/yyyy"
+                                          )}
                                       </td>
                                       <td className="text-xs px-1 py-2 text-center">
                                         {studentGroupStatus}
@@ -904,7 +872,7 @@ export default function PagePreview({
                         activeMenu={activeMenu === "Class Planning"}
                       >
                         <table className="w-full relative overflow-hidden">
-                          <thead className="sticky top-[95px] border-b bg-white">
+                          <thead className="sticky top-0 border-b bg-white">
                             <tr>
                               <th className="text-xs max-w-8 w-8 bg-white border rounded p-2 hover:bg-gray-100 text-center">
                                 #
@@ -936,10 +904,11 @@ export default function PagePreview({
                                     </td>
                                     <td className="text-xs px-1 py-2 text-center">
                                       <strong className="text-sm">
-                                        {format(
-                                          parseISO(classDate.date),
-                                          "MM/dd"
-                                        )}
+                                        {classDate.date &&
+                                          format(
+                                            parseISO(classDate.date),
+                                            "MM/dd"
+                                          )}
                                       </strong>
                                       <br />
                                       {classDate.weekday}

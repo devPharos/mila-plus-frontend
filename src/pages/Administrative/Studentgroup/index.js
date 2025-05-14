@@ -4,9 +4,10 @@ import { useSelector } from "react-redux";
 import { FullGridContext } from "..";
 import { getData } from "~/functions/gridFunctions";
 import PageContainer from "~/components/PageContainer";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, set } from "date-fns";
 import { toast } from "react-toastify";
 import api from "~/services/api";
+import Attendance from "./Attendance";
 
 export default function Studentgroups() {
   const filial = useSelector((state) => state.auth.filial);
@@ -81,6 +82,7 @@ export default function Studentgroups() {
   ];
   const [selected, setSelected] = useState([]);
   const [startGroup, setStartGroup] = useState(false);
+  const [openAttendance, setOpenAttendance] = useState(false);
 
   async function handleStart() {
     if (selected[0].fields[1] !== "In Formation") {
@@ -112,6 +114,10 @@ export default function Studentgroups() {
       toast(err.response.data.error, { type: "error", autoClose: 3000 });
     }
     setSelected([]);
+  }
+
+  async function handleAttendance() {
+    setOpenAttendance(!openAttendance);
   }
 
   const {
@@ -148,6 +154,7 @@ export default function Studentgroups() {
           name,
           status,
           private: privateStatus,
+          classes,
           level,
           languagemode,
           classroom,
@@ -182,6 +189,9 @@ export default function Studentgroups() {
             format(parseISO(start_date), "MM/dd/yyyy"),
             end_date ? format(parseISO(end_date), "MM/dd/yyyy") : "",
           ],
+          others: {
+            classes: classes.length,
+          },
           selectable: true,
           canceled: canceled_at,
           page: Math.ceil((index + 1) / limit),
@@ -213,13 +223,24 @@ export default function Studentgroups() {
     });
   }
   if (selected.length > 0 && selected[0].fields[1] === "Ongoing") {
+    if (selected[0].others.classes === 0) {
+      selectionFunctions.push({
+        title: "Pause Group",
+        fun: handlePause,
+        icon: "Pause",
+        Page: () => null,
+        opened: startGroup,
+        setOpened: setStartGroup,
+        selected,
+      });
+    }
     selectionFunctions.push({
-      title: "Pause Group",
-      fun: handlePause,
-      icon: "Pause",
-      Page: () => null,
-      opened: startGroup,
-      setOpened: setStartGroup,
+      title: "Attendance",
+      fun: handleAttendance,
+      icon: "Highlighter",
+      Page: Attendance,
+      opened: openAttendance,
+      setOpened: setOpenAttendance,
       selected,
     });
   }

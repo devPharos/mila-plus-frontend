@@ -170,6 +170,7 @@ export default function Attendance({
             >
               <Building size={16} /> Attendance
             </RegisterFormMenu>
+            {console.log(pageData.attendance?.paceguides)}
             {pageData.attendance?.paceguides?.find((paceguide) =>
               paceguide.type.includes("Test")
             ) && (

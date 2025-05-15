@@ -21,7 +21,7 @@ module.exports = {
       primary: "#0B2870",
       secondary: "rgba(232,234,241,1)",
       "secondary-50": "rgba(232,234,241,.5)",
-      mila_orange: "#ff5406",
+      mila_orange: "#ff5618",
     },
   },
   plugins: [],

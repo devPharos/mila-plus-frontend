@@ -171,7 +171,7 @@ export default function Sidebar({ main = null, pages = [] }) {
                                         name={child.icon}
                                         color={`${
                                           isActive
-                                            ? "#ff5406"
+                                            ? "#ff5618"
                                             : inactiveMenu.color
                                         }`}
                                         size={16}

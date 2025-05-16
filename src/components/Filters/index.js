@@ -115,7 +115,6 @@ export default function Filters({
 
   return (
     <div className="flex flex-row justify-between items-center w-full gap-2">
-      {console.log(access)}
       {access.create && handleNew !== null && (
         <button
           type="button"

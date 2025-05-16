@@ -115,6 +115,7 @@ export default function PagePreview({
     },
     classroom: null,
     studentgroup: null,
+    programs: [],
   });
   const [countriesList, setCountriesList] = useState([]);
   const [formType, setFormType] = useState(defaultFormType);
@@ -931,6 +932,7 @@ export default function PagePreview({
                               readOnly
                               title="Program Start Date"
                               defaultValue={
+                                pageData.programs &&
                                 pageData.programs.length > 0
                                   ? pageData.programs[0].start_date
                                   : null

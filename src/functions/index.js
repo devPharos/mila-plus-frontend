@@ -40,6 +40,7 @@ export function hasAccessTo(
     return defaultFalse;
   }
 
+  console.log(current.MenuHierarchyXGroup);
   const { view, edit, create, inactivate } = current.MenuHierarchyXGroup;
   return { view, edit, create, inactivate };
 }

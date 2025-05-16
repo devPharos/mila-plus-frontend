@@ -18,10 +18,10 @@ module.exports = {
     },
     colors: {
       ...colors,
-      primary: "#0B2870",
+      primary: "#293068",
       secondary: "rgba(232,234,241,1)",
       "secondary-50": "rgba(232,234,241,.5)",
-      mila_orange: "#ff5618",
+      mila_orange: "#dd6238",
     },
   },
   plugins: [],

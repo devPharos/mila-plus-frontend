@@ -133,6 +133,10 @@ export default function PagePreview({
   const generalForm = useRef();
   const auth = useSelector((state) => state.auth);
 
+  useEffect(() => {
+    document.getElementById("scrollPage").scrollTo(0, 0);
+  }, [activeMenu]);
+
   const countriesOptions = countries_list.map((country) => {
     return { value: country, label: country };
   });
@@ -395,24 +399,27 @@ export default function PagePreview({
               </RegisterFormMenu>
             </div>
             <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
-              <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll">
-                <Form
-                  ref={generalForm}
-                  onSubmit={handleGeneralFormSubmit}
-                  className="w-full"
+              <InputContext.Provider
+                value={{
+                  id,
+                  generalForm,
+                  setSuccessfullyUpdated,
+                  fullscreen,
+                  setFullscreen,
+                  successfullyUpdated,
+                  handleCloseForm,
+                  handleInactivate,
+                  canceled: pageData.canceled_at,
+                }}
+              >
+                <div
+                  id="scrollPage"
+                  className="flex flex-col items-start justify-start text-sm overflow-y-scroll"
                 >
-                  <InputContext.Provider
-                    value={{
-                      id,
-                      generalForm,
-                      setSuccessfullyUpdated,
-                      fullscreen,
-                      setFullscreen,
-                      successfullyUpdated,
-                      handleCloseForm,
-                      handleInactivate,
-                      canceled: pageData.canceled_at,
-                    }}
+                  <Form
+                    ref={generalForm}
+                    onSubmit={handleGeneralFormSubmit}
+                    className="w-full"
                   >
                     {pageData.loaded ? (
                       <>
@@ -1034,9 +1041,9 @@ export default function PagePreview({
                     ) : (
                       <FormLoading />
                     )}
-                  </InputContext.Provider>
-                </Form>
-              </div>
+                  </Form>
+                </div>
+              </InputContext.Provider>
             </div>
           </div>
         )

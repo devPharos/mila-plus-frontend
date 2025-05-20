@@ -26,8 +26,14 @@ import {
   classroomStatusOptions,
   yesOrNoOptions,
 } from "~/functions/selectPopoverOptions";
-import { Scope } from "@unform/core";
 import CheckboxInput from "~/components/RegisterForm/CheckboxInput";
+import { pdfjs } from "react-pdf";
+
+import "react-pdf/dist/esm/Page/AnnotationLayer.css";
+import "react-pdf/dist/esm/Page/TextLayer.css";
+import PDFViewer from "~/components/PDFViewer";
+
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 export const InputContext = createContext({});
 
@@ -70,11 +76,17 @@ export default function PagePreview({
   });
   const generalForm = useRef();
   const auth = useSelector((state) => state.auth);
+  const { profile } = useSelector((state) => state.user);
+  const groupName = profile.groups[0].group.name;
   const [returnToWorkload, setReturnToWorkload] = useState({
     level_id: null,
     languagemode_id: null,
   });
   const [filter, setFilter] = useState(null);
+
+  useEffect(() => {
+    document.getElementById("scrollPage").scrollTo(0, 0);
+  }, [activeMenu]);
 
   useEffect(() => {
     async function getPageData() {
@@ -196,26 +208,38 @@ export default function PagePreview({
             >
               <Calendar size={16} /> Class Planning
             </RegisterFormMenu>
+            <RegisterFormMenu
+              setActiveMenu={setActiveMenu}
+              activeMenu={activeMenu}
+              name="Scope and Sequence"
+              disabled={pageData.classes.length === 0}
+              messageOnDisabled="Create the student group to have access to Scope and Sequence."
+            >
+              <Calendar size={16} /> Scope & Sequence
+            </RegisterFormMenu>
           </div>
           <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
-            <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll">
-              <Form
-                ref={generalForm}
-                onSubmit={handleGeneralFormSubmit}
-                className="w-full"
+            <InputContext.Provider
+              value={{
+                id,
+                generalForm,
+                setSuccessfullyUpdated,
+                fullscreen,
+                setFullscreen,
+                successfullyUpdated,
+                handleCloseForm,
+                handleInactivate: () => null,
+                canceled: pageData.canceled_at,
+              }}
+            >
+              <div
+                id="scrollPage"
+                className="flex flex-col items-start justify-start text-sm overflow-y-scroll"
               >
-                <InputContext.Provider
-                  value={{
-                    id,
-                    generalForm,
-                    setSuccessfullyUpdated,
-                    fullscreen,
-                    setFullscreen,
-                    successfullyUpdated,
-                    handleCloseForm,
-                    handleInactivate: () => null,
-                    canceled: pageData.canceled_at,
-                  }}
+                <Form
+                  ref={generalForm}
+                  onSubmit={handleGeneralFormSubmit}
+                  className="w-full"
                 >
                   {pageData.loaded ? (
                     <>
@@ -261,6 +285,7 @@ export default function PagePreview({
                             type="text"
                             name="name"
                             required
+                            readOnly={groupName === "Teacher"}
                             grow
                             title="Name"
                             defaultValue={pageData.name}
@@ -564,6 +589,7 @@ export default function PagePreview({
                           required
                           InputContext={InputContext}
                           type="Active"
+                          readOnly={groupName === "Teacher"}
                           defaultValue={{
                             id: pageData.classroom?.id,
                             class_number: pageData.classroom?.class_number,
@@ -586,6 +612,7 @@ export default function PagePreview({
                           title="Teacher"
                           scope="staff"
                           required
+                          readOnly={groupName === "Teacher"}
                           type="Faculty"
                           InputContext={InputContext}
                           defaultValue={{
@@ -914,13 +941,31 @@ export default function PagePreview({
                           </tbody>
                         </table>
                       </InputLineGroup>
+                      <InputLineGroup
+                        title="Scope and Sequence"
+                        activeMenu={activeMenu === "Scope and Sequence"}
+                      >
+                        <InputLine title="Scope and Sequence">
+                          {pageData.workload?.File ? (
+                            <PDFViewer
+                              download={true}
+                              file={{
+                                url: pageData.workload?.File?.url,
+                              }}
+                              height={650}
+                            />
+                          ) : (
+                            <p className="text-sm">No attached file.</p>
+                          )}
+                        </InputLine>
+                      </InputLineGroup>
                     </>
                   ) : (
                     <FormLoading />
                   )}
-                </InputContext.Provider>
-              </Form>
-            </div>
+                </Form>
+              </div>
+            </InputContext.Provider>
           </div>
         </div>
       ) : null}

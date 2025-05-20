@@ -37,8 +37,11 @@ function LoginRoute({ children }) {
     if (!module_page) {
       return <Navigate to={`/login`} />;
     }
-    const firstPage = "Dashboard";
-    // const firstPage = accesses.hierarchy[0].children[0].name || "Dashboard";
+    // const firstPage = "Dashboard";
+    let firstPage = "Dashboard";
+    if (!accesses.hierarchy[0].children.find((el) => el.name === "Dashboard")) {
+      firstPage = accesses.hierarchy[0].children[0].name;
+    }
     return <Navigate to={`/${module_page}/${firstPage}`} />;
   }
   return children;

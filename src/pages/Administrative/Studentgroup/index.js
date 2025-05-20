@@ -11,6 +11,8 @@ import Attendance from "./Attendance";
 
 export default function Studentgroups() {
   const filial = useSelector((state) => state.auth.filial);
+  const { profile } = useSelector((state) => state.user);
+  const groupName = profile.groups[0].group.name;
   const defaultOrderBy = { column: "name", asc: true };
   const defaultGridHeader = [
     {
@@ -25,12 +27,12 @@ export default function Studentgroups() {
       type: "text",
       filter: true,
     },
-    {
-      title: "Private",
-      name: "private",
-      type: "boolean",
-      filter: true,
-    },
+    // {
+    //   title: "Private",
+    //   name: "private",
+    //   type: "boolean",
+    //   filter: true,
+    // },
     {
       title: "Level",
       name: ["level", "name"],
@@ -62,7 +64,7 @@ export default function Studentgroups() {
       filter: false,
     },
     {
-      title: "Students in Group",
+      title: "In Group",
       name: "students",
       type: "integer",
       filter: false,
@@ -179,7 +181,7 @@ export default function Studentgroups() {
           fields: [
             name,
             status,
-            privateStatus,
+            // privateStatus,
             level_name,
             languagemode_name,
             classroom_name,
@@ -211,29 +213,8 @@ export default function Studentgroups() {
 
   const selectionFunctions = [];
 
-  if (selected.length === 0 || selected[0].fields[1] === "In Formation") {
-    selectionFunctions.push({
-      title: "Start Group",
-      fun: handleStart,
-      icon: "Play",
-      Page: () => null,
-      opened: startGroup,
-      setOpened: setStartGroup,
-      selected,
-    });
-  }
-  if (selected.length > 0 && selected[0].fields[1] === "Ongoing") {
-    if (selected[0].others.classes === 0) {
-      selectionFunctions.push({
-        title: "Pause Group",
-        fun: handlePause,
-        icon: "Pause",
-        Page: () => null,
-        opened: startGroup,
-        setOpened: setStartGroup,
-        selected,
-      });
-    }
+  // Função liberada para professor
+  if (groupName === "Teacher") {
     selectionFunctions.push({
       title: "Attendance",
       fun: handleAttendance,
@@ -243,6 +224,33 @@ export default function Studentgroups() {
       setOpened: setOpenAttendance,
       selected,
     });
+
+    // Funções para não professores
+  } else {
+    if (selected.length === 0 || selected[0].fields[1] === "In Formation") {
+      selectionFunctions.push({
+        title: "Start Group",
+        fun: handleStart,
+        icon: "Play",
+        Page: () => null,
+        opened: startGroup,
+        setOpened: setStartGroup,
+        selected,
+      });
+    }
+    if (selected.length > 0 && selected[0].fields[1] === "Ongoing") {
+      if (selected[0].others.classes === 0) {
+        selectionFunctions.push({
+          title: "Pause Group",
+          fun: handlePause,
+          icon: "Pause",
+          Page: () => null,
+          opened: startGroup,
+          setOpened: setStartGroup,
+          selected,
+        });
+      }
+    }
   }
 
   return (

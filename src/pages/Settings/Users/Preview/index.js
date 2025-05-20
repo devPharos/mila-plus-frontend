@@ -20,6 +20,7 @@ import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import { Scope } from "@unform/core";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { FullGridContext } from "../..";
+import FindGeneric from "~/components/Finds/FindGeneric";
 
 export const InputContext = createContext({});
 
@@ -40,6 +41,7 @@ export default function PagePreview({
     group_id: null,
     filials: [{ id: null }],
     loaded: false,
+    staff: { id: null, name: null, last_name: null, email: null },
   });
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
@@ -53,62 +55,42 @@ export default function PagePreview({
     canceled_by: null,
     canceled_at: null,
   });
-  const [filialOptions, setFilialOptions] = useState([]);
-  const [groupOptions, setGroupOptions] = useState([]);
+  const [selectedGroup, setSelectedGroup] = useState(null);
   const generalForm = useRef();
 
+  async function getPageData() {
+    try {
+      const { data } = await api.get(`users/${id}`);
+      setPageData({
+        ...data,
+        group_id: data.groups[0].group.id,
+        loaded: true,
+      });
+      setSelectedGroup(data.groups[0].group);
+      const {
+        created_by,
+        created_at,
+        updated_by,
+        updated_at,
+        canceled_by,
+        canceled_at,
+      } = data;
+      const registries = await getRegistries({
+        created_by,
+        created_at,
+        updated_by,
+        updated_at,
+        canceled_by,
+        canceled_at,
+      });
+      setRegistry(registries);
+    } catch (err) {
+      toast(err.response.data.error, { type: "error", autoClose: 3000 });
+    }
+  }
+
   useEffect(() => {
-    async function getPageData() {
-      await getDefaultGroupOptions();
-      await getDefaultFilialOptions();
-      try {
-        const { data } = await api.get(`users/${id}`);
-        setPageData({
-          ...data,
-          group_id: data.groups[0].group.id,
-          loaded: true,
-        });
-        const {
-          created_by,
-          created_at,
-          updated_by,
-          updated_at,
-          canceled_by,
-          canceled_at,
-        } = data;
-        const registries = await getRegistries({
-          created_by,
-          created_at,
-          updated_by,
-          updated_at,
-          canceled_by,
-          canceled_at,
-        });
-        setRegistry(registries);
-      } catch (err) {
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
-      }
-    }
-
-    async function getDefaultGroupOptions() {
-      const { data } = await api.get("/groups");
-      const retGroupOptions = data.map((group) => {
-        return { value: group.id, label: group.name };
-      });
-      setGroupOptions(retGroupOptions);
-    }
-
-    async function getDefaultFilialOptions() {
-      const { data } = await api.get("/filials");
-      const retGroupOptions = data.map((filial) => {
-        return { value: filial.id, label: filial.name };
-      });
-      setFilialOptions(retGroupOptions);
-    }
-
     if (id === "new") {
-      getDefaultGroupOptions();
-      getDefaultFilialOptions();
       setFormType("full");
     } else if (id) {
       getPageData();
@@ -176,23 +158,18 @@ export default function PagePreview({
   function handleAddFilial() {
     setSuccessfullyUpdated(false);
     const addedFilials = [...pageData.filials];
-    addedFilials.push({ filial_id: null, filial: { id: null } });
+    const newFilial = { id: null, filial_id: null, filial: { id: null } };
+    addedFilials.push(newFilial);
     setPageData({ ...pageData, filials: addedFilials });
   }
 
-  function handleRemoveFilial(index) {
+  function handleRemoveFilial(id = null) {
     setSuccessfullyUpdated(false);
-
-    const newData = generalForm.current.getData();
-    const removedFilial = { ...newData.filials[index] };
-
-    newData.filials.splice(index, 1);
-    generalForm.current.setData(newData);
-
-    const removedFilials = pageData.filials.filter(
-      (filial) => filial.filial_id !== removedFilial.filial_id
-    );
-    // console.log(removedFilials)
+    const index = pageData.filials.findIndex((el) => el.filial.id === id);
+    const removedFilials = [...pageData.filials];
+    removedFilials.splice(index, 1);
+    const allData = generalForm.current.getData();
+    generalForm.current.setData({ ...allData, filials: removedFilials });
     setPageData({ ...pageData, filials: removedFilials });
   }
 
@@ -284,48 +261,91 @@ export default function PagePreview({
                               defaultValue={pageData.email}
                               InputContext={InputContext}
                             />
-                            <SelectPopover
-                              disabled={
-                                pageData.group_id ===
-                                "a05b7c30-e4bc-495c-85f3-b88b958b46fe"
-                              }
-                              name="group_id"
-                              title="Group"
-                              required
-                              isSearchable
-                              grow
-                              options={
-                                pageData.group_id ===
-                                "a05b7c30-e4bc-495c-85f3-b88b958b46fe"
-                                  ? groupOptions.filter(
-                                      (group) =>
-                                        group.value ===
-                                        "a05b7c30-e4bc-495c-85f3-b88b958b46fe"
-                                    )
-                                  : groupOptions.filter(
-                                      (group) =>
-                                        !"a05b7c30-e4bc-495c-85f3-b88b958b46fe;ae0453fd-b493-41ff-803b-9aea989a8567".includes(
-                                          group.value
-                                        )
-                                    )
-                              }
-                              defaultValue={
-                                pageData.group_id
-                                  ? groupOptions.filter(
-                                      (group) =>
-                                        group.value === pageData.group_id
-                                    )
-                                  : groupOptions.filter(
-                                      (group) => group.value === 1
-                                    )
-                              }
-                              InputContext={InputContext}
-                            />
                           </InputLine>
-                          <h3 className="font-bold pl-4 pb-2 mt-4 border-b w-full">
-                            Filials
-                          </h3>
-                          {pageData.filials.map((filial, index) => {
+                          <FindGeneric
+                            route="groups"
+                            title="Group"
+                            scope="group"
+                            required
+                            InputContext={InputContext}
+                            defaultValue={{
+                              id: pageData.groups[0].group.id,
+                              name: pageData.groups[0].group.name,
+                            }}
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                            setReturnFindGeneric={setSelectedGroup}
+                          />
+                          {selectedGroup?.name === "Teacher" && (
+                            <FindGeneric
+                              route="staffs"
+                              title="Teacher"
+                              scope="staff"
+                              type="Faculty"
+                              required
+                              InputContext={InputContext}
+                              defaultValue={{
+                                id: pageData.staff?.id,
+                                name: pageData.staff?.name,
+                                last_name: pageData.staff?.last_name,
+                                email: pageData.staff?.email,
+                              }}
+                              fields={[
+                                {
+                                  title: "Name",
+                                  name: "name",
+                                },
+                                {
+                                  title: "Last Name",
+                                  name: "last_name",
+                                },
+                                {
+                                  title: "Email",
+                                  name: "email",
+                                },
+                              ]}
+                            />
+                          )}
+                          {pageData.filials.map(({ filial }, index) => {
+                            return (
+                              <Scope key={index} path={`filials[${index}]`}>
+                                <FindGeneric
+                                  route="filials"
+                                  title={index === 0 ? "Filials" : ""}
+                                  scope="filial"
+                                  required
+                                  InputContext={InputContext}
+                                  handleRemove={
+                                    index === pageData.filials.length - 1
+                                      ? handleRemoveFilial
+                                      : null
+                                  }
+                                  defaultValue={
+                                    id === "new" && auth.filial.id !== 1
+                                      ? {
+                                          id: auth.filial.id,
+                                          name: auth.filial.name,
+                                        }
+                                      : {
+                                          id: filial?.id,
+                                          name: filial.name,
+                                        }
+                                  }
+                                  fields={[
+                                    {
+                                      title: "Name",
+                                      name: "name",
+                                    },
+                                  ]}
+                                />
+                              </Scope>
+                            );
+                          })}
+                          {/* {pageData.filials.map((filial, index) => {
                             if (filial.id !== 1) {
                               return (
                                 <Scope key={index} path={`filials[${index}]`}>
@@ -362,7 +382,7 @@ export default function PagePreview({
                                 </Scope>
                               );
                             }
-                          })}
+                          })} */}
                           <button
                             type="button"
                             onClick={() => handleAddFilial()}

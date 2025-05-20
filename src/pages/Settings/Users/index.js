@@ -19,13 +19,13 @@ export default function Users() {
       title: "E-mail",
       name: "email",
       type: "text",
-      filter: true,
+      filter: false,
     },
     {
       title: "Filial",
       name: "filial_name",
       type: "text",
-      filter: true,
+      filter: false,
     },
     {
       title: "Group",

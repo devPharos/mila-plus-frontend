@@ -214,7 +214,8 @@ export default function Studentgroups() {
   const selectionFunctions = [];
 
   // Função liberada para professor
-  if (groupName === "Teacher") {
+  // if (groupName === "Teacher") {
+  if (selected.length > 0 && selected[0].fields[1] === "Ongoing") {
     selectionFunctions.push({
       title: "Attendance",
       fun: handleAttendance,
@@ -224,34 +225,35 @@ export default function Studentgroups() {
       setOpened: setOpenAttendance,
       selected,
     });
+  }
 
-    // Funções para não professores
-  } else {
-    if (selected.length === 0 || selected[0].fields[1] === "In Formation") {
+  // Funções para não professores
+  // } else {
+  if (selected.length === 0 || selected[0].fields[1] === "In Formation") {
+    selectionFunctions.push({
+      title: "Start Group",
+      fun: handleStart,
+      icon: "Play",
+      Page: () => null,
+      opened: startGroup,
+      setOpened: setStartGroup,
+      selected,
+    });
+  }
+  if (selected.length > 0 && selected[0].fields[1] === "Ongoing") {
+    if (selected[0].others.classes === 0) {
       selectionFunctions.push({
-        title: "Start Group",
-        fun: handleStart,
-        icon: "Play",
+        title: "Pause Group",
+        fun: handlePause,
+        icon: "Pause",
         Page: () => null,
         opened: startGroup,
         setOpened: setStartGroup,
         selected,
       });
     }
-    if (selected.length > 0 && selected[0].fields[1] === "Ongoing") {
-      if (selected[0].others.classes === 0) {
-        selectionFunctions.push({
-          title: "Pause Group",
-          fun: handlePause,
-          icon: "Pause",
-          Page: () => null,
-          opened: startGroup,
-          setOpened: setStartGroup,
-          selected,
-        });
-      }
-    }
   }
+  // }
 
   return (
     <PageContainer

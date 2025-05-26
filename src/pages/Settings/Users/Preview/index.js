@@ -1,5 +1,16 @@
 import { Form } from "@unform/web";
-import { Building, Lock, Pencil, PlusCircle, Trash, X } from "lucide-react";
+import {
+  Building,
+  Edit,
+  Loader,
+  Loader2,
+  Lock,
+  Mail,
+  Pencil,
+  PlusCircle,
+  Trash,
+  X,
+} from "lucide-react";
 import React, {
   createContext,
   useContext,
@@ -21,6 +32,8 @@ import { Scope } from "@unform/core";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { FullGridContext } from "../..";
 import FindGeneric from "~/components/Finds/FindGeneric";
+import { NavLink } from "react-router-dom";
+import { AlertContext } from "~/App";
 
 export const InputContext = createContext({});
 
@@ -46,6 +59,7 @@ export default function PagePreview({
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
+  const [loading, setLoading] = useState(false);
 
   const [registry, setRegistry] = useState({
     created_by: null,
@@ -57,6 +71,7 @@ export default function PagePreview({
   });
   const [selectedGroup, setSelectedGroup] = useState(null);
   const generalForm = useRef();
+  const { alertBox } = useContext(AlertContext);
 
   async function getPageData() {
     try {
@@ -173,6 +188,41 @@ export default function PagePreview({
     setPageData({ ...pageData, filials: removedFilials });
   }
 
+  function handleResetPassword() {
+    alertBox({
+      title: "Attention!",
+      descriptionHTML:
+        "Are you sure you want to send this user a reset password email?",
+      buttons: [
+        {
+          title: "No",
+          class: "cancel",
+        },
+        {
+          title: "Yes",
+          onPress: async () => {
+            setLoading(true);
+            api
+              .post(`/users/reset-password-mail`, {
+                user_mail: pageData.email,
+              })
+              .then(({ data }) => {
+                setLoading(false);
+                toast(data.message, { autoClose: 1000 });
+              })
+              .catch((err) => {
+                setLoading(false);
+                toast(err.response.data.error, {
+                  type: "error",
+                  autoClose: 3000,
+                });
+              });
+          },
+        },
+      ],
+    });
+  }
+
   return (
     <Preview formType={formType} fullscreen={fullscreen}>
       {pageData ? (
@@ -261,6 +311,21 @@ export default function PagePreview({
                               defaultValue={pageData.email}
                               InputContext={InputContext}
                             />
+                            <button
+                              type="button"
+                              onClick={() => handleResetPassword()}
+                              className="cursor-pointer mt-6 bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2"
+                            >
+                              {loading ? (
+                                <Loader2 className="animate-spin" size={14} />
+                              ) : (
+                                <>
+                                  <Mail size={14} />
+
+                                  <strong>Send reset password mail</strong>
+                                </>
+                              )}
+                            </button>
                           </InputLine>
                           <FindGeneric
                             route="groups"

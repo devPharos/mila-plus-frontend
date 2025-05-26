@@ -310,6 +310,17 @@ function App() {
         },
       ],
     },
+    {
+      name: "Auth",
+      children: [
+        {
+          alias: "reset-password",
+          path: "/Auth/ResetPassword",
+          title: "Reset Password",
+          icon: "Mail",
+        },
+      ],
+    },
   ];
   return (
     <AlertContext.Provider value={{ alertData, setAlertData, alertBox }}>

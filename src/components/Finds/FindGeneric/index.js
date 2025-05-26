@@ -190,8 +190,10 @@ const FindGeneric = ({
                             onClick={() => handleSelect(row)}
                             className={`cursor-pointer bg-white border rounded p-2 hover:bg-gray-100 text-left`}
                           >
-                            {field.model
-                              ? row[field.model][field.name]
+                            {field.model2
+                              ? row[field.model2]?.[field.model]?.[field.name]
+                              : field.model
+                              ? row[field.model]?.[field.name]
                               : row[field.name]}
                           </td>
                         );

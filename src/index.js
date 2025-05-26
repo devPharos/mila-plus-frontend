@@ -81,6 +81,7 @@ import PayeesRecurrence from "./pages/Financial/Outbounds/Recurrence";
 import PayeesSettlement from "./pages/Financial/Outbounds/Settlement";
 import Classrooms from "./pages/Administrative/Classroom";
 import Studentgroups from "./pages/Administrative/Studentgroup";
+import ResetPassword from "./pages/Auth/ResetPassword";
 
 injectStore(store);
 
@@ -109,6 +110,14 @@ const router = createBrowserRouter([
           <LoginRoute>
             <Login />
           </LoginRoute>
+        ),
+      },
+      {
+        path: "/reset-password/:token",
+        element: (
+          <UnprotectedRoute>
+            <ResetPassword />
+          </UnprotectedRoute>
         ),
       },
       {

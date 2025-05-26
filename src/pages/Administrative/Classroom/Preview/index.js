@@ -29,10 +29,7 @@ import { useSelector } from "react-redux";
 import { FullGridContext } from "../..";
 import FindGeneric from "~/components/Finds/FindGeneric";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
-import {
-  classroomStatusOptions,
-  optionsStatus,
-} from "~/functions/selectPopoverOptions";
+import { classroomStatusOptions } from "~/functions/selectPopoverOptions";
 import { Scope } from "@unform/core";
 
 export const InputContext = createContext({});
@@ -50,7 +47,7 @@ export default function PagePreview({
   } = useContext(FullGridContext);
   const [pageData, setPageData] = useState({
     class_number: "",
-    status: "",
+    status: "Active",
     quantity_of_students: 0,
     studentgroups: [],
   });
@@ -69,46 +66,53 @@ export default function PagePreview({
   const generalForm = useRef();
   const auth = useSelector((state) => state.auth);
 
-  useEffect(() => {
-    async function getPageData() {
-      if (id !== "new") {
-        try {
-          const { data } = await api.get(`/classrooms/${id}`);
-          setPageData({
-            ...data,
-            loaded: true,
-          });
-          const {
-            created_by,
-            created_at,
-            updated_by,
-            updated_at,
-            canceled_by,
-            canceled_at,
-          } = data;
-          const registries = await getRegistries({
-            created_by,
-            created_at,
-            updated_by,
-            updated_at,
-            canceled_by,
-            canceled_at,
-          });
-          setRegistry(registries);
-        } catch (err) {
-          // console.log(err);
-          toast(err.response.data.error, { type: "error", autoClose: 3000 });
-        }
-      } else {
-        setPageData({ ...pageData, loaded: true });
-        setFormType("full");
+  async function getPageData() {
+    if (id !== "new") {
+      try {
+        const { data } = await api.get(`/classrooms/${id}`);
+        setPageData({
+          ...data,
+          loaded: true,
+        });
+        const {
+          created_by,
+          created_at,
+          updated_by,
+          updated_at,
+          canceled_by,
+          canceled_at,
+        } = data;
+        const registries = await getRegistries({
+          created_by,
+          created_at,
+          updated_by,
+          updated_at,
+          canceled_by,
+          canceled_at,
+        });
+        setRegistry(registries);
+      } catch (err) {
+        // console.log(err);
+        toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
+    } else {
+      setPageData({ ...pageData, loaded: true });
+      setFormType("full");
     }
+  }
+  useEffect(() => {
     getPageData();
   }, []);
 
   async function handleGeneralFormSubmit(data) {
-    // return;
+    if (data.quantity_of_students == "0") {
+      toast("Quantity of students in classroom cannot be 0!", {
+        autoClose: 1000,
+        type: "error",
+        transition: Zoom,
+      });
+      return;
+    }
     if (successfullyUpdated) {
       toast("No need to be saved!", {
         autoClose: 1000,
@@ -127,8 +131,7 @@ export default function PagePreview({
         toast("Saved!", { autoClose: 1000 });
         handleOpened(null);
       } catch (err) {
-        console.log(err);
-        // toast(err.response.data.error, { type: "error", autoClose: 3000 });
+        toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     } else if (id !== "new") {
       try {
@@ -260,8 +263,9 @@ export default function PagePreview({
                             name="quantity_of_students"
                             required
                             grow
-                            title="Quantity of Students"
-                            defaultValue={pageData.quantity_of_students}
+                            title="Quantity of students in classroom"
+                            defaultValue={pageData.quantity_of_students || null}
+                            placeholder="0"
                             InputContext={InputContext}
                           />
                         </InputLine>

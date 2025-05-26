@@ -227,10 +227,8 @@ export const wageTypeOptions = [
   { value: "Salary", label: "Salary" },
 ];
 export const classroomStatusOptions = [
-  { value: "Canceled", label: "Canceled" },
-  { value: "Finished", label: "Finished" },
-  { value: "In Formation", label: "In Formation" },
-  { value: "Ongoing", label: "Ongoing" },
+  { value: "Active", label: "Active" },
+  { value: "Inactive", label: "Inactive" },
 ];
 export const typeOptions = [
   { value: "Administrative", label: "Administrative" },

@@ -45,7 +45,7 @@ export default function Grid({
         <thead className="sticky top-0 border-md">
           <tr className="bg-secondary h-8">
             {selection !== null && (
-              <th className="px-4">
+              <th className="px-4 w-12">
                 <div className="flex flex-row justify-center items-center gap-2">
                   Sel.
                 </div>

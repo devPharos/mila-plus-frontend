@@ -82,6 +82,7 @@ import PayeesSettlement from "./pages/Financial/Outbounds/Settlement";
 import Classrooms from "./pages/Administrative/Classroom";
 import Studentgroups from "./pages/Administrative/Studentgroup";
 import ResetPassword from "./pages/Auth/ResetPassword";
+import Messages from "./pages/Administrative/Message";
 
 injectStore(store);
 
@@ -173,6 +174,10 @@ const router = createBrowserRouter([
           {
             path: "/Administrative/Students",
             element: <AdministrativeStudent />,
+          },
+          {
+            path: "/Administrative/Messages",
+            element: <Messages />,
           },
           {
             path: "/Administrative/Staffs",

@@ -46,6 +46,12 @@ function App() {
           icon: "GraduationCap",
         },
         {
+          alias: "messages",
+          path: "/Administrative/Messages",
+          title: "Messages",
+          icon: "MessageSquareShare",
+        },
+        {
           alias: "staffs",
           path: "/Administrative/Staffs",
           title: "Staff",

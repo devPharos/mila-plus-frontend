@@ -230,6 +230,25 @@ export const classroomStatusOptions = [
   { value: "Active", label: "Active" },
   { value: "Inactive", label: "Inactive" },
 ];
+export const messageTypeOptions = [
+  { value: "Alert", label: "Alert" },
+  { value: "Notification", label: "Notification" },
+  { value: "Reminder", label: "Reminder" },
+  { value: "Information", label: "Information" },
+  { value: "Question", label: "Question" },
+  { value: "Other", label: "Other" },
+];
+export const messageMethodOptions = [{ value: "Email", label: "Email" }];
+export const messageToStudentsOptions = [
+  {
+    value: "All students in filial",
+    label: "All students in filial",
+  },
+  {
+    value: "Selected students in filial",
+    label: "Selected students in filial",
+  },
+];
 export const typeOptions = [
   { value: "Administrative", label: "Administrative" },
   { value: "Academic", label: "Academic" },

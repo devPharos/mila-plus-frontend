@@ -24,6 +24,7 @@ import FindGeneric from "~/components/Finds/FindGeneric";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import {
   classroomStatusOptions,
+  studentgroupStatusOptions,
   yesOrNoOptions,
 } from "~/functions/selectPopoverOptions";
 import CheckboxInput from "~/components/RegisterForm/CheckboxInput";
@@ -50,7 +51,7 @@ export default function PagePreview({
   } = useContext(FullGridContext);
   const [pageData, setPageData] = useState({
     name: "",
-    status: "",
+    status: "In Formation",
     private: false,
     level: null,
     languagemode: null,
@@ -299,14 +300,14 @@ export default function PagePreview({
                             readOnly
                             isSearchable
                             defaultValue={
-                              classroomStatusOptions.find(
+                              studentgroupStatusOptions.find(
                                 (opt) => opt.value === pageData.status
                               ) ||
-                              classroomStatusOptions.find(
+                              studentgroupStatusOptions.find(
                                 (opt) => opt.value === "In Formation"
                               )
                             }
-                            options={classroomStatusOptions}
+                            options={studentgroupStatusOptions}
                             InputContext={InputContext}
                           />
                           <SelectPopover

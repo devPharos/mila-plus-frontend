@@ -5,9 +5,6 @@ import { FullGridContext } from "..";
 import { getData } from "~/functions/gridFunctions";
 import PageContainer from "~/components/PageContainer";
 import Inactivate from "./Inactivate";
-import { AlertContext } from "~/App";
-import { toast } from "react-toastify";
-import api from "~/services/api";
 import Activate from "./Activate";
 import Transfer from "./Transfer";
 
@@ -58,7 +55,6 @@ export default function AdministrativeStudent() {
       filter: true,
     },
   ];
-  const { alertBox } = useContext(AlertContext);
   const [selected, setSelected] = useState([]);
   const [inactivateOpen, setInactivateOpen] = useState(false);
   const [activateOpen, setActivateOpen] = useState(false);

@@ -31,6 +31,21 @@ const Textarea = ({
     });
   }, [fieldName, registerField]);
 
+  useEffect(() => {
+    function enterFunction(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        if (inputRef.current) {
+          inputRef.current.value += "\n";
+        }
+      }
+    }
+    window.addEventListener("keydown", enterFunction);
+    return () => {
+      window.removeEventListener("keydown", enterFunction);
+    };
+  }, []);
+
   const { setSuccessfullyUpdated } = useContext(InputContext);
 
   const width = shrink ? "w-full md:w-auto max-w-32" : "w-full md:w-auto";

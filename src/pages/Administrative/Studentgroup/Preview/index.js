@@ -51,7 +51,7 @@ export default function PagePreview({
   } = useContext(FullGridContext);
   const [pageData, setPageData] = useState({
     name: "",
-    status: "",
+    status: "In Formation",
     private: false,
     level: null,
     languagemode: null,

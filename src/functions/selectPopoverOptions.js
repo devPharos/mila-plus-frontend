@@ -230,6 +230,10 @@ export const classroomStatusOptions = [
   { value: "Active", label: "Active" },
   { value: "Inactive", label: "Inactive" },
 ];
+export const studentgroupStatusOptions = [
+  { value: "In Formation", label: "In Formation" },
+  { value: "Ongoing", label: "Ongoing" },
+];
 export const messageTypeOptions = [
   { value: "Alert", label: "Alert" },
   { value: "Notification", label: "Notification" },

@@ -34,6 +34,7 @@ import { FullGridContext } from "../..";
 import FindGeneric from "~/components/Finds/FindGeneric";
 import { NavLink } from "react-router-dom";
 import { AlertContext } from "~/App";
+import { useSelector } from "react-redux";
 
 export const InputContext = createContext({});
 
@@ -42,6 +43,7 @@ export default function PagePreview({
   id,
   defaultFormType = "preview",
 }) {
+  const auth = useSelector((state) => state.auth);
   const {
     handleOpened,
     setOpened,
@@ -49,10 +51,12 @@ export default function PagePreview({
     setSuccessfullyUpdated,
   } = useContext(FullGridContext);
   const [pageData, setPageData] = useState({
+    filial: { id: null, name: null },
     name: "",
     email: "",
     group_id: null,
     filials: [{ id: null }],
+    groups: [],
     loaded: false,
     staff: { id: null, name: null, last_name: null, email: null },
   });
@@ -107,7 +111,7 @@ export default function PagePreview({
   useEffect(() => {
     if (id === "new") {
       setFormType("full");
-    } else if (id) {
+    } else if (id !== "new") {
       getPageData();
     }
   }, []);
@@ -333,10 +337,17 @@ export default function PagePreview({
                             scope="group"
                             required
                             InputContext={InputContext}
-                            defaultValue={{
-                              id: pageData.groups[0].group.id,
-                              name: pageData.groups[0].group.name,
-                            }}
+                            defaultValue={
+                              pageData.groups.length > 0
+                                ? {
+                                    id: pageData.groups[0].group.id,
+                                    name: pageData.groups[0].group.name,
+                                  }
+                                : {
+                                    id: null,
+                                    name: null,
+                                  }
+                            }
                             fields={[
                               {
                                 title: "Name",
@@ -396,8 +407,8 @@ export default function PagePreview({
                                           name: auth.filial.name,
                                         }
                                       : {
-                                          id: filial?.id,
-                                          name: filial.name,
+                                          id: pageData.filial?.id,
+                                          name: pageData.filial.name,
                                         }
                                   }
                                   fields={[

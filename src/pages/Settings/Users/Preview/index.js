@@ -55,7 +55,7 @@ export default function PagePreview({
     name: "",
     email: "",
     group_id: null,
-    filials: [{ id: null }],
+    filials: [{ id: null, name: null }],
     groups: [],
     loaded: false,
     staff: { id: null, name: null, last_name: null, email: null },
@@ -315,21 +315,23 @@ export default function PagePreview({
                               defaultValue={pageData.email}
                               InputContext={InputContext}
                             />
-                            <button
-                              type="button"
-                              onClick={() => handleResetPassword()}
-                              className="cursor-pointer mt-6 bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2"
-                            >
-                              {loading ? (
-                                <Loader2 className="animate-spin" size={14} />
-                              ) : (
-                                <>
-                                  <Mail size={14} />
+                            {id !== "new" && (
+                              <button
+                                type="button"
+                                onClick={() => handleResetPassword()}
+                                className="cursor-pointer mt-6 bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2"
+                              >
+                                {loading ? (
+                                  <Loader2 className="animate-spin" size={14} />
+                                ) : (
+                                  <>
+                                    <Mail size={14} />
 
-                                  <strong>Send reset password mail</strong>
-                                </>
-                              )}
-                            </button>
+                                    <strong>Send reset password mail</strong>
+                                  </>
+                                )}
+                              </button>
+                            )}
                           </InputLine>
                           <FindGeneric
                             route="groups"
@@ -386,41 +388,38 @@ export default function PagePreview({
                               ]}
                             />
                           )}
-                          {pageData.filials.map(({ filial }, index) => {
-                            return (
-                              <Scope key={index} path={`filials[${index}]`}>
-                                <FindGeneric
-                                  route="filials"
-                                  title={index === 0 ? "Filials" : ""}
-                                  scope="filial"
-                                  required
-                                  InputContext={InputContext}
-                                  handleRemove={
-                                    index === pageData.filials.length - 1
-                                      ? handleRemoveFilial
-                                      : null
-                                  }
-                                  defaultValue={
-                                    id === "new" && auth.filial.id !== 1
-                                      ? {
-                                          id: auth.filial.id,
-                                          name: auth.filial.name,
-                                        }
-                                      : {
-                                          id: pageData.filial?.id,
-                                          name: pageData.filial.name,
-                                        }
-                                  }
-                                  fields={[
-                                    {
-                                      title: "Name",
-                                      name: "name",
-                                    },
-                                  ]}
-                                />
-                              </Scope>
-                            );
-                          })}
+                          {pageData.filials.length &&
+                            pageData.filials.map(({ filial }, index) => {
+                              return (
+                                <Scope key={index} path={`filials[${index}]`}>
+                                  <FindGeneric
+                                    route="filials"
+                                    title={index === 0 ? "Filials" : ""}
+                                    scope="filial"
+                                    required
+                                    InputContext={InputContext}
+                                    handleRemove={
+                                      index === pageData.filials.length - 1 &&
+                                      index > 0
+                                        ? handleRemoveFilial
+                                        : null
+                                    }
+                                    defaultValue={
+                                      id !== "new" && {
+                                        id: filial.id,
+                                        name: filial.name,
+                                      }
+                                    }
+                                    fields={[
+                                      {
+                                        title: "Name",
+                                        name: "name",
+                                      },
+                                    ]}
+                                  />
+                                </Scope>
+                              );
+                            })}
                           {/* {pageData.filials.map((filial, index) => {
                             if (filial.id !== 1) {
                               return (

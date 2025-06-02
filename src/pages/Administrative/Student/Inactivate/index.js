@@ -87,6 +87,8 @@ export default function Inactivate({
     loadData();
   }, []);
 
+  console.log(pageData)
+
   return (
     <Preview formType={formType} fullscreen={fullscreen}>
       {pageData ? (

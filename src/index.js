@@ -81,6 +81,8 @@ import PayeesRecurrence from "./pages/Financial/Outbounds/Recurrence";
 import PayeesSettlement from "./pages/Financial/Outbounds/Settlement";
 import Classrooms from "./pages/Administrative/Classroom";
 import Studentgroups from "./pages/Administrative/Studentgroup";
+import ResetPassword from "./pages/Auth/ResetPassword";
+import Messages from "./pages/Administrative/Message";
 
 injectStore(store);
 
@@ -109,6 +111,14 @@ const router = createBrowserRouter([
           <LoginRoute>
             <Login />
           </LoginRoute>
+        ),
+      },
+      {
+        path: "/reset-password/:token",
+        element: (
+          <UnprotectedRoute>
+            <ResetPassword />
+          </UnprotectedRoute>
         ),
       },
       {
@@ -164,6 +174,10 @@ const router = createBrowserRouter([
           {
             path: "/Administrative/Students",
             element: <AdministrativeStudent />,
+          },
+          {
+            path: "/Administrative/Messages",
+            element: <Messages />,
           },
           {
             path: "/Administrative/Staffs",

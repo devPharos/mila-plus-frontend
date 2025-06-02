@@ -11,6 +11,8 @@ import Attendance from "./Attendance";
 
 export default function Studentgroups() {
   const filial = useSelector((state) => state.auth.filial);
+  const { profile } = useSelector((state) => state.user);
+  const groupName = profile.groups[0].group.name;
   const defaultOrderBy = { column: "name", asc: true };
   const defaultGridHeader = [
     {
@@ -25,12 +27,12 @@ export default function Studentgroups() {
       type: "text",
       filter: true,
     },
-    {
-      title: "Private",
-      name: "private",
-      type: "boolean",
-      filter: true,
-    },
+    // {
+    //   title: "Private",
+    //   name: "private",
+    //   type: "boolean",
+    //   filter: true,
+    // },
     {
       title: "Level",
       name: ["level", "name"],
@@ -62,7 +64,7 @@ export default function Studentgroups() {
       filter: false,
     },
     {
-      title: "Students in Group",
+      title: "In Group",
       name: "students",
       type: "integer",
       filter: false,
@@ -179,7 +181,7 @@ export default function Studentgroups() {
           fields: [
             name,
             status,
-            privateStatus,
+            // privateStatus,
             level_name,
             languagemode_name,
             classroom_name,
@@ -211,6 +213,22 @@ export default function Studentgroups() {
 
   const selectionFunctions = [];
 
+  // Função liberada para professor
+  // if (groupName === "Teacher") {
+  if (selected.length > 0 && selected[0].fields[1] === "Ongoing") {
+    selectionFunctions.push({
+      title: "Attendance",
+      fun: handleAttendance,
+      icon: "Highlighter",
+      Page: Attendance,
+      opened: openAttendance,
+      setOpened: setOpenAttendance,
+      selected,
+    });
+  }
+
+  // Funções para não professores
+  // } else {
   if (selected.length === 0 || selected[0].fields[1] === "In Formation") {
     selectionFunctions.push({
       title: "Start Group",
@@ -234,16 +252,8 @@ export default function Studentgroups() {
         selected,
       });
     }
-    selectionFunctions.push({
-      title: "Attendance",
-      fun: handleAttendance,
-      icon: "Highlighter",
-      Page: Attendance,
-      opened: openAttendance,
-      setOpened: setOpenAttendance,
-      selected,
-    });
   }
+  // }
 
   return (
     <PageContainer

@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import {
+  Eraser,
   Eye,
   EyeClosed,
   EyeOff,
@@ -25,6 +26,8 @@ const FindGeneric = ({
   searchDefault = null,
   required = false,
   readOnly = false,
+  handleRemove = null,
+  clearable = false,
   setReturnFindGeneric = () => null,
   ...rest
 }) => {
@@ -63,12 +66,35 @@ const FindGeneric = ({
     setSuccessfullyUpdated(false);
     setReturnFindGeneric(row);
   }
+  function handleSelectWithoudReopen(row) {
+    setSelected(row);
+    setSuccessfullyUpdated(false);
+    setReturnFindGeneric(row);
+  }
   const { setSuccessfullyUpdated } = useContext(InputContext);
 
   return (
     <InputLine title={title}>
       <div className="flex flex-col justify-center items-start relative w-full">
         <div className="flex flex-row items-center justify-start gap-2 relative w-full">
+          {clearable && selected.id && (
+            <button
+              type="button"
+              onClick={() => handleSelectWithoudReopen(defaultValue)}
+              className="bg-white border rounded p-2 mt-4 hover:bg-red-600 hover:text-white"
+            >
+              <Eraser size={16} />
+            </button>
+          )}
+          {!readOnly && handleRemove && (
+            <button
+              type="button"
+              onClick={() => handleRemove(selected.id)}
+              className="bg-white border rounded p-2 mt-4 hover:bg-red-600 hover:text-white"
+            >
+              <Trash size={16} />
+            </button>
+          )}
           {!readOnly && (
             <button
               type="button"
@@ -180,8 +206,10 @@ const FindGeneric = ({
                             onClick={() => handleSelect(row)}
                             className={`cursor-pointer bg-white border rounded p-2 hover:bg-gray-100 text-left`}
                           >
-                            {field.model
-                              ? row[field.model][field.name]
+                            {field.model2
+                              ? row[field.model2]?.[field.model]?.[field.name]
+                              : field.model
+                              ? row[field.model]?.[field.name]
                               : row[field.name]}
                           </td>
                         );

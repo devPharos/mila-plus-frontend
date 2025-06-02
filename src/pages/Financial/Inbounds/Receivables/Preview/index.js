@@ -1041,6 +1041,9 @@ export default function PagePreview({
                                 id: pageData.chartOfAccount?.id,
                                 code: pageData.chartOfAccount?.code,
                                 name: pageData.chartOfAccount?.name,
+                                father: pageData.chartOfAccount?.Father?.name,
+                                granFather:
+                                  pageData.chartOfAccount?.Father?.Father?.name,
                               }}
                               fields={[
                                 {
@@ -1049,6 +1052,17 @@ export default function PagePreview({
                                 },
                                 {
                                   title: "Name",
+                                  name: "name",
+                                },
+                                {
+                                  title: "Father",
+                                  model: "Father",
+                                  name: "name",
+                                },
+                                {
+                                  title: "Father",
+                                  model: "Father",
+                                  model2: "Father",
                                   name: "name",
                                 },
                               ]}

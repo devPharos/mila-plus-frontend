@@ -46,6 +46,12 @@ function App() {
           icon: "GraduationCap",
         },
         {
+          alias: "messages",
+          path: "/Administrative/Messages",
+          title: "Messages",
+          icon: "MessageSquareShare",
+        },
+        {
           alias: "staffs",
           path: "/Administrative/Staffs",
           title: "Staff",
@@ -307,6 +313,17 @@ function App() {
           path: "/fill-form/Staff",
           title: "Staff",
           icon: "Users",
+        },
+      ],
+    },
+    {
+      name: "Auth",
+      children: [
+        {
+          alias: "reset-password",
+          path: "/Auth/ResetPassword",
+          title: "Reset Password",
+          icon: "Mail",
         },
       ],
     },

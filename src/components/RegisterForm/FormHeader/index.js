@@ -13,6 +13,8 @@ export default function FormHeader({
   registry = { registryBy: null, registryAt: null, registryStatus: null },
   InputContext = null,
   emailButtonText = "Send Mail",
+  createText = "Create",
+  createIcon = <Save size={16} />,
 }) {
   const { registryBy, registryAt, registryStatus } = registry;
   const {
@@ -91,7 +93,7 @@ export default function FormHeader({
                 } text-white rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1`}
               >
                 <>
-                  <Save size={16} /> Create
+                  {createIcon} {createText}
                 </>
               </button>
             )}

@@ -1,5 +1,5 @@
 import { Form } from "@unform/web";
-import { Building, Lock, Pencil, X } from "lucide-react";
+import { Building, Lock, Pencil, Users, X } from "lucide-react";
 import React, {
   createContext,
   useContext,
@@ -20,6 +20,9 @@ import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import { Scope } from "@unform/core";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { FullGridContext } from "../..";
+import FindGeneric from "~/components/Finds/FindGeneric";
+import { useSelector } from "react-redux";
+import { format, parseISO } from "date-fns";
 
 export const InputContext = createContext({});
 
@@ -34,6 +37,7 @@ export default function PagePreview({
     successfullyUpdated,
     setSuccessfullyUpdated,
   } = useContext(FullGridContext);
+  const auth = useSelector((state) => state.auth);
   const [pageData, setPageData] = useState({
     name: "",
     filialtype_id: null,
@@ -216,6 +220,15 @@ export default function PagePreview({
               >
                 <Lock size={16} /> Group Access
               </RegisterFormMenu>
+              <RegisterFormMenu
+                setActiveMenu={setActiveMenu}
+                messageOnDisabled="First create the group to see it's users"
+                activeMenu={activeMenu}
+                disabled={id === "new"}
+                name="users"
+              >
+                <Users size={16} /> Users
+              </RegisterFormMenu>
             </div>
             <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
               <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll">
@@ -250,6 +263,30 @@ export default function PagePreview({
                           title="GENERAL"
                           activeMenu={activeMenu === "general"}
                         >
+                          <FindGeneric
+                            route="filials"
+                            title="Filial"
+                            scope="filial"
+                            required
+                            InputContext={InputContext}
+                            defaultValue={
+                              id === "new" && auth.filial.id !== 1
+                                ? {
+                                    id: auth.filial.id,
+                                    name: auth.filial.name,
+                                  }
+                                : {
+                                    id: pageData.filial?.id,
+                                    name: pageData.filial?.name,
+                                  }
+                            }
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                          />
                           <InputLine title="General Data">
                             <Input
                               type="text"
@@ -442,6 +479,62 @@ export default function PagePreview({
                             })}
                           {/* <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
                                             {id === 'new' || pageData.Filialtype ? <SelectPopover name='filialtype_id' title='Filial Type' options={filialTypesOptions} defaultValue={{ value: pageData.filialtype_id, label: pageData.Filialtype ? pageData.Filialtype.name : '' }} InputContext={InputContext} /> : null} */}
+                        </InputLineGroup>
+
+                        <InputLineGroup
+                          title="Users"
+                          activeMenu={activeMenu === "users"}
+                        >
+                          {pageData.groupxuser &&
+                            pageData.groupxuser
+                              .sort((a, b) =>
+                                b.created_at > a.created_at ? 1 : -1
+                              )
+                              .map((userXGroup, index) => {
+                                return (
+                                  <Scope
+                                    key={index}
+                                    path={`groupxuser[${index}]`}
+                                  >
+                                    <InputLine
+                                      title={
+                                        index === 0 ? "Users in Group" : ""
+                                      }
+                                    >
+                                      <Input
+                                        type="text"
+                                        name="user_name"
+                                        readOnly
+                                        title="Name"
+                                        grow
+                                        defaultValue={userXGroup.user.name}
+                                        InputContext={InputContext}
+                                      />
+                                      <Input
+                                        type="text"
+                                        name="user_email"
+                                        readOnly
+                                        title="E-mail"
+                                        grow
+                                        defaultValue={userXGroup.user.email}
+                                        InputContext={InputContext}
+                                      />
+                                      <Input
+                                        type="text"
+                                        name="user_date"
+                                        readOnly
+                                        title="In group since"
+                                        shrink
+                                        defaultValue={format(
+                                          parseISO(userXGroup.created_at),
+                                          "MM/dd/yyyy"
+                                        )}
+                                        InputContext={InputContext}
+                                      />
+                                    </InputLine>
+                                  </Scope>
+                                );
+                              })}
                         </InputLineGroup>
                       </>
                     ) : (

@@ -24,6 +24,7 @@ import Input from "~/components/RegisterForm/Input";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import { yesOrNoOptions } from "~/functions/selectPopoverOptions";
 import TdRadioInput from "~/components/RegisterForm/TdRadioInput";
+import { useSelector } from "react-redux";
 
 export const InputContext = createContext({});
 
@@ -37,6 +38,8 @@ export default function Attendance({
   const { alertBox } = useContext(AlertContext);
   const { successfullyUpdated, setSuccessfullyUpdated } =
     useContext(FullGridContext);
+  const { profile } = useSelector((state) => state.user);
+  const groupName = profile.groups[0].group.name;
   const [pageData, setPageData] = useState({
     attendance: {
       date: null,
@@ -63,6 +66,9 @@ export default function Attendance({
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
   const [attendanceId, setAttendanceId] = useState(null);
+  const [lastAttendance, setLastAttendance] = useState({
+    date: null,
+  });
 
   const generalForm = useRef();
 
@@ -145,6 +151,9 @@ export default function Attendance({
       const { data } = await api.get(
         `/studentgroups/attendance/${selected[0].id}?attendanceId=${attendanceId}`
       );
+      if (!attendanceId) {
+        setLastAttendance({ date: data.attendance.date });
+      }
       setTimeout(() => {
         setPageData({ ...data, loaded: true });
         // const calcClassPercentage = (
@@ -227,8 +236,13 @@ export default function Attendance({
                         />
                         <InputLine title="Resume">
                           <div className="flex flex-row items-center justify-start gap-2 px-2 pb-4 max-w-full overflow-x-scroll">
-                            {pageData.otherPaceGuides.map(
-                              (otherClass, index) => {
+                            {pageData.otherPaceGuides
+                              .filter((other) =>
+                                groupName === "Teacher"
+                                  ? other.date <= lastAttendance?.date
+                                  : true
+                              )
+                              .map((otherClass, index) => {
                                 let month = null;
                                 if (
                                   index === 0 ||
@@ -241,7 +255,7 @@ export default function Attendance({
                                     )
                                 ) {
                                   month = (
-                                    <div className="pl-2 font-bold min-w-12 max-w-24 border-r border-gray-300 text-xs">
+                                    <div className="pl-2 font-bold min-w-12 max-w-24 border-r border-gray-300 text-xs pr-1 mr-1">
                                       {format(
                                         parseISO(otherClass.date),
                                         "LLL, yyyy"
@@ -292,8 +306,7 @@ export default function Attendance({
                                     </button>
                                   </>
                                 );
-                              }
-                            )}
+                              })}
                           </div>
                         </InputLine>
                         <InputLine>

@@ -520,13 +520,13 @@ export default function Attendance({
                                       : -1
                                   )
                                   ?.concat(
-                                    pageData.pendingPaceguides?.filter(
-                                      (paceguide) =>
-                                        !pageData.attendance?.paceguides.find(
-                                          (attendance) =>
-                                            attendance.id === paceguide.id
-                                        )
-                                    )
+                                    ...pageData.otherPaceGuides
+                                      ?.filter(
+                                        (classroom) =>
+                                          classroom.id !==
+                                          pageData.attendance?.id
+                                      )
+                                      .map((classroom) => classroom.paceguides)
                                   )
                                   .map((paceguide, index) => {
                                     return (

@@ -428,16 +428,20 @@ export default function Attendance({
                                       <th className="px-2 h-8 text-left">
                                         Student
                                       </th>
-                                      <th className="w-20 bg-yellow-500">L</th>
-                                      <th className="w-20 bg-green-500">P</th>
-                                      <th className="w-20 bg-red-500">A</th>
-                                      <th></th>
-                                      <th className="w-20 bg-yellow-500">L</th>
-                                      <th className="w-20 bg-green-500">P</th>
-                                      <th className="w-20 bg-red-500">A</th>
-                                      <th></th>
-                                      <th className="w-20 bg-amber-700">V</th>
-                                      <th className="w-20 bg-emerald-500">S</th>
+                                      <th className="w-16 bg-yellow-500">
+                                        L/E
+                                      </th>
+                                      <th className="w-16 bg-green-500">P</th>
+                                      <th className="w-16 bg-red-500">A</th>
+                                      <th className="w-8"></th>
+                                      <th className="w-16 bg-yellow-500">
+                                        L/E
+                                      </th>
+                                      <th className="w-16 bg-green-500">P</th>
+                                      <th className="w-16 bg-red-500">A</th>
+                                      <th className="w-8"></th>
+                                      <th className="w-16 bg-amber-700">V</th>
+                                      <th className="w-16 bg-emerald-500">S</th>
                                     </tr>
                                   </thead>
                                   <tbody>

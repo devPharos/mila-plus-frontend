@@ -86,6 +86,18 @@ export default function Studentgroups() {
   const [startGroup, setStartGroup] = useState(false);
   const [openAttendance, setOpenAttendance] = useState(false);
 
+  const {
+    opened,
+    orderBy,
+    setGridData,
+    page,
+    setPages,
+    limit,
+    search,
+    setLoadingData,
+    handleOpened,
+  } = useContext(FullGridContext);
+
   async function handleStart() {
     if (selected[0].fields[1] !== "In Formation") {
       toast("Only in formation groups can be started!", {
@@ -100,6 +112,7 @@ export default function Studentgroups() {
       toast(err.response.data.error, { type: "error", autoClose: 3000 });
     }
     setSelected([]);
+    handleOpened(null);
   }
 
   async function handlePause() {
@@ -116,22 +129,13 @@ export default function Studentgroups() {
       toast(err.response.data.error, { type: "error", autoClose: 3000 });
     }
     setSelected([]);
+    handleOpened(null);
   }
 
   async function handleAttendance() {
     setOpenAttendance(!openAttendance);
+    handleOpened(null);
   }
-
-  const {
-    opened,
-    orderBy,
-    setGridData,
-    page,
-    setPages,
-    limit,
-    search,
-    setLoadingData,
-  } = useContext(FullGridContext);
 
   async function loader() {
     setLoadingData(true);

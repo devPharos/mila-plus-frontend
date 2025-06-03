@@ -920,6 +920,13 @@ export default function PagePreview({
                                       </td>
                                       <td className="text-xs px-1 py-2">
                                         <div className="flex flex-row items-center justify-start gap-2">
+                                          {classDate.paceguides.length > 0 &&
+                                          classDate.paceguides[0].type ===
+                                            "Review" ? (
+                                            <span>
+                                              ({classDate.paceguides[0].type})
+                                            </span>
+                                          ) : null}
                                           {classDate.paceguides &&
                                             classDate.paceguides
                                               .sort((a, b) =>
@@ -927,9 +934,12 @@ export default function PagePreview({
                                                   ? -1
                                                   : 1
                                               )
-                                              .map((paceGuide) => {
+                                              .map((paceGuide, index) => {
                                                 return (
-                                                  <div className="text-xs px-2 py-1 bg-gray-100 transition-all ease-in hover:bg-primary hover:text-white border rounded-md">
+                                                  <div
+                                                    key={index}
+                                                    className="text-xs px-2 py-1 bg-gray-100 transition-all ease-in hover:bg-primary hover:text-white border rounded-md flex flex-row items-center justify-start gap-2"
+                                                  >
                                                     {paceGuide.description}
                                                   </div>
                                                 );

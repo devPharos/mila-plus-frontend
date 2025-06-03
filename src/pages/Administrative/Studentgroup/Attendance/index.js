@@ -167,6 +167,35 @@ export default function Attendance({
     loadData();
   }, [attendanceId]);
 
+  function handleChangeAttendanceDay(id) {
+    if (id === pageData.attendance?.id) {
+      return;
+    }
+    if (!successfullyUpdated) {
+      alertBox({
+        title: "Attention!",
+        descriptionHTML:
+          "There are changes that will be lost if you continue. Are you sure you want to continue?",
+        buttons: [
+          {
+            title: "No",
+            class: "cancel",
+          },
+          {
+            title: "Yes",
+            onPress: async () => {
+              toast("Changes discarted!", { autoClose: 1000 });
+              setAttendanceId(id);
+              setSuccessfullyUpdated(true);
+            },
+          },
+        ],
+      });
+    } else {
+      setAttendanceId(id);
+    }
+  }
+
   return (
     <Preview formType={formType} fullscreen={fullscreen}>
       {pageData ? (
@@ -268,7 +297,7 @@ export default function Attendance({
                                     <button
                                       type="button"
                                       onClick={() =>
-                                        setAttendanceId(otherClass.id)
+                                        handleChangeAttendanceDay(otherClass.id)
                                       }
                                       className={`flex flex-col items-center justify-center rounded-lg border ${
                                         pageData.attendance.date ===
@@ -445,7 +474,7 @@ export default function Attendance({
                                               </td>
                                               <TdRadioInput
                                                 name={`first_check_${shift}_${student.id}`}
-                                                value="Late"
+                                                value="Present"
                                                 options={[
                                                   "Late",
                                                   "Present",
@@ -456,13 +485,13 @@ export default function Attendance({
                                                 }
                                                 InputContext={InputContext}
                                                 defaultValue={
-                                                  first_check || "Absent"
+                                                  first_check || "Present"
                                                 }
                                               />
                                               <td></td>
                                               <TdRadioInput
                                                 name={`second_check_${shift}_${student.id}`}
-                                                value="Late"
+                                                value="Present"
                                                 options={[
                                                   "Late",
                                                   "Present",
@@ -473,20 +502,18 @@ export default function Attendance({
                                                 }
                                                 InputContext={InputContext}
                                                 defaultValue={
-                                                  second_check || "Absent"
+                                                  second_check || "Present"
                                                 }
                                               />
                                               <td></td>
                                               <TdRadioInput
                                                 name={`vacation_${shift}_${student.id}`}
-                                                value="Late"
                                                 readOnly
                                                 options={["Vacation"]}
                                                 InputContext={InputContext}
                                               />
                                               <TdRadioInput
                                                 name={`medical_excuse_${shift}_${student.id}`}
-                                                value="Late"
                                                 readOnly
                                                 options={["Medical Excuse"]}
                                                 InputContext={InputContext}
@@ -559,7 +586,10 @@ export default function Attendance({
                                                 pageData.attendance.locked_at
                                               }
                                               defaultValue={
-                                                (!pageData.attendance?.status &&
+                                                ((!pageData.attendance
+                                                  ?.status ||
+                                                  pageData.attendance
+                                                    ?.status === "Pending") &&
                                                   index <
                                                     pageData.attendance
                                                       ?.paceguides.length) ||

@@ -179,7 +179,6 @@ export default function Attendance({
             >
               <Building size={16} /> Attendance
             </RegisterFormMenu>
-            {console.log(pageData.attendance?.paceguides)}
             {pageData.attendance?.paceguides?.find((paceguide) =>
               paceguide.type.includes("Test")
             ) && (
@@ -503,8 +502,8 @@ export default function Attendance({
                             </Scope>
                           ))}
                         <InputLine title="Program">
-                          <div className="w-full h-96 overflow-y-scroll">
-                            <table className="w-full text-sm text-center overflow-y-scroll h-96">
+                          <div className="w-full overflow-y-scroll">
+                            <table className="w-full text-sm text-center overflow-y-scroll ">
                               <thead className="">
                                 <tr className="bg-white sticky top-0 z-10">
                                   <th className="w-20">Scheduled for today</th>

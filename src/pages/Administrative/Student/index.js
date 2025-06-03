@@ -7,6 +7,7 @@ import PageContainer from "~/components/PageContainer";
 import Inactivate from "./Inactivate";
 import Activate from "./Activate";
 import Transfer from "./Transfer";
+import MedicalCertificateVacation from "./MedicalCertificateVacation";
 
 export default function AdministrativeStudent() {
   const filial = useSelector((state) => state.auth.filial);
@@ -202,6 +203,7 @@ export default function AdministrativeStudent() {
     const statusIndex = defaultGridHeader.findIndex(
       (el) => el.name === "status"
     );
+
     if (selected[0].fields[statusIndex] === "Waiting") {
       selectionFunctions.push({
         title: "Activate",
@@ -213,6 +215,17 @@ export default function AdministrativeStudent() {
         selected,
       });
     }
+
+    selectionFunctions.push({
+      title: "Medical certificate & Vacation",
+      fun: handleActivate,
+      icon: "FileText",
+      Page: MedicalCertificateVacation,
+      opened: activateOpen,
+      setOpened: setActivateOpen,
+      selected,
+    });
+
     if (selected[0].fields[statusIndex] === "In Class") {
       selectionFunctions.push({
         title: "Inactivate",

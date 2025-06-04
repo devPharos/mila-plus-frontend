@@ -297,7 +297,7 @@ export default function MedicalCertificateVacation({
                       <FileInputMultiple
                         type="file"
                         name="files"
-                        required={activeMenu === 'Medical Excuse'}
+                        // required={activeMenu === 'Medical Excuse'}
                         title={"Multiple Files"}
                         grow
                         InputContext={InputContext}
@@ -318,7 +318,7 @@ export default function MedicalCertificateVacation({
                         <th className="p-2 min-w-[120px]" style={{ width: '120px' }}>Date From</th>
                         <th className="p-2 min-w-[120px]" style={{ width: '120px' }}>Date To</th>
                         <th className="p-2">Note</th>
-                        <th className="p-2 text-right">File</th>
+                        <th className="p-2 text-left" style={{ width: '200px', maxWidth: '300px' }}>File</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -342,12 +342,12 @@ export default function MedicalCertificateVacation({
                               <Trash size={16} />
                             </button>
                           </td>
-                          <td className="px-2 py-2 bg-white" style={{ width: '120px' }}>{format(new Date(res.date_from), "yyyy-MM-dd")}</td>
-                          <td className="px-2 py-2 bg-white" style={{ width: '120px' }}>{format(new Date(res.date_to), "yyyy-MM-dd")}</td>
-                          <td className="px-2 py-2 bg-white w-full">{res.note}</td>
-                          <td className="px-2 py-2 bg-white flex flex-wrap gap-2 h-full">
+                          <td className="px-2 py-2 bg-white" style={{ width: '120px' }}>{format(parseISO(res.date_from), "MM/dd/yyyy")}</td>
+                          <td className="px-2 py-2 bg-white" style={{ width: '120px' }}>{format(parseISO(res.date_to), "MM/dd/yyyy")}</td>
+                          <td className="px-2 py-2 bg-white">{res.note}</td>
+                          <td className="pl-2 py-2 bg-white flex flex-wrap gap-2 h-full">
                             {res.files.length > 0 && res.files.map((data, i) => (
-                              <a href={`/${data.url}`} target='_blank'>
+                              <a href={`${data.url}`} target='_blank'>
                                 File {i + 1}
                               </a>
                             ))}

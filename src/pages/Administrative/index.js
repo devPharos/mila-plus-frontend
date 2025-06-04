@@ -50,6 +50,7 @@ export default function Administrative() {
   }
 
   function handleOpened(id) {
+    console.log("id", id);
     if (!id) {
       setSuccessfullyUpdated(true);
     }

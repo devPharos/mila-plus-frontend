@@ -890,8 +890,10 @@ export default function PagePreview({
                                   title="Student Start Date in Group"
                                   defaultValue={format(
                                     parseISO(
-                                      pageData.studentgroup.studentxgroups[0]
-                                        .start_date
+                                      pageData.studentgroup?.studentxgroups
+                                        ?.length > 0 &&
+                                        pageData.studentgroup?.studentxgroups[0]
+                                          ?.start_date
                                     ),
                                     "yyyy-MM-dd"
                                   )}

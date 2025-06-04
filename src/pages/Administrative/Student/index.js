@@ -61,77 +61,7 @@ export default function AdministrativeStudent() {
   const [activateOpen, setActivateOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
   const [medicalAndCertificateVacationOpen, setMedicalAndCertificateVacationOpen] = useState(false);
-
-  const handleInactivate = () => {
-    const newVarOpened = !inactivateOpen;
-    setInactivateOpen(newVarOpened);
-    if (!newVarOpened) {
-      setSelected([]);
-      loader();
-    }
-  };
-
-  const handleActivate = () => {
-    const newVarOpened = !activateOpen;
-    setActivateOpen(newVarOpened);
-    if (!newVarOpened) {
-      setSelected([]);
-      loader();
-    }
-  };
-
-  const handleTransfer = () => {
-    const newVarOpened = !transferOpen;
-    setTransferOpen(newVarOpened);
-    if (!newVarOpened) {
-      setSelected([]);
-      loader();
-    }
-  };
-
-  const handleMedicalAndCertificateVacation = () => {
-    const newMedicalAndCertificateVacation = !medicalAndCertificateVacationOpen;
-    setMedicalAndCertificateVacationOpen(newMedicalAndCertificateVacation);
-
-    if (!newMedicalAndCertificateVacation) {
-      setSelected([]);
-      loader();
-    }
-  };
-
-  // const handleActivate = () => {
-  //   if (selected[0].fields[6] !== "Waiting") {
-  //     toast("Only students on waiting list can be activated!", {
-  //       autoClose: 3000,
-  //     });
-  //     return;
-  //   }
-  //   alertBox({
-  //     title: "Activate",
-  //     descriptionHTML:
-  //       "Are you sure you want to activate this student? \n This action will put the student In Class.",
-  //     buttons: [
-  //       {
-  //         title: "Yes",
-  //         onPress: async () => {
-  //           const data = await api.post(`/students/activate/${selected[0].id}`);
-  //           if (data) {
-  //             toast("Student activated!", { autoClose: 3000 });
-  //             setSelected([]);
-  //             loader();
-  //           }
-  //         },
-  //       },
-  //       {
-  //         title: "No",
-  //         onPress: async () => {
-  //           return;
-  //         },
-  //       },
-  //     ],
-  //   });
-  // };
-
+  
   const {
     opened,
     orderBy,
@@ -141,7 +71,48 @@ export default function AdministrativeStudent() {
     limit,
     search,
     setLoadingData,
+    handleOpened,
   } = useContext(FullGridContext);
+
+  const handleInactivate = () => {
+    const newVarOpened = !inactivateOpen;
+    setInactivateOpen(newVarOpened);
+    if (!newVarOpened) {
+      setSelected([]);
+      loader();
+    }
+    handleOpened(null);
+  };
+  const handleActivate = () => {
+    const newVarOpened = !activateOpen;
+    setActivateOpen(newVarOpened);
+    if (!newVarOpened) {
+      setSelected([]);
+      loader();
+    }
+    handleOpened(null);
+  };
+
+  const handleTransfer = () => {
+    const newVarOpened = !transferOpen;
+    setTransferOpen(newVarOpened);
+    if (!newVarOpened) {
+      setSelected([]);
+      loader();
+    }
+    handleOpened(null);
+  };
+  
+  const handleMedicalAndCertificateVacation = () => {
+    const newMedicalAndCertificateVacation = !medicalAndCertificateVacationOpen;
+    setMedicalAndCertificateVacationOpen(newMedicalAndCertificateVacation);
+
+    if (!newMedicalAndCertificateVacation) {
+      setSelected([]);
+      loader();
+    }
+    handleOpened(null);
+  };
 
   async function loader() {
     setLoadingData(true);

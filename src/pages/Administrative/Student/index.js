@@ -60,7 +60,8 @@ export default function AdministrativeStudent() {
   const [inactivateOpen, setInactivateOpen] = useState(false);
   const [activateOpen, setActivateOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
-
+  const [medicalAndCertificateVacationOpen, setMedicalAndCertificateVacationOpen] = useState(false);
+  
   const {
     opened,
     orderBy,
@@ -96,6 +97,17 @@ export default function AdministrativeStudent() {
     const newVarOpened = !transferOpen;
     setTransferOpen(newVarOpened);
     if (!newVarOpened) {
+      setSelected([]);
+      loader();
+    }
+    handleOpened(null);
+  };
+  
+  const handleMedicalAndCertificateVacation = () => {
+    const newMedicalAndCertificateVacation = !medicalAndCertificateVacationOpen;
+    setMedicalAndCertificateVacationOpen(newMedicalAndCertificateVacation);
+
+    if (!newMedicalAndCertificateVacation) {
       setSelected([]);
       loader();
     }
@@ -188,12 +200,12 @@ export default function AdministrativeStudent() {
     }
 
     selectionFunctions.push({
-      title: "Medical certificate & Vacation",
-      fun: handleActivate,
+      title: "M.E. & Vacation",
+      fun: handleMedicalAndCertificateVacation,
       icon: "FileText",
       Page: MedicalCertificateVacation,
-      opened: activateOpen,
-      setOpened: setActivateOpen,
+      opened: medicalAndCertificateVacationOpen,
+      setOpened: setMedicalAndCertificateVacationOpen,
       selected,
     });
 

@@ -113,20 +113,40 @@ export default function Settlement({
     } else if (
       parseFloat(data.total_amount) > parseFloat(data.payees[0].balance)
     ) {
-      api
-        .put(`/payee-value/${data.payees[0].id}`, {
-          total_amount: data.total_amount,
-          paymentMethod: data.paymentMethod,
-        })
-        .then(async () => {
-          await handleSettlement(data);
-        })
-        .catch((err) => {
-          toast(err.response.data.error, {
-            type: "error",
-            autoClose: 3000,
-          });
-        });
+      alertBox({
+        title: "Attention!",
+        descriptionHTML:
+          "The total amount defined is greater than the value of the payee. How would you like to proceed?",
+        buttons: [
+          {
+            title: "Cancel",
+            class: "cancel",
+            onPress: () => {
+              setLoading(false);
+              return;
+            },
+          },
+          {
+            title: "Adjust & Settle",
+            onPress: () => {
+              api
+                .put(`/payee-value/${data.payees[0].id}`, {
+                  total_amount: data.total_amount,
+                  paymentMethod: data.paymentMethod,
+                })
+                .then(async () => {
+                  await handleSettlement(data);
+                })
+                .catch((err) => {
+                  toast(err.response.data.error, {
+                    type: "error",
+                    autoClose: 3000,
+                  });
+                });
+            },
+          },
+        ],
+      });
     } else {
       await handleSettlement(data);
       setLoading(false);

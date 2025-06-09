@@ -157,12 +157,6 @@ export default function Attendance({
     }
     setTimeout(() => {
       setPageData({ ...data, loaded: true });
-      // const calcClassPercentage = (
-      //   (data.otherPaceGuides.filter((other) => other.locked_at).length /
-      //     data.otherPaceGuides.length) *
-      //   100
-      // ).toFixed(0);
-      // setClassPercentage(calcClassPercentage);
     }, 200);
   }
 
@@ -217,7 +211,7 @@ export default function Attendance({
               <RegisterFormMenu
                 setActiveMenu={setActiveMenu}
                 activeMenu={activeMenu}
-                disabled={!pageData.attendance.locked_at}
+                disabled={!pageData.attendance?.locked_at}
                 messageOnDisabled="Avaiable only on locked attendances that have given tests."
                 name="grades"
               >
@@ -243,6 +237,7 @@ export default function Attendance({
                     handleCloseForm,
                   }}
                 >
+                  {console.log(pageData)}
                   {id === "new" || pageData.loaded ? (
                     <>
                       <FormHeader
@@ -267,21 +262,21 @@ export default function Attendance({
                         />
                         <InputLine title="Resume">
                           <div className="flex flex-row items-center justify-start gap-2 px-2 pb-4 max-w-full overflow-x-scroll">
-                            {console.log(pageData.otherPaceGuides)}
                             {pageData.otherPaceGuides
-                              .filter((other) =>
+                              ?.filter((other) =>
                                 groupName === "Teacher"
                                   ? other.date <= lastAttendance?.date
                                   : true
                               )
-                              .map((otherClass, index) => {
+                              ?.map((otherClass, index) => {
                                 let month = null;
                                 if (
                                   index === 0 ||
-                                  format(parseISO(otherClass.date), "LLL") !==
+                                  format(parseISO(otherClass?.date), "LLL") !==
                                     format(
                                       parseISO(
-                                        pageData.otherPaceGuides[index - 1].date
+                                        pageData.otherPaceGuides[index - 1]
+                                          ?.date
                                       ),
                                       "LLL"
                                     )
@@ -289,7 +284,7 @@ export default function Attendance({
                                   month = (
                                     <div className="pl-2 font-bold min-w-12 max-w-24 border-r border-gray-300 text-xs pr-1 mr-1">
                                       {format(
-                                        parseISO(otherClass.date),
+                                        parseISO(otherClass?.date),
                                         "LLL, yyyy"
                                       )}
                                     </div>
@@ -304,7 +299,7 @@ export default function Attendance({
                                         handleChangeAttendanceDay(otherClass.id)
                                       }
                                       className={`flex flex-col items-center justify-center rounded-lg border ${
-                                        pageData.attendance.date ===
+                                        pageData.attendance?.date ===
                                         otherClass.date
                                           ? "border-mila_orange border-solid"
                                           : "border-gray-300 border-dashed"
@@ -378,7 +373,7 @@ export default function Attendance({
                             name="lock"
                             grow
                             title="Lock this attendance?"
-                            readOnly={pageData.attendance.locked_at}
+                            readOnly={pageData.attendance?.locked_at}
                             InputContext={InputContext}
                             options={yesOrNoOptions}
                             defaultValue={
@@ -449,8 +444,13 @@ export default function Attendance({
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {pageData.attendance?.studentgroup?.students?.map(
-                                      (student, index) => {
+                                    {pageData.attendance?.studentgroup?.students
+                                      ?.sort((a, b) =>
+                                        (a.name + a.last_name).localeCompare(
+                                          b.name + b.last_name
+                                        )
+                                      )
+                                      .map((student, index) => {
                                         const {
                                           first_check = null,
                                           second_check = null,
@@ -489,7 +489,7 @@ export default function Attendance({
                                                   "Absent",
                                                 ]}
                                                 readOnly={
-                                                  pageData.attendance.locked_at
+                                                  pageData.attendance?.locked_at
                                                 }
                                                 InputContext={InputContext}
                                                 defaultValue={
@@ -506,7 +506,7 @@ export default function Attendance({
                                                   "Absent",
                                                 ]}
                                                 readOnly={
-                                                  pageData.attendance.locked_at
+                                                  pageData.attendance?.locked_at
                                                 }
                                                 InputContext={InputContext}
                                                 defaultValue={
@@ -529,8 +529,7 @@ export default function Attendance({
                                             </tr>
                                           </Scope>
                                         );
-                                      }
-                                    )}
+                                      })}
                                   </tbody>
                                 </table>
                               </InputLine>
@@ -548,7 +547,7 @@ export default function Attendance({
                               </thead>
                               <tbody>
                                 {pageData.attendance?.paceguides
-                                  .sort((a, b) =>
+                                  ?.sort((a, b) =>
                                     a.status + a.description >
                                     b.status + b.description
                                       ? 1
@@ -562,6 +561,9 @@ export default function Attendance({
                                           pageData.attendance?.id
                                       )
                                       .map((classroom) => classroom.paceguides)
+                                  )
+                                  .filter(
+                                    (paceguide) => paceguide.status !== "Done"
                                   )
                                   .map((paceguide, index) => {
                                     return (
@@ -591,17 +593,7 @@ export default function Attendance({
                                               name={`paceguides.${index}.checked`}
                                               InputContext={InputContext}
                                               readOnly={
-                                                pageData.attendance.locked_at
-                                              }
-                                              defaultValue={
-                                                ((!pageData.attendance
-                                                  ?.status ||
-                                                  pageData.attendance
-                                                    ?.status === "Pending") &&
-                                                  index <
-                                                    pageData.attendance
-                                                      ?.paceguides.length) ||
-                                                paceguide.status === "Done"
+                                                pageData.attendance?.locked_at
                                               }
                                             />
                                           </td>

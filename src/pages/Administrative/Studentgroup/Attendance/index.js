@@ -493,7 +493,7 @@ export default function Attendance({
                                                 }
                                                 InputContext={InputContext}
                                                 defaultValue={
-                                                  first_check || "Present"
+                                                  first_check || "Absent"
                                                 }
                                               />
                                               <td></td>
@@ -510,7 +510,7 @@ export default function Attendance({
                                                 }
                                                 InputContext={InputContext}
                                                 defaultValue={
-                                                  second_check || "Present"
+                                                  second_check || "Absent"
                                                 }
                                               />
                                               <td></td>

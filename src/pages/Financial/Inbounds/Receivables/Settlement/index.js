@@ -41,6 +41,8 @@ export default function Settlement({
     bank_name: "",
     bank_alias: "",
     loaded: true,
+    receivables: [],
+    student: {},
   });
   const [loading, setLoading] = useState(false);
 
@@ -151,56 +153,47 @@ export default function Settlement({
 
   useEffect(() => {
     async function loadData() {
-      const promises = [];
-      selected.map((receivable) => {
-        promises.push(
-          api
-            .get(`/receivables/${receivable.id}`)
-            .then(({ data }) => {
-              return data;
-            })
-            .catch((err) => {
-              console.log(err);
-            })
-        );
-      });
-      Promise.all(promises).then((data) => {
-        const { student } = data[0].issuer;
-        setPageData({
-          ...pageData,
-          receivables: data,
-          loaded: true,
-          student: {
-            ...student,
-            searchFields: {
-              processtype_id: student.processtype_id,
-              processsubstatus_id: student.processsubstatus_id,
-              filial_id: student.filial_id,
-            },
+      const receivables = [];
+      for (let receivable of selected) {
+        const { data } = await api.get(`/receivables/${receivable.id}`);
+        receivables.push(data);
+      }
+      if (receivables.length === 0) return;
+      const { student } = receivables[0].issuer;
+      setPageData({
+        ...pageData,
+        loaded: true,
+        receivables,
+        student: {
+          ...student,
+          searchFields: {
+            processtype_id: student?.processtype_id,
+            processsubstatus_id: student?.processsubstatus_id,
+            filial_id: student?.filial_id,
           },
-        });
-        setTotalAmount(
-          data.reduce((acc, curr) => {
-            return acc + curr.balance;
-          }, 0)
-        );
+        },
       });
+      setTotalAmount(
+        receivables.reduce((acc, curr) => {
+          return acc + curr.balance;
+        }, 0)
+      );
     }
     loadData();
   }, []);
 
   function handleValueChange(value) {
-    const originalValue = pageData.receivables.reduce((acc, curr) => {
-      return acc + curr.balance;
-    }, 0);
-    if (value > originalValue) {
-      toast("Total amount cannot be greater than the sum of receivables.");
-      setTotalAmount(originalValue);
-      generalForm.current.setFieldValue("total_amount", originalValue);
-      return;
-    } else {
-      setTotalAmount(parseFloat(value));
-    }
+    // const originalValue = pageData.receivables.reduce((acc, curr) => {
+    //   return acc + curr.balance;
+    // }, 0);
+    // if (value > originalValue) {
+    //   toast("Total amount cannot be greater than the sum of receivables.");
+    //   setTotalAmount(originalValue);
+    //   generalForm.current.setFieldValue("total_amount", originalValue);
+    //   return;
+    // } else {
+    //   setTotalAmount(parseFloat(value));
+    // }
   }
 
   useEffect(() => {
@@ -268,10 +261,10 @@ export default function Settlement({
                         <FormHeader
                           access={access}
                           title={
-                            "Settlement - " +
-                            pageData.student?.name +
-                            " " +
-                            pageData.student?.last_name
+                            pageData.receivables.length > 0
+                              ? "Settlement - " +
+                                pageData.receivables[0].issuer.name
+                              : "Settlement"
                           }
                           registry={registry}
                           InputContext={InputContext}
@@ -282,7 +275,7 @@ export default function Settlement({
                           title="GENERAL"
                           activeMenu={activeMenu === "general"}
                         >
-                          {pageData.receivables && (
+                          {pageData.receivables.length > 0 && (
                             <>
                               <InputLine title="Settlement Data">
                                 <Input

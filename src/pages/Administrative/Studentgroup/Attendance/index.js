@@ -373,7 +373,7 @@ export default function Attendance({
                             name="lock"
                             grow
                             title="Lock this attendance?"
-                            readOnly={pageData.attendance?.locked_at}
+                            readOnly={groupName === "Teacher" ? true : false}
                             InputContext={InputContext}
                             options={yesOrNoOptions}
                             defaultValue={
@@ -558,12 +558,10 @@ export default function Attendance({
                                       ?.filter(
                                         (classroom) =>
                                           classroom.id !==
-                                          pageData.attendance?.id
+                                            pageData.attendance?.id &&
+                                          classroom.status !== "Locked"
                                       )
                                       .map((classroom) => classroom.paceguides)
-                                  )
-                                  .filter(
-                                    (paceguide) => paceguide.status !== "Done"
                                   )
                                   .map((paceguide, index) => {
                                     return (
@@ -594,6 +592,13 @@ export default function Attendance({
                                               InputContext={InputContext}
                                               readOnly={
                                                 pageData.attendance?.locked_at
+                                              }
+                                              defaultValue={
+                                                pageData.attendance.paceguides.find(
+                                                  (pg) => pg.id === paceguide.id
+                                                )
+                                                  ? true
+                                                  : false
                                               }
                                             />
                                           </td>

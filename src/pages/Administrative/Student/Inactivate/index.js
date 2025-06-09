@@ -35,10 +35,9 @@ export default function Inactivate({
   const { successfullyUpdated, setSuccessfullyUpdated } =
     useContext(FullGridContext);
   const [pageData, setPageData] = useState({
-    loaded: false,
     bank_name: "",
     bank_alias: "",
-    loaded: true,
+    loaded: false,
     installment_amount: 0,
   });
 

@@ -458,7 +458,7 @@ export default function PagePreview({
                       >
                         <FindGeneric
                           route="chartofaccounts"
-                          title="Search to add a Chart of Account"
+                          title="Chart of Account"
                           scope="chartOfAccount"
                           type="expenses"
                           setReturnFindGeneric={setReturnFindGeneric}
@@ -470,6 +470,12 @@ export default function PagePreview({
                               ?.chartOfAccount?.code,
                             name: pageData.issuer?.issuer_x_recurrence
                               ?.chartOfAccount?.name,
+                            father:
+                              pageData.issuer?.issuer_x_recurrence
+                                ?.chartOfAccount?.Father?.name,
+                            granFather:
+                              pageData.issuer?.issuer_x_recurrence
+                                ?.chartOfAccount?.Father?.Father?.name,
                           }}
                           fields={[
                             {
@@ -478,6 +484,17 @@ export default function PagePreview({
                             },
                             {
                               title: "Name",
+                              name: "name",
+                            },
+                            {
+                              title: "Father",
+                              model: "Father",
+                              name: "name",
+                            },
+                            {
+                              title: "Father",
+                              model: "Father",
+                              model2: "Father",
                               name: "name",
                             },
                           ]}

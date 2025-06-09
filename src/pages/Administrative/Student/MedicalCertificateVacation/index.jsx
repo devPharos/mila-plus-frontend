@@ -1,23 +1,26 @@
 import React, { useRef, useState, useEffect, createContext, useContext } from 'react';
-
 import { Form } from "@unform/web";
+import { ClipboardPlus, TreePalm, Trash, Edit } from "lucide-react";
+import { format, parseISO } from 'date-fns';
+import { toast } from "react-toastify";
+import { getDownloadURL, ref } from "firebase/storage";
+import JSZip from 'jszip';
 
-import Preview from '~/components/Preview';
+import api from "~/services/api";
+import { storage } from '~/services/firebase';
+
 import RegisterFormMenu from "~/components/RegisterForm/Menu";
-import { ClipboardPlus, TreePalm } from "lucide-react";
 import FileInputMultiple from "~/components/RegisterForm/FileInputMultiple";
 import InputLine from "~/components/RegisterForm/InputLine";
 import DatePicker from "~/components/RegisterForm/DatePicker";
 import Input from "~/components/RegisterForm/Input";
 import FormHeader from "~/components/RegisterForm/FormHeader";
-import { FullGridContext } from "../..";
-import api from "~/services/api";
-import { format } from 'date-fns';
-import { toast } from "react-toastify";
-import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+
+import Preview from '~/components/Preview';
 import uploadFile from "~/functions/uploadFile";
-import JSZip from 'jszip';
-import { storage } from '~/services/firebase';
+
+import { FullGridContext } from "../..";
+import { AlertContext } from "~/App";
 
 export const InputContext = createContext({});
 
@@ -29,7 +32,8 @@ export default function MedicalCertificateVacation({
   handleOpened
 }) {
   const { successfullyUpdated, setSuccessfullyUpdated } =
-      useContext(FullGridContext);
+    useContext(FullGridContext);
+  const { alertBox } = useContext(AlertContext);
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("Vacation");
@@ -51,6 +55,8 @@ export default function MedicalCertificateVacation({
     canceled_by: null,
     canceled_at: null,
   });
+  const [loading, setLoading] = useState(false);
+  // const [idForEdit, setIdForEdit] = useState(null);
 
   const generalForm = useRef();
 
@@ -59,8 +65,6 @@ export default function MedicalCertificateVacation({
       const { data } = await api.get(`/students/${selected[0].id}`);
 
       const { last_name, name } = data
-
-      console.log(last_name, name)
 
       setPageData(state => ({ ...state, name, last_name, loaded: true }));
     }
@@ -80,11 +84,13 @@ export default function MedicalCertificateVacation({
     if (!successfullyUpdated) {
       toast("Changes discarted!", { autoClose: 1000 });
     }
+
     handleOpened(null);
   }
 
   async function handleGeneralFormSubmit(data) {
     const { date_from, date_to, note, files } = data;
+    setLoading(true);
 
     const allPromises = [];
 
@@ -99,10 +105,13 @@ export default function MedicalCertificateVacation({
       try {
         const { data } = await api.post(`/students/${activeMenu.replace(/\s+/g, "_")}`, {
           student_id: selected[0].id,
-          date_from,
-          date_to,
+          date_from: format(date_from, "yyyy-MM-dd"),
+          date_to: format(date_to, "yyyy-MM-dd"),
           note,
-          files: files_res,
+          files: files_res.map((res, i) => ({
+            ...res,
+            key: i + 1
+          })),
         });
 
         toast(`${activeMenu.replace(/\s+/g, " ")} Added successfully`, { autoClose: 1000 });
@@ -113,12 +122,18 @@ export default function MedicalCertificateVacation({
 
         generalForm.current.reset();
 
+        setLoading(false);
         // handleOpened(null);
       } catch (err) {
-        console.log(err);
+        // console.log(err);
+        setLoading(false);
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     })
+  }
+
+  async function handlerUpdateFormSubmit(data) {
+    console.log(data)
 
   }
 
@@ -146,62 +161,117 @@ export default function MedicalCertificateVacation({
     link.click();
   }
 
+  async function handleRemove(valueForDelete) {
+    alertBox({
+      title: "Attention!",
+      descriptionHTML:
+        `Are you sure you want to delete this ${activeMenu.replace(/\s+/g, " ")}? \n This operation cannot be undone.`,
+      buttons: [
+        {
+          title: "No",
+          class: "cancel",
+        },
+        {
+          title: "Yes",
+          onPress: async () => {
+            try {
+              await api.delete(`/students/${activeMenu.replace(/\s+/g, "_")}/${valueForDelete}`);
+
+              toast(`${activeMenu.replace(/\s+/g, " ")} deleted successfully`, { autoClose: 1000 });
+
+              setPageData((state) => ({
+                ...state,
+                data: state.data.filter(res => res.id !== valueForDelete)
+              }))
+            } catch(err) {
+              toast(err.response.data.error, { type: "error", autoClose: 3000 });
+            }
+          },
+        },
+      ],
+    });
+  }
+
+  async function handleEdit(valueForDetails) {
+    // setPageData(state => ({
+    //   ...state,
+    //   loaded: false
+    // }));
+
+    try {
+      const { data } = await api.get(`students/${activeMenu.replace(/\s+/g, "_")}/details/${valueForDetails}`);
+
+
+      setPageData(state => ({
+        ...state,
+        date_from: format(parseISO(data.date_from), "yyyy-MM-dd"),
+        date_to: format(parseISO(data.date_to), "yyyy-MM-dd"),
+        note: data.note,
+        loaded: true,
+      }));
+    } catch(err) {
+      toast(err.response.data.error, { type: "error", autoClose: 3000 });
+    }
+  }
+
   return (
     <Preview formType={formType} fullscreen={fullscreen}>
-        <div className="flex h-full flex-row items-start justify-between gap-4">
-          <div className="flex flex-col items-center justify-between text-xs w-32 gap-4">
-            <RegisterFormMenu
-              setActiveMenu={setActiveMenu}
-              activeMenu={activeMenu}
-              name="Vacation"
+      <div className="flex h-full flex-row items-start justify-between gap-4">
+        <div className="flex flex-col items-center justify-between text-xs w-32 gap-4">
+          <RegisterFormMenu
+            setActiveMenu={setActiveMenu}
+            activeMenu={activeMenu}
+            name="Vacation"
+          >
+            <TreePalm size={16} /> Vacation
+          </RegisterFormMenu>
+          <RegisterFormMenu
+            setActiveMenu={setActiveMenu}
+            activeMenu={activeMenu}
+            name="Medical Excuse"
+          >
+            <ClipboardPlus size={16} /> Medical Excuse
+          </RegisterFormMenu>
+        </div>
+        <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
+          <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll">
+            <Form
+              ref={generalForm}
+              onSubmit={handleGeneralFormSubmit}
+              className="w-full"
             >
-              <TreePalm size={16} /> Vacation
-            </RegisterFormMenu>
-            <RegisterFormMenu
-              setActiveMenu={setActiveMenu}
-              activeMenu={activeMenu}
-              name="Medical Excuse"
-            >
-              <ClipboardPlus size={16} /> Medical Excuse
-            </RegisterFormMenu>
-          </div>
-          <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
-            <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll">
-              <Form
-                ref={generalForm}
-                onSubmit={handleGeneralFormSubmit}
-                className="w-full"
+              <InputContext.Provider
+                value={{
+                  id,
+                  generalForm,
+                  setSuccessfullyUpdated,
+                  fullscreen,
+                  setFullscreen,
+                  successfullyUpdated,
+                  handleCloseForm,
+                }}
               >
-                <InputContext.Provider
-                  value={{
-                    id,
-                    generalForm,
-                    setSuccessfullyUpdated,
-                    fullscreen,
-                    setFullscreen,
-                    successfullyUpdated,
-                    handleCloseForm,
-                  }}
-                >
+                <FormHeader
+                  access={access}
+                  title={
+                    activeMenu+" - " +
+                    pageData.name +
+                    " " +
+                    pageData.last_name
+                  }
+                  loading={loading}
+                  registry={registry}
+                  InputContext={InputContext}
+                />
+                {id === "new" || pageData.loaded && (
                   <>
-                    <FormHeader
-                      access={access}
-                      title={
-                        activeMenu+" - " +
-                        pageData.name +
-                        " " +
-                        pageData.last_name
-                      }
-                      registry={registry}
-                      InputContext={InputContext}
-                    />
                     <InputLine title={"Add "+activeMenu}>
                       <DatePicker
                         name="date_from"
                         grow
                         required
                         title="Date From "
-                        defaultValue={pageData.entry_date}
+                        defaultValue={pageData.date_from}
                         placeholderText="MM/DD/YYYY"
                         InputContext={InputContext}
                       />
@@ -218,62 +288,80 @@ export default function MedicalCertificateVacation({
                       <Input
                         name="note"
                         grow
-                        required
                         title={'Note'}
                         defaultValue={pageData.note}
                         placeholder="Enter a note"
                         InputContext={InputContext}
                       />
+
                       <FileInputMultiple
                         type="file"
                         name="files"
-                        required
+                        // required={activeMenu === 'Medical Excuse'}
                         title={"Multiple Files"}
                         grow
                         InputContext={InputContext}
                       />
                     </InputLine>
                   </>
-                </InputContext.Provider>
-              </Form>
-              <div className='px-4 w-full flex-grow flex h-screen'>
-                {pageData.data.length > 0 && (
-                  <div className="relative flex flex-1 justify-start w-full overflow-y-scroll bg-secondary-50 rounded-xl" style={{ height: 'min-content' }}>
-                    <table className="w-full table-auto text-xs text-left whitespace-nowrap">
-                      <thead className="sticky top-0 bg-secondary-50 z-10">
-                        <tr>
-                          <th className="p-2">Date From</th>
-                          <th className="p-2">Date To</th>
-                          <th className="p-2">Note</th>
-                          <th className="p-2 min-w-[260px] text-right" style={{ width: '260px' }}>File</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {pageData.data.map((res, index) => (
-                          <tr key={index}>
-                            <td className="px-4 py-2 bg-white">{format(new Date(res.date_from), "yyyy-MM-dd")}</td>
-                            <td className="px-4 py-2 bg-white">{format(new Date(res.date_to), "yyyy-MM-dd")}</td>
-                            <td className="px-4 py-2 bg-white">{res.note}</td>
-                            <td className='px-4 py-2 bg-white text-center flex justify-end'>
-                              {res.files.length > 0 && (
-                                <button
-                                  className='font-bold bg-primary text-white rounded-md px-2 py-1 h-6 flex items-center justify-center text-xs'
-                                  onClick={() => handlerDownload(res.files)}
-                                >
-                                  Download {res.files.length} files
-                                </button>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
                 )}
-              </div>
+              </InputContext.Provider>
+            </Form>
+            <div className='px-4 w-full flex-grow flex h-screen'>
+              {pageData.data.length > 0 && (
+                <div className="relative flex flex-1 justify-start w-full overflow-y-scroll bg-secondary-50 rounded-xl" style={{ height: 'min-content' }}>
+                  <table className="w-full table-auto text-xs text-left whitespace-nowrap" style={{ height: 'min-content' }}>
+                    <thead className="sticky top-0 bg-secondary-50 z-10">
+                      <tr>
+                        {/* <th className="p-2 min-w-[120px]" style={{ width: '50px' }}></th> */}
+                        <th className="p-2 min-w-[120px]" style={{ width: '50px' }}></th>
+                        <th className="p-2 min-w-[120px]" style={{ width: '120px' }}>Date From</th>
+                        <th className="p-2 min-w-[120px]" style={{ width: '120px' }}>Date To</th>
+                        <th className="p-2">Note</th>
+                        <th className="p-2 text-left" style={{ width: '200px', maxWidth: '300px' }}>File</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pageData.data.map((res, index) => (
+                        <tr key={index}>
+                          {/* <td className="px-2 py-2 bg-white" style={{ width: '50px' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleEdit(res.id)}
+                              className="bg-white border rounded p-2 hover:bg-red-600 hover:text-white"
+                            >
+                              <Edit size={16} />
+                            </button>
+                          </td> */}
+                          <td className="px-2 py-2 bg-white" style={{ width: '50px' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleRemove(res.id)}
+                              className="bg-white border rounded p-2 hover:bg-red-600 hover:text-white"
+                            >
+                              <Trash size={16} />
+                            </button>
+                          </td>
+                          <td className="px-2 py-2 bg-white" style={{ width: '120px' }}>{format(parseISO(res.date_from), "MM/dd/yyyy")}</td>
+                          <td className="px-2 py-2 bg-white" style={{ width: '120px' }}>{format(parseISO(res.date_to), "MM/dd/yyyy")}</td>
+                          <td className="px-2 py-2 bg-white">{res.note}</td>
+                          <td className="pl-2 py-2 bg-white flex flex-wrap gap-2 h-full">
+                            {res.files.length > 0 && res.files.map((data, i) => (
+                              <a href={`${data.url}`} target='_blank'>
+                                File {i + 1}
+                              </a>
+                            ))}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         </div>
+      </div>
     </Preview>
   );
 }

@@ -103,7 +103,9 @@ export default function Attendance({
         .post(`/studentgroups/attendance/${selected[0].id}`, data)
         .then((res) => {
           toast("Attendance saved!", { autoClose: 1000 });
-          handleOpened(null);
+          setSuccessfullyUpdated(true);
+          loadData();
+          // handleOpened(null);
         })
         .catch((err) => {
           toast(err.response.data.error, {
@@ -145,25 +147,26 @@ export default function Attendance({
     }
   }
 
-  useEffect(() => {
-    async function loadData() {
-      setPageData({ ...pageData, loaded: false });
-      const { data } = await api.get(
-        `/studentgroups/attendance/${selected[0].id}?attendanceId=${attendanceId}`
-      );
-      if (!attendanceId) {
-        setLastAttendance({ date: data.attendance.date });
-      }
-      setTimeout(() => {
-        setPageData({ ...data, loaded: true });
-        // const calcClassPercentage = (
-        //   (data.otherPaceGuides.filter((other) => other.locked_at).length /
-        //     data.otherPaceGuides.length) *
-        //   100
-        // ).toFixed(0);
-        // setClassPercentage(calcClassPercentage);
-      }, 200);
+  async function loadData() {
+    setPageData({ ...pageData, loaded: false });
+    const { data } = await api.get(
+      `/studentgroups/attendance/${selected[0].id}?attendanceId=${attendanceId}`
+    );
+    if (!attendanceId) {
+      setLastAttendance({ date: data.attendance.date });
     }
+    setTimeout(() => {
+      setPageData({ ...data, loaded: true });
+      // const calcClassPercentage = (
+      //   (data.otherPaceGuides.filter((other) => other.locked_at).length /
+      //     data.otherPaceGuides.length) *
+      //   100
+      // ).toFixed(0);
+      // setClassPercentage(calcClassPercentage);
+    }, 200);
+  }
+
+  useEffect(() => {
     loadData();
   }, [attendanceId]);
 
@@ -264,6 +267,7 @@ export default function Attendance({
                         />
                         <InputLine title="Resume">
                           <div className="flex flex-row items-center justify-start gap-2 px-2 pb-4 max-w-full overflow-x-scroll">
+                            {console.log(pageData.otherPaceGuides)}
                             {pageData.otherPaceGuides
                               .filter((other) =>
                                 groupName === "Teacher"

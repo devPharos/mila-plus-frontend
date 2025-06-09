@@ -16,15 +16,33 @@ export default function FinancialBank() {
       filter: false,
     },
     {
-      title: "Name",
+      title: "Type",
+      name: "type",
+      type: "text",
+      filter: true,
+    },
+    {
+      title: "Level 2",
       name: "name",
       type: "text",
       filter: false,
     },
     {
-      title: "Type",
-      name: "type",
+      title: "Level 3",
+      name: "name",
       type: "text",
+      filter: false,
+    },
+    {
+      title: "Level 4",
+      name: "name",
+      type: "text",
+      filter: false,
+    },
+    {
+      title: "Profit and Loss",
+      name: "profit_and_loss",
+      type: "boolean",
       filter: true,
     },
     {
@@ -68,14 +86,46 @@ export default function FinancialBank() {
         return;
       }
       const gridDataValues = data.map(
-        ({ id, code, name, visibility }, index) => {
+        ({ id, code, name, Father, visibility, profit_and_loss }, index) => {
+          let fullName = "";
+          let levelOne = "";
+          let levelTwo = "";
+          let levelThree = "";
+          let levelFour = "";
+          if (Father) {
+            if (Father.Father) {
+              if (Father.Father.Father) {
+                levelOne = Father.Father.Father.name;
+                levelTwo = Father.Father.name;
+                levelThree = Father.name;
+                levelFour = name;
+                fullName += Father.Father.Father.name + " > ";
+              } else {
+                levelOne = Father.Father.name;
+                levelTwo = Father.name;
+                levelThree = name;
+              }
+              fullName += Father.Father.name + " > ";
+            } else {
+              levelOne = Father.name;
+              levelTwo = name;
+            }
+            fullName += Father.name + " > ";
+          } else {
+            levelOne = name;
+          }
+          fullName += name;
+
           return {
             show: true,
             id,
             fields: [
               code,
-              name,
-              code.substring(0, 2) === "01" ? "Receipts" : "Expenses",
+              levelOne,
+              levelTwo,
+              levelThree,
+              levelFour,
+              profit_and_loss,
               visibility,
             ],
             page: Math.ceil((index + 1) / limit),

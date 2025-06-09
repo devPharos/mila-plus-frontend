@@ -20,6 +20,7 @@ import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { FullGridContext } from "../..";
 import FindGeneric from "~/components/Finds/FindGeneric";
+import { yesOrNoOptions } from "~/functions/selectPopoverOptions";
 
 export const InputContext = createContext({});
 
@@ -285,6 +286,20 @@ export default function PagePreview({
                               title="Name"
                               grow
                               defaultValue={pageData.name}
+                              InputContext={InputContext}
+                            />
+                            <SelectPopover
+                              type="select"
+                              isSearchable
+                              name="profit_and_loss"
+                              required
+                              title="Profit and Loss"
+                              options={yesOrNoOptions}
+                              grow
+                              defaultValue={yesOrNoOptions.find(
+                                (type) =>
+                                  type.value === pageData.profit_and_loss
+                              )}
                               InputContext={InputContext}
                             />
                             <SelectPopover

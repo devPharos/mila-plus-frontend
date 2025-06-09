@@ -149,10 +149,7 @@ export default function Settlement({
       });
     } else {
       await handleSettlement(data);
-      setLoading(false);
-      handleOpened(null);
     }
-    setLoading(true);
     async function handleSettlement(data) {
       // console.log(data);
       await api
@@ -163,9 +160,11 @@ export default function Settlement({
         .then(({ data }) => {
           toast(data.message, { autoClose: 1000 });
           handleOpened(null);
+          setLoading(false);
         })
         .catch((err) => {
           toast(err.response.data.error, { type: "error", autoClose: 3000 });
+          setLoading(false);
         });
     }
     return;
@@ -345,6 +344,9 @@ export default function Settlement({
                                     pageData.payees[0].invoice_number
                                       ? pageData.payees[0].invoice_number
                                       : ""
+                                  }
+                                  readOnly={
+                                    pageData.payees[0].status !== "Pending"
                                   }
                                   InputContext={InputContext}
                                 />

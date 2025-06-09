@@ -40,8 +40,14 @@ export default function FinancialBank() {
       filter: false,
     },
     {
-      title: "Profit and Loss",
+      title: "P&L",
       name: "profit_and_loss",
+      type: "boolean",
+      filter: true,
+    },
+    {
+      title: "Posting",
+      name: "allow_use",
       type: "boolean",
       filter: true,
     },
@@ -86,7 +92,10 @@ export default function FinancialBank() {
         return;
       }
       const gridDataValues = data.map(
-        ({ id, code, name, Father, visibility, profit_and_loss }, index) => {
+        (
+          { id, code, name, Father, visibility, allow_use, profit_and_loss },
+          index
+        ) => {
           let fullName = "";
           let levelOne = "";
           let levelTwo = "";
@@ -126,6 +135,7 @@ export default function FinancialBank() {
               levelThree,
               levelFour,
               profit_and_loss,
+              allow_use,
               visibility,
             ],
             page: Math.ceil((index + 1) / limit),

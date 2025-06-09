@@ -19,11 +19,10 @@ import FormLoading from "~/components/RegisterForm/FormLoading";
 import { FullGridContext } from "../../..";
 import { format, parseISO } from "date-fns";
 import DatePicker from "~/components/RegisterForm/DatePicker";
-import SelectPopover from "~/components/RegisterForm/SelectPopover";
-import PricesSimulation from "~/components/PricesSimulation";
 import { Scope } from "@unform/core";
 import Textarea from "~/components/RegisterForm/Textarea";
 import FindGeneric from "~/components/Finds/FindGeneric";
+import { AlertContext } from "~/App";
 
 export const InputContext = createContext({});
 
@@ -34,6 +33,7 @@ export default function Settlement({
   selected,
   handleOpened,
 }) {
+  const { alertBox } = useContext(AlertContext);
   const { successfullyUpdated, setSuccessfullyUpdated } =
     useContext(FullGridContext);
   const [pageData, setPageData] = useState({
@@ -69,25 +69,104 @@ export default function Settlement({
 
   async function handleGeneralFormSubmit(data) {
     setLoading(true);
+    if (parseFloat(data.total_amount) < parseFloat(data.payees[0].balance)) {
+      alertBox({
+        title: "Attention!",
+        descriptionHTML:
+          "The total amount defined is less than the value of the payee. How would you like to proceed?",
+        buttons: [
+          {
+            title: "Cancel",
+            class: "cancel",
+            onPress: () => {
+              setLoading(false);
+              return;
+            },
+          },
+          {
+            title: "Full Settlement",
+            onPress: () => {
+              api
+                .put(`/payee-value/${data.payees[0].id}`, {
+                  total_amount: data.total_amount,
+                  paymentMethod: data.paymentMethod,
+                })
+                .then(async () => {
+                  await handleSettlement(data);
+                })
+                .catch((err) => {
+                  toast(err.response.data.error, {
+                    type: "error",
+                    autoClose: 3000,
+                  });
+                });
+            },
+          },
+          {
+            title: "Partial Settlement",
+            onPress: async () => {
+              await handleSettlement(data);
+            },
+          },
+        ],
+      });
+    } else if (
+      parseFloat(data.total_amount) > parseFloat(data.payees[0].balance)
+    ) {
+      alertBox({
+        title: "Attention!",
+        descriptionHTML:
+          "The total amount defined is greater than the value of the payee. How would you like to proceed?",
+        buttons: [
+          {
+            title: "Cancel",
+            class: "cancel",
+            onPress: () => {
+              setLoading(false);
+              return;
+            },
+          },
+          {
+            title: "Adjust & Settle",
+            onPress: () => {
+              api
+                .put(`/payee-value/${data.payees[0].id}`, {
+                  total_amount: data.total_amount,
+                  paymentMethod: data.paymentMethod,
+                })
+                .then(async () => {
+                  await handleSettlement(data);
+                })
+                .catch((err) => {
+                  toast(err.response.data.error, {
+                    type: "error",
+                    autoClose: 3000,
+                  });
+                });
+            },
+          },
+        ],
+      });
+    } else {
+      await handleSettlement(data);
+    }
     async function handleSettlement(data) {
       // console.log(data);
       await api
         .post(`/payee/settlement`, {
           ...data,
-          total_amount: totalAmount,
           settlement_date: format(data.settlement_date, "yyyyMMdd"),
         })
         .then(({ data }) => {
           toast(data.message, { autoClose: 1000 });
           handleOpened(null);
+          setLoading(false);
         })
         .catch((err) => {
           toast(err.response.data.error, { type: "error", autoClose: 3000 });
+          setLoading(false);
         });
     }
-    await handleSettlement(data);
-    setLoading(false);
-    handleOpened(null);
     return;
   }
 
@@ -130,17 +209,17 @@ export default function Settlement({
   }, []);
 
   function handleValueChange(value) {
-    const originalValue = pageData.payees.reduce((acc, curr) => {
-      return acc + curr.balance;
-    }, 0);
-    if (value > originalValue) {
-      toast("Total amount cannot be greater than the sum of payees.");
-      setTotalAmount(originalValue);
-      generalForm.current.setFieldValue("total_amount", originalValue);
-      return;
-    } else {
-      setTotalAmount(parseFloat(value));
-    }
+    // const originalValue = pageData.payees.reduce((acc, curr) => {
+    //   return acc + curr.balance;
+    // }, 0);
+    // if (value > originalValue) {
+    //   toast("Total amount cannot be greater than the sum of payees.");
+    //   setTotalAmount(originalValue);
+    //   generalForm.current.setFieldValue("total_amount", originalValue);
+    //   return;
+    // } else {
+    //   setTotalAmount(parseFloat(value));
+    // }
   }
 
   useEffect(() => {
@@ -265,6 +344,9 @@ export default function Settlement({
                                     pageData.payees[0].invoice_number
                                       ? pageData.payees[0].invoice_number
                                       : ""
+                                  }
+                                  readOnly={
+                                    pageData.payees[0].status !== "Pending"
                                   }
                                   InputContext={InputContext}
                                 />

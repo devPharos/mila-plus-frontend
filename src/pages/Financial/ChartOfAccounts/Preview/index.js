@@ -20,6 +20,7 @@ import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { FullGridContext } from "../..";
 import FindGeneric from "~/components/Finds/FindGeneric";
+import { yesOrNoOptions } from "~/functions/selectPopoverOptions";
 
 export const InputContext = createContext({});
 
@@ -92,22 +93,14 @@ export default function PagePreview({
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     } else if (id !== "new") {
-      const updated = handleUpdatedFields(data, pageData);
-
-      if (updated.length > 0) {
-        const objUpdated = Object.fromEntries(updated);
-        try {
-          console.log(objUpdated);
-          await api.put(`/chartofaccounts/${id}`, objUpdated);
-          setPageData({ ...pageData, ...objUpdated });
-          setSuccessfullyUpdated(true);
-          toast("Saved!", { autoClose: 1000 });
-          handleOpened(null);
-        } catch (err) {
-          toast(err.response.data.error, { type: "error", autoClose: 3000 });
-        }
-      } else {
-        console.log(updated);
+      try {
+        await api.put(`/chartofaccounts/${id}`, data);
+        setPageData({ ...pageData, ...data });
+        setSuccessfullyUpdated(true);
+        toast("Saved!", { autoClose: 1000 });
+        handleOpened(null);
+      } catch (err) {
+        toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     }
   }
@@ -252,32 +245,6 @@ export default function PagePreview({
                             ]}
                           />
                           <InputLine title="General Data">
-                            {/* <SelectPopover
-                              type="text"
-                              isSearchable
-                              name="father_id"
-                              required
-                              title="Father Account"
-                              options={chartOfAccountsOptions}
-                              grow
-                              defaultValue={
-                                pageData.father_id
-                                  ? {
-                                      value: pageData.father_id,
-                                      label:
-                                        pageData.Father.code.length === 2
-                                          ? pageData.Father.name
-                                          : pageData.code.substring(0, 2) ===
-                                            "01"
-                                          ? "Receipts > " + pageData.Father.name
-                                          : "Expenses > " +
-                                            pageData.Father.name +
-                                            pageData.Father.Father.name,
-                                    }
-                                  : null
-                              }
-                              InputContext={InputContext}
-                            /> */}
                             <Input
                               type="text"
                               name="name"
@@ -285,6 +252,20 @@ export default function PagePreview({
                               title="Name"
                               grow
                               defaultValue={pageData.name}
+                              InputContext={InputContext}
+                            />
+                            <SelectPopover
+                              type="select"
+                              isSearchable
+                              name="profit_and_loss"
+                              required
+                              title="Profit and Loss"
+                              options={yesOrNoOptions}
+                              grow
+                              defaultValue={yesOrNoOptions.find(
+                                (type) =>
+                                  type.value === pageData.profit_and_loss
+                              )}
                               InputContext={InputContext}
                             />
                             <SelectPopover
@@ -302,6 +283,19 @@ export default function PagePreview({
                                     )
                                   : null
                               }
+                              InputContext={InputContext}
+                            />
+                            <SelectPopover
+                              type="text"
+                              isSearchable
+                              name="allow_use"
+                              required
+                              title="Allows Posting"
+                              options={yesOrNoOptions}
+                              grow
+                              defaultValue={yesOrNoOptions.find(
+                                (f) => f.value === pageData.allow_use
+                              )}
                               InputContext={InputContext}
                             />
                           </InputLine>

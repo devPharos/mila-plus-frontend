@@ -302,7 +302,6 @@ export default function PagePreview({
                               required
                               readOnly={
                                 id !== "new" &&
-                                id !== "new" &&
                                 (pageData.is_recurrence ||
                                   pageData.balance !== pageData.total ||
                                   pageData.status !== "Pending")

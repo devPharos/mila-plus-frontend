@@ -237,7 +237,6 @@ export default function Attendance({
                     handleCloseForm,
                   }}
                 >
-                  {console.log(pageData)}
                   {id === "new" || pageData.loaded ? (
                     <>
                       <FormHeader
@@ -538,13 +537,17 @@ export default function Attendance({
                         <InputLine title="Program">
                           <div className="w-full overflow-y-scroll">
                             <table className="w-full text-sm text-center overflow-y-scroll ">
-                              <thead className="">
-                                <tr className="bg-white sticky top-0 z-10">
-                                  <th className="w-20">Scheduled for today</th>
-                                  <th className="w-56">Type</th>
-                                  <th className="text-left">Description</th>
-                                </tr>
-                              </thead>
+                              {pageData.attendance?.paceguides.length > 0 && (
+                                <thead className="">
+                                  <tr className="bg-white sticky top-0 z-10">
+                                    <th className="w-20">
+                                      Scheduled for today
+                                    </th>
+                                    <th className="w-56">Type</th>
+                                    <th className="text-left">Description</th>
+                                  </tr>
+                                </thead>
+                              )}
                               <tbody>
                                 {pageData.attendance?.paceguides
                                   ?.sort((a, b) =>

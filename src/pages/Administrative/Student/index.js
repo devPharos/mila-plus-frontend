@@ -60,8 +60,11 @@ export default function AdministrativeStudent() {
   const [inactivateOpen, setInactivateOpen] = useState(false);
   const [activateOpen, setActivateOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
-  const [medicalAndCertificateVacationOpen, setMedicalAndCertificateVacationOpen] = useState(false);
-  
+  const [
+    medicalAndCertificateVacationOpen,
+    setMedicalAndCertificateVacationOpen,
+  ] = useState(false);
+
   const {
     opened,
     orderBy,
@@ -102,7 +105,7 @@ export default function AdministrativeStudent() {
     }
     handleOpened(null);
   };
-  
+
   const handleMedicalAndCertificateVacation = () => {
     const newMedicalAndCertificateVacation = !medicalAndCertificateVacationOpen;
     setMedicalAndCertificateVacationOpen(newMedicalAndCertificateVacation);
@@ -165,7 +168,7 @@ export default function AdministrativeStudent() {
             category,
             status,
           ],
-          selectable: "In Class;Waiting".includes(status),
+          selectable: "In Class;Waiting;Inactive".includes(status),
           canceled: canceled_at,
           page: Math.ceil((index + 1) / limit),
         };

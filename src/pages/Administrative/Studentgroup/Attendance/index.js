@@ -91,6 +91,7 @@ export default function Attendance({
           handleOpened(null);
         })
         .catch((err) => {
+          console.log(err);
           toast(err.response.data.error, {
             type: "error",
             autoClose: 1000,
@@ -453,13 +454,14 @@ export default function Attendance({
                                         const {
                                           first_check = null,
                                           second_check = null,
-                                        } =
-                                          pageData.attendance?.attendances?.find(
-                                            (attendance) =>
-                                              attendance.student_id ===
-                                                student.id &&
-                                              attendance.shift === shift
-                                          ) || {};
+                                          vacation_id = null,
+                                          medical_excuse_id = null,
+                                        } = pageData.attendance?.attendances?.find(
+                                          (attendance) =>
+                                            attendance.student_id ===
+                                              student.id &&
+                                            attendance.shift === shift
+                                        ) || {};
                                         return (
                                           <Scope
                                             path={`students.${index}`}
@@ -488,11 +490,17 @@ export default function Attendance({
                                                   "Absent",
                                                 ]}
                                                 readOnly={
-                                                  pageData.attendance?.locked_at
+                                                  pageData.attendance
+                                                    ?.locked_at ||
+                                                  medical_excuse_id ||
+                                                  vacation_id
                                                 }
                                                 InputContext={InputContext}
                                                 defaultValue={
-                                                  first_check || "Absent"
+                                                  !first_check ||
+                                                  medical_excuse_id
+                                                    ? "Absent"
+                                                    : first_check
                                                 }
                                               />
                                               <td></td>
@@ -505,11 +513,17 @@ export default function Attendance({
                                                   "Absent",
                                                 ]}
                                                 readOnly={
-                                                  pageData.attendance?.locked_at
+                                                  pageData.attendance
+                                                    ?.locked_at ||
+                                                  medical_excuse_id ||
+                                                  vacation_id
                                                 }
                                                 InputContext={InputContext}
                                                 defaultValue={
-                                                  second_check || "Absent"
+                                                  !second_check ||
+                                                  medical_excuse_id
+                                                    ? "Absent"
+                                                    : second_check
                                                 }
                                               />
                                               <td></td>
@@ -518,12 +532,22 @@ export default function Attendance({
                                                 readOnly
                                                 options={["Vacation"]}
                                                 InputContext={InputContext}
+                                                defaultValue={
+                                                  vacation_id
+                                                    ? "Vacation"
+                                                    : null
+                                                }
                                               />
                                               <TdRadioInput
                                                 name={`medical_excuse_${shift}_${student.id}`}
                                                 readOnly
                                                 options={["Medical Excuse"]}
                                                 InputContext={InputContext}
+                                                defaultValue={
+                                                  medical_excuse_id
+                                                    ? "Medical Excuse"
+                                                    : null
+                                                }
                                               />
                                             </tr>
                                           </Scope>
@@ -662,12 +686,6 @@ export default function Attendance({
                                                 attendance.student_id ===
                                                 student.id
                                             ) || {};
-                                          if (
-                                            first_check === "Absent" &&
-                                            second_check === "Absent"
-                                          ) {
-                                            return null;
-                                          }
                                           return (
                                             <Scope
                                               path={`students.${index}`}

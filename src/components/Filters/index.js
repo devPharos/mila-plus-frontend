@@ -8,6 +8,7 @@ import {
   X,
 } from "lucide-react";
 import React, { useContext, useState } from "react";
+import { useLocation } from 'react-router-dom';
 import Popover from "../Popover";
 import PopoverAddFilter from "../Popover/PopoverAddFilter";
 import Icon from "../Icon";
@@ -19,6 +20,12 @@ export default function Filters({
   selection = null,
   Excel = null,
 }) {
+  // 1. Chame o hook para obter o objeto de localização
+  const location = useLocation();
+
+  // 2. Acesse a propriedade pathname do objeto
+  const urlPath = location.pathname;
+
   if (!Context) {
     return null;
   }
@@ -376,7 +383,9 @@ export default function Filters({
                                 );
                               }}
                             >
-                              <option value="All">All</option>
+                              {!urlPath === '/Administrative/Students' && (
+                                <option value="All">All</option>
+                              )}
                               {data.options.map((option, index) => {
                                 return (
                                   <option key={index} value={option.value}>

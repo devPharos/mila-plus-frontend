@@ -56,10 +56,71 @@ export default function AdministrativeStudent() {
       filter: true,
     },
   ];
+  const relatoriosOptions = [
+    {
+      value: "vacation",
+      label: "Vacation",
+    },
+    {
+      value: "medical_excuse",
+      label: "Medical Excuse",
+    },
+  ]
+  const excelVacationFilterData = [
+    {
+      title: "Start Date From",
+      name: "start_date_from",
+      type: "date",
+      value: null,
+    },
+    {
+      title: "Start Date To",
+      name: "start_date_to",
+      type: "date",
+      value: null,
+    },
+    {
+      title: "End Date From",
+      name: "end_date_from",
+      type: "date",
+      value: null,
+    },
+    {
+      title: "End Date To",
+      name: "end_date_to",
+      type: "date",
+      value: null,
+    },
+  ];
+  const excelMedicalExcuseFilterData = [
+    {
+      title: "Date From",
+      name: "date_from",
+      type: "date",
+      value: null,
+    },
+    {
+      title: "Date To",
+      name: "date_to",
+      type: "date",
+      value: null,
+    },
+  ];
   const [selected, setSelected] = useState([]);
   const [inactivateOpen, setInactivateOpen] = useState(false);
   const [activateOpen, setActivateOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
+  const [excelOpen, setExcelOpen] = useState(false);
+  const [loadScreen, setLoadScreen] = useState(false);
+  const [excelData, setExcelData] = useState([
+    {
+      title: "Report",
+      name: "Report",
+      type: "select",
+      options: relatoriosOptions,
+      value: "vacation",
+    }
+  ]);
   const [
     medicalAndCertificateVacationOpen,
     setMedicalAndCertificateVacationOpen,
@@ -180,6 +241,38 @@ export default function AdministrativeStudent() {
   }
 
   useEffect(() => {
+    setExcelOpen(false);
+
+    const newValue = excelData[0].value === 'vacation' ? JSON.parse(JSON.stringify([
+      {
+        ...excelData[0]
+      },
+      ...excelVacationFilterData
+    ])): JSON.parse(JSON.stringify([
+      {
+        ...excelData[0]
+      },
+      ...excelMedicalExcuseFilterData
+    ]));
+
+    setExcelData(newValue.map((res, i) => {
+      return {
+        ...res,
+        value: i === 0 ? res.value : null
+      }
+    }))
+
+    if(loadScreen) {
+      setTimeout(() => setExcelOpen(true), 100)
+    }
+
+    if(!loadScreen) {
+      setLoadScreen(true)
+    }
+
+  }, [excelData[0].value])
+
+  useEffect(() => {
     loader();
   }, [opened, filial, orderBy, search, limit]);
 
@@ -234,6 +327,40 @@ export default function AdministrativeStudent() {
     }
   }
 
+  async function handleExcel(generate=true) {
+    if (excelOpen && generate) {
+      // Construa o payload com base nos estados dos seus inputs
+      const payload = excelData[0].value === 'vacation' ? {
+        start_date_from: excelData[1].value, // formato 'YYYY-MM-DD'
+        start_date_to: excelData[2].value,     // formato 'YYYY-MM-DD'
+        end_date_from: excelData[3].value,   // formato 'YYYY-MM-DD'
+        end_date_to: excelData[4].value,       // formato 'YYYY-MM-DD'
+      } : {
+        date_from: excelData[1].value,
+        date_to: excelData[2].value,
+      };
+
+      try {
+        const { data } = await api.post(`/${excelData.filter(res => res.title === 'Report')[0].value}/excel`, payload);
+
+        // A baseURL deve apontar para o seu servidor backend
+        // Ex: 'http://localhost:3333'
+        saveAs(`${baseURL}/get-file/${data.name}`, `${data.name}.xlsx`);
+
+      } catch (err) {
+        // É uma boa prática mostrar o erro para o usuário
+        if (err.response && err.response.data && err.response.data.error) {
+          alert(`Erro: ${err.response.data.error}`); // ou use um componente de toast/notificação
+        } else {
+          alert('Ocorreu um erro ao gerar o relatório.');
+        }
+        console.error(err);
+      }
+    }
+
+    setExcelOpen(!excelOpen);
+  }
+
   return (
     <PageContainer
       FullGridContext={FullGridContext}
@@ -244,6 +371,12 @@ export default function AdministrativeStudent() {
         selected,
         setSelected,
         functions: selectionFunctions,
+      }}
+      Excel={{
+        fun: handleExcel,
+        opened: excelOpen,
+        excelData,
+        setExcelData,
       }}
     />
   );

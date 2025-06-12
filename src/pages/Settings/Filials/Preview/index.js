@@ -76,6 +76,9 @@ export default function PagePreview({
     discountlists: [],
     loaded: false,
     parking_spot_image: null,
+    financial_support_student_amount: 0,
+    financial_support_dependent_amount: 0,
+    financial_support_year_amount: 0,
   });
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);

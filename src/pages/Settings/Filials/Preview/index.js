@@ -211,7 +211,30 @@ export default function PagePreview({
     }
     if (id === "new") {
       try {
-        const response = await api.post(`/filials`, data);
+        const {
+          financial_support_student_amount = 0,
+          financial_support_dependent_amount = 0,
+          financial_support_year_amount = 0,
+        } = data;
+
+        if (financial_support_student_amount === "0") {
+          financial_support_student_amount = 0;
+        }
+
+        if (financial_support_dependent_amount === "0") {
+          financial_support_dependent_amount = 0;
+        }
+
+        if (financial_support_year_amount === "0") {
+          financial_support_year_amount = 0;
+        }
+
+        const response = await api.post(`/filials`, {
+          ...data,
+          financial_support_student_amount,
+          financial_support_dependent_amount,
+          financial_support_year_amount,
+        });
         setOpened(response.data.id);
         setPageData({ ...pageData, ...data });
         setSuccessfullyUpdated(true);

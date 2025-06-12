@@ -111,6 +111,7 @@ export default function AdministrativeStudent() {
   const [activateOpen, setActivateOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
   const [excelOpen, setExcelOpen] = useState(false);
+  const [loadScreen, setLoadScreen] = useState(false);
   const [excelData, setExcelData] = useState([
     {
       title: "Report",
@@ -241,6 +242,7 @@ export default function AdministrativeStudent() {
 
   useEffect(() => {
     setExcelOpen(false);
+
     const newValue = excelData[0].value === 'vacation' ? JSON.parse(JSON.stringify([
       {
         ...excelData[0]
@@ -260,7 +262,14 @@ export default function AdministrativeStudent() {
       }
     }))
 
-    setTimeout(() => setExcelOpen(true), 100)
+    if(loadScreen) {
+      setTimeout(() => setExcelOpen(true), 100)
+    }
+
+    if(!loadScreen) {
+      setLoadScreen(true)
+    }
+
   }, [excelData[0].value])
 
   useEffect(() => {

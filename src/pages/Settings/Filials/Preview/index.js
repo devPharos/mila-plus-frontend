@@ -211,7 +211,7 @@ export default function PagePreview({
     }
     if (id === "new") {
       try {
-        const {
+        let {
           financial_support_student_amount = 0,
           financial_support_dependent_amount = 0,
           financial_support_year_amount = 0,

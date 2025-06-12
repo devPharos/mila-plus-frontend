@@ -376,7 +376,9 @@ export default function Filters({
                                 );
                               }}
                             >
-                              <option value="All">All</option>
+                              {!(Excel.excelData[0].value === 'vacation' || Excel.excelData[0].value === 'medical_excuse') && (
+                                <option value="All">All</option>
+                              )}
                               {data.options.map((option, index) => {
                                 return (
                                   <option key={index} value={option.value}>

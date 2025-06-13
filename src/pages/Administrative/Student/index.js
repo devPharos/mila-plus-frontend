@@ -8,6 +8,7 @@ import Inactivate from "./Inactivate";
 import Activate from "./Activate";
 import Transfer from "./Transfer";
 import MedicalCertificateVacation from "./MedicalCertificateVacation";
+import api, { baseURL } from "~/services/api";
 
 export default function AdministrativeStudent() {
   const filial = useSelector((state) => state.auth.filial);

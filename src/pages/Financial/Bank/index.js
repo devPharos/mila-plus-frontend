@@ -33,43 +33,43 @@ export default function FinancialBank() {
     search,
     setActiveFilters,
     setLoadingData,
+    setGridDetails,
   } = useContext(FullGridContext);
 
   useEffect(() => {
     setActiveFilters([]);
   }, []);
+  async function loader() {
+    setLoadingData(true);
+    const data = await getData("bank", {
+      limit,
+      page,
+      orderBy,
+      setPages,
+      setGridData,
+      search,
+      defaultGridHeader,
+      defaultOrderBy,
+      setGridDetails,
+    });
+    if (!data) {
+      return;
+    }
+    const gridDataValues = data.map(({ id, bank_alias, bank_name }, index) => {
+      return {
+        show: true,
+        id,
+        fields: [bank_name, bank_alias],
+        page: Math.ceil((index + 1) / limit),
+      };
+    });
+    setGridData(gridDataValues);
+    setLoadingData(false);
+  }
 
   useEffect(() => {
-    async function loader() {
-      setLoadingData(true);
-      const data = await getData("bank", {
-        limit,
-        page,
-        orderBy,
-        setPages,
-        setGridData,
-        search,
-        defaultGridHeader,
-        defaultOrderBy,
-      });
-      if (!data) {
-        return;
-      }
-      const gridDataValues = data.map(
-        ({ id, bank_alias, bank_name }, index) => {
-          return {
-            show: true,
-            id,
-            fields: [bank_name, bank_alias],
-            page: Math.ceil((index + 1) / limit),
-          };
-        }
-      );
-      setGridData(gridDataValues);
-      setLoadingData(false);
-    }
     loader();
-  }, [opened, filial, orderBy, search, limit]);
+  }, [opened, filial, orderBy, search, limit, page]);
 
   return (
     <PageContainer

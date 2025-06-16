@@ -69,84 +69,86 @@ export default function FinancialBank() {
     search,
     setActiveFilters,
     setLoadingData,
+    setGridDetails,
   } = useContext(FullGridContext);
 
   useEffect(() => {
     setActiveFilters([]);
   }, []);
+  async function loader() {
+    setLoadingData(true);
+    const data = await getData("chartofaccounts", {
+      limit,
+      page,
+      orderBy,
+      setPages,
+      setGridData,
+      search,
+      defaultGridHeader,
+      defaultOrderBy,
+      setGridDetails,
+    });
+    if (!data) {
+      return;
+    }
+    const gridDataValues = data.map(
+      (
+        { id, code, name, Father, visibility, allow_use, profit_and_loss },
+        index
+      ) => {
+        let fullName = "";
+        let levelOne = "";
+        let levelTwo = "";
+        let levelThree = "";
+        let levelFour = "";
+        if (Father) {
+          if (Father.Father) {
+            if (Father.Father.Father) {
+              levelOne = Father.Father.Father.name;
+              levelTwo = Father.Father.name;
+              levelThree = Father.name;
+              levelFour = name;
+              fullName += Father.Father.Father.name + " > ";
+            } else {
+              levelOne = Father.Father.name;
+              levelTwo = Father.name;
+              levelThree = name;
+            }
+            fullName += Father.Father.name + " > ";
+          } else {
+            levelOne = Father.name;
+            levelTwo = name;
+          }
+          fullName += Father.name + " > ";
+        } else {
+          levelOne = name;
+        }
+        fullName += name;
+
+        return {
+          show: true,
+          id,
+          fields: [
+            code,
+            levelOne,
+            levelTwo,
+            levelThree,
+            levelFour,
+            profit_and_loss,
+            allow_use,
+            visibility,
+          ],
+          page: Math.ceil((index + 1) / limit),
+        };
+      }
+    );
+    setGridData(gridDataValues);
+    setLoadingData(false);
+  }
 
   useEffect(() => {
-    async function loader() {
-      setLoadingData(true);
-      const data = await getData("chartofaccounts", {
-        limit,
-        page,
-        orderBy,
-        setPages,
-        setGridData,
-        search,
-        defaultGridHeader,
-        defaultOrderBy,
-      });
-      if (!data) {
-        return;
-      }
-      const gridDataValues = data.map(
-        (
-          { id, code, name, Father, visibility, allow_use, profit_and_loss },
-          index
-        ) => {
-          let fullName = "";
-          let levelOne = "";
-          let levelTwo = "";
-          let levelThree = "";
-          let levelFour = "";
-          if (Father) {
-            if (Father.Father) {
-              if (Father.Father.Father) {
-                levelOne = Father.Father.Father.name;
-                levelTwo = Father.Father.name;
-                levelThree = Father.name;
-                levelFour = name;
-                fullName += Father.Father.Father.name + " > ";
-              } else {
-                levelOne = Father.Father.name;
-                levelTwo = Father.name;
-                levelThree = name;
-              }
-              fullName += Father.Father.name + " > ";
-            } else {
-              levelOne = Father.name;
-              levelTwo = name;
-            }
-            fullName += Father.name + " > ";
-          } else {
-            levelOne = name;
-          }
-          fullName += name;
-
-          return {
-            show: true,
-            id,
-            fields: [
-              code,
-              levelOne,
-              levelTwo,
-              levelThree,
-              levelFour,
-              profit_and_loss,
-              allow_use,
-              visibility,
-            ],
-            page: Math.ceil((index + 1) / limit),
-          };
-        }
-      );
-      setGridData(gridDataValues);
-      setLoadingData(false);
-    }
     loader();
-  }, [opened, filial, orderBy, search, limit]);
+  }, [opened, filial, orderBy, search, limit, page]);
 
   return (
     <PageContainer

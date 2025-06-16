@@ -15,6 +15,9 @@ export async function getData(
       column: null,
       asc: true,
     },
+    setTotalRows = () => null,
+    setGridDetails = () => null,
+    pathname = null,
   }
 ) {
   try {
@@ -34,25 +37,24 @@ export async function getData(
           : defaultOrderBy.asc
           ? "ASC"
           : "DESC"
-      }&search=${search}&type=${type}`
+      }&search=${search ? search.value : ""}&type=${type}`
     );
-    if (response.data.rows) {
-      let pages = Math.ceil(response.data.totalRows / limit);
-      if (response.data.totalRows === 0) {
-        setPages(1);
-      } else {
-        setPages(pages);
-      }
-      return response.data.rows;
+    let pages = Math.ceil(response.data.totalRows / limit);
+    if (response.data.totalRows === 0) {
+      setPages(1);
     } else {
-      let pages = Math.ceil(response.data.length / limit);
-      if (response.data.length === 0) {
-        setPages(1);
-      } else {
-        setPages(pages);
-      }
-      return response.data;
+      setPages(pages);
     }
+    setGridDetails({
+      totalRows: response.data.totalRows,
+      pages: pages || 1,
+    });
+    console.log(route, {
+      totalRows: response.data.totalRows,
+      pages: pages || 1,
+    });
+    setTotalRows(response.data.totalRows);
+    return response.data.rows;
   } catch (err) {
     console.log(err);
     return null;

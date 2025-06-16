@@ -76,6 +76,7 @@ export default function FinancialSettlement() {
     search,
     setActiveFilters,
     setLoadingData,
+    setGridDetails,
   } = useContext(FullGridContext);
 
   useEffect(() => {
@@ -94,6 +95,7 @@ export default function FinancialSettlement() {
         search,
         defaultGridHeader,
         defaultOrderBy,
+        setGridDetails,
       });
       if (!data) {
         return;
@@ -142,7 +144,7 @@ export default function FinancialSettlement() {
 
   useEffect(() => {
     loader();
-  }, [opened, filial, orderBy, search, limit]);
+  }, [opened, filial, orderBy, search, limit, page]);
 
   useEffect(() => {
     let issuer = null;

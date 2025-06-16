@@ -8,6 +8,7 @@ export const FullGridContext = createContext();
 
 export default function Financial() {
   const { pages } = useContext(PageContext);
+  const { pathname } = useLocation();
   const navigate = useNavigate();
   const [activeFilters, setActiveFilters] = useState([]);
   const [opened, setOpened] = useState(false);
@@ -20,8 +21,12 @@ export default function Financial() {
   const [pagesNo, setPages] = useState(1);
   const [limit, setLimit] = useState(50);
   const [search, setSearch] = useState("");
+  const [totalRows, setTotalRows] = useState(0);
+  const [gridDetails, setGridDetails] = useState({
+    totalRows: 0,
+    pages: 1,
+  });
   let delayDebounceFn = null;
-  const { pathname } = useLocation();
   const paths = pathname.split("/");
   const routeName = capitalizeFirstLetter(paths[1]);
   const finalRouteName = capitalizeFirstLetter(
@@ -33,7 +38,7 @@ export default function Financial() {
       clearTimeout(delayDebounceFn);
       delayDebounceFn = setTimeout(() => {
         setActiveFilters([]);
-        setSearch(value);
+        setSearch({ pathname, value });
       }, 700);
 
       return;
@@ -98,6 +103,10 @@ export default function Financial() {
           handleOpened,
           loadingData,
           setLoadingData,
+          totalRows,
+          setTotalRows,
+          gridDetails,
+          setGridDetails,
         }}
       >
         <Outlet />

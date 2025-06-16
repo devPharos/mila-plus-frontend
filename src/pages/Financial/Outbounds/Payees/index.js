@@ -6,10 +6,11 @@ import PageContainer from "~/components/PageContainer";
 import { FullGridContext } from "../..";
 import { format, parseISO } from "date-fns";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { PageContext } from "~/App";
+import { AlertContext, PageContext } from "~/App";
 import Settlement from "./Settlement";
 import { receivableStatusesOptions } from "~/functions/selectPopoverOptions";
 import api, { baseURL } from "~/services/api";
+import { toast } from "react-toastify";
 
 export function FinancialOutbounds() {
   const { pathname } = useLocation();
@@ -143,6 +144,7 @@ export default function FinancialPayees() {
     },
   ];
   const [excelData, setExcelData] = useState(defaultExcelData);
+  const { alertBox } = useContext(AlertContext);
 
   const {
     opened,
@@ -154,6 +156,7 @@ export default function FinancialPayees() {
     search,
     setActiveFilters,
     setLoadingData,
+    setGridDetails,
   } = useContext(FullGridContext);
 
   function handleSettlement() {
@@ -179,6 +182,7 @@ export default function FinancialPayees() {
       search,
       defaultGridHeader,
       defaultOrderBy,
+      setGridDetails,
     });
     if (!data) {
       return;
@@ -230,7 +234,6 @@ export default function FinancialPayees() {
         return ret;
       }
     );
-    console.log(gridDataValues);
     setGridData(gridDataValues);
     setLoadingData(false);
   }
@@ -241,6 +244,49 @@ export default function FinancialPayees() {
     }
     loader();
   }, [opened, filial, orderBy, search, limit]);
+
+  async function handleDelete() {
+    if (selected.length === 0) {
+      return;
+    }
+    alertBox({
+      title: "Attention!",
+      descriptionHTML:
+        "Are you sure you want to delete the selected payee? This action cannot be undone.",
+      buttons: [
+        {
+          title: "No",
+          class: "cancel",
+        },
+        {
+          title: "Yes",
+          onPress: async () => {
+            const promises = [];
+            let hasChanged = false;
+            selected.map((payee) => {
+              promises.push(
+                api
+                  .delete(`/payee/${payee.id}`)
+                  .then((response) => {
+                    toast(response.data.message, { autoClose: 1000 });
+                  })
+                  .catch((err) => {
+                    toast(err.response.data.error, {
+                      type: "error",
+                      autoClose: 3000,
+                    });
+                  })
+              );
+            });
+            Promise.all(promises).then(() => {
+              setSelected([]);
+              loader();
+            });
+          },
+        },
+      ],
+    });
+  }
 
   async function handleExcel(generate = true) {
     if (excelOpen && generate) {
@@ -282,6 +328,15 @@ export default function FinancialPayees() {
             Page: Settlement,
             opened: settlementOpen,
             setOpened: setSettlementOpen,
+            selected,
+          },
+          {
+            title: "Delete",
+            fun: handleDelete,
+            icon: "X",
+            Page: null,
+            opened: false,
+            setOpened: () => null,
             selected,
           },
         ],

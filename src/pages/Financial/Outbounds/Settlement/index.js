@@ -76,6 +76,7 @@ export default function PayeesSettlement() {
     search,
     setActiveFilters,
     setLoadingData,
+    setGridDetails,
   } = useContext(FullGridContext);
 
   useEffect(() => {
@@ -94,6 +95,7 @@ export default function PayeesSettlement() {
         search,
         defaultGridHeader,
         defaultOrderBy,
+        setGridDetails,
       });
       if (!data) {
         return;
@@ -144,7 +146,7 @@ export default function PayeesSettlement() {
 
   useEffect(() => {
     loader();
-  }, [opened, filial, orderBy, search, limit]);
+  }, [opened, filial, orderBy, search, limit, page]);
 
   useEffect(() => {
     let issuer = null;

@@ -1,5 +1,4 @@
 import {
-  AlertCircle,
   AlertTriangle,
   ArrowUpDown,
   CheckSquare,
@@ -26,12 +25,10 @@ export default function Grid({
     return null;
   }
   const {
-    activeFilters,
     gridHeader,
     gridData,
     page,
     orderBy,
-    limit,
     setOrderBy,
     opened,
     handleOpened,
@@ -93,9 +90,6 @@ export default function Grid({
             gridData
               .filter((row) => row.show)
               .map((row, index) => {
-                if (page * limit < index + 1 || (page - 1) * limit > index) {
-                  return null;
-                }
                 return (
                   row.show && (
                     <tr

@@ -27,41 +27,43 @@ export default function Languages() {
     search,
     setActiveFilters,
     setLoadingData,
+    setGridDetails,
   } = useContext(FullGridContext);
 
   useEffect(() => {
     setActiveFilters([]);
   }, []);
+  async function loader() {
+    setLoadingData(true);
+    const data = await getData("languages", {
+      limit,
+      page,
+      orderBy,
+      setPages,
+      setGridData,
+      search,
+      defaultGridHeader,
+      defaultOrderBy,
+      setGridDetails,
+    });
+    if (!data) {
+      return;
+    }
+    const gridDataValues = data.map(({ id, name }, index) => {
+      return {
+        show: true,
+        id,
+        fields: [name],
+        page: Math.ceil((index + 1) / limit),
+      };
+    });
+    setGridData(gridDataValues);
+    setLoadingData(false);
+  }
 
   useEffect(() => {
-    async function loader() {
-      setLoadingData(true);
-      const data = await getData("languages", {
-        limit,
-        page,
-        orderBy,
-        setPages,
-        setGridData,
-        search,
-        defaultGridHeader,
-        defaultOrderBy,
-      });
-      if (!data) {
-        return;
-      }
-      const gridDataValues = data.map(({ id, name }, index) => {
-        return {
-          show: true,
-          id,
-          fields: [name],
-          page: Math.ceil((index + 1) / limit),
-        };
-      });
-      setGridData(gridDataValues);
-      setLoadingData(false);
-    }
     loader();
-  }, [opened, filial, orderBy, search, limit]);
+  }, [opened, filial, orderBy, search, limit, page]);
 
   return (
     <PageContainer

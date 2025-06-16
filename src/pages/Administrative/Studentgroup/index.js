@@ -96,6 +96,7 @@ export default function Studentgroups() {
     search,
     setLoadingData,
     handleOpened,
+    setGridDetails,
   } = useContext(FullGridContext);
 
   async function handleStart() {
@@ -148,6 +149,7 @@ export default function Studentgroups() {
       search,
       defaultGridHeader,
       defaultOrderBy,
+      setGridDetails,
     });
 
     if (!data) {

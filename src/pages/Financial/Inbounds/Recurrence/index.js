@@ -50,6 +50,7 @@ export default function FinancialRecurrence() {
     search,
     setActiveFilters,
     setLoadingData,
+    setGridDetails,
   } = useContext(FullGridContext);
 
   useEffect(() => {
@@ -67,6 +68,7 @@ export default function FinancialRecurrence() {
       search,
       defaultGridHeader,
       defaultOrderBy,
+      setGridDetails,
     });
     if (!data) {
       return;

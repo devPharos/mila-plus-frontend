@@ -9,6 +9,7 @@ import Activate from "./Activate";
 import Transfer from "./Transfer";
 import MedicalCertificateVacation from "./MedicalCertificateVacation";
 import api, { baseURL } from "~/services/api";
+import AttendanceAdjustments from "./AttendanceAdjustments";
 
 export default function AdministrativeStudent() {
   const filial = useSelector((state) => state.auth.filial);
@@ -66,7 +67,7 @@ export default function AdministrativeStudent() {
       value: "medical_excuse",
       label: "Medical Excuse",
     },
-  ]
+  ];
   const excelVacationFilterData = [
     {
       title: "Start Date From",
@@ -109,6 +110,8 @@ export default function AdministrativeStudent() {
   ];
   const [selected, setSelected] = useState([]);
   const [inactivateOpen, setInactivateOpen] = useState(false);
+  const [attendanceAdjustmentsOpen, setAttendanceAdjustmentsOpen] =
+    useState(false);
   const [activateOpen, setActivateOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
   const [excelOpen, setExcelOpen] = useState(false);
@@ -120,7 +123,7 @@ export default function AdministrativeStudent() {
       type: "select",
       options: relatoriosOptions,
       value: "vacation",
-    }
+    },
   ]);
   const [
     medicalAndCertificateVacationOpen,
@@ -137,11 +140,22 @@ export default function AdministrativeStudent() {
     search,
     setLoadingData,
     handleOpened,
+    setGridDetails,
   } = useContext(FullGridContext);
 
   const handleInactivate = () => {
     const newVarOpened = !inactivateOpen;
     setInactivateOpen(newVarOpened);
+    if (!newVarOpened) {
+      setSelected([]);
+      loader();
+    }
+    handleOpened(null);
+  };
+
+  const handleAttendanceAdjustments = () => {
+    const newVarOpened = !attendanceAdjustmentsOpen;
+    setAttendanceAdjustmentsOpen(newVarOpened);
     if (!newVarOpened) {
       setSelected([]);
       loader();
@@ -190,6 +204,7 @@ export default function AdministrativeStudent() {
       search,
       defaultGridHeader,
       defaultOrderBy,
+      setGridDetails,
     });
 
     if (!data) {
@@ -244,38 +259,46 @@ export default function AdministrativeStudent() {
   useEffect(() => {
     setExcelOpen(false);
 
-    const newValue = excelData[0].value === 'vacation' ? JSON.parse(JSON.stringify([
-      {
-        ...excelData[0]
-      },
-      ...excelVacationFilterData
-    ])): JSON.parse(JSON.stringify([
-      {
-        ...excelData[0]
-      },
-      ...excelMedicalExcuseFilterData
-    ]));
+    const newValue =
+      excelData[0].value === "vacation"
+        ? JSON.parse(
+            JSON.stringify([
+              {
+                ...excelData[0],
+              },
+              ...excelVacationFilterData,
+            ])
+          )
+        : JSON.parse(
+            JSON.stringify([
+              {
+                ...excelData[0],
+              },
+              ...excelMedicalExcuseFilterData,
+            ])
+          );
 
-    setExcelData(newValue.map((res, i) => {
-      return {
-        ...res,
-        value: i === 0 ? res.value : null
-      }
-    }))
+    setExcelData(
+      newValue.map((res, i) => {
+        return {
+          ...res,
+          value: i === 0 ? res.value : null,
+        };
+      })
+    );
 
-    if(loadScreen) {
-      setTimeout(() => setExcelOpen(true), 100)
+    if (loadScreen) {
+      setTimeout(() => setExcelOpen(true), 100);
     }
 
-    if(!loadScreen) {
-      setLoadScreen(true)
+    if (!loadScreen) {
+      setLoadScreen(true);
     }
-
-  }, [excelData[0].value])
+  }, [excelData[0].value]);
 
   useEffect(() => {
     loader();
-  }, [opened, filial, orderBy, search, limit]);
+  }, [opened, filial, orderBy, search, limit, page]);
 
   const selectionFunctions = [];
 
@@ -317,6 +340,15 @@ export default function AdministrativeStudent() {
         selected,
       });
       selectionFunctions.push({
+        title: "Attendance Adjustments",
+        fun: handleAttendanceAdjustments,
+        icon: "Highlighter",
+        Page: AttendanceAdjustments,
+        opened: attendanceAdjustmentsOpen,
+        setOpened: setAttendanceAdjustmentsOpen,
+        selected,
+      });
+      selectionFunctions.push({
         title: "Transfer",
         fun: handleTransfer,
         icon: "Replace",
@@ -328,32 +360,39 @@ export default function AdministrativeStudent() {
     }
   }
 
-  async function handleExcel(generate=true) {
+  async function handleExcel(generate = true) {
     if (excelOpen && generate) {
       // Construa o payload com base nos estados dos seus inputs
-      const payload = excelData[0].value === 'vacation' ? {
-        start_date_from: excelData[1].value, // formato 'YYYY-MM-DD'
-        start_date_to: excelData[2].value,     // formato 'YYYY-MM-DD'
-        end_date_from: excelData[3].value,   // formato 'YYYY-MM-DD'
-        end_date_to: excelData[4].value,       // formato 'YYYY-MM-DD'
-      } : {
-        date_from: excelData[1].value,
-        date_to: excelData[2].value,
-      };
+      const payload =
+        excelData[0].value === "vacation"
+          ? {
+              start_date_from: excelData[1].value, // formato 'YYYY-MM-DD'
+              start_date_to: excelData[2].value, // formato 'YYYY-MM-DD'
+              end_date_from: excelData[3].value, // formato 'YYYY-MM-DD'
+              end_date_to: excelData[4].value, // formato 'YYYY-MM-DD'
+            }
+          : {
+              date_from: excelData[1].value,
+              date_to: excelData[2].value,
+            };
 
       try {
-        const { data } = await api.post(`/${excelData.filter(res => res.title === 'Report')[0].value}/excel`, payload);
+        const { data } = await api.post(
+          `/${
+            excelData.filter((res) => res.title === "Report")[0].value
+          }/excel`,
+          payload
+        );
 
         // A baseURL deve apontar para o seu servidor backend
         // Ex: 'http://localhost:3333'
         saveAs(`${baseURL}/get-file/${data.name}`, `${data.name}.xlsx`);
-
       } catch (err) {
         // É uma boa prática mostrar o erro para o usuário
         if (err.response && err.response.data && err.response.data.error) {
           alert(`Erro: ${err.response.data.error}`); // ou use um componente de toast/notificação
         } else {
-          alert('Ocorreu um erro ao gerar o relatório.');
+          alert("Ocorreu um erro ao gerar o relatório.");
         }
         console.error(err);
       }

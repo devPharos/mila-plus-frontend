@@ -51,6 +51,7 @@ export default function PayeesRecurrence() {
     search,
     setActiveFilters,
     setLoadingData,
+    setGridDetails,
   } = useContext(FullGridContext);
 
   useEffect(() => {
@@ -68,6 +69,7 @@ export default function PayeesRecurrence() {
       search,
       defaultGridHeader,
       defaultOrderBy,
+      setGridDetails,
     });
     if (!data) {
       return;

@@ -57,57 +57,59 @@ export default function FinancialIssuers() {
     search,
     setActiveFilters,
     setLoadingData,
+    setGridDetails,
   } = useContext(FullGridContext);
 
   useEffect(() => {
     setActiveFilters([]);
   }, []);
+  async function loader() {
+    setLoadingData(true);
+    const data = await getData("issuers", {
+      limit,
+      page,
+      orderBy,
+      setPages,
+      setGridData,
+      search,
+      defaultGridHeader,
+      defaultOrderBy,
+      setGridDetails,
+    });
+    if (!data) {
+      return;
+    }
+    const gridDataValues = data.map(
+      (
+        {
+          id,
+          name,
+          address,
+          city,
+          state,
+          zip,
+          country,
+          email,
+          phone_number,
+          bank_name,
+        },
+        index
+      ) => {
+        return {
+          show: true,
+          id,
+          fields: [name, city, state, email, phone_number, bank_name],
+          page: Math.ceil((index + 1) / limit),
+        };
+      }
+    );
+    setGridData(gridDataValues);
+    setLoadingData(false);
+  }
 
   useEffect(() => {
-    async function loader() {
-      setLoadingData(true);
-      const data = await getData("issuers", {
-        limit,
-        page,
-        orderBy,
-        setPages,
-        setGridData,
-        search,
-        defaultGridHeader,
-        defaultOrderBy,
-      });
-      if (!data) {
-        return;
-      }
-      const gridDataValues = data.map(
-        (
-          {
-            id,
-            name,
-            address,
-            city,
-            state,
-            zip,
-            country,
-            email,
-            phone_number,
-            bank_name,
-          },
-          index
-        ) => {
-          return {
-            show: true,
-            id,
-            fields: [name, city, state, email, phone_number, bank_name],
-            page: Math.ceil((index + 1) / limit),
-          };
-        }
-      );
-      setGridData(gridDataValues);
-      setLoadingData(false);
-    }
     loader();
-  }, [opened, filial, orderBy, search, limit]);
+  }, [opened, filial, orderBy, search, limit, page]);
 
   return (
     <PageContainer

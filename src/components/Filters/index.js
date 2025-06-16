@@ -1,15 +1,6 @@
-import {
-  Eraser,
-  EyeOff,
-  PlusCircle,
-  Search,
-  SlidersHorizontal,
-  Table2,
-  X,
-} from "lucide-react";
+import { Eraser, Search, SlidersHorizontal, Table2, X } from "lucide-react";
 import React, { useContext, useState } from "react";
 import Popover from "../Popover";
-import PopoverAddFilter from "../Popover/PopoverAddFilter";
 import Icon from "../Icon";
 
 export default function Filters({
@@ -34,6 +25,7 @@ export default function Filters({
     setLimit,
     handleFilters,
     search,
+    gridDetails,
   } = useContext(Context);
   const [activePopover, setActivePopover] = useState("");
   const results = gridData.filter((data) => data.show === true).length;
@@ -149,10 +141,51 @@ export default function Filters({
         !selection) &&
         results > 0 && (
           <p className="text-xs pl-2 text-gray-500">
-            Showing <span className="font-bold text-sky-700">{results}</span>{" "}
-            line(s)
+            Showing{" "}
+            <span className="font-bold text-sky-700">
+              {limit * (page - 1) + 1} to{" "}
+              {limit * page < gridDetails.totalRows
+                ? limit * page
+                : gridDetails.totalRows}
+            </span>{" "}
+            of {gridDetails.totalRows} rows
           </p>
         )}
+
+      {pages > 1 && (
+        <div className="flex flex-row justify-end items-center">
+          <p className="text-xs pl-2 text-gray-500">
+            Page{" "}
+            <select
+              className="bg-secondary rounded h-8 px-2 gap-2 m-1"
+              onChange={(el) => setPage(el.target.value)}
+            >
+              {[
+                ...Array.from(
+                  {
+                    length: Math.ceil(pages),
+                  },
+                  (_, i) => i + 1
+                ).keys(),
+              ].map((retPage, index) => {
+                return (
+                  <option
+                    key={index}
+                    selected={page === retPage + 1}
+                    className={`${
+                      page === retPage + 1 ? "bg-sky-700 text-white" : ""
+                    } hover:bg-sky-700 hover:text-white px-2 py-1 rounded text-left whitespace-nowrap`}
+                  >
+                    {retPage + 1}
+                  </option>
+                );
+              })}
+            </select>{" "}
+            of{" "}
+            <span className="font-bold text-sky-700">{Math.ceil(pages)}</span>
+          </p>
+        </div>
+      )}
       {((selection && selection.functions && selection.selected.length === 0) ||
         !selection) &&
         Math.ceil(gridData.filter((row) => row.show).length / limit) > 1 &&
@@ -225,7 +258,7 @@ export default function Filters({
             onChange={(el) =>
               handleFilters({ title: "search", value: el.target.value })
             }
-            defaultValue={search}
+            defaultValue={search?.value}
             className="bg-transparent min-w-0 text-xs text-gray-500 h-full focus:outline-none flex-1"
             autoFocus={true}
             placeholder="Search..."
@@ -376,9 +409,10 @@ export default function Filters({
                                 );
                               }}
                             >
-                              {!(Excel.excelData[0].value === 'vacation' || Excel.excelData[0].value === 'medical_excuse') && (
-                                <option value="All">All</option>
-                              )}
+                              {!(
+                                Excel.excelData[0].value === "vacation" ||
+                                Excel.excelData[0].value === "medical_excuse"
+                              ) && <option value="All">All</option>}
                               {data.options.map((option, index) => {
                                 return (
                                   <option key={index} value={option.value}>

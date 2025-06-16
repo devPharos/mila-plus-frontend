@@ -3,6 +3,7 @@ import { useField } from "@unform/core";
 import { Asterisk } from "lucide-react";
 
 const Input = ({
+  defaultRef = null,
   name,
   title,
   grow,
@@ -25,7 +26,7 @@ const Input = ({
   className = null,
   ...rest
 }) => {
-  const inputRef = useRef();
+  const inputRef = defaultRef ? defaultRef : useRef();
   const { fieldName, registerField, error } = useField(name);
   const { disabled, required, defaultValue } = { ...rest };
 

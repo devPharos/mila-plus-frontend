@@ -253,7 +253,7 @@ export default function AttendanceAdjustments({
                                                 attendance.studentgroupclasses
                                                   .date
                                               ),
-                                              "MM/dd/yyyy"
+                                              "MM/dd"
                                             )}
                                           </td>
                                           <td className="px-2 h-8 text-left">

@@ -195,7 +195,7 @@ export default function FinancialReceivables() {
       orderBy,
       setPages,
       setGridData,
-      search: search || "Pending",
+      search,
       defaultGridHeader,
       defaultOrderBy,
       setTotalRows,

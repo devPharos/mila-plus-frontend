@@ -55,6 +55,7 @@ export default function FinancialIssuers() {
     setPages,
     limit,
     search,
+    setSearch,
     setActiveFilters,
     setLoadingData,
     setGridDetails,

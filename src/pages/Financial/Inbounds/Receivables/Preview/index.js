@@ -65,15 +65,11 @@ export default function PagePreview({
     filial: {
       name: "",
     },
-    filialOptions: [],
-    issuerOptions: [],
-    paymentMethodOptions: [],
-    // paymentCriteriaOptions: [],
-    chartOfAccountOptions: [],
     issuer_id: null,
     issuer: {
       name: "",
     },
+    textpaymenttransactions: [],
     status: "Pending",
     entry_date: null,
     due_date: null,
@@ -247,97 +243,53 @@ export default function PagePreview({
     }
   }
 
-  useEffect(() => {
-    async function getPageData(id) {
-      try {
-        let data = pageData;
+  async function getPageData(id) {
+    try {
+      let data = pageData;
 
-        if (id !== "new") {
-          const { data: receivableData } = await api.get(`/receivables/${id}`);
-          data = receivableData;
-        }
-
-        const filialData = await api.get(`/filials`);
-        const issuerData = await api.get(`/issuers`);
-        const paymentMethodData = await api.get(`/paymentmethods`);
-        const chartOfAccountData = await api.get(
-          `/chartofaccounts?issuer=${data.issuer_id}`
-        );
-
-        const filialOptions = filialData.data
-          .filter((f) => f.id !== id)
-          .map((f) => {
-            return { value: f.id, label: f.name };
-          });
-
-        const issuerOptions = issuerData.data.rows
-          .filter((f) => f.id !== id)
-          .map((f) => {
-            return { value: f.id, label: f.name };
-          });
-
-        const paymentMethodOptions = paymentMethodData.data.rows
-          .filter((f) => f.type_of_payment !== "Outbounds")
-          .map((f) => {
-            return { value: f.id, label: f.description.slice(0, 20) };
-          });
-
-        const chartOfAccountOptions = chartOfAccountData.data.rows
-          .filter((f) => f.id !== id)
-          .map((f) => {
-            return {
-              value: f.id,
-              label: `${
-                f.Father?.Father?.Father?.name
-                  ? `${f.Father?.Father?.Father?.name} > `
-                  : ""
-              }${f.Father?.Father?.name ? `${f.Father?.Father?.name} > ` : ""}${
-                f.Father?.name ? `${f.Father?.name} > ` : ""
-              }${f.name}`,
-            };
-          });
-
-        setPageData({
-          ...data,
-          filialOptions,
-          issuerOptions,
-          paymentMethodOptions,
-          chartOfAccountOptions,
-          loaded: true,
-          searchfields: {
-            type: data.type,
-            type_detail: data.type_detail,
-          },
-        });
-
-        const {
-          created_by,
-          created_at,
-          updated_by,
-          updated_at,
-          canceled_by,
-          canceled_at,
-        } = data;
-
-        const registries = await getRegistries({
-          created_by,
-          created_at,
-          updated_by,
-          updated_at,
-          canceled_by,
-          canceled_at,
-        });
-
-        setRegistry(registries);
-      } catch (err) {
-        console.log(err);
-        // toast(err || err.response.data.error, {
-        //   type: "error",
-        //   autoClose: 3000,
-        // });
+      if (id !== "new") {
+        const { data: receivableData } = await api.get(`/receivables/${id}`);
+        data = receivableData;
       }
-    }
 
+      setPageData({
+        ...data,
+        loaded: true,
+        searchfields: {
+          type: data.type,
+          type_detail: data.type_detail,
+        },
+      });
+
+      const {
+        created_by,
+        created_at,
+        updated_by,
+        updated_at,
+        canceled_by,
+        canceled_at,
+      } = data;
+
+      const registries = await getRegistries({
+        created_by,
+        created_at,
+        updated_by,
+        updated_at,
+        canceled_by,
+        canceled_at,
+      });
+
+      setRegistry(registries);
+    } catch (err) {
+      console.log(err);
+      // toast(err || err.response.data.error, {
+      //   type: "error",
+      //   autoClose: 3000,
+      // });
+    }
+  }
+
+  useEffect(() => {
     getPageData(id);
   }, [id]);
 
@@ -354,10 +306,12 @@ export default function PagePreview({
         {
           title: "Yes",
           onPress: async () => {
+            setPageData({ ...pageData, loaded: false });
             api
               .post(`/receivables/send-invoice/${id}`)
               .then(() => {
                 toast("Invoice sent!", { autoClose: 1000 });
+                getPageData(id);
               })
               .catch((err) => {
                 console.log(err);
@@ -520,75 +474,6 @@ export default function PagePreview({
                               />
                             </InputLine>
 
-                            {pageData.settlements &&
-                              pageData.settlements.length > 0 && (
-                                <>
-                                  {pageData.settlements.map(
-                                    (settlement, index) => {
-                                      return (
-                                        <Scope
-                                          key={index}
-                                          path={`settlements[${index}]`}
-                                        >
-                                          <InputLine
-                                            title={
-                                              index === 0
-                                                ? "Settlements (" +
-                                                  pageData.settlements.length +
-                                                  ")"
-                                                : ""
-                                            }
-                                          >
-                                            <Input
-                                              type="hidden"
-                                              name="id"
-                                              defaultValue={settlement.id}
-                                              InputContext={InputContext}
-                                            />
-                                            <Input
-                                              type="text"
-                                              name="amount"
-                                              shrink
-                                              readOnly
-                                              title="Amount"
-                                              defaultValue={settlement.amount}
-                                              InputContext={InputContext}
-                                            />
-                                            <SelectPopover
-                                              name="paymentmethod_id"
-                                              grow
-                                              title="Payment Method"
-                                              isSearchable
-                                              options={
-                                                pageData.paymentMethodOptions
-                                              }
-                                              disabled
-                                              defaultValue={pageData.paymentMethodOptions.find(
-                                                (paymentMethod) =>
-                                                  paymentMethod.value ===
-                                                  settlement.paymentmethod_id
-                                              )}
-                                              InputContext={InputContext}
-                                            />
-                                            <DatePicker
-                                              name="created_at"
-                                              grow
-                                              disabled
-                                              title="Settled At"
-                                              defaultValue={format(
-                                                parseISO(settlement.created_at),
-                                                "yyyy-MM-dd"
-                                              )}
-                                              placeholderText="MM/DD/YYYY"
-                                              InputContext={InputContext}
-                                            />
-                                          </InputLine>
-                                        </Scope>
-                                      );
-                                    }
-                                  )}
-                                </>
-                              )}
                             <InputLine title="Amount">
                               <Input
                                 type="text"
@@ -622,7 +507,6 @@ export default function PagePreview({
                                 defaultValue={pageData.discount.toFixed(2)}
                                 InputContext={InputContext}
                               />
-                              {console.log(pageData)}
                               <Input
                                 type="text"
                                 name="fee"
@@ -954,28 +838,6 @@ export default function PagePreview({
                               ]}
                             />
                             <InputLine>
-                              {/* <SelectPopover
-                                name="paymentmethod_id"
-                                title="Payment Method"
-                                isSearchable
-                                grow
-                                required
-                                readOnly={
-                                  pageData.is_recurrence ||
-                                  pageData.balance !== pageData.total
-                                }
-                                defaultValue={
-                                  pageData.paymentmethod_id
-                                    ? pageData.paymentMethodOptions.find(
-                                        (paymentMethod) =>
-                                          paymentMethod.value ===
-                                          pageData.paymentmethod_id
-                                      )
-                                    : null
-                                }
-                                options={pageData.paymentMethodOptions}
-                                InputContext={InputContext}
-                              /> */}
                               <SelectPopover
                                 name="is_recurrence"
                                 title="Is Recurrence?"
@@ -989,6 +851,23 @@ export default function PagePreview({
                                 InputContext={InputContext}
                               />
                             </InputLine>
+
+                            {pageData.textpaymenttransactions.length > 0 && (
+                              <InputLine>
+                                <Input
+                                  title="Payment Link"
+                                  type="text"
+                                  name="payment_link"
+                                  readOnly
+                                  grow
+                                  defaultValue={
+                                    pageData.textpaymenttransactions[0]
+                                      .payment_page_url
+                                  }
+                                  InputContext={InputContext}
+                                />
+                              </InputLine>
+                            )}
 
                             <InputLine title="Details">
                               <Textarea
@@ -1067,30 +946,6 @@ export default function PagePreview({
                                 },
                               ]}
                             />
-                            {/* <InputLine>
-                              <SelectPopover
-                                name="chartofaccount_id"
-                                title="Chart of Account"
-                                isSearchable
-                                required
-                                readOnly={
-                                  pageData.is_recurrence ||
-                                  pageData.balance !== pageData.total
-                                }
-                                grow
-                                defaultValue={
-                                  pageData.chartofaccount_id
-                                    ? pageData.chartOfAccountOptions.find(
-                                        (chartOfAccount) =>
-                                          chartOfAccount.value ===
-                                          pageData.chartofaccount_id
-                                      )
-                                    : null
-                                }
-                                options={pageData.chartOfAccountOptions}
-                                InputContext={InputContext}
-                              />
-                            </InputLine> */}
                           </InputLineGroup>
                         </>
                       ) : (
@@ -1354,21 +1209,6 @@ export default function PagePreview({
                                         )}
                                         InputContext={InputContext}
                                       />
-                                      <SelectPopover
-                                        name="paymentmethod_id"
-                                        title="Payment Method"
-                                        disabled
-                                        grow
-                                        defaultValue={pageData.paymentMethodOptions.find(
-                                          (paymentMethod) =>
-                                            paymentMethod.value ===
-                                            settlement.paymentmethod_id
-                                        )}
-                                        options={pageData.paymentMethodOptions}
-                                        InputContext={InputContext}
-                                      />
-                                    </InputLine>
-                                    <InputLine>
                                       <Textarea
                                         name="memo"
                                         InputContext={InputContext}
@@ -1379,6 +1219,32 @@ export default function PagePreview({
                                         title="Memo"
                                       />
                                     </InputLine>
+
+                                    <FindGeneric
+                                      route="paymentmethods"
+                                      title="Payment Method"
+                                      scope="paymentMethod"
+                                      required
+                                      readOnly
+                                      InputContext={InputContext}
+                                      defaultValue={{
+                                        id: settlement.paymentmethod_id,
+                                        description:
+                                          settlement.paymentMethod.description,
+                                        platform:
+                                          settlement.paymentMethod.platform,
+                                      }}
+                                      fields={[
+                                        {
+                                          title: "Description",
+                                          name: "description",
+                                        },
+                                        {
+                                          title: "Platform",
+                                          name: "platform",
+                                        },
+                                      ]}
+                                    />
                                   </Scope>
                                 );
                               })}

@@ -7,7 +7,7 @@ import { FullGridContext } from "..";
 
 export default function Documents() {
   const filial = useSelector((state) => state.auth.filial);
-  const defaultOrderBy = { column: "title", asc: true };
+  const defaultOrderBy = { column: "origin", asc: true };
   const defaultGridHeader = [
     {
       title: "Origin",
@@ -45,45 +45,47 @@ export default function Documents() {
     search,
     setActiveFilters,
     setLoadingData,
+    setGridDetails,
   } = useContext(FullGridContext);
 
   useEffect(() => {
     setActiveFilters([]);
   }, []);
+  async function loader() {
+    setLoadingData(true);
+    const data = await getData("documents", {
+      limit,
+      page,
+      orderBy,
+      setPages,
+      setGridData,
+      search,
+      defaultGridHeader,
+      defaultOrderBy,
+      setGridDetails,
+    });
+    if (!data) {
+      return;
+    }
+    const gridDataValues = data.map(
+      ({ id, origin, type, subtype, title, canceled_at }, index) => {
+        const ret = {
+          show: true,
+          id,
+          fields: [origin, type, subtype, title],
+          canceled: canceled_at,
+          page: Math.ceil((index + 1) / limit),
+        };
+        return ret;
+      }
+    );
+    setGridData(gridDataValues);
+    setLoadingData(false);
+  }
 
   useEffect(() => {
-    async function loader() {
-      setLoadingData(true);
-      const data = await getData("documents", {
-        limit,
-        page,
-        orderBy,
-        setPages,
-        setGridData,
-        search,
-        defaultGridHeader,
-        defaultOrderBy,
-      });
-      if (!data) {
-        return;
-      }
-      const gridDataValues = data.map(
-        ({ id, origin, type, subtype, title, canceled_at }, index) => {
-          const ret = {
-            show: true,
-            id,
-            fields: [origin, type, subtype, title],
-            canceled: canceled_at,
-            page: Math.ceil((index + 1) / limit),
-          };
-          return ret;
-        }
-      );
-      setGridData(gridDataValues);
-      setLoadingData(false);
-    }
     loader();
-  }, [opened, filial, orderBy, search, limit]);
+  }, [opened, filial, orderBy, search, limi, page]);
 
   return (
     <PageContainer

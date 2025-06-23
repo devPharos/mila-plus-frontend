@@ -51,57 +51,59 @@ export default function Workloads() {
     search,
     setActiveFilters,
     setLoadingData,
+    setGridDetails,
   } = useContext(FullGridContext);
 
   useEffect(() => {
     setActiveFilters([]);
   }, []);
+  async function loader() {
+    setLoadingData(true);
+    const data = await getData("workloads", {
+      limit,
+      page,
+      orderBy,
+      setPages,
+      setGridData,
+      search,
+      defaultGridHeader,
+      defaultOrderBy,
+      setGridDetails,
+    });
+    if (!data) {
+      return;
+    }
+    const gridDataValues = data.map(
+      (
+        { id, name, Level, Languagemode, days_per_week, hours_per_day },
+        index
+      ) => {
+        if (!name) {
+          name = `${days_per_week.toString()} day(s) per week, ${hours_per_day.toString()} hour(s) per day.`;
+        }
+        const level_name = Level.Programcategory.name + " - " + Level.name;
+        const languagemode_name = Languagemode.name;
+        return {
+          show: true,
+          id,
+          fields: [
+            level_name,
+            languagemode_name,
+            name,
+            days_per_week.toString(),
+            hours_per_day.toString(),
+          ],
+          page: Math.ceil((index + 1) / limit),
+        };
+      }
+    );
+    setGridData(gridDataValues);
+    setLoadingData(false);
+  }
 
   useEffect(() => {
-    async function loader() {
-      setLoadingData(true);
-      const data = await getData("workloads", {
-        limit,
-        page,
-        orderBy,
-        setPages,
-        setGridData,
-        search,
-        defaultGridHeader,
-        defaultOrderBy,
-      });
-      if (!data) {
-        return;
-      }
-      const gridDataValues = data.map(
-        (
-          { id, name, Level, Languagemode, days_per_week, hours_per_day },
-          index
-        ) => {
-          if (!name) {
-            name = `${days_per_week.toString()} day(s) per week, ${hours_per_day.toString()} hour(s) per day.`;
-          }
-          const level_name = Level.Programcategory.name + " - " + Level.name;
-          const languagemode_name = Languagemode.name;
-          return {
-            show: true,
-            id,
-            fields: [
-              level_name,
-              languagemode_name,
-              name,
-              days_per_week.toString(),
-              hours_per_day.toString(),
-            ],
-            page: Math.ceil((index + 1) / limit),
-          };
-        }
-      );
-      setGridData(gridDataValues);
-      setLoadingData(false);
-    }
     loader();
-  }, [opened, filial, orderBy, search, limit]);
+  }, [opened, filial, orderBy, search, limit, page]);
 
   return (
     <PageContainer

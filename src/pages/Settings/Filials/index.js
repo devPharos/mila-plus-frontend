@@ -69,47 +69,49 @@ export default function Filials() {
     search,
     setActiveFilters,
     setLoadingData,
+    setGridDetails,
   } = useContext(FullGridContext);
 
   useEffect(() => {
     setActiveFilters([]);
   }, []);
+  async function loader() {
+    setLoadingData(true);
+    const data = await getData("filials", {
+      limit,
+      page,
+      orderBy,
+      setPages,
+      setGridData,
+      search,
+      defaultGridHeader,
+      defaultOrderBy,
+      setGridDetails,
+    });
+    if (!data) {
+      return;
+    }
+    const gridDataValues = data.map(
+      (
+        { id, active, alias, name, Filialtype, ein, city, state, country },
+        index
+      ) => {
+        const type = Filialtype.name;
+        return {
+          show: true,
+          id,
+          fields: [active, alias, name, type, ein, city, state, country],
+          page: Math.ceil((index + 1) / limit),
+        };
+      }
+    );
+    setGridData(gridDataValues);
+    setLoadingData(false);
+  }
 
   useEffect(() => {
-    async function loader() {
-      setLoadingData(true);
-      const data = await getData("filials", {
-        limit,
-        page,
-        orderBy,
-        setPages,
-        setGridData,
-        search,
-        defaultGridHeader,
-        defaultOrderBy,
-      });
-      if (!data) {
-        return;
-      }
-      const gridDataValues = data.map(
-        (
-          { id, active, alias, name, Filialtype, ein, city, state, country },
-          index
-        ) => {
-          const type = Filialtype.name;
-          return {
-            show: true,
-            id,
-            fields: [active, alias, name, type, ein, city, state, country],
-            page: Math.ceil((index + 1) / limit),
-          };
-        }
-      );
-      setGridData(gridDataValues);
-      setLoadingData(false);
-    }
     loader();
-  }, [opened, filial, orderBy, search, limit]);
+  }, [opened, filial, orderBy, search, limit, page]);
 
   return (
     <PageContainer

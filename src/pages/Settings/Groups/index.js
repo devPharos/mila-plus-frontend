@@ -81,6 +81,7 @@ export default function Groups() {
     search,
     setActiveFilters,
     setLoadingData,
+    setGridDetails,
   } = useContext(FullGridContext);
 
   useEffect(() => {
@@ -97,6 +98,7 @@ export default function Groups() {
       search,
       defaultGridHeader,
       defaultOrderBy,
+      setGridDetails,
     });
     if (!data) {
       return;
@@ -129,7 +131,7 @@ export default function Groups() {
 
   useEffect(() => {
     loader();
-  }, [opened, filial, orderBy, search, limit]);
+  }, [opened, filial, orderBy, search, limit, page]);
 
   if (selected.length > 0) {
     selectionFunctions.push({

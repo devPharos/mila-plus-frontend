@@ -5,21 +5,17 @@ const Context = createContext();
 export default function FullGridContext({ children }) {
   function handleFilters({ title = "", value = "" }) {
     const [activeFilters, setActiveFilters] = useState([]);
-    const [opened, setOpened] = useState(false);
-    const [orderBy, setOrderBy] = useState(null);
-    const [gridHeader, setGridHeader] = useState([]);
-    const [gridData, setGridData] = useState([]);
-    const [loadingData, setLoadingData] = useState(true);
-    const [successfullyUpdated, setSuccessfullyUpdated] = useState(true);
-    const [page, setPage] = useState(1);
-    const [pagesNo, setPages] = useState(1);
-    const [limit, setLimit] = useState(50);
     const [search, setSearch] = useState("");
+    const [gridDetails, setGridDetails] = useState({
+      totalRows: 0,
+      pages: 1,
+    });
 
     if (title === "search") {
       clearTimeout(delayDebounceFn);
       delayDebounceFn = setTimeout(() => {
         setActiveFilters([]);
+        // setSearch({ route: title, value });
         setSearch(value);
       }, 700);
 

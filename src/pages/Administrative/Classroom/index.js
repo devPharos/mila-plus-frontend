@@ -4,7 +4,6 @@ import { useSelector } from "react-redux";
 import { FullGridContext } from "..";
 import { getData } from "~/functions/gridFunctions";
 import PageContainer from "~/components/PageContainer";
-import { AlertContext } from "~/App";
 
 export default function Classrooms() {
   const filial = useSelector((state) => state.auth.filial);
@@ -35,8 +34,6 @@ export default function Classrooms() {
       filter: false,
     },
   ];
-  const { alertBox } = useContext(AlertContext);
-  const [selected, setSelected] = useState([]);
 
   const {
     opened,
@@ -47,6 +44,7 @@ export default function Classrooms() {
     limit,
     search,
     setLoadingData,
+    setGridDetails,
   } = useContext(FullGridContext);
 
   async function loader() {
@@ -60,6 +58,7 @@ export default function Classrooms() {
       search,
       defaultGridHeader,
       defaultOrderBy,
+      setGridDetails,
     });
 
     if (!data) {
@@ -99,7 +98,7 @@ export default function Classrooms() {
 
   useEffect(() => {
     loader();
-  }, [opened, filial, orderBy, search, limit]);
+  }, [opened, filial, orderBy, search, limit, page]);
 
   return (
     <PageContainer

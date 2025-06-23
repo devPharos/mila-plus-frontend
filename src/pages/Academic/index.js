@@ -21,6 +21,10 @@ export default function Academic() {
   const [pagesNo, setPages] = useState(1);
   const [limit, setLimit] = useState(50);
   const [search, setSearch] = useState("");
+  const [gridDetails, setGridDetails] = useState({
+    totalRows: 0,
+    pages: 1,
+  });
   let delayDebounceFn = null;
   const paths = pathname.split("/");
   const routeName = capitalizeFirstLetter(paths[1]);
@@ -33,7 +37,7 @@ export default function Academic() {
       clearTimeout(delayDebounceFn);
       delayDebounceFn = setTimeout(() => {
         setActiveFilters([]);
-        setSearch(value);
+        setSearch({ pathname, value });
       }, 700);
 
       return;
@@ -98,6 +102,8 @@ export default function Academic() {
           handleOpened,
           loadingData,
           setLoadingData,
+          gridDetails,
+          setGridDetails,
         }}
       >
         <Outlet />

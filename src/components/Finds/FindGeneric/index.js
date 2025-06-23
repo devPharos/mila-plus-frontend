@@ -39,7 +39,9 @@ const FindGeneric = ({
   async function loadData(search = null) {
     const data = await getData(route, {
       limit,
-      search: searchDefault ? searchDefault : search,
+      search: {
+        value: searchDefault ? searchDefault : search,
+      },
       type,
     });
     if (!data) {

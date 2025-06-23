@@ -57,63 +57,65 @@ export default function FinancialPaymentMethods() {
     search,
     setActiveFilters,
     setLoadingData,
+    setGridDetails,
   } = useContext(FullGridContext);
 
   useEffect(() => {
     setActiveFilters([]);
   }, []);
-
-  useEffect(() => {
-    async function loader() {
-      setLoadingData(true);
-      const data = await getData("paymentmethods", {
-        limit,
-        page,
-        orderBy,
-        setPages,
-        setGridData,
-        search,
-        defaultGridHeader,
-        defaultOrderBy,
-      });
-      if (!data) {
-        return;
-      }
-      const gridDataValues = data
-        .sort((a, b) => a.description > b.description)
-        .map(
-          (
-            {
-              id,
+  async function loader() {
+    setLoadingData(true);
+    const data = await getData("paymentmethods", {
+      limit,
+      page,
+      orderBy,
+      setPages,
+      setGridData,
+      search,
+      defaultGridHeader,
+      defaultOrderBy,
+      setGridDetails,
+    });
+    if (!data) {
+      return;
+    }
+    const gridDataValues = data
+      .sort((a, b) => a.description > b.description)
+      .map(
+        (
+          {
+            id,
+            description,
+            type_of_payment,
+            platform,
+            payment_details,
+            filial,
+            bankAccount,
+          },
+          index
+        ) => {
+          return {
+            show: true,
+            id,
+            fields: [
               description,
               type_of_payment,
               platform,
               payment_details,
-              filial,
-              bankAccount,
-            },
-            index
-          ) => {
-            return {
-              show: true,
-              id,
-              fields: [
-                description,
-                type_of_payment,
-                platform,
-                payment_details,
-                bankAccount.account + " - " + bankAccount.bank.bank_name,
-                filial.name,
-              ],
-              page: Math.ceil((index + 1) / limit),
-            };
-          }
-        );
-      setGridData(gridDataValues);
-      setLoadingData(false);
-    }
+              bankAccount.account + " - " + bankAccount.bank.bank_name,
+              filial.name,
+            ],
+            page: Math.ceil((index + 1) / limit),
+          };
+        }
+      );
+    setGridData(gridDataValues);
+    setLoadingData(false);
+  }
+
+  useEffect(() => {
     loader();
-  }, [opened, filial, orderBy, search, limit]);
+  }, [opened, filial, orderBy, search, limit, page]);
 
   return (
     <PageContainer

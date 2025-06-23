@@ -45,48 +45,50 @@ export default function Users() {
     search,
     setActiveFilters,
     setLoadingData,
+    setGridDetails,
   } = useContext(FullGridContext);
 
   useEffect(() => {
     setActiveFilters([]);
   }, []);
+  async function loader() {
+    setLoadingData(true);
+    const data = await getData("users", {
+      limit,
+      page,
+      orderBy,
+      setPages,
+      setGridData,
+      search,
+      defaultGridHeader,
+      defaultOrderBy,
+      setGridDetails,
+    });
+    if (!data) {
+      return;
+    }
+    const gridDataValues = data.map(
+      ({ id, name, email, filials, groups, canceled_at }, index) => {
+        const filialNames = filials.map(
+          (reFilial) => reFilial.filial.name + ", "
+        );
+        const groupNames = groups[0].group.name;
+        return {
+          show: true,
+          id,
+          fields: [name, email, filialNames, groupNames],
+          canceled: canceled_at,
+          page: Math.ceil((index + 1) / limit),
+        };
+      }
+    );
+    setGridData(gridDataValues);
+    setLoadingData(false);
+  }
 
   useEffect(() => {
-    async function loader() {
-      setLoadingData(true);
-      const data = await getData("users", {
-        limit,
-        page,
-        orderBy,
-        setPages,
-        setGridData,
-        search,
-        defaultGridHeader,
-        defaultOrderBy,
-      });
-      if (!data) {
-        return;
-      }
-      const gridDataValues = data.map(
-        ({ id, name, email, filials, groups, canceled_at }, index) => {
-          const filialNames = filials.map(
-            (reFilial) => reFilial.filial.name + ", "
-          );
-          const groupNames = groups[0].group.name;
-          return {
-            show: true,
-            id,
-            fields: [name, email, filialNames, groupNames],
-            canceled: canceled_at,
-            page: Math.ceil((index + 1) / limit),
-          };
-        }
-      );
-      setGridData(gridDataValues);
-      setLoadingData(false);
-    }
     loader();
-  }, [opened, filial, orderBy, search, limit]);
+  }, [opened, filial, orderBy, search, limit, page]);
 
   return (
     <PageContainer

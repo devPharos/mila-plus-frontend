@@ -76,10 +76,6 @@ export default function PagePreview({
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
-  const [filialOptions, setFilialOptions] = useState([]);
-  const [paymentMethods, setPaymentMethods] = useState([]);
-  const [paymentCriterias, setPaymentCriterias] = useState([]);
-  const [chartOfAccountOptions, setChartOfAccountOptions] = useState([]);
   const [isAutoPay, setIsAutoPay] = useState(false);
   const [paid, setPaid] = useState(false);
 
@@ -469,10 +465,10 @@ export default function PagePreview({
                         />
                         <FindGeneric
                           route="chartofaccounts"
-                          title="Chart of Accounts"
+                          title="Chart of Account"
                           scope="chartOfAccount"
                           required
-                          type="receivables"
+                          type="receipts"
                           InputContext={InputContext}
                           defaultValue={{
                             id: pageData.issuer?.issuer_x_recurrence
@@ -481,6 +477,12 @@ export default function PagePreview({
                               ?.chartOfAccount?.code,
                             name: pageData.issuer?.issuer_x_recurrence
                               ?.chartOfAccount?.name,
+                            father:
+                              pageData.issuer?.issuer_x_recurrence
+                                ?.chartOfAccount?.Father?.name,
+                            granFather:
+                              pageData.issuer?.issuer_x_recurrence
+                                ?.chartOfAccount?.Father?.Father?.name,
                           }}
                           fields={[
                             {
@@ -489,6 +491,17 @@ export default function PagePreview({
                             },
                             {
                               title: "Name",
+                              name: "name",
+                            },
+                            {
+                              title: "Father",
+                              model: "Father",
+                              name: "name",
+                            },
+                            {
+                              title: "Father",
+                              model: "Father",
+                              model2: "Father",
                               name: "name",
                             },
                           ]}

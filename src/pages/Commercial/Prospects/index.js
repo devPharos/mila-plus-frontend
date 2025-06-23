@@ -56,61 +56,63 @@ export default function CommercialProspects() {
     limit,
     search,
     setLoadingData,
+    setGridDetails,
   } = useContext(FullGridContext);
+  async function loader() {
+    setLoadingData(true);
+    const data = await getData("prospects", {
+      limit,
+      page,
+      orderBy,
+      setPages,
+      setGridData,
+      search,
+      defaultGridHeader,
+      defaultOrderBy,
+      setGridDetails,
+    });
 
-  useEffect(() => {
-    async function loader() {
-      setLoadingData(true);
-      const data = await getData("prospects", {
-        limit,
-        page,
-        orderBy,
-        setPages,
-        setGridData,
-        search,
-        defaultGridHeader,
-        defaultOrderBy,
-      });
-
-      if (!data) {
-        return;
-      }
-      const gridDataValues = data.map(
-        (
-          {
-            id,
+    if (!data) {
+      return;
+    }
+    const gridDataValues = data.map(
+      (
+        {
+          id,
+          name,
+          last_name,
+          email,
+          canceled_at,
+          agent,
+          processtypes,
+          processsubstatuses,
+        },
+        index
+      ) => {
+        const ret = {
+          show: true,
+          id,
+          fields: [
             name,
             last_name,
             email,
-            canceled_at,
-            agent,
-            processtypes,
-            processsubstatuses,
-          },
-          index
-        ) => {
-          const ret = {
-            show: true,
-            id,
-            fields: [
-              name,
-              last_name,
-              email,
-              processtypes.name,
-              processsubstatuses.name,
-              agent.name,
-            ],
-            canceled: canceled_at,
-            page: Math.ceil((index + 1) / limit),
-          };
-          return ret;
-        }
-      );
-      setGridData(gridDataValues);
-      setLoadingData(false);
-    }
+            processtypes.name,
+            processsubstatuses.name,
+            agent.name,
+          ],
+          canceled: canceled_at,
+          page: Math.ceil((index + 1) / limit),
+        };
+        return ret;
+      }
+    );
+    setGridData(gridDataValues);
+    setLoadingData(false);
+  }
+
+  useEffect(() => {
     loader();
-  }, [opened, filial, orderBy, search, limit]);
+  }, [opened, filial, orderBy, search, limit, page]);
 
   return (
     <PageContainer

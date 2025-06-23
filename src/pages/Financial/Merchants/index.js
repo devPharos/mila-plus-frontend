@@ -71,73 +71,75 @@ export default function FinancialMerchants() {
     setSearch,
     setActiveFilters,
     setLoadingData,
+    setGridDetails,
   } = useContext(FullGridContext);
 
   useEffect(() => {
     setActiveFilters([]);
   }, []);
-
-  useEffect(() => {
-    async function loader() {
-      setLoadingData(true);
-      const data = await getData("merchants", {
-        limit,
-        page,
-        orderBy,
-        setOrderBy,
-        setPages,
-        setGridData,
-        search,
-        setSearch,
-        defaultGridHeader,
-        defaultOrderBy,
-      });
-      if (!data) {
-        return;
-      }
-      const gridDataValues = data.map(
-        (
-          {
-            id,
+  async function loader() {
+    setLoadingData(true);
+    const data = await getData("merchants", {
+      limit,
+      page,
+      orderBy,
+      setOrderBy,
+      setPages,
+      setGridData,
+      search,
+      setSearch,
+      defaultGridHeader,
+      defaultOrderBy,
+      setGridDetails,
+    });
+    if (!data) {
+      return;
+    }
+    const gridDataValues = data.map(
+      (
+        {
+          id,
+          name,
+          address,
+          city,
+          state,
+          zip,
+          country,
+          ein,
+          email,
+          phone_number,
+          bank_name,
+          late_payees,
+          balance_payees,
+          filial_id,
+          filial,
+        },
+        index
+      ) => {
+        return {
+          show: true,
+          id,
+          fields: [
             name,
-            address,
             city,
             state,
-            zip,
-            country,
-            ein,
             email,
             phone_number,
             bank_name,
             late_payees,
             balance_payees,
-            filial_id,
-            filial,
-          },
-          index
-        ) => {
-          return {
-            show: true,
-            id,
-            fields: [
-              name,
-              city,
-              state,
-              email,
-              phone_number,
-              bank_name,
-              late_payees,
-              balance_payees,
-            ],
-            page: Math.ceil((index + 1) / limit),
-          };
-        }
-      );
-      setGridData(gridDataValues);
-      setLoadingData(false);
-    }
+          ],
+          page: Math.ceil((index + 1) / limit),
+        };
+      }
+    );
+    setGridData(gridDataValues);
+    setLoadingData(false);
+  }
+
+  useEffect(() => {
     loader();
-  }, [opened, filial, orderBy, search, limit]);
+  }, [opened, filial, orderBy, search, limit, page]);
 
   return (
     <PageContainer

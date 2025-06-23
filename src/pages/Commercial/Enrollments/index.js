@@ -76,77 +76,74 @@ export default function CommercialEnrollments() {
     limit,
     search,
     setLoadingData,
+    setGridDetails,
   } = useContext(FullGridContext);
+  async function loader() {
+    setLoadingData(true);
+    const data = await getData("enrollments", {
+      limit,
+      page,
+      orderBy,
+      setPages,
+      setGridData,
+      search,
+      defaultGridHeader,
+      defaultOrderBy,
+      setGridDetails,
+    });
+    if (!data) {
+      return;
+    }
+    const gridDataValues = data.map(
+      (
+        { id, students, enrollmenttimelines, canceled_at, application },
+        index
+      ) => {
+        const { name, processtypes, processsubstatuses } = students;
+        const type = processtypes ? processtypes.name : "";
+        const sub_status = processsubstatuses ? processsubstatuses.name : "";
+        const {
+          phase,
+          phase_step,
+          created_at: stepCreatedAt,
+          step_status,
+          expected_date,
+        } = enrollmenttimelines[enrollmenttimelines.length - 1];
+        const exptected = expected_date
+          ? format(parseISO(expected_date), "MM/dd/yyyy")
+          : "-";
+        const enroll_start =
+          enrollmenttimelines.length > 0
+            ? format(parseISO(enrollmenttimelines[0].created_at), "MM/dd/yyyy")
+            : "-";
+        const ret = {
+          show: true,
+          id,
+          fields: [
+            enroll_start,
+            name,
+            type,
+            sub_status,
+            application,
+            phase_step,
+            format(stepCreatedAt, "MM/dd/yyyy @ HH:mm"),
+            step_status,
+            expected_date ? format(parseISO(expected_date), "MM/dd/yyyy") : "",
+          ],
+          canceled: canceled_at,
+          page: Math.ceil((index + 1) / limit),
+        };
+        return ret;
+      }
+    );
+    // console.log(gridDataValues);
+    setGridData(gridDataValues);
+    setLoadingData(false);
+  }
 
   useEffect(() => {
-    async function loader() {
-      setLoadingData(true);
-      const data = await getData("enrollments", {
-        limit,
-        page,
-        orderBy,
-        setPages,
-        setGridData,
-        search,
-        defaultGridHeader,
-        defaultOrderBy,
-      });
-      if (!data) {
-        return;
-      }
-      const gridDataValues = data.map(
-        (
-          { id, students, enrollmenttimelines, canceled_at, application },
-          index
-        ) => {
-          const { name, processtypes, processsubstatuses } = students;
-          const type = processtypes ? processtypes.name : "";
-          const sub_status = processsubstatuses ? processsubstatuses.name : "";
-          const {
-            phase,
-            phase_step,
-            created_at: stepCreatedAt,
-            step_status,
-            expected_date,
-          } = enrollmenttimelines[enrollmenttimelines.length - 1];
-          const exptected = expected_date
-            ? format(parseISO(expected_date), "MM/dd/yyyy")
-            : "-";
-          const enroll_start =
-            enrollmenttimelines.length > 0
-              ? format(
-                  parseISO(enrollmenttimelines[0].created_at),
-                  "MM/dd/yyyy"
-                )
-              : "-";
-          const ret = {
-            show: true,
-            id,
-            fields: [
-              enroll_start,
-              name,
-              type,
-              sub_status,
-              application,
-              phase_step,
-              format(stepCreatedAt, "MM/dd/yyyy @ HH:mm"),
-              step_status,
-              expected_date
-                ? format(parseISO(expected_date), "MM/dd/yyyy")
-                : "",
-            ],
-            canceled: canceled_at,
-            page: Math.ceil((index + 1) / limit),
-          };
-          return ret;
-        }
-      );
-      // console.log(gridDataValues);
-      setGridData(gridDataValues);
-      setLoadingData(false);
-    }
     loader();
-  }, [opened, filial, orderBy, search, limit]);
+  }, [opened, filial, orderBy, search, limit, page]);
 
   return (
     <PageContainer

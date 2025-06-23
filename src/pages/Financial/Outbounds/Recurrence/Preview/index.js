@@ -79,10 +79,6 @@ export default function PagePreview({
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
-  const [filialOptions, setFilialOptions] = useState([]);
-  const [paymentMethods, setPaymentMethods] = useState([]);
-  const [paymentCriterias, setPaymentCriterias] = useState([]);
-  const [chartOfAccountOptions, setChartOfAccountOptions] = useState([]);
   const [paid, setPaid] = useState(false);
   const [merchantId, setMerchantId] = useState(null);
 
@@ -130,85 +126,56 @@ export default function PagePreview({
       console.log(err);
     }
   }
+  async function getPageData() {
+    try {
+      if (id !== "new") {
+        const { data } = await api
+          .get(`/payeerecurrences/${id}`)
+          .then((response) => {
+            const { data } = response;
 
-  async function getPaymentMethodsOptions() {
-    const { data } = await api.get("/paymentmethods");
-    if (data.rows) {
-      const retOptions = data.rows
-        .filter((paymentMethod) =>
-          paymentMethod.type_of_payment.includes("Outbounds")
-        )
-        .map((paymentMethod) => {
-          return { value: paymentMethod.id, label: paymentMethod.description };
-        });
-      setPaymentMethods(retOptions);
-    }
-  }
+            setMerchantId(data.issuer?.merchant?.id);
+            // console.log(data);
+            setPageData({
+              ...pageData,
+              ...data,
+              searchFields: {
+                processtype_id: data.processtype_id,
+                processsubstatus_id: data.processsubstatus_id,
+                filial_id: data.filial_id,
+              },
+              loaded: true,
+            });
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
 
-  async function getPaymentCriteriasOptions() {
-    const { data } = await api.get("/paymentcriterias");
-    if (data.rows) {
-      const retOptions = data.rows.map((paymentCriteria) => {
-        return {
-          value: paymentCriteria.id,
-          label: paymentCriteria.description,
-        };
+      const {
+        created_by,
+        created_at,
+        updated_by,
+        updated_at,
+        canceled_by,
+        canceled_at,
+      } = data;
+      const registries = await getRegistries({
+        created_by,
+        created_at,
+        updated_by,
+        updated_at,
+        canceled_by,
+        canceled_at,
       });
-      setPaymentCriterias(retOptions);
+      setRegistry(registries);
+    } catch (err) {
+      console.log(err);
+      // toast(err.response.data.error, { type: "error", autoClose: 3000 });
     }
   }
 
   useEffect(() => {
-    async function getPageData() {
-      await getPaymentMethodsOptions();
-      await getPaymentCriteriasOptions();
-      try {
-        if (id !== "new") {
-          const { data } = await api
-            .get(`/payeerecurrences/${id}`)
-            .then((response) => {
-              const { data } = response;
-
-              setMerchantId(data.issuer?.merchant?.id);
-              // console.log(data);
-              setPageData({
-                ...pageData,
-                ...data,
-                searchFields: {
-                  processtype_id: data.processtype_id,
-                  processsubstatus_id: data.processsubstatus_id,
-                  filial_id: data.filial_id,
-                },
-                loaded: true,
-              });
-            })
-            .catch((err) => {
-              console.log(err);
-            });
-        }
-
-        const {
-          created_by,
-          created_at,
-          updated_by,
-          updated_at,
-          canceled_by,
-          canceled_at,
-        } = data;
-        const registries = await getRegistries({
-          created_by,
-          created_at,
-          updated_by,
-          updated_at,
-          canceled_by,
-          canceled_at,
-        });
-        setRegistry(registries);
-      } catch (err) {
-        console.log(err);
-        // toast(err.response.data.error, { type: "error", autoClose: 3000 });
-      }
-    }
     getPageData();
   }, []);
 
@@ -424,16 +391,18 @@ export default function PagePreview({
                         />
                         <FindGeneric
                           route="chartofaccounts"
-                          title="Chart of Accounts"
+                          title="Chart of Account"
                           scope="chartOfAccount"
                           required
                           type="expenses"
                           InputContext={InputContext}
-                          searchDefault={merchantId}
                           defaultValue={{
-                            id: pageData.chartOfAccount?.id,
-                            code: pageData.chartOfAccount?.code,
-                            name: pageData.chartOfAccount?.name,
+                            id: pageData?.chartOfAccount?.id,
+                            code: pageData?.chartOfAccount?.code,
+                            name: pageData?.chartOfAccount?.name,
+                            father: pageData?.chartOfAccount?.Father?.name,
+                            granFather:
+                              pageData?.chartOfAccount?.Father?.Father?.name,
                           }}
                           fields={[
                             {
@@ -442,6 +411,17 @@ export default function PagePreview({
                             },
                             {
                               title: "Name",
+                              name: "name",
+                            },
+                            {
+                              title: "Father",
+                              model: "Father",
+                              name: "name",
+                            },
+                            {
+                              title: "Father",
+                              model: "Father",
+                              model2: "Father",
                               name: "name",
                             },
                           ]}

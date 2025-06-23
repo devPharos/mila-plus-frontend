@@ -69,38 +69,52 @@ export default function FinancialPaymentCriteria() {
     search,
     setActiveFilters,
     setLoadingData,
+    setGridDetails,
   } = useContext(FullGridContext);
 
   useEffect(() => {
     setActiveFilters([]);
   }, []);
-
-  useEffect(() => {
-    async function loader() {
-      setLoadingData(true);
-      const data = await getData("paymentcriterias", {
-        limit,
-        page,
-        orderBy,
-        setPages,
-        setGridData,
-        search,
-        defaultGridHeader,
-        defaultOrderBy,
-      });
-      if (!data) {
-        return;
-      }
-      const gridDataValues = data
-        .sort((a, b) => a.description > b.description)
-        .map(
-          (
-            {
-              id,
-              company_id,
-              company,
-              filial_id,
-              filial,
+  async function loader() {
+    setLoadingData(true);
+    const data = await getData("paymentcriterias", {
+      limit,
+      page,
+      orderBy,
+      setPages,
+      setGridData,
+      search,
+      defaultGridHeader,
+      defaultOrderBy,
+      setGridDetails,
+    });
+    if (!data) {
+      return;
+    }
+    const gridDataValues = data
+      .sort((a, b) => a.description > b.description)
+      .map(
+        (
+          {
+            id,
+            company_id,
+            company,
+            filial_id,
+            filial,
+            description,
+            recurring_qt,
+            recurring_metric,
+            fee_qt,
+            fee_metric,
+            fee_type,
+            fee_value,
+          },
+          index
+        ) => {
+          return {
+            show: true,
+            id,
+            fields: [
               description,
               recurring_qt,
               recurring_metric,
@@ -108,31 +122,19 @@ export default function FinancialPaymentCriteria() {
               fee_metric,
               fee_type,
               fee_value,
-            },
-            index
-          ) => {
-            return {
-              show: true,
-              id,
-              fields: [
-                description,
-                recurring_qt,
-                recurring_metric,
-                fee_qt,
-                fee_metric,
-                fee_type,
-                fee_value,
-                filial.name,
-              ],
-              page: Math.ceil((index + 1) / limit),
-            };
-          }
-        );
-      setGridData(gridDataValues);
-      setLoadingData(false);
-    }
+              filial.name,
+            ],
+            page: Math.ceil((index + 1) / limit),
+          };
+        }
+      );
+    setGridData(gridDataValues);
+    setLoadingData(false);
+  }
+
+  useEffect(() => {
     loader();
-  }, [opened, filial, orderBy, search, limit]);
+  }, [opened, filial, orderBy, search, limit, page]);
 
   return (
     <PageContainer

@@ -179,6 +179,8 @@ export default function FinancialReceivables() {
     search,
     setActiveFilters,
     setLoadingData,
+    setTotalRows,
+    setGridDetails,
   } = useContext(FullGridContext);
 
   useEffect(() => {
@@ -187,80 +189,80 @@ export default function FinancialReceivables() {
 
   async function loader() {
     setLoadingData(true);
-    setTimeout(async () => {
-      const data = await getData("receivables", {
-        limit,
-        page,
-        orderBy,
-        setPages,
-        setGridData,
-        search: search || "Pending",
-        defaultGridHeader,
-        defaultOrderBy,
-      });
-      if (!data) {
-        return;
-      }
-      const gridDataValues = data
-        .sort((a, b) => (a.due_date > b.due_date ? 1 : -1))
-        .map(
-          (
-            {
-              id,
-              canceled_at,
-              filial,
-              issuer,
-              invoice_number,
-              due_date,
-              amount,
-              discount,
-              fee,
-              total,
-              balance,
+    const data = await getData("receivables", {
+      limit: 50,
+      page,
+      orderBy,
+      setPages,
+      setGridData,
+      search,
+      defaultGridHeader,
+      defaultOrderBy,
+      setTotalRows,
+      setGridDetails,
+    });
+    if (!data) {
+      return;
+    }
+    const gridDataValues = data
+      .sort((a, b) => (a.due_date > b.due_date ? 1 : -1))
+      .map(
+        (
+          {
+            id,
+            canceled_at,
+            filial,
+            issuer,
+            invoice_number,
+            due_date,
+            amount,
+            discount,
+            fee,
+            total,
+            balance,
+            status,
+            // status_date,
+          },
+          index
+        ) => {
+          const ret = {
+            show: true,
+            id,
+            fields: [
+              issuer.name,
+              filial.name,
+              invoice_number.toString(),
+              format(parseISO(due_date), "yyyy-MM-dd"),
+              "$ " + amount.toFixed(2),
+              "$ " + discount.toFixed(2),
+              "$ " + fee.toFixed(2),
+              "$ " + total.toFixed(2),
+              "$ " + balance.toFixed(2),
               status,
-              // status_date,
+              issuer &&
+              issuer.issuer_x_recurrence &&
+              issuer.issuer_x_recurrence.is_autopay
+                ? true
+                : false,
+              // format(parseISO(status_date), "yyyy-MM-dd"),
+              ,
+            ],
+            selectable:
+              status.includes("Pending") || status.includes("Parcial Paid"),
+            attention: {
+              title: "Due Date",
+              show:
+                status.includes("Pending") &&
+                due_date < format(new Date(), "yyyyMMdd"),
             },
-            index
-          ) => {
-            const ret = {
-              show: true,
-              id,
-              fields: [
-                issuer.name,
-                filial.name,
-                invoice_number.toString(),
-                format(parseISO(due_date), "yyyy-MM-dd"),
-                "$ " + amount.toFixed(2),
-                "$ " + discount.toFixed(2),
-                "$ " + fee.toFixed(2),
-                "$ " + total.toFixed(2),
-                "$ " + balance.toFixed(2),
-                status,
-                issuer &&
-                issuer.issuer_x_recurrence &&
-                issuer.issuer_x_recurrence.is_autopay
-                  ? true
-                  : false,
-                // format(parseISO(status_date), "yyyy-MM-dd"),
-                ,
-              ],
-              selectable:
-                status.includes("Pending") || status.includes("Parcial Paid"),
-              attention: {
-                title: "Due Date",
-                show:
-                  status.includes("Pending") &&
-                  due_date < format(new Date(), "yyyyMMdd"),
-              },
-              canceled: canceled_at,
-              page: Math.ceil((index + 1) / limit),
-            };
-            return ret;
-          }
-        );
-      setGridData(gridDataValues);
-      setLoadingData(false);
-    }, 500);
+            canceled: canceled_at,
+            page: Math.ceil((index + 1) / limit),
+          };
+          return ret;
+        }
+      );
+    setGridData(gridDataValues);
+    setLoadingData(false);
   }
 
   useEffect(() => {
@@ -268,7 +270,7 @@ export default function FinancialReceivables() {
       setSelected([]);
     }
     loader();
-  }, [opened, settlementOpen, filial, orderBy, search, limit]);
+  }, [opened, settlementOpen, filial, orderBy, search, limit, page]);
 
   function handleSettlement() {
     const newVarOpened = !settlementOpen;

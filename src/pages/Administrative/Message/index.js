@@ -5,6 +5,7 @@ import { FullGridContext } from "..";
 import { getData } from "~/functions/gridFunctions";
 import PageContainer from "~/components/PageContainer";
 import { format } from "date-fns";
+import { useLocation } from "react-router-dom";
 
 export default function Messages() {
   const filial = useSelector((state) => state.auth.filial);
@@ -51,7 +52,10 @@ export default function Messages() {
     limit,
     search,
     setLoadingData,
+    setGridDetails,
   } = useContext(FullGridContext);
+
+  const { pathname } = useLocation();
 
   async function loader() {
     setLoadingData(true);
@@ -64,6 +68,8 @@ export default function Messages() {
       search,
       defaultGridHeader,
       defaultOrderBy,
+      setGridDetails,
+      pathname,
     });
 
     if (!data) {
@@ -97,7 +103,7 @@ export default function Messages() {
 
   useEffect(() => {
     loader();
-  }, [opened, filial, orderBy, search, limit]);
+  }, [opened, filial, orderBy, search, limit, page]);
 
   return (
     <PageContainer

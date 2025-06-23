@@ -25,8 +25,8 @@ export async function getData(
     if (orderBy && page === orderBy.page) {
       orderFix = orderBy.column;
     } else if (orderBy && orderBy.page) {
-      // setOrderBy(null);
-      // setSearch(null);
+      setOrderBy(null);
+      setSearch(null);
     }
     const response = await api.get(
       `/${route}?limit=${limit}&page=${page}&orderBy=${orderFix}&orderASC=${

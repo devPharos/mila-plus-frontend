@@ -46,6 +46,7 @@ export default function DataSync() {
         setLoading(false);
       })
       .catch((error) => {
+        setLoading(false);
         console.log(error);
       });
   }
@@ -71,7 +72,7 @@ export default function DataSync() {
         <Form
           ref={generalForm}
           onSubmit={handleGeneralFormSubmit}
-          enctype="multipart/form-data"
+          encType="multipart/form-data"
           className="w-full"
         >
           <InputContext.Provider

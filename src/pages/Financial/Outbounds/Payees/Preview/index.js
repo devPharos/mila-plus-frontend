@@ -188,6 +188,7 @@ export default function PagePreview({
           const { data: receivableData } = await api.get(`/payee/${id}`);
           data = receivableData;
         }
+
         setMerchantId(data.issuer?.merchant?.id);
 
         setPageData({

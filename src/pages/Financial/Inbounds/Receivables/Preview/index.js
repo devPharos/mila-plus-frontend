@@ -65,11 +65,6 @@ export default function PagePreview({
     filial: {
       name: "",
     },
-    filialOptions: [],
-    issuerOptions: [],
-    paymentMethodOptions: [],
-    // paymentCriteriaOptions: [],
-    chartOfAccountOptions: [],
     issuer_id: null,
     issuer: {
       name: "",
@@ -513,21 +508,32 @@ export default function PagePreview({
                                               defaultValue={settlement.amount}
                                               InputContext={InputContext}
                                             />
-                                            <SelectPopover
-                                              name="paymentmethod_id"
-                                              grow
+                                            <FindGeneric
+                                              route="paymentmethods"
                                               title="Payment Method"
-                                              isSearchable
-                                              options={
-                                                pageData.paymentMethodOptions
-                                              }
-                                              disabled
-                                              defaultValue={pageData.paymentMethodOptions.find(
-                                                (paymentMethod) =>
-                                                  paymentMethod.value ===
-                                                  settlement.paymentmethod_id
-                                              )}
+                                              scope="paymentMethod"
+                                              required
+                                              readOnly
                                               InputContext={InputContext}
+                                              defaultValue={{
+                                                id: settlement.paymentmethod_id,
+                                                description:
+                                                  settlement.paymentMethod
+                                                    .description,
+                                                platform:
+                                                  settlement.paymentMethod
+                                                    .platform,
+                                              }}
+                                              fields={[
+                                                {
+                                                  title: "Description",
+                                                  name: "description",
+                                                },
+                                                {
+                                                  title: "Platform",
+                                                  name: "platform",
+                                                },
+                                              ]}
                                             />
                                             <DatePicker
                                               name="created_at"
@@ -1283,21 +1289,6 @@ export default function PagePreview({
                                         )}
                                         InputContext={InputContext}
                                       />
-                                      <SelectPopover
-                                        name="paymentmethod_id"
-                                        title="Payment Method"
-                                        disabled
-                                        grow
-                                        defaultValue={pageData.paymentMethodOptions.find(
-                                          (paymentMethod) =>
-                                            paymentMethod.value ===
-                                            settlement.paymentmethod_id
-                                        )}
-                                        options={pageData.paymentMethodOptions}
-                                        InputContext={InputContext}
-                                      />
-                                    </InputLine>
-                                    <InputLine>
                                       <Textarea
                                         name="memo"
                                         InputContext={InputContext}
@@ -1308,6 +1299,32 @@ export default function PagePreview({
                                         title="Memo"
                                       />
                                     </InputLine>
+
+                                    <FindGeneric
+                                      route="paymentmethods"
+                                      title="Payment Method"
+                                      scope="paymentMethod"
+                                      required
+                                      readOnly
+                                      InputContext={InputContext}
+                                      defaultValue={{
+                                        id: settlement.paymentmethod_id,
+                                        description:
+                                          settlement.paymentMethod.description,
+                                        platform:
+                                          settlement.paymentMethod.platform,
+                                      }}
+                                      fields={[
+                                        {
+                                          title: "Description",
+                                          name: "description",
+                                        },
+                                        {
+                                          title: "Platform",
+                                          name: "platform",
+                                        },
+                                      ]}
+                                    />
                                   </Scope>
                                 );
                               })}

@@ -10,6 +10,7 @@ import Transfer from "./Transfer";
 import MedicalCertificateVacation from "./MedicalCertificateVacation";
 import api, { baseURL } from "~/services/api";
 import AttendanceAdjustments from "./AttendanceAdjustments";
+import GradesAdjustments from "./GradesAdjustments";
 
 export default function AdministrativeStudent() {
   const filial = useSelector((state) => state.auth.filial);
@@ -112,6 +113,7 @@ export default function AdministrativeStudent() {
   const [inactivateOpen, setInactivateOpen] = useState(false);
   const [attendanceAdjustmentsOpen, setAttendanceAdjustmentsOpen] =
     useState(false);
+  const [gradesAdjustmentsOpen, setGradesAdjustmentsOpen] = useState(false);
   const [activateOpen, setActivateOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
   const [excelOpen, setExcelOpen] = useState(false);
@@ -162,6 +164,17 @@ export default function AdministrativeStudent() {
     }
     handleOpened(null);
   };
+
+  const handleGradesAdjustments = () => {
+    const newVarOpened = !gradesAdjustmentsOpen;
+    setGradesAdjustmentsOpen(newVarOpened);
+    if (!newVarOpened) {
+      setSelected([]);
+      loader();
+    }
+    handleOpened(null);
+  };
+
   const handleActivate = () => {
     const newVarOpened = !activateOpen;
     setActivateOpen(newVarOpened);
@@ -340,12 +353,21 @@ export default function AdministrativeStudent() {
         selected,
       });
       selectionFunctions.push({
-        title: "Attendance Adjustments",
+        title: "Attendance Adjust.",
         fun: handleAttendanceAdjustments,
         icon: "Highlighter",
         Page: AttendanceAdjustments,
         opened: attendanceAdjustmentsOpen,
         setOpened: setAttendanceAdjustmentsOpen,
+        selected,
+      });
+      selectionFunctions.push({
+        title: "Grades Adjust.",
+        fun: handleGradesAdjustments,
+        icon: "Highlighter",
+        Page: GradesAdjustments,
+        opened: gradesAdjustmentsOpen,
+        setOpened: setGradesAdjustmentsOpen,
         selected,
       });
       selectionFunctions.push({

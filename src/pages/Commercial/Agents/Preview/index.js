@@ -21,6 +21,7 @@ import CountryList from "country-list-with-dial-code-and-flag";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
 import { FullGridContext } from "../..";
+import FindGeneric from "~/components/Finds/FindGeneric";
 
 export const InputContext = createContext({});
 
@@ -52,7 +53,6 @@ export default function PagePreview({
     canceled_by: null,
     canceled_at: null,
   });
-  const [filialOptions, setFilialOptions] = useState([]);
   const generalForm = useRef();
   const auth = useSelector((state) => state.auth);
 
@@ -69,20 +69,12 @@ export default function PagePreview({
 
       return countriesList;
     }
-    async function getDefaultFilialOptions() {
-      const { data } = await api.get("/filials");
-      const retGroupOptions = data.map((filial) => {
-        return { value: filial.id, label: filial.name };
-      });
-      setFilialOptions(retGroupOptions);
-    }
     async function getPageData() {
-      const filialOptions = await getDefaultFilialOptions();
       const ddiOptions = await getCountriesList();
       if (id !== "new") {
         try {
           const { data } = await api.get(`/agents/${id}`);
-          setPageData({ ...data, loaded: true, ddiOptions, filialOptions });
+          setPageData({ ...data, loaded: true, ddiOptions });
           const {
             created_by,
             created_at,
@@ -104,7 +96,7 @@ export default function PagePreview({
           toast(err.response.data.error, { type: "error", autoClose: 3000 });
         }
       } else {
-        setPageData({ ...pageData, loaded: true, ddiOptions, filialOptions });
+        setPageData({ ...pageData, loaded: true, ddiOptions });
         setFormType("full");
       }
     }
@@ -243,22 +235,30 @@ export default function PagePreview({
                           title="GENERAL"
                           activeMenu={activeMenu === "general"}
                         >
-                          {auth.filial.id === 1 && (
-                            <InputLine title="Filial">
-                              <SelectPopover
-                                name="filial_id"
-                                required
-                                title="Filial"
-                                isSearchable
-                                defaultValue={filialOptions.filter(
-                                  (filial) =>
-                                    filial.value === pageData.filial_id
-                                )}
-                                options={filialOptions}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-                          )}
+                          <FindGeneric
+                            route="filials"
+                            title="Filial"
+                            scope="filial"
+                            required
+                            InputContext={InputContext}
+                            defaultValue={
+                              id === "new" && auth.filial.id !== 1
+                                ? {
+                                    id: auth.filial.id,
+                                    name: auth.filial.name,
+                                  }
+                                : {
+                                    id: pageData.filial?.id,
+                                    name: pageData.filial?.name,
+                                  }
+                            }
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                          />
                           <InputLine title="General Data">
                             <Input
                               type="text"

@@ -941,9 +941,9 @@ export default function PagePreview({
                               readOnly
                               title="Program Start Date"
                               defaultValue={
-                                pageData.programs &&
-                                pageData.programs.length > 0
-                                  ? pageData.programs[0].start_date
+                                pageData?.programs &&
+                                pageData?.programs?.length > 0
+                                  ? pageData?.programs[0].start_date
                                   : null
                               }
                               InputContext={InputContext}
@@ -956,8 +956,8 @@ export default function PagePreview({
                               readOnly
                               title="Program End Date"
                               defaultValue={
-                                pageData.programs.length > 0
-                                  ? pageData.programs[0].end_date
+                                pageData?.programs?.length > 0
+                                  ? pageData?.programs[0].end_date
                                   : null
                               }
                               InputContext={InputContext}
@@ -990,8 +990,8 @@ export default function PagePreview({
                               </button>
                             </InputLine>
                           </Scope>
-                          {pageData.programs.length > 0 &&
-                            pageData.programs
+                          {pageData?.programs?.length > 0 &&
+                            pageData?.programs
                               .sort((a, b) =>
                                 b.created_at > a.created_at ? 1 : -1
                               )

@@ -85,7 +85,7 @@ export default function Documents() {
 
   useEffect(() => {
     loader();
-  }, [opened, filial, orderBy, search, limi, page]);
+  }, [opened, filial, orderBy, search, limit, page]);
 
   return (
     <PageContainer

@@ -31,6 +31,7 @@ import FormLoading from "~/components/RegisterForm/FormLoading";
 import FileInput from "~/components/RegisterForm/FileInput";
 import uploadFile from "~/functions/uploadFile";
 import { FullGridContext } from "../..";
+import FindGeneric from "~/components/Finds/FindGeneric";
 
 export const InputContext = createContext({});
 
@@ -140,7 +141,7 @@ export default function PagePreview({
       setLoading(false);
       return;
     }
-    const { data: levelData } = await api.get(`levels/${data.level_id}`);
+    const { data: levelData } = await api.get(`levels/${data.level.id}`);
     const restHours = levelData.total_hours % data.hours_per_day;
     if (restHours > 0) {
       toast(
@@ -339,8 +340,8 @@ export default function PagePreview({
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     }
-    getLevelsOptions();
-    getLanguageModeOptions();
+    // getLevelsOptions();
+    // getLanguageModeOptions();
     if (id === "new") {
       setFormType("full");
     } else if (id) {
@@ -470,7 +471,7 @@ export default function PagePreview({
                                 defaultValue={pageData.name}
                                 InputContext={InputContext}
                               />
-                              <SelectPopover
+                              {/* <SelectPopover
                                 type="text"
                                 name="level_id"
                                 required
@@ -507,8 +508,42 @@ export default function PagePreview({
                                     : null
                                 }
                                 InputContext={InputContext}
-                              />
+                              /> */}
                             </InputLine>
+                            <FindGeneric
+                              route="levels"
+                              title="Level"
+                              scope="level"
+                              required
+                              InputContext={InputContext}
+                              defaultValue={{
+                                id: pageData.level_id,
+                                name: pageData.Level?.name,
+                              }}
+                              fields={[
+                                {
+                                  title: "Name",
+                                  name: "name",
+                                },
+                              ]}
+                            />
+                            <FindGeneric
+                              route="languagemodes"
+                              title="Language Mode"
+                              scope="languagemode"
+                              required
+                              InputContext={InputContext}
+                              defaultValue={{
+                                id: pageData.languagemode_id,
+                                name: pageData.Languagemode?.name,
+                              }}
+                              fields={[
+                                {
+                                  title: "Name",
+                                  name: "name",
+                                },
+                              ]}
+                            />
                             <InputLine title="Configurations">
                               <Input
                                 type="text"

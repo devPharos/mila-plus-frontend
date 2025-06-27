@@ -45,6 +45,7 @@ import {
 } from "~/functions/selectPopoverOptions";
 import { FullGridContext } from "../..";
 import PhoneNumberInput from "~/components/RegisterForm/PhoneNumberInput";
+import FindGeneric from "~/components/Finds/FindGeneric";
 
 export const InputContext = createContext({});
 
@@ -111,7 +112,7 @@ export default function PagePreview({
               const { data: documents } = await api.get(
                 `/documentsByOrigin?origin=Branches&type=Contracts`
               );
-              const mappedProcessSubstatuses = processsubstatuses.map(
+              const mappedProcessSubstatuses = processsubstatuses.rows.map(
                 (processsubstatus) => {
                   return {
                     id: null,
@@ -133,7 +134,7 @@ export default function PagePreview({
                 canceled_at,
                 pricelists,
               } = data;
-              // console.log(pricelists, mappedProcessSubstatuses)
+              console.log(data);
               setPageData({
                 ...data,
                 documents,
@@ -164,19 +165,7 @@ export default function PagePreview({
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     }
-    async function getDefaultOptions() {
-      try {
-        const { data } = await api.get(`filialtypes`);
-        const filialTypes = data.map(({ id, name }) => {
-          return { value: id, label: name };
-        });
-        setFilialTypesOptions(filialTypes);
-      } catch (err) {
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
-      }
-    }
 
-    getDefaultOptions();
     if (id === "new") {
       setFormType("full");
     } else if (id) {
@@ -631,17 +620,6 @@ export default function PagePreview({
                               defaultValue={pageData.sevis_school}
                               InputContext={InputContext}
                             />
-                            <SelectPopover
-                              name="filialtype_id"
-                              title="Filial Type"
-                              options={filialTypesOptions}
-                              grow
-                              defaultValue={{
-                                value: pageData.filialtype_id,
-                                label: pageData.Filialtype.name,
-                              }}
-                              InputContext={InputContext}
-                            />
                             {/* <SelectPopover
                               name="active"
                               title="Active"
@@ -657,6 +635,23 @@ export default function PagePreview({
                               InputContext={InputContext}
                             /> */}
                           </InputLine>
+                          <FindGeneric
+                            route="filialtypes"
+                            title="Filial Type"
+                            scope="filialtype"
+                            required
+                            InputContext={InputContext}
+                            defaultValue={{
+                              id: pageData.filialtype_id,
+                              name: pageData.Filialtype?.name,
+                            }}
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                          />
 
                           <InputLine title="Localization">
                             <SelectPopover

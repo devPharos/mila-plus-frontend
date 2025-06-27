@@ -89,19 +89,7 @@ export default function PagePreview({
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     }
-    async function getDefaultOptions() {
-      try {
-        const { data } = await api.get(`filialtypes`);
-        const filialTypes = data.map(({ id, name }) => {
-          return { value: id, label: name };
-        });
-        setFilialTypesOptions(filialTypes);
-      } catch (err) {
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
-      }
-    }
 
-    getDefaultOptions();
     if (id === "new") {
       setFormType("full");
     } else if (id) {
@@ -295,19 +283,6 @@ export default function PagePreview({
                               title="Name"
                               grow
                               defaultValue={pageData.name}
-                              InputContext={InputContext}
-                            />
-                            <SelectPopover
-                              name="filialtype_id"
-                              title="Filial Type"
-                              grow
-                              options={filialTypesOptions}
-                              defaultValue={{
-                                value: pageData.filialtype_id,
-                                label: pageData.Filialtype
-                                  ? pageData.Filialtype.name
-                                  : "",
-                              }}
                               InputContext={InputContext}
                             />
                           </InputLine>

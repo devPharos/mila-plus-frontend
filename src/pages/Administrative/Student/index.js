@@ -383,7 +383,7 @@ export default function AdministrativeStudent() {
         selected,
       });
       selectionFunctions.push({
-        title: "Absense Control",
+        title: "Absence Control",
         alias: "absense-control",
         fun: handleAbsenseControl,
         icon: "Percent",

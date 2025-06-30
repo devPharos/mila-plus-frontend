@@ -1,4 +1,4 @@
-import { Filter } from "lucide-react";
+import { Filter, Table2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import Breadcrumbs from "~/components/Breadcrumbs";
 import FiltersBar from "~/components/FiltersBar";
@@ -15,7 +15,8 @@ import {
 } from "recharts";
 
 import { getCurrentPage } from "~/functions";
-import api from "~/services/api";
+import api, { baseURL } from "~/services/api";
+import AbsenceControl from "./AbsenceControl";
 
 export default function AdministrativeDashboard() {
   const currentPage = getCurrentPage();
@@ -85,6 +86,7 @@ export default function AdministrativeDashboard() {
           paddingTop: 24,
         }}
       >
+        <AbsenceControl />
         {/* <ResponsiveContainer width="50%" height="50%">
           <AreaChart
             width={500}

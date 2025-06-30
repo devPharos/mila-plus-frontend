@@ -29,23 +29,18 @@ export default function Filters({
   } = useContext(Context);
   const [activePopover, setActivePopover] = useState("");
   const results = gridData.filter((data) => data.show === true).length;
-  const hasSelection = selection && selection.selected.length > 0;
+  let hasSelection = selection && selection.selected.length > 0;
   if (!gridHeader || !gridData) {
     return null;
   }
 
-  function handleAddFilter(filter) {
-    const newFilter =
-      gridHeader &&
-      [...gridHeader].map((item) => {
-        if (item.title === filter.title) {
-          item.filter = !item.filter;
-        }
-        return item;
-      });
-    setActivePopover("");
-    setGridHeader(newFilter);
-  }
+  // const allowedFunctions = selection.functions.filter((func) =>
+  //   access.children?.find((el) => el.alias === func.alias)
+  // );
+
+  // if (allowedFunctions.length === 0) {
+  //   hasSelection = false;
+  // }
 
   function PopoverFilter(index, options) {
     const { title } = gridHeader[index];
@@ -107,7 +102,7 @@ export default function Filters({
   }
 
   return (
-    <div className="flex flex-row justify-between items-center w-full gap-2">
+    <div className="flex flex-row justify-between items-center w-full gap-2 h-12">
       {!hasSelection && access.create && handleNew !== null && (
         <button
           type="button"
@@ -119,19 +114,23 @@ export default function Filters({
       )}
       {hasSelection && (
         <div className="flex flex-row flex-1 justify-start items-center gap-2">
-          {selection.functions.map((func, index) => {
-            return (
-              <button
-                key={index}
-                type="button"
-                onClick={() => func.fun()}
-                className="p-2 flex flex-row items-center justify-center gap-2 border border-mila_orange text-mila_orange transition-all hover:bg-mila_orange hover:text-white font-bold rounded text-xs"
-              >
-                <Icon name={func.icon} size={12} />
-                {func.title}
-              </button>
-            );
-          })}
+          {selection.functions.length === 0 ? (
+            <p className="text-xs pl-2 text-gray-500">No avaiable functions</p>
+          ) : (
+            selection.functions.map((func, index) => {
+              return (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => func.fun()}
+                  className="p-2 flex flex-row items-center justify-center gap-2 border border-mila_orange text-mila_orange transition-all hover:bg-mila_orange hover:text-white font-bold rounded text-xs"
+                >
+                  <Icon name={func.icon} size={12} />
+                  {func.title}
+                </button>
+              );
+            })
+          )}
         </div>
       )}
       {!hasSelection && (

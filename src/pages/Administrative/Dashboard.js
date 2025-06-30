@@ -85,7 +85,7 @@ export default function AdministrativeDashboard() {
           paddingTop: 24,
         }}
       >
-        <ResponsiveContainer width="50%" height="50%">
+        {/* <ResponsiveContainer width="50%" height="50%">
           <AreaChart
             width={500}
             height={400}
@@ -118,7 +118,7 @@ export default function AdministrativeDashboard() {
               fill="#82ca9d"
             />
           </AreaChart>
-        </ResponsiveContainer>
+        </ResponsiveContainer> */}
       </div>
     </div>
   );

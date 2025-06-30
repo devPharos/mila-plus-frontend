@@ -120,7 +120,7 @@ export default function AbsenseControl({
               activeMenu={activeMenu}
               name="absencecontrol"
             >
-              <Percent size={16} /> Absenses Ctrl.
+              <Percent size={16} /> Absences Ctrl.
             </RegisterFormMenu>
           </div>
           <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
@@ -146,7 +146,7 @@ export default function AbsenseControl({
                       <FormHeader
                         access={{ ...access, edit: false }}
                         title={
-                          "Absense Control - " +
+                          "Absence Control - " +
                           pageData.student?.name +
                           " " +
                           pageData.student?.last_name
@@ -156,7 +156,7 @@ export default function AbsenseControl({
                       />
 
                       <InputLineGroup
-                        title="Absenses Ctrl."
+                        title="Absences Ctrl."
                         activeMenu={activeMenu === "absencecontrol"}
                       >
                         <InputLine title="Details">
@@ -201,7 +201,7 @@ export default function AbsenseControl({
                                 monthRef?.current?.value
                               );
                             }}
-                            className="text-xs bg-gray-100 px-6 py-3 mt-3 rounded-md border cursor-pointer flex flex-row items-center justify-center gap-2"
+                            className="text-xs bg-mila_orange text-white px-6 py-3 mt-3 rounded-md border cursor-pointer flex flex-row items-center justify-center gap-2"
                           >
                             <Search size={14} /> Search
                           </button>
@@ -283,7 +283,7 @@ export default function AbsenseControl({
                                   <Input
                                     type="text"
                                     name="totalAbsenses"
-                                    title="Absenses"
+                                    title="Absences"
                                     readOnly
                                     shrink
                                     defaultValue={group.totalAbsenses}
@@ -386,7 +386,7 @@ export default function AbsenseControl({
                           <Input
                             type="text"
                             name="totalAbsenses"
-                            title="Total Absenses"
+                            title="Total Absences"
                             readOnly
                             shrink
                             defaultValue={pageData.totals.totalAbsenses}

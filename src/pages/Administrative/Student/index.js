@@ -135,6 +135,7 @@ export default function AdministrativeStudent() {
   ] = useState(false);
 
   const {
+    accessModule,
     opened,
     orderBy,
     setGridData,
@@ -146,6 +147,10 @@ export default function AdministrativeStudent() {
     handleOpened,
     setGridDetails,
   } = useContext(FullGridContext);
+
+  const pageAccess = accessModule.children.find(
+    (el) => el.alias === "students"
+  );
 
   const handleInactivate = () => {
     const newVarOpened = !inactivateOpen;
@@ -335,6 +340,7 @@ export default function AdministrativeStudent() {
     if (selected[0].fields[statusIndex] === "Waiting") {
       selectionFunctions.push({
         title: "Activate",
+        alias: "activate",
         fun: handleActivate,
         icon: "School",
         Page: Activate,
@@ -346,6 +352,7 @@ export default function AdministrativeStudent() {
 
     selectionFunctions.push({
       title: "M.E. & Vacation",
+      alias: "medical-certificate-vacation",
       fun: handleMedicalAndCertificateVacation,
       icon: "FileText",
       Page: MedicalCertificateVacation,
@@ -357,6 +364,7 @@ export default function AdministrativeStudent() {
     if (selected[0].fields[statusIndex] === "In Class") {
       selectionFunctions.push({
         title: "Inactivate",
+        alias: "inactivate",
         fun: handleInactivate,
         icon: "X",
         Page: Inactivate,
@@ -366,6 +374,7 @@ export default function AdministrativeStudent() {
       });
       selectionFunctions.push({
         title: "Attendance Adjust.",
+        alias: "attendance-adjustments",
         fun: handleAttendanceAdjustments,
         icon: "Highlighter",
         Page: AttendanceAdjustments,
@@ -375,6 +384,7 @@ export default function AdministrativeStudent() {
       });
       selectionFunctions.push({
         title: "Absense Control",
+        alias: "absense-control",
         fun: handleAbsenseControl,
         icon: "Percent",
         Page: AbsenseControl,
@@ -384,6 +394,7 @@ export default function AdministrativeStudent() {
       });
       selectionFunctions.push({
         title: "Grades Adjust.",
+        alias: "grades-adjustments",
         fun: handleGradesAdjustments,
         icon: "Highlighter",
         Page: GradesAdjustments,
@@ -393,6 +404,7 @@ export default function AdministrativeStudent() {
       });
       selectionFunctions.push({
         title: "Transfer",
+        alias: "transfer",
         fun: handleTransfer,
         icon: "Replace",
         Page: Transfer,
@@ -449,6 +461,7 @@ export default function AdministrativeStudent() {
       FullGridContext={FullGridContext}
       PagePreview={PagePreview}
       defaultGridHeader={defaultGridHeader}
+      pageAccess={pageAccess}
       selection={{
         multiple: false,
         selected,

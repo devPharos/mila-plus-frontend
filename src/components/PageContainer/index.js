@@ -13,6 +13,7 @@ import FormLoading from "../RegisterForm/FormLoading";
 // import { Container } from './styles';
 
 function PageContainer({
+  pageAccess = null,
   FullGridContext = null,
   PagePreview = null,
   defaultGridHeader = [],
@@ -35,11 +36,13 @@ function PageContainer({
     loadingData,
   } = useContext(FullGridContext);
 
-  const pageAccesses = hasAccessTo(
-    accesses,
-    currentPage.path.split("/")[1],
-    currentPage.alias
-  );
+  if (!pageAccess) {
+    pageAccess = hasAccessTo(
+      accesses,
+      currentPage.path.split("/")[1],
+      currentPage.alias
+    );
+  }
 
   useEffect(() => {
     if (gridData && gridHeader) {
@@ -60,7 +63,7 @@ function PageContainer({
         </FiltersBar>
       </PageHeader>
       <Filters
-        access={pageAccesses}
+        access={pageAccess}
         Context={FullGridContext}
         handleNew={handleNew ? () => setOpened("new") : null}
         selection={selection}
@@ -78,7 +81,7 @@ function PageContainer({
           {opened && (
             <PreviewController Context={FullGridContext}>
               <PagePreview
-                access={pageAccesses}
+                access={pageAccess}
                 id={opened}
                 defaultFormType="full"
                 Context={FullGridContext}
@@ -93,7 +96,7 @@ function PageContainer({
                 <PreviewController key={index} Context={FullGridContext}>
                   {func.opened && (
                     <func.Page
-                      access={pageAccesses}
+                      access={pageAccess}
                       selected={selection.selected}
                       defaultFormType="full"
                       handleOpened={func.fun}

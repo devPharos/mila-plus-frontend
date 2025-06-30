@@ -49,10 +49,6 @@ export async function getData(
       totalRows: response.data.totalRows,
       pages: pages || 1,
     });
-    console.log(route, {
-      totalRows: response.data.totalRows,
-      pages: pages || 1,
-    });
     setTotalRows(response.data.totalRows);
     return response.data.rows;
   } catch (err) {

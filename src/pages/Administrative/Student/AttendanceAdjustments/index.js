@@ -128,7 +128,7 @@ export default function AttendanceAdjustments({
                   {id === "new" || pageData.loaded ? (
                     <>
                       <FormHeader
-                        // access={{ ...access, edit: false }}
+                        access={access}
                         title={
                           "Attendance Adjustments - " +
                           pageData.student?.name +

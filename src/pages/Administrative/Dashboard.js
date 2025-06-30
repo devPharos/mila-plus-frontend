@@ -19,40 +19,40 @@ import api from "~/services/api";
 
 export default function AdministrativeDashboard() {
   const currentPage = getCurrentPage();
-  // const data = [
-  //   {
-  //     name: "Jan 25",
-  //     uv: 4000,
-  //     pv: 2400,
-  //   },
-  //   {
-  //     name: "Feb 25",
-  //     uv: 3000,
-  //     pv: 1398,
-  //   },
-  //   {
-  //     name: "Mar 25",
-  //     uv: 2000,
-  //     pv: 9800,
-  //   },
-  //   {
-  //     name: "Apr 25",
-  //     uv: 2780,
-  //     pv: 3908,
-  //   },
-  //   {
-  //     name: "May 25",
-  //     uv: 1890,
-  //     pv: 4800,
-  //   },
-  //   {
-  //     name: "Jun 25",
-  //     uv: 2390,
-  //     pv: 3800,
-  //   },
-  // ];
+  const data = [
+    {
+      name: "Jan 25",
+      uv: 4000,
+      pv: 2400,
+    },
+    {
+      name: "Feb 25",
+      uv: 3000,
+      pv: 1398,
+    },
+    {
+      name: "Mar 25",
+      uv: 2000,
+      pv: 9800,
+    },
+    {
+      name: "Apr 25",
+      uv: 2780,
+      pv: 3908,
+    },
+    {
+      name: "May 25",
+      uv: 1890,
+      pv: 4800,
+    },
+    {
+      name: "Jun 25",
+      uv: 2390,
+      pv: 3800,
+    },
+  ];
 
-  const [data, setData] = useState([]);
+  // const [data, setData] = useState([]);
   // useEffect(() => {
   //   api
   //     .get("/charts/frequencyControl")
@@ -85,7 +85,7 @@ export default function AdministrativeDashboard() {
           paddingTop: 24,
         }}
       >
-        {/* <ResponsiveContainer width="50%" height="50%">
+        <ResponsiveContainer width="50%" height="50%">
           <AreaChart
             width={500}
             height={400}
@@ -118,7 +118,7 @@ export default function AdministrativeDashboard() {
               fill="#82ca9d"
             />
           </AreaChart>
-        </ResponsiveContainer> */}
+        </ResponsiveContainer>
       </div>
     </div>
   );

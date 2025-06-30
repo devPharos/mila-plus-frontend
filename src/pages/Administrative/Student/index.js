@@ -11,6 +11,7 @@ import MedicalCertificateVacation from "./MedicalCertificateVacation";
 import api, { baseURL } from "~/services/api";
 import AttendanceAdjustments from "./AttendanceAdjustments";
 import GradesAdjustments from "./GradesAdjustments";
+import AbsenseControl from "./AbsenseControl";
 
 export default function AdministrativeStudent() {
   const filial = useSelector((state) => state.auth.filial);
@@ -114,6 +115,7 @@ export default function AdministrativeStudent() {
   const [attendanceAdjustmentsOpen, setAttendanceAdjustmentsOpen] =
     useState(false);
   const [gradesAdjustmentsOpen, setGradesAdjustmentsOpen] = useState(false);
+  const [absenceControlOpen, setAbsenceControlOpen] = useState(false);
   const [activateOpen, setActivateOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
   const [excelOpen, setExcelOpen] = useState(false);
@@ -158,6 +160,16 @@ export default function AdministrativeStudent() {
   const handleAttendanceAdjustments = () => {
     const newVarOpened = !attendanceAdjustmentsOpen;
     setAttendanceAdjustmentsOpen(newVarOpened);
+    if (!newVarOpened) {
+      setSelected([]);
+      loader();
+    }
+    handleOpened(null);
+  };
+
+  const handleAbsenseControl = () => {
+    const newVarOpened = !absenceControlOpen;
+    setAbsenceControlOpen(newVarOpened);
     if (!newVarOpened) {
       setSelected([]);
       loader();
@@ -359,6 +371,15 @@ export default function AdministrativeStudent() {
         Page: AttendanceAdjustments,
         opened: attendanceAdjustmentsOpen,
         setOpened: setAttendanceAdjustmentsOpen,
+        selected,
+      });
+      selectionFunctions.push({
+        title: "Absense Control",
+        fun: handleAbsenseControl,
+        icon: "Percent",
+        Page: AbsenseControl,
+        opened: absenceControlOpen,
+        setOpened: setAbsenceControlOpen,
         selected,
       });
       selectionFunctions.push({

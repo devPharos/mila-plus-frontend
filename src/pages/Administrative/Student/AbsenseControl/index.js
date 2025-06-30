@@ -1,5 +1,5 @@
 import { Form } from "@unform/web";
-import { Building, NotebookPen, Search } from "lucide-react";
+import { Building, NotebookPen, Percent, Search } from "lucide-react";
 import React, {
   createContext,
   useContext,
@@ -21,10 +21,12 @@ import { format, parseISO } from "date-fns";
 import { Scope } from "@unform/core";
 import Input from "~/components/RegisterForm/Input";
 import TdRadioInput from "~/components/RegisterForm/TdRadioInput";
+import SelectPopover from "~/components/RegisterForm/SelectPopover";
+import { monthsOptions } from "~/functions/selectPopoverOptions";
 
 export const InputContext = createContext({});
 
-export default function AttendanceAdjustments({
+export default function AbsenseControl({
   access,
   id,
   defaultFormType = "preview",
@@ -35,11 +37,13 @@ export default function AttendanceAdjustments({
   const { successfullyUpdated, setSuccessfullyUpdated } =
     useContext(FullGridContext);
   const [pageData, setPageData] = useState({
-    from_date: null,
-    until_date: null,
+    year: new Date().getFullYear(),
+    month: (new Date().getMonth() + 1).toString().padStart(2, "0"),
+    student: null,
+    attendances: [],
   });
-  const untilDateRef = useRef();
-  const fromDateRef = useRef();
+  const yearRef = useRef();
+  const monthRef = useRef();
   const [openNote, setOpenNote] = useState(null);
 
   const [registry, setRegistry] = useState({
@@ -52,7 +56,7 @@ export default function AttendanceAdjustments({
   });
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
-  const [activeMenu, setActiveMenu] = useState("general");
+  const [activeMenu, setActiveMenu] = useState("absencecontrol");
 
   const generalForm = useRef();
 
@@ -76,18 +80,30 @@ export default function AttendanceAdjustments({
       });
   }
 
-  async function loadData(from_date = null, until_date = null) {
+  async function loadData() {
+    let year = generalForm?.current?.getFieldValue("year");
+    let month = generalForm?.current?.getFieldValue("month");
+    if (!year || !month) {
+      year = new Date().getFullYear();
+      month = (new Date().getMonth() + 1).toString().padStart(2, "0");
+
+      generalForm.current.setData({
+        year,
+        month,
+      });
+    }
+
+    const from_date = `${year}-${month}-01`;
+    const until_date = `${year}-${month}-31`;
     setPageData({ ...pageData, loaded: false });
     setSuccessfullyUpdated(true);
-    setTimeout(async () => {
-      const { data } = await api.get(`/attendances/${selected[0].id}`, {
-        params: {
-          from_date,
-          until_date,
-        },
-      });
-      setPageData({ from_date, until_date, ...data, loaded: true });
-    }, 500);
+    const { data } = await api.get(`/absenseControl/${selected[0].id}`, {
+      params: {
+        from_date,
+        until_date,
+      },
+    });
+    setPageData({ year, month, ...data, loaded: true });
   }
 
   useEffect(() => {
@@ -102,9 +118,9 @@ export default function AttendanceAdjustments({
             <RegisterFormMenu
               setActiveMenu={setActiveMenu}
               activeMenu={activeMenu}
-              name="general"
+              name="absencecontrol"
             >
-              <Building size={16} /> General
+              <Percent size={16} /> Absenses Ctrl.
             </RegisterFormMenu>
           </div>
           <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
@@ -128,9 +144,9 @@ export default function AttendanceAdjustments({
                   {id === "new" || pageData.loaded ? (
                     <>
                       <FormHeader
-                        // access={{ ...access, edit: false }}
+                        access={{ ...access, edit: false }}
                         title={
-                          "Attendance Adjustments - " +
+                          "Absense Control - " +
                           pageData.student?.name +
                           " " +
                           pageData.student?.last_name
@@ -140,36 +156,49 @@ export default function AttendanceAdjustments({
                       />
 
                       <InputLineGroup
-                        title="GENERAL"
-                        activeMenu={activeMenu === "general"}
+                        title="Absenses Ctrl."
+                        activeMenu={activeMenu === "absencecontrol"}
                       >
                         <InputLine title="Details">
                           <Input
-                            defaultRef={fromDateRef}
-                            type="date"
-                            name="from_date"
-                            required
-                            title="From Date"
+                            type="text"
+                            title="Student"
+                            readOnly
                             grow
-                            defaultValue={pageData.from_date}
+                            name="student"
                             InputContext={InputContext}
+                            defaultValue={
+                              pageData.student?.name +
+                              " " +
+                              pageData.student?.last_name
+                            }
                           />
                           <Input
-                            defaultRef={untilDateRef}
-                            type="date"
-                            name="until_date"
-                            required
-                            title="Until Date"
-                            grow
-                            defaultValue={pageData.until_date}
+                            ref={yearRef}
+                            type="text"
+                            name="year"
+                            title="Year"
+                            shrink
                             InputContext={InputContext}
+                            defaultValue={pageData.year}
+                          />
+                          <SelectPopover
+                            ref={monthRef}
+                            name="month"
+                            title="Month"
+                            shrink
+                            options={monthsOptions}
+                            InputContext={InputContext}
+                            defaultValue={monthsOptions.find(
+                              (el) => el.value == pageData.month
+                            )}
                           />
                           <button
                             type="button"
                             onClick={() => {
                               loadData(
-                                fromDateRef?.current?.value,
-                                untilDateRef?.current?.value
+                                yearRef?.current?.value,
+                                monthRef?.current?.value
                               );
                             }}
                             className="text-xs bg-gray-100 px-6 py-3 mt-3 rounded-md border cursor-pointer flex flex-row items-center justify-center gap-2"
@@ -177,12 +206,216 @@ export default function AttendanceAdjustments({
                             <Search size={14} /> Search
                           </button>
                         </InputLine>
-                        {pageData.loaded && (
-                          <InputLine>
+                        {pageData.totals.groups
+                          .sort((a, b) =>
+                            a.group.studentxgroups[0].start_date <
+                            b.group.studentxgroups[0].start_date
+                              ? -1
+                              : 1
+                          )
+                          .map((group, index) => {
+                            return group.group.studentxgroups.map((period) => {
+                              return (
+                                <InputLine
+                                  title={index === 0 && "Groups in period"}
+                                >
+                                  <Input
+                                    type="text"
+                                    name="group"
+                                    title="Group Name"
+                                    readOnly
+                                    grow
+                                    defaultValue={group.group.name}
+                                    InputContext={InputContext}
+                                  />
+                                  <Input
+                                    type="text"
+                                    name="classSD"
+                                    title="Class SD"
+                                    readOnly
+                                    shrink
+                                    defaultValue={format(
+                                      parseISO(group.group.start_date),
+                                      "MM/dd/yyyy"
+                                    )}
+                                    InputContext={InputContext}
+                                  />
+                                  <Input
+                                    type="text"
+                                    name="classED"
+                                    title="Class ED"
+                                    readOnly
+                                    shrink
+                                    defaultValue={format(
+                                      parseISO(group.group.end_date),
+                                      "MM/dd/yyyy"
+                                    )}
+                                    InputContext={InputContext}
+                                  />
+                                  <Input
+                                    type="text"
+                                    name="studentSD"
+                                    title="Student SD"
+                                    readOnly
+                                    shrink
+                                    defaultValue={format(
+                                      parseISO(period.start_date),
+                                      "MM/dd/yyyy"
+                                    )}
+                                    InputContext={InputContext}
+                                  />
+                                  {/* <Input
+                                    type="text"
+                                    name="studentED"
+                                    title="Student ED"
+                                    readOnly
+                                    shrink
+                                    defaultValue={
+                                      period.end_date
+                                        ? format(
+                                            parseISO(period.end_date),
+                                            "MM/dd/yyyy"
+                                          )
+                                        : ""
+                                    }
+                                    InputContext={InputContext}
+                                  /> */}
+                                  <Input
+                                    type="text"
+                                    name="totalAbsenses"
+                                    title="Absenses"
+                                    readOnly
+                                    shrink
+                                    defaultValue={group.totalAbsenses}
+                                    InputContext={InputContext}
+                                  />
+                                  <Input
+                                    type="text"
+                                    name="frequency"
+                                    title="Frequency"
+                                    readOnly
+                                    shrink
+                                    defaultValue={
+                                      Math.ceil(group.frequency) + "%"
+                                    }
+                                    InputContext={InputContext}
+                                  />
+                                </InputLine>
+                              );
+                            });
+                            // return (
+                            //   <InputLine
+                            //     title={index === 0 && "Groups in period"}
+                            //   >
+                            //     <Input
+                            //       type="text"
+                            //       name="group"
+                            //       title="Group Name"
+                            //       readOnly
+                            //       grow
+                            //       defaultValue={group.group.name}
+                            //       InputContext={InputContext}
+                            //     />
+                            //     <Input
+                            //       type="date"
+                            //       name="classSD"
+                            //       title="Class SD"
+                            //       readOnly
+                            //       shrink
+                            //       defaultValue={format(
+                            //         parseISO(group.group.start_date),
+                            //         "yyyy-MM-dd"
+                            //       )}
+                            //       InputContext={InputContext}
+                            //     />
+                            //     <Input
+                            //       type="date"
+                            //       name="classED"
+                            //       title="Class ED"
+                            //       readOnly
+                            //       shrink
+                            //       defaultValue={format(
+                            //         parseISO(group.group.end_date),
+                            //         "yyyy-MM-dd"
+                            //       )}
+                            //       InputContext={InputContext}
+                            //     />
+                            //     <Input
+                            //       type="date"
+                            //       name="studentSD"
+                            //       title="Student SD"
+                            //       readOnly
+                            //       shrink
+                            //       defaultValue={
+                            //         group.group.studentxgroups?.length > 0
+                            //           ? format(
+                            //               parseISO(
+                            //                 group.group.studentxgroups[0]
+                            //                   .start_date
+                            //               ),
+                            //               "yyyy-MM-dd"
+                            //             )
+                            //           : null
+                            //       }
+                            //       InputContext={InputContext}
+                            //     />
+                            //     <Input
+                            //       type="text"
+                            //       name="totalAbsenses"
+                            //       title="Total Absenses"
+                            //       readOnly
+                            //       shrink
+                            //       defaultValue={group.totalAbsenses}
+                            //       InputContext={InputContext}
+                            //     />
+                            //     <Input
+                            //       type="text"
+                            //       name="frequency"
+                            //       title="% Frequency"
+                            //       readOnly
+                            //       shrink
+                            //       defaultValue={
+                            //         Math.ceil(group.frequency) + "%"
+                            //       }
+                            //       InputContext={InputContext}
+                            //     />
+                            //   </InputLine>
+                            // );
+                          })}
+                        <InputLine title="Totals in period">
+                          <Input
+                            type="text"
+                            name="totalAbsenses"
+                            title="Total Absenses"
+                            readOnly
+                            shrink
+                            defaultValue={pageData.totals.totalAbsenses}
+                            InputContext={InputContext}
+                          />
+                          <Input
+                            type="text"
+                            name="frequency"
+                            title="% Frequency"
+                            readOnly
+                            shrink
+                            defaultValue={
+                              Math.ceil(pageData.totals.frequency) + "%"
+                            }
+                            InputContext={InputContext}
+                          />
+                          <div className="flex flex-1"></div>
+                        </InputLine>
+                        {pageData.loaded && pageData.attendances.length > 0 && (
+                          <InputLine
+                            title={`Attendances in ${
+                              monthsOptions.find(
+                                (m) => m.value == pageData.month
+                              ).label
+                            }, ${pageData.year}`}
+                          >
                             <table className="w-full text-sm text-center">
                               <thead>
                                 <tr>
-                                  <th></th>
                                   <th></th>
                                   <th></th>
                                   <th></th>
@@ -196,7 +429,6 @@ export default function AttendanceAdjustments({
                                   <th className="px-2 h-8 text-left">Group</th>
                                   <th className="px-2 h-8 text-left">Date</th>
                                   <th className="px-2 h-8 text-left">Shift</th>
-                                  <th className="px-2 h-8 text-left">Notes</th>
                                   <th className="w-16 bg-yellow-500">L/E</th>
                                   <th className="w-16 bg-green-500">P</th>
                                   <th className="w-16 bg-red-500">A</th>
@@ -210,6 +442,7 @@ export default function AttendanceAdjustments({
                                 </tr>
                               </thead>
                               <tbody>
+                                {console.log(pageData)}
                                 {pageData.attendances
                                   ?.sort((a, b) =>
                                     a.studentgroupclasses.date >
@@ -245,6 +478,7 @@ export default function AttendanceAdjustments({
                                             <Input
                                               type="hidden"
                                               name="id"
+                                              readOnly
                                               defaultValue={id}
                                               InputContext={InputContext}
                                             />
@@ -259,21 +493,6 @@ export default function AttendanceAdjustments({
                                           <td className="px-2 h-8 text-left">
                                             {shift}
                                           </td>
-                                          <td className="px-2 h-8 text-left">
-                                            <NotebookPen
-                                              size={14}
-                                              className={`cursor-pointer ${
-                                                attendance.dso_note
-                                                  ? "text-mila_orange"
-                                                  : ""
-                                              }`}
-                                              onClick={() =>
-                                                setOpenNote(
-                                                  openNote === id ? null : id
-                                                )
-                                              }
-                                            />
-                                          </td>
                                           <TdRadioInput
                                             name={`first_check_${id}`}
                                             value="Present"
@@ -282,6 +501,7 @@ export default function AttendanceAdjustments({
                                               "Present",
                                               "Absent",
                                             ]}
+                                            readOnly
                                             InputContext={InputContext}
                                             defaultValue={
                                               !first_check || medical_excuse_id
@@ -298,6 +518,7 @@ export default function AttendanceAdjustments({
                                               "Present",
                                               "Absent",
                                             ]}
+                                            readOnly
                                             InputContext={InputContext}
                                             defaultValue={
                                               !second_check || medical_excuse_id

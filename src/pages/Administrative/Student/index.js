@@ -11,6 +11,7 @@ import MedicalCertificateVacation from "./MedicalCertificateVacation";
 import api, { baseURL } from "~/services/api";
 import AttendanceAdjustments from "./AttendanceAdjustments";
 import GradesAdjustments from "./GradesAdjustments";
+import AbsenseControl from "./AbsenseControl";
 
 export default function AdministrativeStudent() {
   const filial = useSelector((state) => state.auth.filial);
@@ -114,6 +115,7 @@ export default function AdministrativeStudent() {
   const [attendanceAdjustmentsOpen, setAttendanceAdjustmentsOpen] =
     useState(false);
   const [gradesAdjustmentsOpen, setGradesAdjustmentsOpen] = useState(false);
+  const [absenceControlOpen, setAbsenceControlOpen] = useState(false);
   const [activateOpen, setActivateOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
   const [excelOpen, setExcelOpen] = useState(false);
@@ -133,6 +135,7 @@ export default function AdministrativeStudent() {
   ] = useState(false);
 
   const {
+    accessModule,
     opened,
     orderBy,
     setGridData,
@@ -144,6 +147,10 @@ export default function AdministrativeStudent() {
     handleOpened,
     setGridDetails,
   } = useContext(FullGridContext);
+
+  const pageAccess = accessModule.children.find(
+    (el) => el.alias === "students"
+  );
 
   const handleInactivate = () => {
     const newVarOpened = !inactivateOpen;
@@ -158,6 +165,16 @@ export default function AdministrativeStudent() {
   const handleAttendanceAdjustments = () => {
     const newVarOpened = !attendanceAdjustmentsOpen;
     setAttendanceAdjustmentsOpen(newVarOpened);
+    if (!newVarOpened) {
+      setSelected([]);
+      loader();
+    }
+    handleOpened(null);
+  };
+
+  const handleAbsenseControl = () => {
+    const newVarOpened = !absenceControlOpen;
+    setAbsenceControlOpen(newVarOpened);
     if (!newVarOpened) {
       setSelected([]);
       loader();
@@ -323,6 +340,7 @@ export default function AdministrativeStudent() {
     if (selected[0].fields[statusIndex] === "Waiting") {
       selectionFunctions.push({
         title: "Activate",
+        alias: "activate",
         fun: handleActivate,
         icon: "School",
         Page: Activate,
@@ -334,6 +352,7 @@ export default function AdministrativeStudent() {
 
     selectionFunctions.push({
       title: "M.E. & Vacation",
+      alias: "medical-certificate-vacation",
       fun: handleMedicalAndCertificateVacation,
       icon: "FileText",
       Page: MedicalCertificateVacation,
@@ -345,6 +364,7 @@ export default function AdministrativeStudent() {
     if (selected[0].fields[statusIndex] === "In Class") {
       selectionFunctions.push({
         title: "Inactivate",
+        alias: "inactivate",
         fun: handleInactivate,
         icon: "X",
         Page: Inactivate,
@@ -354,6 +374,7 @@ export default function AdministrativeStudent() {
       });
       selectionFunctions.push({
         title: "Attendance Adjust.",
+        alias: "attendance-adjustments",
         fun: handleAttendanceAdjustments,
         icon: "Highlighter",
         Page: AttendanceAdjustments,
@@ -362,7 +383,18 @@ export default function AdministrativeStudent() {
         selected,
       });
       selectionFunctions.push({
+        title: "Absence Control",
+        alias: "absense-control",
+        fun: handleAbsenseControl,
+        icon: "Percent",
+        Page: AbsenseControl,
+        opened: absenceControlOpen,
+        setOpened: setAbsenceControlOpen,
+        selected,
+      });
+      selectionFunctions.push({
         title: "Grades Adjust.",
+        alias: "grades-adjustments",
         fun: handleGradesAdjustments,
         icon: "Highlighter",
         Page: GradesAdjustments,
@@ -372,6 +404,7 @@ export default function AdministrativeStudent() {
       });
       selectionFunctions.push({
         title: "Transfer",
+        alias: "transfer",
         fun: handleTransfer,
         icon: "Replace",
         Page: Transfer,
@@ -428,6 +461,7 @@ export default function AdministrativeStudent() {
       FullGridContext={FullGridContext}
       PagePreview={PagePreview}
       defaultGridHeader={defaultGridHeader}
+      // pageAccess={pageAccess}
       selection={{
         multiple: false,
         selected,

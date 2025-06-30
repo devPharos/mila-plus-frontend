@@ -29,22 +29,18 @@ export default function Filters({
   } = useContext(Context);
   const [activePopover, setActivePopover] = useState("");
   const results = gridData.filter((data) => data.show === true).length;
+  let hasSelection = selection && selection.selected.length > 0;
   if (!gridHeader || !gridData) {
     return null;
   }
 
-  function handleAddFilter(filter) {
-    const newFilter =
-      gridHeader &&
-      [...gridHeader].map((item) => {
-        if (item.title === filter.title) {
-          item.filter = !item.filter;
-        }
-        return item;
-      });
-    setActivePopover("");
-    setGridHeader(newFilter);
-  }
+  // const allowedFunctions = selection.functions.filter((func) =>
+  //   access.children?.find((el) => el.alias === func.alias)
+  // );
+
+  // if (allowedFunctions.length === 0) {
+  //   hasSelection = false;
+  // }
 
   function PopoverFilter(index, options) {
     const { title } = gridHeader[index];
@@ -106,8 +102,8 @@ export default function Filters({
   }
 
   return (
-    <div className="flex flex-row justify-between items-center w-full gap-2">
-      {access.create && handleNew !== null && (
+    <div className="flex flex-row justify-between items-center w-full gap-2 h-12">
+      {!hasSelection && access.create && handleNew !== null && (
         <button
           type="button"
           onClick={() => handleNew()}
@@ -116,43 +112,47 @@ export default function Filters({
           +
         </button>
       )}
-      {selection &&
-        selection.functions &&
-        selection.selected.length > 0 &&
-        selection.functions.map((func, index) => {
-          return (
-            <button
-              key={index}
-              type="button"
-              onClick={() => func.fun()}
-              className="p-2 flex flex-row items-center justify-center gap-2 border border-mila_orange text-mila_orange transition-all hover:bg-mila_orange hover:text-white font-bold rounded text-xs"
-            >
-              <Icon name={func.icon} size={12} />
-              {func.title}
-            </button>
-          );
-        })}
-      {((selection && selection.functions && selection.selected.length === 0) ||
-        !selection) &&
-        results === 0 && (
-          <p className="text-xs pl-2 text-gray-500">No results</p>
-        )}
-      {((selection && selection.functions && selection.selected.length === 0) ||
-        !selection) &&
-        results > 0 && (
-          <p className="text-xs pl-2 text-gray-500">
-            Showing{" "}
-            <span className="font-bold text-sky-700">
-              {limit * (page - 1) + 1} to{" "}
-              {limit * page < gridDetails.totalRows
-                ? limit * page
-                : gridDetails.totalRows}
-            </span>{" "}
-            of {gridDetails.totalRows} rows
-          </p>
-        )}
+      {hasSelection && (
+        <div className="flex flex-row flex-1 justify-start items-center gap-2">
+          {selection.functions.length === 0 ? (
+            <p className="text-xs pl-2 text-gray-500">No avaiable functions</p>
+          ) : (
+            selection.functions.map((func, index) => {
+              return (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => func.fun()}
+                  className="p-2 flex flex-row items-center justify-center gap-2 border border-mila_orange text-mila_orange transition-all hover:bg-mila_orange hover:text-white font-bold rounded text-xs"
+                >
+                  <Icon name={func.icon} size={12} />
+                  {func.title}
+                </button>
+              );
+            })
+          )}
+        </div>
+      )}
+      {!hasSelection && (
+        <>
+          {results === 0 ? (
+            <p className="text-xs pl-2 text-gray-500">No results</p>
+          ) : (
+            <p className="text-xs pl-2 text-gray-500">
+              Showing{" "}
+              <span className="font-bold text-sky-700">
+                {limit * (page - 1) + 1} to{" "}
+                {limit * page < gridDetails.totalRows
+                  ? limit * page
+                  : gridDetails.totalRows}
+              </span>{" "}
+              of {gridDetails.totalRows} rows
+            </p>
+          )}
+        </>
+      )}
 
-      {pages > 1 && (
+      {!hasSelection && pages > 1 && (
         <div className="flex flex-row justify-end items-center">
           <p className="text-xs pl-2 text-gray-500">
             Page{" "}
@@ -186,8 +186,7 @@ export default function Filters({
           </p>
         </div>
       )}
-      {((selection && selection.functions && selection.selected.length === 0) ||
-        !selection) &&
+      {!hasSelection &&
         Math.ceil(gridData.filter((row) => row.show).length / limit) > 1 &&
         setPage !== null && (
           <div className="flex flex-row justify-end items-center">
@@ -225,32 +224,9 @@ export default function Filters({
                 {Math.ceil(gridData.filter((row) => row.show).length / limit)}
               </span>
             </p>
-            <p className="text-xs pl-1 text-gray-500">
-              -
-              <select
-                className="bg-secondary rounded h-8 px-2 gap-2 m-1"
-                onChange={(el) => setLimit(el.target.value)}
-              >
-                {[10, 20, 50, 100, 200].map((retPage, index) => {
-                  return (
-                    <option
-                      key={index}
-                      onClick={() => setLimit(retPage)}
-                      selected={limit === retPage}
-                      className={`${
-                        limit === retPage ? "bg-sky-700 text-white" : ""
-                      } hover:bg-sky-700 hover:text-white px-2 py-1 rounded text-left whitespace-nowrap`}
-                    >
-                      {retPage}
-                    </option>
-                  );
-                })}
-              </select>
-              per page
-            </p>
           </div>
         )}
-      {
+      {!hasSelection && (
         <div className="flex flex-row flex-1 justify-start items-center bg-secondary rounded h-8 px-2 gap-2 m-2">
           <Search size={16} />
           <input
@@ -270,12 +246,9 @@ export default function Filters({
             Fix across pages
           </button> */}
         </div>
-      }
+      )}
       <div className="flex flex-row justify-end items-center">
-        {((selection &&
-          selection.functions &&
-          selection.selected.length === 0) ||
-          !selection) &&
+        {!hasSelection &&
           gridHeader &&
           gridHeader.map((head, index) => {
             if (head.filter) {
@@ -328,36 +301,6 @@ export default function Filters({
               );
             }
           })}
-        {/* {((selection &&
-          selection.functions &&
-          selection.selected.length === 0) ||
-          !selection) &&
-          gridHeader &&
-          gridHeader.filter((head) => head.filter === false).length > 0 && (
-            <Popover
-              name={"addFilter"}
-              Content={() =>
-                PopoverAddFilter({
-                  options: gridHeader.filter((head) => head.filter === false),
-                  handleAddFilter,
-                })
-              }
-              active={activePopover}
-              opened={activePopover}
-              setOppened={setActivePopover}
-            >
-              <div
-                className={`flex flex-row justify-start items-center bg-sky-700 transition ease-in  hover:bg-sky-600 rounded h-8 px-2 gap-2 m-2`}
-              >
-                <PlusCircle size={14} color="#FFF" />
-                <div
-                  className={`bg-transparent min-w-0 text-xs text-white h-full focus:outline-none flex flex-1 justify-start items-center whitespace-nowrap`}
-                >
-                  Filter
-                </div>
-              </div>
-            </Popover>
-          )} */}
         {Excel && (
           <div className="relative">
             <button
@@ -446,21 +389,6 @@ export default function Filters({
                         </div>
                       );
                     })}
-                    {/* <div
-                          key={index}
-                          className="flex w-full flex-row items-center justify-between gap-2 p-2 border-b border-gray-300"
-                        >
-                          <label className="text-xs text-gray-500 flex-1">
-                            {data.title}
-                          </label>
-                          <input
-                            type={data.type}
-                            name={data.name}
-                            placeholder=""
-                            className="bg-transparent w-32 text-xs h-full focus:outline-none"
-                            value={data.value}
-                          />
-                        </div> */}
                     <button type="button" onClick={Excel.fun}>
                       <div
                         className={`relative flex flex-row justify-start items-center bg-lime-700 transition ease-in hover:bg-lime-600 rounded h-8 px-2 gap-2 m-2 text-white text-xs`}

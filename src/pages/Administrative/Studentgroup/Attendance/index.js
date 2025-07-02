@@ -80,7 +80,7 @@ export default function Attendance({
   }
 
   function handleGeneralFormSubmit(data) {
-    if (pageData.attendance?.locked_at && data.grades) {
+    if (data.lock && pageData.attendance?.locked_at && data.grades) {
       api
         .post(`/studentgroups/grades/${selected[0].id}`, {
           grades: data.grades,

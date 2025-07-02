@@ -85,8 +85,6 @@ export default function Settlement({
   }
 
   async function handleGeneralFormSubmit(data) {
-    console.log(data);
-    // return;
     setLoading(true);
     if (data.paymentMethod.platform.includes("Gravity - Online")) {
       const receivable = {

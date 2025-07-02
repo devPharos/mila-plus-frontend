@@ -115,16 +115,16 @@ export default function Attendance({
           });
         });
     }
-    if (
-      data.paceguides.filter((paceguide) => paceguide.checked === "true")
-        .length === 0
-    ) {
-      toast("At least one content must be marked as Done!", {
-        type: "error",
-        autoClose: 1000,
-      });
-      return;
-    }
+    // if (
+    //   data.paceguides.filter((paceguide) => paceguide.checked === "true")
+    //     .length === 0
+    // ) {
+    //   toast("At least one content must be marked as Done!", {
+    //     type: "error",
+    //     autoClose: 1000,
+    //   });
+    //   return;
+    // }
     if (data.lock) {
       alertBox({
         title: "Attention!",

@@ -66,38 +66,37 @@ export default function Settlement({
     }
     handleOpened(null);
   }
+  async function handleSettlement(data, approvalData) {
+    await api
+      .post(`/receivables/settlement`, {
+        ...data,
+        approvalData,
+        total_amount: totalAmount,
+        settlement_date: format(data.settlement_date, "yyyyMMdd"),
+      })
+      .then(({ data }) => {
+        toast(data.message, { autoClose: 1000 });
+        handleOpened(null);
+      })
+      .catch((err) => {
+        console.log(err);
+        // toast(err.response.data.error, { type: "error", autoClose: 3000 });
+      });
+  }
 
   async function handleGeneralFormSubmit(data) {
+    console.log(data);
+    // return;
     setLoading(true);
-    async function handleSettlement(data, approvalData) {
-      await api
-        .post(`/receivables/settlement`, {
-          ...data,
-          approvalData,
-          total_amount: totalAmount,
-          settlement_date: format(data.settlement_date, "yyyyMMdd"),
-        })
-        .then(({ data }) => {
-          toast(data.message, { autoClose: 1000 });
-          handleOpened(null);
-        })
-        .catch((err) => {
-          console.log(err);
-          // toast(err.response.data.error, { type: "error", autoClose: 3000 });
-        });
-    }
     if (data.paymentMethod.platform.includes("Gravity - Online")) {
       const receivable = {
-        id: data.receivables[0].id,
-        total: parseFloat(data.prices.total_tuition),
-        memo: "Settlement for " + data.receivables.length + " receivables",
+        receivable_id: data.receivables[0].id,
+        amount: parseFloat(data.total_amount),
+        pageDescription:
+          "Settlement for " + data.receivables.length + " receivables",
       };
       await api
-        .post(`/emergepay/simple-form`, {
-          receivable_id: receivable.id,
-          amount: receivable.total,
-          pageDescription: receivable.memo,
-        })
+        .post(`/emergepay/simple-form`, receivable)
         .then(({ data: formData }) => {
           const { transactionToken } = formData;
           emergepay.open({
@@ -148,44 +147,38 @@ export default function Settlement({
     handleOpened(null);
     return;
   }
+  async function loadData() {
+    const receivables = [];
+    for (let receivable of selected) {
+      const { data } = await api.get(`/receivables/${receivable.id}`);
+
+      receivables.push(data);
+    }
+    if (receivables.length === 0) return;
+    console.log(receivables);
+    const { student } = receivables[0].issuer;
+    setPageData({
+      ...pageData,
+      receivables: receivables,
+      loaded: true,
+      issuer: receivables[0].issuer,
+      student: {
+        ...student,
+        searchFields: {
+          processtype_id: student?.processtype_id,
+          processsubstatus_id: student?.processsubstatus_id,
+          filial_id: student?.filial_id,
+        },
+      },
+    });
+    setTotalAmount(
+      receivables.reduce((acc, curr) => {
+        return acc + curr.balance;
+      }, 0)
+    );
+  }
 
   useEffect(() => {
-    async function loadData() {
-      const promises = [];
-      selected.map((receivable) => {
-        promises.push(
-          api
-            .get(`/receivables/${receivable.id}`)
-            .then(({ data }) => {
-              return data;
-            })
-            .catch((err) => {
-              console.log(err);
-            })
-        );
-      });
-      Promise.all(promises).then((data) => {
-        const { student } = data[0].issuer;
-        setPageData({
-          ...pageData,
-          receivables: data,
-          loaded: true,
-          student: {
-            ...student,
-            searchFields: {
-              processtype_id: student.processtype_id,
-              processsubstatus_id: student.processsubstatus_id,
-              filial_id: student.filial_id,
-            },
-          },
-        });
-        setTotalAmount(
-          data.reduce((acc, curr) => {
-            return acc + curr.balance;
-          }, 0)
-        );
-      });
-    }
     loadData();
   }, []);
 
@@ -267,12 +260,7 @@ export default function Settlement({
                       <>
                         <FormHeader
                           access={access}
-                          title={
-                            "Settlement - " +
-                            pageData.student?.name +
-                            " " +
-                            pageData.student?.last_name
-                          }
+                          title={"Settlement - " + pageData.issuer?.name}
                           registry={registry}
                           InputContext={InputContext}
                           loading={loading}

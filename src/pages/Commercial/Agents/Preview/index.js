@@ -57,24 +57,11 @@ export default function PagePreview({
   const auth = useSelector((state) => state.auth);
 
   useEffect(() => {
-    async function getCountriesList() {
-      const countriesList = CountryList.getAll().map((country) => {
-        return {
-          value: country.dial_code,
-          label: country.flag + " " + country.dial_code + " " + country.name,
-          code: country.dial_code,
-          name: country.name,
-        };
-      });
-
-      return countriesList;
-    }
     async function getPageData() {
-      const ddiOptions = await getCountriesList();
       if (id !== "new") {
         try {
           const { data } = await api.get(`/agents/${id}`);
-          setPageData({ ...data, loaded: true, ddiOptions });
+          setPageData({ ...data, loaded: true });
           const {
             created_by,
             created_at,
@@ -96,7 +83,7 @@ export default function PagePreview({
           toast(err.response.data.error, { type: "error", autoClose: 3000 });
         }
       } else {
-        setPageData({ ...pageData, loaded: true, ddiOptions });
+        setPageData({ ...pageData, loaded: true });
         setFormType("full");
       }
     }
@@ -269,26 +256,36 @@ export default function PagePreview({
                               defaultValue={pageData.name}
                               InputContext={InputContext}
                             />
-                            <Input
+                            {/* <Input
                               type="text"
                               name="email"
                               grow
                               title="E-mail"
                               defaultValue={pageData.email}
                               InputContext={InputContext}
-                            />
+                            /> */}
                           </InputLine>
-                          <InputLine>
-                            <Input
-                              type="text"
-                              name="user_id"
-                              disabled
-                              grow
-                              title="User"
-                              defaultValue={pageData.user_id}
-                              InputContext={InputContext}
-                            />
-                          </InputLine>
+                          <FindGeneric
+                            route="users"
+                            title="User"
+                            scope="user"
+                            InputContext={InputContext}
+                            defaultValue={{
+                              id: pageData.user?.id,
+                              name: pageData.user?.name,
+                              email: pageData.user?.email,
+                            }}
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                              {
+                                title: "E-mail",
+                                name: "email",
+                              },
+                            ]}
+                          />
                         </InputLineGroup>
                       </>
                     ) : (

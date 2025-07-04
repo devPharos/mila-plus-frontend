@@ -83,6 +83,7 @@ import Classrooms from "./pages/Administrative/Classroom";
 import Studentgroups from "./pages/Administrative/Studentgroup";
 import ResetPassword from "./pages/Auth/ResetPassword";
 import Messages from "./pages/Administrative/Message";
+import PartnersAndInfluencers from "./pages/Commercial/PartnersAndInfluencers";
 
 injectStore(store);
 
@@ -242,6 +243,10 @@ const router = createBrowserRouter([
           {
             path: "/Commercial/Agents",
             element: <AdministrativeAgents />,
+          },
+          {
+            path: "/Commercial/PartnersAndInfluencers",
+            element: <PartnersAndInfluencers />,
           },
         ],
       },

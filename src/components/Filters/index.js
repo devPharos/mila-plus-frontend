@@ -303,7 +303,7 @@ export default function Filters({
               );
             }
           })}
-        {Excel && access.children?.find((el) => el.alias === "excel") && (
+        {Excel && (
           <div className="relative">
             <button
               type="button"

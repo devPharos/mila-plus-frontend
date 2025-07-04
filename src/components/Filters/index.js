@@ -30,19 +30,23 @@ export default function Filters({
   const [activePopover, setActivePopover] = useState("");
   const results = gridData.filter((data) => data.show === true).length;
   let hasSelection = selection && selection.selected.length > 0;
+  let allowAll = false;
   if (!gridHeader || !gridData) {
     return null;
   }
 
-  // if (selection?.functions?.length > 0) {
-  //   const allowedFunctions = selection?.functions?.filter((func) =>
-  //     access.children?.find((el) => el.alias === func.alias)
-  //   );
+  if (selection?.functions?.length > 0) {
+    const allowedFunctions = selection?.functions?.filter((func) =>
+      access.children?.find((el) => el.alias === func.alias)
+    );
+    if (access.children && access.children.length === 0) {
+      allowAll = true;
+    }
 
-  //   if (allowedFunctions.length === 0) {
-  //     hasSelection = false;
-  //   }
-  // }
+    if (allowedFunctions.length === 0 && !allowAll) {
+      hasSelection = false;
+    }
+  }
 
   function PopoverFilter(index, options) {
     const { title } = gridHeader[index];
@@ -102,35 +106,45 @@ export default function Filters({
       </div>
     );
   }
-
   return (
     <div className="flex flex-row justify-between items-center w-full gap-2 h-12">
-      {!hasSelection && access.create && handleNew !== null && (
-        <button
-          type="button"
-          onClick={() => handleNew()}
-          className="p-2 w-10 border border-mila_orange text-mila_orange transition-all hover:bg-mila_orange hover:text-white font-bold rounded text-xs"
-        >
-          +
-        </button>
-      )}
+      {!hasSelection &&
+        access.MenuHierarchyXGroup.create &&
+        handleNew !== null && (
+          <button
+            type="button"
+            onClick={() => handleNew()}
+            className="p-2 w-10 border border-mila_orange text-mila_orange transition-all hover:bg-mila_orange hover:text-white font-bold rounded text-xs"
+          >
+            +
+          </button>
+        )}
       {hasSelection && (
         <div className="flex flex-row flex-1 justify-start items-center gap-2">
           {selection.functions.length === 0 ? (
             <p className="text-xs pl-2 text-gray-500">No avaiable functions</p>
           ) : (
             selection.functions.map((func, index) => {
-              return (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => func.fun()}
-                  className="p-2 flex flex-row items-center justify-center gap-2 border border-mila_orange text-mila_orange transition-all hover:bg-mila_orange hover:text-white font-bold rounded text-xs"
-                >
-                  <Icon name={func.icon} size={12} />
-                  {func.title}
-                </button>
+              console.log(
+                allowAll,
+                access.children.find((el) => el.alias === func.alias)
               );
+              if (
+                allowAll ||
+                access.children.find((el) => el.alias === func.alias)
+              ) {
+                return (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => func.fun()}
+                    className="p-2 flex flex-row items-center justify-center gap-2 border border-mila_orange text-mila_orange transition-all hover:bg-mila_orange hover:text-white font-bold rounded text-xs"
+                  >
+                    <Icon name={func.icon} size={12} />
+                    {func.title}
+                  </button>
+                );
+              }
             })
           )}
         </div>
@@ -303,7 +317,7 @@ export default function Filters({
               );
             }
           })}
-        {Excel && (
+        {Excel && access.children?.find((el) => el.alias === "excel") && (
           <div className="relative">
             <button
               type="button"

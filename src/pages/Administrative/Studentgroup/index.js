@@ -87,17 +87,40 @@ export default function Studentgroups() {
   const [openAttendance, setOpenAttendance] = useState(false);
 
   const {
+    accessModule,
+    activeFilters,
+    gridData,
+    gridDetails,
+    gridHeader,
+    handleFilters,
+    handleOpened,
+    limit,
+    loadingData,
     opened,
     orderBy,
-    setGridData,
     page,
-    setPages,
-    limit,
+    pages,
     search,
-    setLoadingData,
-    handleOpened,
+    setActiveFilters,
+    setGridData,
     setGridDetails,
+    setGridHeader,
+    setLimit,
+    setLoadingData,
+    setOpened,
+    setOrderBy,
+    setPage,
+    setPages,
+    setSearch,
+    setTotalRows,
+    setSuccessfullyUpdated,
+    successfullyUpdated,
+    totalRows,
   } = useContext(FullGridContext);
+
+  const pageAccess = accessModule.children.find(
+    (el) => el.alias === "studentgroups"
+  );
 
   async function handleStart() {
     if (selected[0].fields[1] !== "In Formation") {
@@ -224,6 +247,7 @@ export default function Studentgroups() {
   if (selected.length > 0 && selected[0].fields[1] === "Ongoing") {
     selectionFunctions.push({
       title: "Attendance",
+      alias: "attendance",
       fun: handleAttendance,
       icon: "Highlighter",
       Page: Attendance,
@@ -238,6 +262,7 @@ export default function Studentgroups() {
   if (selected.length === 0 || selected[0].fields[1] === "In Formation") {
     selectionFunctions.push({
       title: "Start Group",
+      alias: "start-group",
       fun: handleStart,
       icon: "Play",
       Page: () => null,
@@ -250,6 +275,7 @@ export default function Studentgroups() {
     if (selected[0].others.classes === 0) {
       selectionFunctions.push({
         title: "Pause Group",
+        alias: "pause-group",
         fun: handlePause,
         icon: "Pause",
         Page: () => null,
@@ -265,6 +291,7 @@ export default function Studentgroups() {
     <PageContainer
       FullGridContext={FullGridContext}
       PagePreview={PagePreview}
+      pageAccess={pageAccess}
       defaultGridHeader={defaultGridHeader}
       selection={{
         multiple: false,

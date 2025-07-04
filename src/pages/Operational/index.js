@@ -12,7 +12,7 @@ export default function Operational() {
   const { pathname } = useLocation();
   const { accesses } = useSelector((state) => state.auth);
   const accessModule = accesses.hierarchy.find(
-    (el) => el.alias === "administrative"
+    (el) => el.alias === "operational"
   );
   const navigate = useNavigate();
   const [activeFilters, setActiveFilters] = useState([]);

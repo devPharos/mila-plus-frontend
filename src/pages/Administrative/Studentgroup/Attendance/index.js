@@ -25,6 +25,7 @@ import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import { yesOrNoOptions } from "~/functions/selectPopoverOptions";
 import TdRadioInput from "~/components/RegisterForm/TdRadioInput";
 import { useSelector } from "react-redux";
+import { getTabsPermissions, hasAccessTo } from "~/functions";
 
 export const InputContext = createContext({});
 
@@ -38,6 +39,7 @@ export default function Attendance({
   const { alertBox } = useContext(AlertContext);
   const { successfullyUpdated, setSuccessfullyUpdated } =
     useContext(FullGridContext);
+  const tabsPermissions = getTabsPermissions("attendance", FullGridContext);
   const { profile } = useSelector((state) => state.user);
   const groupName = profile.groups[0].group.name;
   const [pageData, setPageData] = useState({
@@ -91,7 +93,6 @@ export default function Attendance({
           handleOpened(null);
         })
         .catch((err) => {
-          console.log(err);
           toast(err.response.data.error, {
             type: "error",
             autoClose: 1000,
@@ -373,7 +374,13 @@ export default function Attendance({
                             name="lock"
                             grow
                             title="Lock this attendance?"
-                            readOnly={groupName === "Teacher" ? true : false}
+                            readOnly={
+                              pageData.studentgroupclass?.locked_at
+                                ? !hasAccessTo(access, null, "attendance")
+                                    .inactivate
+                                : !hasAccessTo(access, null, "attendance")
+                                    .create
+                            }
                             InputContext={InputContext}
                             options={yesOrNoOptions}
                             defaultValue={
@@ -448,8 +455,14 @@ export default function Attendance({
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {pageData?.students?.map(
-                                      (student, index) => {
+                                    {pageData?.students
+                                      ?.sort((a, b) =>
+                                        a.name + a.last_name >
+                                        b.name + b.last_name
+                                          ? 1
+                                          : -1
+                                      )
+                                      .map((student, index) => {
                                         return student.attendances
                                           .filter(
                                             (attendance) =>
@@ -555,8 +568,7 @@ export default function Attendance({
                                               </Scope>
                                             );
                                           });
-                                      }
-                                    )}
+                                      })}
                                   </tbody>
                                 </table>
                               </InputLine>
@@ -681,17 +693,8 @@ export default function Attendance({
                                       </tr>
                                     </thead>
                                     <tbody>
-                                      {pageData.studentgroupclass?.studentgroup?.students.map(
+                                      {pageData.students.map(
                                         (student, index) => {
-                                          const {
-                                            first_check = null,
-                                            second_check = null,
-                                          } =
-                                            pageData.studentgroupclass?.attendances?.find(
-                                              (attendance) =>
-                                                attendance.student_id ===
-                                                student.id
-                                            ) || {};
                                           return (
                                             <Scope
                                               path={`students.${index}`}

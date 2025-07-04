@@ -11,9 +11,8 @@ export default function Settings() {
   const { pages } = useContext(PageContext);
   const { pathname } = useLocation();
   const { accesses } = useSelector((state) => state.auth);
-  const accessModule = accesses.hierarchy.find(
-    (el) => el.alias === "administrative"
-  );
+  const accessModule = accesses.hierarchy.find((el) => el.alias === "settings");
+  console.log(accessModule.children);
   const navigate = useNavigate();
   const [activeFilters, setActiveFilters] = useState([]);
   const [opened, setOpened] = useState(false);

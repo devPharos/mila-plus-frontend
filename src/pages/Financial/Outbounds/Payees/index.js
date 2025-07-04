@@ -147,17 +147,40 @@ export default function FinancialPayees() {
   const { alertBox } = useContext(AlertContext);
 
   const {
+    accessModule,
+    activeFilters,
+    gridData,
+    gridDetails,
+    gridHeader,
+    handleFilters,
+    handleOpened,
+    limit,
+    loadingData,
     opened,
     orderBy,
-    setGridData,
     page,
-    setPages,
-    limit,
+    pages,
     search,
     setActiveFilters,
-    setLoadingData,
+    setGridData,
     setGridDetails,
+    setGridHeader,
+    setLimit,
+    setLoadingData,
+    setOpened,
+    setOrderBy,
+    setPage,
+    setPages,
+    setSearch,
+    setTotalRows,
+    setSuccessfullyUpdated,
+    successfullyUpdated,
+    totalRows,
   } = useContext(FullGridContext);
+
+  const pageAccess = accessModule.children.find(
+    (el) => el.alias === "financial-payees"
+  );
 
   function handleSettlement() {
     const newVarOpened = !settlementOpen;
@@ -315,6 +338,7 @@ export default function FinancialPayees() {
     <PageContainer
       FullGridContext={FullGridContext}
       PagePreview={PagePreview}
+      pageAccess={pageAccess}
       defaultGridHeader={defaultGridHeader}
       selection={{
         multiple: false,

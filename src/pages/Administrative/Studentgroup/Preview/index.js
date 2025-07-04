@@ -15,7 +15,7 @@ import InputLine from "~/components/RegisterForm/InputLine";
 import InputLineGroup from "~/components/RegisterForm/InputLineGroup";
 import FormHeader from "~/components/RegisterForm/FormHeader";
 import Preview from "~/components/Preview";
-import { getRegistries } from "~/functions";
+import { getRegistries, getTabsPermissions, tabAllowed } from "~/functions";
 import { format, parseISO } from "date-fns";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
@@ -43,12 +43,11 @@ export default function PagePreview({
   id,
   defaultFormType = "preview",
 }) {
-  const {
-    handleOpened,
-    setOpened,
-    successfullyUpdated,
-    setSuccessfullyUpdated,
-  } = useContext(FullGridContext);
+  const { handleOpened, successfullyUpdated, setSuccessfullyUpdated } =
+    useContext(FullGridContext);
+
+  const tabsPermissions = getTabsPermissions("studentgroups", FullGridContext);
+
   const [pageData, setPageData] = useState({
     name: "",
     status: "In Formation",
@@ -191,33 +190,39 @@ export default function PagePreview({
             >
               <GraduationCap size={16} /> Student Group
             </RegisterFormMenu>
-            <RegisterFormMenu
-              setActiveMenu={setActiveMenu}
-              activeMenu={activeMenu}
-              name="students"
-              disabled={id === "new"}
-              messageOnDisabled="Create the student group to have access to students."
-            >
-              <GraduationCap size={16} /> Students
-            </RegisterFormMenu>
-            <RegisterFormMenu
-              setActiveMenu={setActiveMenu}
-              activeMenu={activeMenu}
-              name="Class Planning"
-              disabled={pageData.classes.length === 0}
-              messageOnDisabled="Create the student group to have access to Class Planning."
-            >
-              <Calendar size={16} /> Class Planning
-            </RegisterFormMenu>
-            <RegisterFormMenu
-              setActiveMenu={setActiveMenu}
-              activeMenu={activeMenu}
-              name="Scope and Sequence"
-              disabled={pageData.classes.length === 0}
-              messageOnDisabled="Create the student group to have access to Scope and Sequence."
-            >
-              <Calendar size={16} /> Scope & Sequence
-            </RegisterFormMenu>
+            {console.log(tabsPermissions)}
+            {id !== "new" && (
+              <>
+                <RegisterFormMenu
+                  setActiveMenu={setActiveMenu}
+                  activeMenu={activeMenu}
+                  name="students"
+                  messageOnDisabled="Create the student group to have access to students."
+                >
+                  <GraduationCap size={16} /> Students
+                </RegisterFormMenu>
+                <RegisterFormMenu
+                  setActiveMenu={setActiveMenu}
+                  activeMenu={activeMenu}
+                  name="Class Planning"
+                  disabled={!tabAllowed(tabsPermissions, "class-planning-tab")}
+                  messageOnDisabled="You don't have permission to access this tab"
+                >
+                  <Calendar size={16} /> Class Planning
+                </RegisterFormMenu>
+                <RegisterFormMenu
+                  setActiveMenu={setActiveMenu}
+                  activeMenu={activeMenu}
+                  name="Scope and Sequence"
+                  disabled={
+                    !tabAllowed(tabsPermissions, "scope-and-sequence-tab")
+                  }
+                  messageOnDisabled="You don't have permission to access this tab"
+                >
+                  <Calendar size={16} /> Scope & Sequence
+                </RegisterFormMenu>
+              </>
+            )}
           </div>
           <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
             <InputContext.Provider

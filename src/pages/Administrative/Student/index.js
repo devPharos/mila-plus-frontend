@@ -136,16 +136,34 @@ export default function AdministrativeStudent() {
 
   const {
     accessModule,
+    activeFilters,
+    gridData,
+    gridDetails,
+    gridHeader,
+    handleFilters,
+    handleOpened,
+    limit,
+    loadingData,
     opened,
     orderBy,
-    setGridData,
     page,
-    setPages,
-    limit,
+    pages,
     search,
-    setLoadingData,
-    handleOpened,
+    setActiveFilters,
+    setGridData,
     setGridDetails,
+    setGridHeader,
+    setLimit,
+    setLoadingData,
+    setOpened,
+    setOrderBy,
+    setPage,
+    setPages,
+    setSearch,
+    setTotalRows,
+    setSuccessfullyUpdated,
+    successfullyUpdated,
+    totalRows,
   } = useContext(FullGridContext);
 
   const pageAccess = accessModule.children.find(
@@ -460,8 +478,8 @@ export default function AdministrativeStudent() {
     <PageContainer
       FullGridContext={FullGridContext}
       PagePreview={PagePreview}
-      defaultGridHeader={defaultGridHeader}
       pageAccess={pageAccess}
+      defaultGridHeader={defaultGridHeader}
       selection={{
         multiple: false,
         selected,

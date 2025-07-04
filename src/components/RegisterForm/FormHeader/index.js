@@ -8,7 +8,13 @@ export default function FormHeader({
   loading = false,
   saveText = "Save changes",
   outside = false,
-  access = { view: false, edit: false, create: false, inactivate: false },
+  access = {
+    view: false,
+    edit: false,
+    create: false,
+    inactivate: false,
+    MenuHierarchyXGroup: null,
+  },
   title = "",
   registry = { registryBy: null, registryAt: null, registryStatus: null },
   InputContext = null,
@@ -27,6 +33,10 @@ export default function FormHeader({
     canceled,
     handleOutsideMail,
   } = useContext(InputContext);
+
+  if (access.MenuHierarchyXGroup) {
+    access = access.MenuHierarchyXGroup;
+  }
 
   return (
     <div className="sticky top-0 z-50 bg-slate-100 h-24 mb-4 px-4 py-8 flex flex-row items-center justify-between w-full">

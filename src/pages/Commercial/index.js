@@ -12,7 +12,7 @@ export default function Commercial() {
   const { pathname } = useLocation();
   const { accesses } = useSelector((state) => state.auth);
   const accessModule = accesses.hierarchy.find(
-    (el) => el.alias === "administrative"
+    (el) => el.alias === "commercial"
   );
   const navigate = useNavigate();
   const [activeFilters, setActiveFilters] = useState([]);

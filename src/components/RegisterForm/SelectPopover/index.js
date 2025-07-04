@@ -14,6 +14,7 @@ export default function SelectPopover({
   isSearchable = false,
   isClearable = false,
   InputContext,
+  setReturnPopover = () => null,
   ...rest
 }) {
   const inputRef = useRef();
@@ -56,6 +57,10 @@ export default function SelectPopover({
   function handleChanged() {
     if (InputContext) {
       setSuccessfullyUpdated(false);
+      if (setReturnPopover) {
+        // console.log(inputRef.current.getValue());
+        setReturnPopover(inputRef.current.state.selectValue);
+      }
     }
   }
 

@@ -170,19 +170,40 @@ export default function FinancialReceivables() {
   const { alertBox } = useContext(AlertContext);
 
   const {
+    accessModule,
+    activeFilters,
+    gridData,
+    gridDetails,
+    gridHeader,
+    handleFilters,
+    handleOpened,
+    limit,
+    loadingData,
     opened,
     orderBy,
-    setGridData,
     page,
-    setPages,
-    limit,
+    pages,
     search,
-    setSearch,
     setActiveFilters,
-    setLoadingData,
-    setTotalRows,
+    setGridData,
     setGridDetails,
+    setGridHeader,
+    setLimit,
+    setLoadingData,
+    setOpened,
+    setOrderBy,
+    setPage,
+    setPages,
+    setSearch,
+    setTotalRows,
+    setSuccessfullyUpdated,
+    successfullyUpdated,
+    totalRows,
   } = useContext(FullGridContext);
+
+  const pageAccess = accessModule.children.find(
+    (el) => el.alias === "financial-receivables"
+  );
 
   useEffect(() => {
     setActiveFilters([]);
@@ -425,6 +446,7 @@ export default function FinancialReceivables() {
         FullGridContext={FullGridContext}
         PagePreview={PagePreview}
         defaultGridHeader={defaultGridHeader}
+        pageAccess={pageAccess}
         selection={{
           multiple: true,
           selected,
@@ -434,6 +456,7 @@ export default function FinancialReceivables() {
               title: "Fee Adjustment",
               fun: handleFeeAdjustment,
               icon: "Pencil",
+              alias: "fee-adjustments",
               Page: FeeAdjustment,
               opened: feeAdjustmentOpen,
               setOpened: setFeeAdjustmentOpen,
@@ -441,6 +464,7 @@ export default function FinancialReceivables() {
             },
             {
               title: "Settlement",
+              alias: "settlement",
               fun: handleSettlement,
               icon: "ReplaceAll",
               Page: Settlement,
@@ -449,7 +473,8 @@ export default function FinancialReceivables() {
               selected,
             },
             {
-              title: "Renegociation",
+              title: "Renegotiation",
+              alias: "renegotiation",
               fun: handleRenegociation,
               icon: "Handshake",
               Page: Renegociation,
@@ -459,6 +484,7 @@ export default function FinancialReceivables() {
             },
             {
               title: "Delete",
+              alias: "delete",
               fun: handleDelete,
               icon: "X",
               Page: null,

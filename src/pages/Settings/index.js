@@ -3,12 +3,16 @@ import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "../Sidebar";
 import { PageContext } from "~/App";
 import { capitalizeFirstLetter } from "~/functions";
+import { useSelector } from "react-redux";
 
 export const FullGridContext = createContext();
 
 export default function Settings() {
   const { pages } = useContext(PageContext);
   const { pathname } = useLocation();
+  const { accesses } = useSelector((state) => state.auth);
+  const accessModule = accesses.hierarchy.find((el) => el.alias === "settings");
+  console.log(accessModule.children);
   const navigate = useNavigate();
   const [activeFilters, setActiveFilters] = useState([]);
   const [opened, setOpened] = useState(false);
@@ -78,6 +82,7 @@ export default function Settings() {
 
       <FullGridContext.Provider
         value={{
+          accessModule,
           activeFilters,
           setActiveFilters,
           opened,

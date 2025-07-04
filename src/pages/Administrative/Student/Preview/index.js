@@ -38,7 +38,9 @@ import {
   countries_list,
   getPriceLists,
   getRegistries,
+  getTabsPermissions,
   handleUpdatedFields,
+  tabAllowed,
 } from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import Textarea from "~/components/RegisterForm/Textarea";
@@ -79,6 +81,9 @@ export default function PagePreview({
     successfullyUpdated,
     setSuccessfullyUpdated,
   } = useContext(FullGridContext);
+
+  const tabsPermissions = getTabsPermissions("students", FullGridContext);
+
   const [pageData, setPageData] = useState({
     name: "",
     last_name: "",
@@ -117,7 +122,6 @@ export default function PagePreview({
     studentgroup: null,
     programs: [],
   });
-  const [countriesList, setCountriesList] = useState([]);
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("student-information");
@@ -129,7 +133,6 @@ export default function PagePreview({
     canceled_by: null,
     canceled_at: null,
   });
-  const [filialOptions, setFilialOptions] = useState([]);
   const generalForm = useRef();
   const auth = useSelector((state) => state.auth);
 
@@ -142,20 +145,7 @@ export default function PagePreview({
   });
 
   useEffect(() => {
-    async function getCountriesList() {
-      const getList = CountryList.getAll().map((country) => {
-        return {
-          value: country.dial_code,
-          label: country.flag + " " + country.dial_code + " " + country.name,
-          code: country.dial_code,
-          name: country.name,
-        };
-      });
-      setCountriesList(getList);
-    }
-
     async function getPageData() {
-      const ddiOptions = await getCountriesList();
       if (id !== "new") {
         try {
           const { data } = await api.get(`/students/${id}`);
@@ -167,7 +157,6 @@ export default function PagePreview({
               filial_id: data.filial_id,
             },
             loaded: true,
-            ddiOptions,
           });
           const {
             created_by,
@@ -191,7 +180,7 @@ export default function PagePreview({
           // toast(err.response.data.error, { type: "error", autoClose: 3000 });
         }
       } else {
-        setPageData({ ...pageData, loaded: true, ddiOptions });
+        setPageData({ ...pageData, loaded: true });
         setFormType("full");
       }
     }
@@ -368,35 +357,39 @@ export default function PagePreview({
                 <GraduationCap size={16} /> Student Information
               </RegisterFormMenu>
 
-              <RegisterFormMenu
-                setActiveMenu={setActiveMenu}
-                activeMenu={activeMenu}
-                name="student-admission"
-                disabled={id === "new"}
-                messageOnDisabled="Create the student to be able to access this menu"
-              >
-                <NotebookPen size={16} /> Admission
-              </RegisterFormMenu>
+              {id !== "new" && (
+                <>
+                  <RegisterFormMenu
+                    setActiveMenu={setActiveMenu}
+                    activeMenu={activeMenu}
+                    name="student-admission"
+                    disabled={!tabAllowed(tabsPermissions, "admission-tab")}
+                    messageOnDisabled="You don't have permission to access this tab"
+                  >
+                    <NotebookPen size={16} /> Admission
+                  </RegisterFormMenu>
 
-              <RegisterFormMenu
-                setActiveMenu={setActiveMenu}
-                activeMenu={activeMenu}
-                name="student-academic"
-                disabled={id === "new"}
-                messageOnDisabled="Create the student to be able to access this menu"
-              >
-                <Contact size={16} /> Academic
-              </RegisterFormMenu>
+                  <RegisterFormMenu
+                    setActiveMenu={setActiveMenu}
+                    activeMenu={activeMenu}
+                    name="student-academic"
+                    disabled={!tabAllowed(tabsPermissions, "academic-tab")}
+                    messageOnDisabled="You don't have permission to access this tab"
+                  >
+                    <Contact size={16} /> Academic
+                  </RegisterFormMenu>
 
-              <RegisterFormMenu
-                setActiveMenu={setActiveMenu}
-                activeMenu={activeMenu}
-                name="student-dso"
-                disabled={id === "new"}
-                messageOnDisabled="Create the student to be able to access this menu"
-              >
-                <BookMarked size={16} /> DSO
-              </RegisterFormMenu>
+                  <RegisterFormMenu
+                    setActiveMenu={setActiveMenu}
+                    activeMenu={activeMenu}
+                    name="student-dso"
+                    disabled={!tabAllowed(tabsPermissions, "dso-tab")}
+                    messageOnDisabled="You don't have permission to access this tab"
+                  >
+                    <BookMarked size={16} /> DSO
+                  </RegisterFormMenu>
+                </>
+              )}
             </div>
             <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
               <InputContext.Provider
@@ -785,38 +778,13 @@ export default function PagePreview({
                           title="student-academic"
                           activeMenu={activeMenu === "student-academic"}
                         >
-                          {/* <InputLine title="Academic">
-                            <DatePicker
-                              name="program_start_date"
-                              grow
-                              title="Program Start Date "
-                              defaultValue={null}
-                              placeholderText="MM/DD/YYYY"
-                              InputContext={InputContext}
-                            />
-                            <DatePicker
-                              name="program_end_date"
-                              grow
-                              title="Program End Date "
-                              defaultValue={null}
-                              placeholderText="MM/DD/YYYY"
-                              InputContext={InputContext}
-                            />
-                            <DatePicker
-                              name="start_date"
-                              grow
-                              title="Start Date "
-                              defaultValue={null}
-                              placeholderText="MM/DD/YYYY"
-                              InputContext={InputContext}
-                            />
-                          </InputLine> */}
                           <InputLine title="Placement Test">
                             <Input
                               type="text"
                               name="placement_test_location"
                               grow
                               title="Placement Test Location"
+                              readOnly={true}
                               defaultValue={pageData.placement_test_location}
                               InputContext={InputContext}
                             />
@@ -825,6 +793,7 @@ export default function PagePreview({
                               name="placement_test_score"
                               grow
                               title="Placement Test Score"
+                              readOnly={true}
                               defaultValue={pageData.placement_test_score}
                               InputContext={InputContext}
                             />
@@ -832,6 +801,7 @@ export default function PagePreview({
                               name="level"
                               grow
                               title="Level"
+                              readOnly={true}
                               defaultValue={pageData.level}
                               InputContext={InputContext}
                             />
@@ -963,33 +933,42 @@ export default function PagePreview({
                               InputContext={InputContext}
                             />
                           </InputLine>
-                          <Scope path="new_program">
-                            <InputLine title="New I20">
-                              <FileInput
-                                name="file_id"
-                                title="I20"
-                                grow
-                                InputContext={InputContext}
-                              />
-                              <Input
-                                type="date"
-                                name="start_date"
-                                grow
-                                title="Program Start Date"
-                                InputContext={InputContext}
-                              />
-                              <Input
-                                type="date"
-                                name="end_date"
-                                grow
-                                title="Program End Date"
-                                InputContext={InputContext}
-                              />
-                              <button className="bg-mila_orange text-white rounded-md p-1 px-2 h-8 mt-3 flex flex-row items-center justify-center text-xs gap-1">
-                                <Send size={16} /> Add I20
-                              </button>
-                            </InputLine>
-                          </Scope>
+                          {console.log(
+                            tabAllowed(tabsPermissions, "dso-tab")
+                              ?.MenuHierarchyXGroup?.create
+                          )}
+                          {(tabAllowed(tabsPermissions, "dso-tab")
+                            ?.MenuHierarchyXGroup?.create ||
+                            tabAllowed(tabsPermissions, "dso-tab")
+                              ?.MenuHierarchyXGroup?.edit) && (
+                            <Scope path="new_program">
+                              <InputLine title="New I20">
+                                <FileInput
+                                  name="file_id"
+                                  title="I20"
+                                  grow
+                                  InputContext={InputContext}
+                                />
+                                <Input
+                                  type="date"
+                                  name="start_date"
+                                  grow
+                                  title="Program Start Date"
+                                  InputContext={InputContext}
+                                />
+                                <Input
+                                  type="date"
+                                  name="end_date"
+                                  grow
+                                  title="Program End Date"
+                                  InputContext={InputContext}
+                                />
+                                <button className="bg-mila_orange text-white rounded-md p-1 px-2 h-8 mt-3 flex flex-row items-center justify-center text-xs gap-1">
+                                  <Send size={16} /> Add I20
+                                </button>
+                              </InputLine>
+                            </Scope>
+                          )}
                           {pageData?.programs?.length > 0 &&
                             pageData?.programs
                               .sort((a, b) =>

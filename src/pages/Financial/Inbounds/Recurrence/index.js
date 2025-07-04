@@ -41,17 +41,40 @@ export default function FinancialRecurrence() {
   const { alertBox } = useContext(AlertContext);
 
   const {
+    accessModule,
+    activeFilters,
+    gridData,
+    gridDetails,
+    gridHeader,
+    handleFilters,
+    handleOpened,
+    limit,
+    loadingData,
     opened,
     orderBy,
-    setGridData,
     page,
-    setPages,
-    limit,
+    pages,
     search,
     setActiveFilters,
-    setLoadingData,
+    setGridData,
     setGridDetails,
+    setGridHeader,
+    setLimit,
+    setLoadingData,
+    setOpened,
+    setOrderBy,
+    setPage,
+    setPages,
+    setSearch,
+    setTotalRows,
+    setSuccessfullyUpdated,
+    successfullyUpdated,
+    totalRows,
   } = useContext(FullGridContext);
+
+  const pageAccess = accessModule.children.find(
+    (el) => el.alias === "financial-recurrence"
+  );
 
   useEffect(() => {
     setActiveFilters([]);
@@ -144,6 +167,7 @@ export default function FinancialRecurrence() {
     <PageContainer
       FullGridContext={FullGridContext}
       PagePreview={PagePreview}
+      pageAccess={pageAccess}
       handleNew={false}
       defaultGridHeader={defaultGridHeader}
       // selection={{

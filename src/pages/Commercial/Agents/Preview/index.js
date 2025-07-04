@@ -22,6 +22,7 @@ import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
 import { FullGridContext } from "../..";
 import FindGeneric from "~/components/Finds/FindGeneric";
+import { agentTypeOptions } from "~/functions/selectPopoverOptions";
 
 export const InputContext = createContext({});
 
@@ -45,6 +46,7 @@ export default function PagePreview({
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
+  const [agentType, setAgentType] = useState(null);
   const [registry, setRegistry] = useState({
     created_by: null,
     created_at: null,
@@ -256,15 +258,90 @@ export default function PagePreview({
                               defaultValue={pageData.name}
                               InputContext={InputContext}
                             />
-                            {/* <Input
-                              type="text"
-                              name="email"
+                            <SelectPopover
+                              name="type"
+                              required
                               grow
-                              title="E-mail"
-                              defaultValue={pageData.email}
+                              title="Type"
+                              isSearchable
+                              defaultValue={agentTypeOptions.find(
+                                (type) => type.value === pageData.type
+                              )}
+                              options={agentTypeOptions}
                               InputContext={InputContext}
-                            /> */}
+                              setReturnPopover={(val) => setAgentType(val[0])}
+                            />
                           </InputLine>
+                          {agentType && agentType.value === "External" && (
+                            <InputLine title="Company">
+                              <Input
+                                type="text"
+                                name="company_name"
+                                required
+                                grow
+                                title="Company Name"
+                                defaultValue={pageData.company_name}
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="text"
+                                name="company_address"
+                                required
+                                grow
+                                title="Company Address"
+                                defaultValue={pageData.company_address}
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="text"
+                                name="company_city"
+                                required
+                                grow
+                                title="Company City"
+                                defaultValue={pageData.company_city}
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="text"
+                                name="company_state"
+                                required
+                                grow
+                                title="Company State"
+                                defaultValue={pageData.company_state}
+                                InputContext={InputContext}
+                              />
+
+                              <Input
+                                type="text"
+                                name="company_zip"
+                                required
+                                grow
+                                title="Company Zip"
+                                defaultValue={pageData.company_zip}
+                                InputContext={InputContext}
+                              />
+
+                              <Input
+                                type="text"
+                                name="company_phone_number"
+                                required
+                                grow
+                                title="Company Phone Number"
+                                defaultValue={pageData.company_phone_number}
+                                InputContext={InputContext}
+                              />
+
+                              <Input
+                                type="text"
+                                name="company_ein"
+                                required
+                                grow
+                                title="Company EIN"
+                                defaultValue={pageData.company_ein}
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+                          )}
                           <FindGeneric
                             route="users"
                             title="User"

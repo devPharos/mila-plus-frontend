@@ -36,17 +36,40 @@ export default function FinancialBankAccounts() {
   ];
 
   const {
+    accessModule,
+    activeFilters,
+    gridData,
+    gridDetails,
+    gridHeader,
+    handleFilters,
+    handleOpened,
+    limit,
+    loadingData,
     opened,
     orderBy,
-    setGridData,
     page,
-    setPages,
-    limit,
+    pages,
     search,
     setActiveFilters,
-    setLoadingData,
+    setGridData,
     setGridDetails,
+    setGridHeader,
+    setLimit,
+    setLoadingData,
+    setOpened,
+    setOrderBy,
+    setPage,
+    setPages,
+    setSearch,
+    setTotalRows,
+    setSuccessfullyUpdated,
+    successfullyUpdated,
+    totalRows,
   } = useContext(FullGridContext);
+
+  const pageAccess = accessModule.children.find(
+    (el) => el.alias === "financial-bank-account"
+  );
 
   useEffect(() => {
     setActiveFilters([]);
@@ -92,6 +115,7 @@ export default function FinancialBankAccounts() {
     <PageContainer
       FullGridContext={FullGridContext}
       PagePreview={PagePreview}
+      pageAccess={pageAccess}
       defaultGridHeader={defaultGridHeader}
     />
   );

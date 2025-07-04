@@ -204,7 +204,7 @@ export default function Renegociation({
                         <FormHeader
                           access={access}
                           title={
-                            "Renegociation - " +
+                            "Renegotiation - " +
                             pageData.student?.name +
                             " " +
                             pageData.student?.last_name
@@ -330,7 +330,7 @@ export default function Renegociation({
                               <InputLine>
                                 <Textarea
                                   name="observations"
-                                  title="Reasons for Renegociation"
+                                  title="Reasons for Renegotiation"
                                   grow
                                   required
                                   rows={3}

@@ -262,6 +262,11 @@ export const dateTypeOptions = [
   { value: "Holiday", label: "Holiday" },
 ];
 
+export const agentTypeOptions = [
+  { value: "Internal", label: "Internal" },
+  { value: "External", label: "External" },
+];
+
 export const monthsOptions = [
   { value: "01", label: "January" },
   { value: "02", label: "February" },

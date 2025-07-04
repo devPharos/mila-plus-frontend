@@ -461,7 +461,7 @@ export default function AdministrativeStudent() {
       FullGridContext={FullGridContext}
       PagePreview={PagePreview}
       defaultGridHeader={defaultGridHeader}
-      // pageAccess={pageAccess}
+      pageAccess={pageAccess}
       selection={{
         multiple: false,
         selected,

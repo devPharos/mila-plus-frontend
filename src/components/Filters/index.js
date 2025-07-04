@@ -34,12 +34,14 @@ export default function Filters({
     return null;
   }
 
-  // const allowedFunctions = selection.functions.filter((func) =>
-  //   access.children?.find((el) => el.alias === func.alias)
-  // );
+  // if (selection?.functions?.length > 0) {
+  //   const allowedFunctions = selection?.functions?.filter((func) =>
+  //     access.children?.find((el) => el.alias === func.alias)
+  //   );
 
-  // if (allowedFunctions.length === 0) {
-  //   hasSelection = false;
+  //   if (allowedFunctions.length === 0) {
+  //     hasSelection = false;
+  //   }
   // }
 
   function PopoverFilter(index, options) {
@@ -301,7 +303,7 @@ export default function Filters({
               );
             }
           })}
-        {Excel && (
+        {Excel && access.children?.find((el) => el.alias === "excel") && (
           <div className="relative">
             <button
               type="button"

@@ -306,7 +306,7 @@ export default function PagePreview({
                                   key={index}
                                   path={`groupAccess[${index}]`}
                                 >
-                                  <h1 className="w-full border-b p-4 pb-0 pt-2 pb-2 font-bold flex flex-row items-center gap-2">
+                                  <h1 className="w-full p-4 pb-0 pt-2 pb-2 font-bold flex flex-row items-center gap-2">
                                     {access.name}
                                   </h1>
                                   {access.children.map((menu, indexMenu) => {
@@ -626,6 +626,7 @@ export default function PagePreview({
                                                 </InputLine>
                                               );
                                             })}
+                                        <div className="h-[1px] w-full border-b border-gray-200 border-dashed"></div>
                                       </Scope>
                                     );
                                   })}

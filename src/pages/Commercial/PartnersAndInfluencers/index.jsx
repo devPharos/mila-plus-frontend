@@ -54,16 +54,40 @@ export default function PartnersAndInfluencers() {
   ];
 
   const {
-    opened,
-    orderBy,
-    setGridData,
-    page,
-    setPages,
-    limit,
-    search,
-    setLoadingData,
-    setGridDetails,
-  } = useContext(FullGridContext);
+      accessModule,
+      activeFilters,
+      gridData,
+      gridDetails,
+      gridHeader,
+      handleFilters,
+      handleOpened,
+      limit,
+      loadingData,
+      opened,
+      orderBy,
+      page,
+      pages,
+      search,
+      setActiveFilters,
+      setGridData,
+      setGridDetails,
+      setGridHeader,
+      setLimit,
+      setLoadingData,
+      setOpened,
+      setOrderBy,
+      setPage,
+      setPages,
+      setSearch,
+      setTotalRows,
+      setSuccessfullyUpdated,
+      successfullyUpdated,
+      totalRows,
+    } = useContext(FullGridContext);
+
+    const pageAccess = accessModule.children.find(
+      (el) => el.alias === "partners-and-influencers"
+    );
 
   async function loader() {
     setLoadingData(true);
@@ -111,6 +135,7 @@ export default function PartnersAndInfluencers() {
     <PageContainer
       FullGridContext={FullGridContext}
       PagePreview={PagePreview}
+      pageAccess={pageAccess}
       defaultGridHeader={defaultGridHeader}
     />
   );

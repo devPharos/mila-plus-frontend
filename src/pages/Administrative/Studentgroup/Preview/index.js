@@ -140,10 +140,6 @@ export default function PagePreview({
       });
       return;
     }
-    const { start_date } = data;
-    if (start_date) {
-      data.start_date = format(parseISO(start_date), "yyyyMMdd");
-    }
     if (id === "new") {
       try {
         delete data.id;

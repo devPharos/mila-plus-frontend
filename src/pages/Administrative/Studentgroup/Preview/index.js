@@ -773,11 +773,7 @@ export default function PagePreview({
                                           new Date()
                                       );
                                     } else if (filter === "Terminated") {
-                                      return (
-                                        studentGroup.student.inactivation &&
-                                        studentGroup.student.inactivation
-                                          .reason === "Terminated"
-                                      );
+                                      return studentGroup.student.inactivation;
                                     } else if (filter === "Transferred") {
                                       return (
                                         studentGroup.end_date <=
@@ -823,6 +819,8 @@ export default function PagePreview({
                                         studentGroupStatus === "Not started"
                                           ? "bg-amber-50 text-amber-700"
                                           : studentGroupStatus === "Terminated"
+                                          ? "bg-gray-100 text-gray-400"
+                                          : studentGroupStatus === "Canceled"
                                           ? "bg-gray-100 text-gray-400"
                                           : studentGroupStatus === "Transferred"
                                           ? "bg-sky-50 text-sky-700"

@@ -78,10 +78,7 @@ export default function AttendanceReport({
         .then(({ data }) => {
           const pdfBlob = new Blob([data], { type: "application/pdf" });
           console.log(data);
-          saveAs(
-            pdfBlob,
-            `affidavit_of_support_${"bc59904a-686e-4b05-b69f-64960af78565"}.pdf`
-          );
+          saveAs(pdfBlob, `affidavit_of_support_${selected[0].id}.pdf`);
           setLoading(false);
         });
     } else {

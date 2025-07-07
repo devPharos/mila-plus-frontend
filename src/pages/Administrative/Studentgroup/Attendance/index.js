@@ -467,9 +467,9 @@ export default function Attendance({
                                           .filter(
                                             (attendance) =>
                                               attendance.shift === shift &&
-                                              !["C", "F", "T"].includes(
-                                                attendance.status
-                                              )
+                                              attendance.status !== "C" &&
+                                              attendance.status !== "F" &&
+                                              attendance.status !== "T"
                                           )
                                           .map((attendance) => {
                                             const {

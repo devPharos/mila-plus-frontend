@@ -870,6 +870,23 @@ export default function PagePreview({
                                   InputContext={InputContext}
                                 />
                                 <Input
+                                  type="date"
+                                  name="end_date"
+                                  grow
+                                  readOnly
+                                  title="Student End Date in Group"
+                                  defaultValue={format(
+                                    parseISO(
+                                      pageData.studentgroup?.studentxgroups
+                                        ?.length > 0 &&
+                                        pageData.studentgroup?.studentxgroups[0]
+                                          ?.end_date
+                                    ),
+                                    "yyyy-MM-dd"
+                                  )}
+                                  InputContext={InputContext}
+                                />
+                                <Input
                                   type="text"
                                   name="teacher"
                                   grow

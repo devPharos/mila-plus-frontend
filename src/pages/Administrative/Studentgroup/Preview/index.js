@@ -791,12 +791,9 @@ export default function PagePreview({
                                 })
                                 .map((studentGroup) => {
                                   let studentGroupStatus = "Not defined";
-                                  if (
-                                    studentGroup.student.inactivation &&
-                                    studentGroup.student.inactivation.reason ===
-                                      "Terminated"
-                                  ) {
-                                    studentGroupStatus = "Terminated";
+                                  if (studentGroup.student.inactivation) {
+                                    studentGroupStatus =
+                                      studentGroup.student.inactivation.reason;
                                   } else if (
                                     studentGroup.end_date <=
                                     format(new Date(), "yyyy-MM-dd")

@@ -8,6 +8,7 @@ import { format, parseISO, set } from "date-fns";
 import { toast } from "react-toastify";
 import api from "~/services/api";
 import Attendance from "./Attendance";
+import AttendanceReport from "./Attendance Report";
 
 export default function Studentgroups() {
   const filial = useSelector((state) => state.auth.filial);
@@ -85,6 +86,7 @@ export default function Studentgroups() {
   const [selected, setSelected] = useState([]);
   const [startGroup, setStartGroup] = useState(false);
   const [openAttendance, setOpenAttendance] = useState(false);
+  const [openAttendanceReport, setOpenAttendanceReport] = useState(false);
 
   const {
     accessModule,
@@ -156,8 +158,13 @@ export default function Studentgroups() {
     handleOpened(null);
   }
 
-  async function handleAttendance() {
+  function handleAttendance() {
     setOpenAttendance(!openAttendance);
+    handleOpened(null);
+  }
+
+  function handleAttendanceReport() {
+    setOpenAttendanceReport(!openAttendanceReport);
     handleOpened(null);
   }
 
@@ -253,6 +260,16 @@ export default function Studentgroups() {
       Page: Attendance,
       opened: openAttendance,
       setOpened: setOpenAttendance,
+      selected,
+    });
+    selectionFunctions.push({
+      title: "Attendance Report",
+      alias: "attendance-report",
+      fun: handleAttendanceReport,
+      icon: "Highlighter",
+      Page: AttendanceReport,
+      opened: openAttendanceReport,
+      setOpened: setOpenAttendanceReport,
       selected,
     });
   }

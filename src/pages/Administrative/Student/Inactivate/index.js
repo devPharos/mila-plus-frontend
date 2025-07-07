@@ -67,7 +67,7 @@ export default function Inactivate({
     try {
       await api.post(`/students/inactivate`, {
         student_id: selected[0].id,
-        date: format(date, "yyyyMMdd"),
+        date: format(date, "yyyy-MM-dd"),
         reason,
       });
       toast("Student inactivated!", { autoClose: 1000 });
@@ -86,7 +86,7 @@ export default function Inactivate({
     loadData();
   }, []);
 
-  console.log(pageData)
+  console.log(pageData);
 
   return (
     <Preview formType={formType} fullscreen={fullscreen}>

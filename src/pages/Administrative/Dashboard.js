@@ -9,15 +9,25 @@ import AbsenceControl from "./AbsenceControl";
 import { useSelector } from "react-redux";
 import api from "~/services/api";
 import { saveAs } from "file-saver";
+import { format, lastDayOfMonth } from "date-fns";
 
 export default function AdministrativeDashboard() {
   const { profile } = useSelector((state) => state.user);
   const currentPage = getCurrentPage();
 
-  function handleReport() {
+  function handleReport(month = 0) {
+    const from_date_var = new Date();
+    from_date_var.setMonth(month - 1);
+    from_date_var.setDate(1);
+    from_date_var.setHours(0, 0, 0, 0);
+
+    const from_date = format(from_date_var, "yyyy-MM-dd");
+
+    const to_date = format(lastDayOfMonth(from_date_var), "yyyy-MM-dd");
+
     api
       .get(
-        `/studentgroups/attendanceReport/1?from_date=2025-05-01&to_date=2025-05-31`,
+        `/studentgroups/attendanceReport/1?from_date=${from_date}&to_date=${to_date}`,
         {
           responseType: "blob",
         }
@@ -55,10 +65,24 @@ export default function AdministrativeDashboard() {
         {profile.id === 1 && <AbsenceControl />}
         <button
           type="button"
-          onClick={handleReport}
+          onClick={() => handleReport(4)}
           className="bg-mila_orange text-white rounded-md p-1 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1"
         >
-          <span>Attendance Report</span>
+          <span>April</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => handleReport(5)}
+          className="bg-mila_orange text-white rounded-md p-1 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1"
+        >
+          <span>May</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => handleReport(6)}
+          className="bg-mila_orange text-white rounded-md p-1 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1"
+        >
+          <span>June</span>
         </button>
       </div>
     </div>

@@ -62,28 +62,32 @@ export default function AdministrativeDashboard() {
           paddingTop: 24,
         }}
       >
-        {profile.id === 1 && <AbsenceControl />}
-        <button
-          type="button"
-          onClick={() => handleReport(4)}
-          className="bg-mila_orange text-white rounded-md p-1 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1"
-        >
-          <span>April</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => handleReport(5)}
-          className="bg-mila_orange text-white rounded-md p-1 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1"
-        >
-          <span>May</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => handleReport(6)}
-          className="bg-mila_orange text-white rounded-md p-1 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1"
-        >
-          <span>June</span>
-        </button>
+        {profile.id === 1 && (
+          <>
+            <AbsenceControl />
+            <button
+              type="button"
+              onClick={() => handleReport(4)}
+              className="bg-mila_orange text-white rounded-md p-1 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1"
+            >
+              <span>April</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleReport(5)}
+              className="bg-mila_orange text-white rounded-md p-1 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1"
+            >
+              <span>May</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleReport(6)}
+              className="bg-mila_orange text-white rounded-md p-1 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1"
+            >
+              <span>June</span>
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

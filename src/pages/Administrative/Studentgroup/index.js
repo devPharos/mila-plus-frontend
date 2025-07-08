@@ -12,6 +12,7 @@ import AttendanceReport from "./Attendance Report";
 
 export default function Studentgroups() {
   const filial = useSelector((state) => state.auth.filial);
+  const [loading, setLoading] = useState(false);
   const { profile } = useSelector((state) => state.user);
   const defaultOrderBy = { column: "name", asc: true };
   const defaultGridHeader = [
@@ -124,34 +125,42 @@ export default function Studentgroups() {
   );
 
   async function handleStart() {
+    setLoading(true);
     if (selected[0].fields[1] !== "In Formation") {
       toast("Only in formation groups can be started!", {
         autoClose: 3000,
       });
+      setLoading(false);
       return;
     }
     try {
       await api.post(`/studentgroups/start/${selected[0].id}`);
       toast("Group started!", { autoClose: 3000 });
+      setLoading(false);
     } catch (err) {
       toast(err.response.data.error, { type: "error", autoClose: 3000 });
+      setLoading(false);
     }
     setSelected([]);
     handleOpened(null);
   }
 
   async function handlePause() {
+    setLoading(true);
     if (selected[0].fields[1] !== "Ongoing") {
       toast("Only ongoing groups can be paused!", {
         autoClose: 3000,
       });
+      setLoading(false);
       return;
     }
     try {
       await api.post(`/studentgroups/pause/${selected[0].id}`);
       toast("Group paused!", { autoClose: 3000 });
+      setLoading(false);
     } catch (err) {
       toast(err.response.data.error, { type: "error", autoClose: 3000 });
+      setLoading(false);
     }
     setSelected([]);
     handleOpened(null);
@@ -304,17 +313,24 @@ export default function Studentgroups() {
   // }
 
   return (
-    <PageContainer
-      FullGridContext={FullGridContext}
-      PagePreview={PagePreview}
-      pageAccess={pageAccess}
-      defaultGridHeader={defaultGridHeader}
-      selection={{
-        multiple: false,
-        selected,
-        setSelected,
-        functions: selectionFunctions,
-      }}
-    />
+    <>
+      <PageContainer
+        FullGridContext={FullGridContext}
+        PagePreview={PagePreview}
+        pageAccess={pageAccess}
+        defaultGridHeader={defaultGridHeader}
+        selection={{
+          multiple: false,
+          selected,
+          setSelected,
+          functions: selectionFunctions,
+        }}
+      />
+      {loading && (
+        <div className="flex justify-center items-center h-screen absolute top-0 left-0 w-full bg-gray-500 bg-opacity-50">
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-700" />
+        </div>
+      )}
+    </>
   );
 }

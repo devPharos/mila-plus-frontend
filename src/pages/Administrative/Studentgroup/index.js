@@ -8,7 +8,7 @@ import { format, parseISO, set } from "date-fns";
 import { toast } from "react-toastify";
 import api from "~/services/api";
 import Attendance from "./Attendance";
-import AttendanceReport from "./Transfer";
+import AttendanceReport from "./Attendance Report";
 
 export default function Studentgroups() {
   const filial = useSelector((state) => state.auth.filial);

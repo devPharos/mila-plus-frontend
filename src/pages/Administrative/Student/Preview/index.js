@@ -823,10 +823,16 @@ export default function PagePreview({
                                   grow
                                   readOnly
                                   title="Group Start Date"
-                                  defaultValue={format(
-                                    parseISO(pageData.studentgroup.start_date),
-                                    "yyyy-MM-dd"
-                                  )}
+                                  defaultValue={
+                                    pageData.studentgroup.start_date
+                                      ? format(
+                                          parseISO(
+                                            pageData.studentgroup.start_date
+                                          ),
+                                          "yyyy-MM-dd"
+                                        )
+                                      : null
+                                  }
                                   InputContext={InputContext}
                                 />
                                 <Input
@@ -835,10 +841,16 @@ export default function PagePreview({
                                   grow
                                   readOnly
                                   title="Group End Date"
-                                  defaultValue={format(
-                                    parseISO(pageData.studentgroup.end_date),
-                                    "yyyy-MM-dd"
-                                  )}
+                                  defaultValue={
+                                    pageData.studentgroup.end_date
+                                      ? format(
+                                          parseISO(
+                                            pageData.studentgroup.end_date
+                                          ),
+                                          "yyyy-MM-dd"
+                                        )
+                                      : null
+                                  }
                                   InputContext={InputContext}
                                 />
                                 <Input
@@ -851,51 +863,60 @@ export default function PagePreview({
                                   InputContext={InputContext}
                                 />
                               </InputLine>
-                              <InputLine>
-                                <Input
-                                  type="date"
-                                  name="start_date"
-                                  grow
-                                  readOnly
-                                  title="Student Start Date in Group"
-                                  defaultValue={format(
-                                    parseISO(
-                                      pageData.studentgroup?.studentxgroups
-                                        ?.length > 0 &&
-                                        pageData.studentgroup?.studentxgroups[0]
-                                          ?.start_date
-                                    ),
-                                    "yyyy-MM-dd"
-                                  )}
-                                  InputContext={InputContext}
-                                />
-                                <Input
-                                  type="date"
-                                  name="end_date"
-                                  grow
-                                  readOnly
-                                  title="Student End Date in Group"
-                                  defaultValue={format(
-                                    parseISO(
-                                      pageData.studentgroup?.studentxgroups
-                                        ?.length > 0 &&
-                                        pageData.studentgroup?.studentxgroups[0]
-                                          ?.end_date
-                                    ),
-                                    "yyyy-MM-dd"
-                                  )}
-                                  InputContext={InputContext}
-                                />
-                                <Input
-                                  type="text"
-                                  name="teacher"
-                                  grow
-                                  readOnly
-                                  title="Teacher"
-                                  defaultValue={pageData.teacher.name}
-                                  InputContext={InputContext}
-                                />
-                              </InputLine>
+                              {pageData.studentgroup?.studentxgroups?.length >
+                                0 && (
+                                <InputLine>
+                                  <Input
+                                    type="date"
+                                    name="start_date"
+                                    grow
+                                    readOnly
+                                    title="Student Start Date in Group"
+                                    defaultValue={
+                                      pageData.studentgroup?.studentxgroups[0]
+                                        ?.start_date
+                                        ? format(
+                                            parseISO(
+                                              pageData.studentgroup
+                                                ?.studentxgroups[0]?.start_date
+                                            ),
+                                            "yyyy-MM-dd"
+                                          )
+                                        : null
+                                    }
+                                    InputContext={InputContext}
+                                  />
+                                  <Input
+                                    type="date"
+                                    name="end_date"
+                                    grow
+                                    readOnly
+                                    title="Student End Date in Group"
+                                    defaultValue={
+                                      pageData.studentgroup?.studentxgroups[0]
+                                        ?.end_date
+                                        ? format(
+                                            parseISO(
+                                              pageData.studentgroup
+                                                ?.studentxgroups[0]?.end_date
+                                            ),
+                                            "yyyy-MM-dd"
+                                          )
+                                        : null
+                                    }
+                                    InputContext={InputContext}
+                                  />
+                                  <Input
+                                    type="text"
+                                    name="teacher"
+                                    grow
+                                    readOnly
+                                    title="Teacher"
+                                    defaultValue={pageData.teacher.name}
+                                    InputContext={InputContext}
+                                  />
+                                </InputLine>
+                              )}
                             </Scope>
                           )}
                         </InputLineGroup>
@@ -921,39 +942,49 @@ export default function PagePreview({
                               InputContext={InputContext}
                             />
 
-                            <Input
-                              type="date"
-                              name="program_start_date"
-                              grow
-                              readOnly
-                              title="Program Start Date"
-                              defaultValue={
-                                pageData?.programs &&
-                                pageData?.programs?.length > 0
-                                  ? pageData?.programs[0].start_date
-                                  : null
-                              }
-                              InputContext={InputContext}
-                            />
+                            {pageData?.programs &&
+                              pageData?.programs?.length > 0 && (
+                                <>
+                                  <Input
+                                    type="date"
+                                    name="program_start_date"
+                                    grow
+                                    readOnly
+                                    title="Program Start Date"
+                                    defaultValue={
+                                      pageData?.programs[0].start_date
+                                        ? format(
+                                            parseISO(
+                                              pageData?.programs[0].start_date
+                                            ),
+                                            "yyyy-MM-dd"
+                                          )
+                                        : null
+                                    }
+                                    InputContext={InputContext}
+                                  />
 
-                            <Input
-                              type="date"
-                              name="program_end_date"
-                              grow
-                              readOnly
-                              title="Program End Date"
-                              defaultValue={
-                                pageData?.programs?.length > 0
-                                  ? pageData?.programs[0].end_date
-                                  : null
-                              }
-                              InputContext={InputContext}
-                            />
+                                  <Input
+                                    type="date"
+                                    name="program_end_date"
+                                    grow
+                                    readOnly
+                                    title="Program End Date"
+                                    defaultValue={
+                                      pageData?.programs[0].end_date
+                                        ? format(
+                                            parseISO(
+                                              pageData?.programs[0].end_date
+                                            ),
+                                            "yyyy-MM-dd"
+                                          )
+                                        : null
+                                    }
+                                    InputContext={InputContext}
+                                  />
+                                </>
+                              )}
                           </InputLine>
-                          {console.log(
-                            tabAllowed(tabsPermissions, "dso-tab")
-                              ?.MenuHierarchyXGroup?.create
-                          )}
                           {(tabAllowed(tabsPermissions, "dso-tab")
                             ?.MenuHierarchyXGroup?.create ||
                             tabAllowed(tabsPermissions, "dso-tab")

@@ -98,6 +98,12 @@ function App() {
           title: "Agents",
           icon: "CircleUserRound",
         },
+        {
+          alias: "partners-and-influencers",
+          path: "/Commercial/PartnersAndInfluencers",
+          title: "Partners & influencers",
+          icon: "Handshake",
+        },
       ],
     },
     {

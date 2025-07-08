@@ -8,6 +8,7 @@ import { format, parseISO, set } from "date-fns";
 import { toast } from "react-toastify";
 import api from "~/services/api";
 import Attendance from "./Attendance";
+import AttendanceReport from "./Attendance Report";
 
 export default function Studentgroups() {
   const filial = useSelector((state) => state.auth.filial);
@@ -37,14 +38,14 @@ export default function Studentgroups() {
       title: "Level",
       name: ["level", "name"],
       type: "text",
-      filter: false,
+      filter: true,
     },
-    {
-      title: "Language Mode",
-      name: "languagemode_name",
-      type: "text",
-      filter: false,
-    },
+    // {
+    //   title: "Language Mode",
+    //   name: "languagemode_name",
+    //   type: "text",
+    //   filter: false,
+    // },
     {
       title: "Classroom",
       name: "classroom_name",
@@ -85,19 +86,43 @@ export default function Studentgroups() {
   const [selected, setSelected] = useState([]);
   const [startGroup, setStartGroup] = useState(false);
   const [openAttendance, setOpenAttendance] = useState(false);
+  const [openAttendanceReport, setOpenAttendanceReport] = useState(false);
 
   const {
+    accessModule,
+    activeFilters,
+    gridData,
+    gridDetails,
+    gridHeader,
+    handleFilters,
+    handleOpened,
+    limit,
+    loadingData,
     opened,
     orderBy,
-    setGridData,
     page,
-    setPages,
-    limit,
+    pages,
     search,
-    setLoadingData,
-    handleOpened,
+    setActiveFilters,
+    setGridData,
     setGridDetails,
+    setGridHeader,
+    setLimit,
+    setLoadingData,
+    setOpened,
+    setOrderBy,
+    setPage,
+    setPages,
+    setSearch,
+    setTotalRows,
+    setSuccessfullyUpdated,
+    successfullyUpdated,
+    totalRows,
   } = useContext(FullGridContext);
+
+  const pageAccess = accessModule.children.find(
+    (el) => el.alias === "studentgroups"
+  );
 
   async function handleStart() {
     if (selected[0].fields[1] !== "In Formation") {
@@ -133,8 +158,13 @@ export default function Studentgroups() {
     handleOpened(null);
   }
 
-  async function handleAttendance() {
+  function handleAttendance() {
     setOpenAttendance(!openAttendance);
+    handleOpened(null);
+  }
+
+  function handleAttendanceReport() {
+    setOpenAttendanceReport(!openAttendanceReport);
     handleOpened(null);
   }
 
@@ -189,7 +219,7 @@ export default function Studentgroups() {
             status,
             // privateStatus,
             level_name,
-            languagemode_name,
+            // languagemode_name,
             classroom_name,
             workload_name,
             staff_name,
@@ -224,11 +254,22 @@ export default function Studentgroups() {
   if (selected.length > 0 && selected[0].fields[1] === "Ongoing") {
     selectionFunctions.push({
       title: "Attendance",
+      alias: "attendance",
       fun: handleAttendance,
       icon: "Highlighter",
       Page: Attendance,
       opened: openAttendance,
       setOpened: setOpenAttendance,
+      selected,
+    });
+    selectionFunctions.push({
+      title: "Attendance Report",
+      alias: "attendance-report",
+      fun: handleAttendanceReport,
+      icon: "Highlighter",
+      Page: AttendanceReport,
+      opened: openAttendanceReport,
+      setOpened: setOpenAttendanceReport,
       selected,
     });
   }
@@ -238,6 +279,7 @@ export default function Studentgroups() {
   if (selected.length === 0 || selected[0].fields[1] === "In Formation") {
     selectionFunctions.push({
       title: "Start Group",
+      alias: "start-group",
       fun: handleStart,
       icon: "Play",
       Page: () => null,
@@ -250,6 +292,7 @@ export default function Studentgroups() {
     if (selected[0].others.classes === 0) {
       selectionFunctions.push({
         title: "Pause Group",
+        alias: "pause-group",
         fun: handlePause,
         icon: "Pause",
         Page: () => null,
@@ -265,6 +308,7 @@ export default function Studentgroups() {
     <PageContainer
       FullGridContext={FullGridContext}
       PagePreview={PagePreview}
+      pageAccess={pageAccess}
       defaultGridHeader={defaultGridHeader}
       selection={{
         multiple: false,

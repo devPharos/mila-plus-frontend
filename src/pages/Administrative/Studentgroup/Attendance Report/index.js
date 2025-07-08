@@ -1,12 +1,6 @@
 import { Form } from "@unform/web";
-import { Building } from "lucide-react";
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { Building, Printer } from "lucide-react";
+import React, { createContext, useContext, useRef, useState } from "react";
 import RegisterFormMenu from "~/components/RegisterForm/Menu";
 import InputLine from "~/components/RegisterForm/InputLine";
 import InputLineGroup from "~/components/RegisterForm/InputLineGroup";
@@ -16,15 +10,15 @@ import { toast } from "react-toastify";
 import api from "~/services/api";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { FullGridContext } from "../..";
-import DatePicker from "~/components/RegisterForm/DatePicker";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import { AlertContext } from "~/App";
-import { inactiveReasonsOptions } from "~/functions/selectPopoverOptions";
-import { format, parseISO } from "date-fns";
+import { monthsOptions } from "~/functions/selectPopoverOptions";
+import { format, lastDayOfMonth, parseISO } from "date-fns";
+import Input from "~/components/RegisterForm/Input";
 
 export const InputContext = createContext({});
 
-export default function Inactivate({
+export default function AttendanceReport({
   access,
   id,
   defaultFormType = "preview",
@@ -32,13 +26,16 @@ export default function Inactivate({
   handleOpened,
 }) {
   const { alertBox } = useContext(AlertContext);
+  const [loading, setLoading] = useState(false);
   const { successfullyUpdated, setSuccessfullyUpdated } =
     useContext(FullGridContext);
   const [pageData, setPageData] = useState({
+    loaded: false,
     bank_name: "",
     bank_alias: "",
-    loaded: false,
+    loaded: true,
     installment_amount: 0,
+    studentxgroups: [],
   });
 
   const [registry, setRegistry] = useState({
@@ -49,7 +46,7 @@ export default function Inactivate({
     canceled_by: null,
     canceled_at: null,
   });
-  const [formType, setFormType] = useState(defaultFormType);
+  const [formType, setFormType] = useState("preview");
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
 
@@ -63,44 +60,46 @@ export default function Inactivate({
   }
 
   async function handleGeneralFormSubmit(data) {
-    const { date, reason } = data;
-    try {
-      await api.post(`/students/inactivate`, {
-        student_id: selected[0].id,
-        date: format(date, "yyyy-MM-dd"),
-        reason,
+    const { year, month } = data;
+    const from_date = format(parseISO(`${year}-${month}-01`), "yyyy-MM-dd");
+    const to_date = format(
+      lastDayOfMonth(parseISO(`${year}-${month}-01`)),
+      "yyyy-MM-dd"
+    );
+    if (from_date && to_date) {
+      setLoading(true);
+      api
+        .get(
+          `/studentgroups/attendanceReport/${selected[0].id}?from_date=${from_date}&to_date=${to_date}`,
+          {
+            responseType: "blob",
+          }
+        )
+        .then(({ data }) => {
+          const pdfBlob = new Blob([data], { type: "application/pdf" });
+          console.log(data);
+          saveAs(pdfBlob, `attendance_report_${selected[0].id}.pdf`);
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
+      alertBox({
+        title: "Attention!",
+        descriptionHTML: "Please select a period to generate the report.",
+        buttons: [
+          {
+            title: "Ok",
+            class: "cancel",
+          },
+        ],
       });
-      toast("Student inactivated!", { autoClose: 1000 });
-      handleOpened(null);
-    } catch (err) {
-      console.log(err);
-      // toast(err.response.data.error, { type: "error", autoClose: 3000 });
     }
   }
-
-  useEffect(() => {
-    async function loadData() {
-      const { data } = await api.get(`/students/${selected[0].id}`);
-      setPageData({ ...data, loaded: true });
-    }
-    loadData();
-  }, []);
-
-  console.log(pageData);
 
   return (
     <Preview formType={formType} fullscreen={fullscreen}>
       {pageData ? (
         <div className="flex h-full flex-row items-start justify-between gap-4">
-          <div className="flex flex-col items-center justify-between text-xs w-32 gap-4">
-            <RegisterFormMenu
-              setActiveMenu={setActiveMenu}
-              activeMenu={activeMenu}
-              name="general"
-            >
-              <Building size={16} /> General
-            </RegisterFormMenu>
-          </div>
           <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
             <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll">
               <Form
@@ -110,7 +109,7 @@ export default function Inactivate({
               >
                 <InputContext.Provider
                   value={{
-                    id,
+                    id: "new",
                     generalForm,
                     setSuccessfullyUpdated,
                     fullscreen,
@@ -123,41 +122,40 @@ export default function Inactivate({
                     <>
                       <FormHeader
                         access={access}
-                        title={
-                          "Inactivation - " +
-                          pageData.name +
-                          " " +
-                          pageData.last_name
-                        }
+                        title={"Report"}
                         registry={registry}
                         InputContext={InputContext}
+                        enableFullScreen={false}
+                        createText="Print"
+                        createIcon={<Printer size={16} />}
+                        loading={loading}
                       />
 
                       <InputLineGroup
                         title="GENERAL"
                         activeMenu={activeMenu === "general"}
                       >
-                        <InputLine title="Details">
-                          <DatePicker
-                            name="date"
-                            grow
+                        <InputLine title="Period">
+                          <Input
+                            title="Year"
+                            type="text"
+                            name="year"
+                            shrink
                             required
-                            title="Date"
-                            defaultValue={pageData.date}
-                            placeholderText="MM/DD/YYYY"
                             InputContext={InputContext}
+                            defaultValue={format(new Date(), "yyyy")}
                           />
                           <SelectPopover
-                            name="reason"
+                            name="month"
                             grow
                             required
-                            title="Reason"
-                            isSearchable
-                            defaultValue={inactiveReasonsOptions.find(
-                              (reason) => reason.value === pageData.reason
-                            )}
-                            options={inactiveReasonsOptions}
+                            title="Month"
+                            options={monthsOptions}
                             InputContext={InputContext}
+                            defaultValue={monthsOptions.find(
+                              (month) =>
+                                month.value === format(new Date(), "MM")
+                            )}
                           />
                         </InputLine>
                       </InputLineGroup>

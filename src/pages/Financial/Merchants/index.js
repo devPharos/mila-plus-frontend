@@ -60,19 +60,40 @@ export default function FinancialMerchants() {
   ];
 
   const {
+    accessModule,
+    activeFilters,
+    gridData,
+    gridDetails,
+    gridHeader,
+    handleFilters,
+    handleOpened,
+    limit,
+    loadingData,
     opened,
     orderBy,
-    setOrderBy,
-    setGridData,
     page,
-    setPages,
-    limit,
+    pages,
     search,
-    setSearch,
     setActiveFilters,
-    setLoadingData,
+    setGridData,
     setGridDetails,
+    setGridHeader,
+    setLimit,
+    setLoadingData,
+    setOpened,
+    setOrderBy,
+    setPage,
+    setPages,
+    setSearch,
+    setTotalRows,
+    setSuccessfullyUpdated,
+    successfullyUpdated,
+    totalRows,
   } = useContext(FullGridContext);
+
+  const pageAccess = accessModule.children.find(
+    (el) => el.alias === "financial-merchants"
+  );
 
   useEffect(() => {
     setActiveFilters([]);
@@ -145,6 +166,7 @@ export default function FinancialMerchants() {
     <PageContainer
       FullGridContext={FullGridContext}
       PagePreview={PagePreview}
+      pageAccess={pageAccess}
       defaultGridHeader={defaultGridHeader}
     />
   );

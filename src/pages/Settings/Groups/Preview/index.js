@@ -306,327 +306,377 @@ export default function PagePreview({
                                   key={index}
                                   path={`groupAccess[${index}]`}
                                 >
-                                  <h1 className="w-full border-b p-4 pb-0 pt-2 pb-2 font-bold flex flex-row items-center gap-2">
+                                  <h1 className="w-full p-4 pb-0 pt-2 pb-2 font-bold flex flex-row items-center gap-2">
                                     {access.name}
                                   </h1>
                                   {access.children.map((menu, indexMenu) => {
                                     return (
-                                      <Scope
-                                        key={indexMenu}
-                                        path={`menus[${indexMenu}]`}
-                                      >
-                                        <InputLine>
-                                          <Input
-                                            type="text"
-                                            name="name"
-                                            required
-                                            title="Name"
-                                            grow
-                                            defaultValue={menu.name}
-                                            InputContext={InputContext}
-                                          />
-                                          <Input
-                                            type="hidden"
-                                            name="id"
-                                            required
-                                            defaultValue={
-                                              menu.MenuHierarchyXGroup
-                                                ? menu.MenuHierarchyXGroup.id
-                                                : null
-                                            }
-                                            InputContext={InputContext}
-                                          />
-                                          <Input
-                                            type="hidden"
-                                            name="menuId"
-                                            required
-                                            defaultValue={menu.id}
-                                            InputContext={InputContext}
-                                          />
-                                          <Input
-                                            type="hidden"
-                                            name="fatherId"
-                                            required
-                                            defaultValue={menu.father_id}
-                                            InputContext={InputContext}
-                                          />
+                                      <>
+                                        <Scope
+                                          key={indexMenu}
+                                          path={`menus[${indexMenu}]`}
+                                        >
+                                          <InputLine>
+                                            <Input
+                                              type="text"
+                                              name="name"
+                                              required
+                                              title="Name"
+                                              grow
+                                              defaultValue={menu.name}
+                                              InputContext={InputContext}
+                                            />
+                                            <Input
+                                              type="hidden"
+                                              name="id"
+                                              required
+                                              defaultValue={
+                                                menu.MenuHierarchyXGroup
+                                                  ? menu.MenuHierarchyXGroup.id
+                                                  : null
+                                              }
+                                              InputContext={InputContext}
+                                            />
+                                            <Input
+                                              type="hidden"
+                                              name="menuId"
+                                              required
+                                              defaultValue={menu.id}
+                                              InputContext={InputContext}
+                                            />
+                                            <Input
+                                              type="hidden"
+                                              name="fatherId"
+                                              required
+                                              defaultValue={menu.father_id}
+                                              InputContext={InputContext}
+                                            />
 
-                                          <SelectPopover
-                                            name="view"
-                                            shrink
-                                            title="View"
-                                            options={[
-                                              {
-                                                value: "Yes",
-                                                label: "Allowed",
-                                              },
-                                              { value: "No", label: "Blocked" },
-                                            ]}
-                                            defaultValue={
-                                              menu.MenuHierarchyXGroup &&
-                                              menu.MenuHierarchyXGroup.view
-                                                ? {
-                                                    value: "Yes",
-                                                    label: "Allowed",
-                                                  }
-                                                : {
-                                                    value: "No",
-                                                    label: "Blocked",
-                                                  }
-                                            }
-                                            InputContext={InputContext}
-                                          />
-                                          <SelectPopover
-                                            name="edit"
-                                            shrink
-                                            title="Edit"
-                                            options={[
-                                              {
-                                                value: "Yes",
-                                                label: "Allowed",
-                                              },
-                                              { value: "No", label: "Blocked" },
-                                            ]}
-                                            defaultValue={
-                                              menu.MenuHierarchyXGroup &&
-                                              menu.MenuHierarchyXGroup.edit
-                                                ? {
-                                                    value: "Yes",
-                                                    label: "Allowed",
-                                                  }
-                                                : {
-                                                    value: "No",
-                                                    label: "Blocked",
-                                                  }
-                                            }
-                                            InputContext={InputContext}
-                                          />
-                                          <SelectPopover
-                                            name="create"
-                                            shrink
-                                            title="Create"
-                                            options={[
-                                              {
-                                                value: "Yes",
-                                                label: "Allowed",
-                                              },
-                                              { value: "No", label: "Blocked" },
-                                            ]}
-                                            defaultValue={
-                                              menu.MenuHierarchyXGroup &&
-                                              menu.MenuHierarchyXGroup.create
-                                                ? {
-                                                    value: "Yes",
-                                                    label: "Allowed",
-                                                  }
-                                                : {
-                                                    value: "No",
-                                                    label: "Blocked",
-                                                  }
-                                            }
-                                            InputContext={InputContext}
-                                          />
-                                          <SelectPopover
-                                            name="inactivate"
-                                            shrink
-                                            title="Inactivate"
-                                            options={[
-                                              {
-                                                value: "Yes",
-                                                label: "Allowed",
-                                              },
-                                              { value: "No", label: "Blocked" },
-                                            ]}
-                                            defaultValue={
-                                              menu.MenuHierarchyXGroup &&
-                                              menu.MenuHierarchyXGroup
-                                                .inactivate
-                                                ? {
-                                                    value: "Yes",
-                                                    label: "Allowed",
-                                                  }
-                                                : {
-                                                    value: "No",
-                                                    label: "Blocked",
-                                                  }
-                                            }
-                                            InputContext={InputContext}
-                                          />
-                                        </InputLine>
-                                        {menu.children &&
-                                          menu.children.length > 0 &&
-                                          menu.children
-                                            .sort((a, b) =>
-                                              a.name > b.name ? 1 : -1
-                                            )
-                                            .map((child, index) => {
-                                              return (
-                                                <InputLine key={index}>
-                                                  <div className="flex flex-row items-center justify-center gap-2 w-16">
-                                                    <CornerDownRight
-                                                      size={16}
-                                                      strokeWidth={1}
-                                                    />
-                                                  </div>
-                                                  <Input
-                                                    type="text"
-                                                    name="name"
-                                                    required
-                                                    title="Name"
-                                                    grow
-                                                    defaultValue={child.name}
-                                                    InputContext={InputContext}
-                                                  />
-                                                  <Input
-                                                    type="hidden"
-                                                    name="id"
-                                                    required
-                                                    defaultValue={
-                                                      child.MenuHierarchyXGroup
-                                                        ? child
+                                            <SelectPopover
+                                              name="view"
+                                              shrink
+                                              title="View"
+                                              options={[
+                                                {
+                                                  value: "Yes",
+                                                  label: "Allowed",
+                                                },
+                                                {
+                                                  value: "No",
+                                                  label: "Blocked",
+                                                },
+                                              ]}
+                                              defaultValue={
+                                                menu.MenuHierarchyXGroup &&
+                                                menu.MenuHierarchyXGroup.view
+                                                  ? {
+                                                      value: "Yes",
+                                                      label: "Allowed",
+                                                    }
+                                                  : {
+                                                      value: "No",
+                                                      label: "Blocked",
+                                                    }
+                                              }
+                                              InputContext={InputContext}
+                                            />
+                                            <SelectPopover
+                                              name="edit"
+                                              shrink
+                                              title="Edit"
+                                              options={[
+                                                {
+                                                  value: "Yes",
+                                                  label: "Allowed",
+                                                },
+                                                {
+                                                  value: "No",
+                                                  label: "Blocked",
+                                                },
+                                              ]}
+                                              defaultValue={
+                                                menu.MenuHierarchyXGroup &&
+                                                menu.MenuHierarchyXGroup.edit
+                                                  ? {
+                                                      value: "Yes",
+                                                      label: "Allowed",
+                                                    }
+                                                  : {
+                                                      value: "No",
+                                                      label: "Blocked",
+                                                    }
+                                              }
+                                              InputContext={InputContext}
+                                            />
+                                            <SelectPopover
+                                              name="create"
+                                              shrink
+                                              title="Create"
+                                              options={[
+                                                {
+                                                  value: "Yes",
+                                                  label: "Allowed",
+                                                },
+                                                {
+                                                  value: "No",
+                                                  label: "Blocked",
+                                                },
+                                              ]}
+                                              defaultValue={
+                                                menu.MenuHierarchyXGroup &&
+                                                menu.MenuHierarchyXGroup.create
+                                                  ? {
+                                                      value: "Yes",
+                                                      label: "Allowed",
+                                                    }
+                                                  : {
+                                                      value: "No",
+                                                      label: "Blocked",
+                                                    }
+                                              }
+                                              InputContext={InputContext}
+                                            />
+                                            <SelectPopover
+                                              name="inactivate"
+                                              shrink
+                                              title="Inactivate"
+                                              options={[
+                                                {
+                                                  value: "Yes",
+                                                  label: "Allowed",
+                                                },
+                                                {
+                                                  value: "No",
+                                                  label: "Blocked",
+                                                },
+                                              ]}
+                                              defaultValue={
+                                                menu.MenuHierarchyXGroup &&
+                                                menu.MenuHierarchyXGroup
+                                                  .inactivate
+                                                  ? {
+                                                      value: "Yes",
+                                                      label: "Allowed",
+                                                    }
+                                                  : {
+                                                      value: "No",
+                                                      label: "Blocked",
+                                                    }
+                                              }
+                                              InputContext={InputContext}
+                                            />
+                                          </InputLine>
+                                          {menu.children &&
+                                            menu.children.length > 0 &&
+                                            menu.children
+                                              .sort((a, b) =>
+                                                a.name > b.name ? 1 : -1
+                                              )
+                                              .map((child, index) => {
+                                                return (
+                                                  <Scope
+                                                    key={index}
+                                                    path={`submenus[${index}]`}
+                                                  >
+                                                    <InputLine key={index}>
+                                                      <div className="flex flex-row items-center justify-center gap-2 w-16">
+                                                        <CornerDownRight
+                                                          size={16}
+                                                          strokeWidth={1}
+                                                        />
+                                                      </div>
+                                                      <Input
+                                                        type="text"
+                                                        name="name"
+                                                        required
+                                                        title="Name"
+                                                        grow
+                                                        defaultValue={
+                                                          child.name
+                                                        }
+                                                        InputContext={
+                                                          InputContext
+                                                        }
+                                                      />
+                                                      <Input
+                                                        type="hidden"
+                                                        name="id"
+                                                        required
+                                                        defaultValue={
+                                                          child.MenuHierarchyXGroup
+                                                            ? child
+                                                                .MenuHierarchyXGroup
+                                                                .id
+                                                            : null
+                                                        }
+                                                        InputContext={
+                                                          InputContext
+                                                        }
+                                                      />
+                                                      <Input
+                                                        type="hidden"
+                                                        name="menuId"
+                                                        required
+                                                        defaultValue={child.id}
+                                                        InputContext={
+                                                          InputContext
+                                                        }
+                                                      />
+                                                      <Input
+                                                        type="hidden"
+                                                        name="fatherId"
+                                                        required
+                                                        defaultValue={
+                                                          child.father_id
+                                                        }
+                                                        InputContext={
+                                                          InputContext
+                                                        }
+                                                      />
+
+                                                      <SelectPopover
+                                                        name="view"
+                                                        shrink
+                                                        title="View"
+                                                        options={[
+                                                          {
+                                                            value: "Yes",
+                                                            label: "Allowed",
+                                                          },
+                                                          {
+                                                            value: "No",
+                                                            label: "Blocked",
+                                                          },
+                                                        ]}
+                                                        defaultValue={
+                                                          child.MenuHierarchyXGroup &&
+                                                          child
                                                             .MenuHierarchyXGroup
-                                                            .id
-                                                        : null
-                                                    }
-                                                    InputContext={InputContext}
-                                                  />
-                                                  <Input
-                                                    type="hidden"
-                                                    name="menuId"
-                                                    required
-                                                    defaultValue={child.id}
-                                                    InputContext={InputContext}
-                                                  />
-                                                  <Input
-                                                    type="hidden"
-                                                    name="fatherId"
-                                                    required
-                                                    defaultValue={
-                                                      child.father_id
-                                                    }
-                                                    InputContext={InputContext}
-                                                  />
-
-                                                  <SelectPopover
-                                                    name="view"
-                                                    shrink
-                                                    title="View"
-                                                    options={[
-                                                      {
-                                                        value: "Yes",
-                                                        label: "Allowed",
-                                                      },
-                                                      {
-                                                        value: "No",
-                                                        label: "Blocked",
-                                                      },
-                                                    ]}
-                                                    defaultValue={
-                                                      child.MenuHierarchyXGroup &&
-                                                      child.MenuHierarchyXGroup
-                                                        .view
-                                                        ? {
+                                                            .view
+                                                            ? {
+                                                                value: "Yes",
+                                                                label:
+                                                                  "Allowed",
+                                                              }
+                                                            : {
+                                                                value: "No",
+                                                                label:
+                                                                  "Blocked",
+                                                              }
+                                                        }
+                                                        InputContext={
+                                                          InputContext
+                                                        }
+                                                      />
+                                                      <SelectPopover
+                                                        name="edit"
+                                                        shrink
+                                                        title="Edit"
+                                                        options={[
+                                                          {
                                                             value: "Yes",
                                                             label: "Allowed",
-                                                          }
-                                                        : {
+                                                          },
+                                                          {
                                                             value: "No",
                                                             label: "Blocked",
-                                                          }
-                                                    }
-                                                    InputContext={InputContext}
-                                                  />
-                                                  <SelectPopover
-                                                    name="edit"
-                                                    shrink
-                                                    title="Edit"
-                                                    options={[
-                                                      {
-                                                        value: "Yes",
-                                                        label: "Allowed",
-                                                      },
-                                                      {
-                                                        value: "No",
-                                                        label: "Blocked",
-                                                      },
-                                                    ]}
-                                                    defaultValue={
-                                                      child.MenuHierarchyXGroup &&
-                                                      child.MenuHierarchyXGroup
-                                                        .edit
-                                                        ? {
+                                                          },
+                                                        ]}
+                                                        defaultValue={
+                                                          child.MenuHierarchyXGroup &&
+                                                          child
+                                                            .MenuHierarchyXGroup
+                                                            .edit
+                                                            ? {
+                                                                value: "Yes",
+                                                                label:
+                                                                  "Allowed",
+                                                              }
+                                                            : {
+                                                                value: "No",
+                                                                label:
+                                                                  "Blocked",
+                                                              }
+                                                        }
+                                                        InputContext={
+                                                          InputContext
+                                                        }
+                                                      />
+                                                      <SelectPopover
+                                                        name="create"
+                                                        shrink
+                                                        title="Create"
+                                                        options={[
+                                                          {
                                                             value: "Yes",
                                                             label: "Allowed",
-                                                          }
-                                                        : {
+                                                          },
+                                                          {
                                                             value: "No",
                                                             label: "Blocked",
-                                                          }
-                                                    }
-                                                    InputContext={InputContext}
-                                                  />
-                                                  <SelectPopover
-                                                    name="create"
-                                                    shrink
-                                                    title="Create"
-                                                    options={[
-                                                      {
-                                                        value: "Yes",
-                                                        label: "Allowed",
-                                                      },
-                                                      {
-                                                        value: "No",
-                                                        label: "Blocked",
-                                                      },
-                                                    ]}
-                                                    defaultValue={
-                                                      child.MenuHierarchyXGroup &&
-                                                      child.MenuHierarchyXGroup
-                                                        .create
-                                                        ? {
+                                                          },
+                                                        ]}
+                                                        defaultValue={
+                                                          child.MenuHierarchyXGroup &&
+                                                          child
+                                                            .MenuHierarchyXGroup
+                                                            .create
+                                                            ? {
+                                                                value: "Yes",
+                                                                label:
+                                                                  "Allowed",
+                                                              }
+                                                            : {
+                                                                value: "No",
+                                                                label:
+                                                                  "Blocked",
+                                                              }
+                                                        }
+                                                        InputContext={
+                                                          InputContext
+                                                        }
+                                                      />
+                                                      <SelectPopover
+                                                        name="inactivate"
+                                                        shrink
+                                                        title="Inactivate"
+                                                        options={[
+                                                          {
                                                             value: "Yes",
                                                             label: "Allowed",
-                                                          }
-                                                        : {
+                                                          },
+                                                          {
                                                             value: "No",
                                                             label: "Blocked",
-                                                          }
-                                                    }
-                                                    InputContext={InputContext}
-                                                  />
-                                                  <SelectPopover
-                                                    name="inactivate"
-                                                    shrink
-                                                    title="Inactivate"
-                                                    options={[
-                                                      {
-                                                        value: "Yes",
-                                                        label: "Allowed",
-                                                      },
-                                                      {
-                                                        value: "No",
-                                                        label: "Blocked",
-                                                      },
-                                                    ]}
-                                                    defaultValue={
-                                                      child.MenuHierarchyXGroup &&
-                                                      child.MenuHierarchyXGroup
-                                                        .inactivate
-                                                        ? {
-                                                            value: "Yes",
-                                                            label: "Allowed",
-                                                          }
-                                                        : {
-                                                            value: "No",
-                                                            label: "Blocked",
-                                                          }
-                                                    }
-                                                    InputContext={InputContext}
-                                                  />
-                                                </InputLine>
-                                              );
-                                            })}
-                                      </Scope>
+                                                          },
+                                                        ]}
+                                                        defaultValue={
+                                                          child.MenuHierarchyXGroup &&
+                                                          child
+                                                            .MenuHierarchyXGroup
+                                                            .inactivate
+                                                            ? {
+                                                                value: "Yes",
+                                                                label:
+                                                                  "Allowed",
+                                                              }
+                                                            : {
+                                                                value: "No",
+                                                                label:
+                                                                  "Blocked",
+                                                              }
+                                                        }
+                                                        InputContext={
+                                                          InputContext
+                                                        }
+                                                      />
+                                                    </InputLine>
+                                                  </Scope>
+                                                );
+                                              })}
+                                          <div className="h-[1px] w-full border-b border-gray-200 border-dashed"></div>
+                                        </Scope>
+                                      </>
                                     );
                                   })}
                                 </Scope>

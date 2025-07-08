@@ -27,7 +27,12 @@ import FormHeader from "~/components/RegisterForm/FormHeader";
 import Preview from "~/components/Preview";
 import { Zoom, toast } from "react-toastify";
 import api from "~/services/api";
-import { getRegistries, handleUpdatedFields } from "~/functions";
+import {
+  getRegistries,
+  getTabsPermissions,
+  handleUpdatedFields,
+  tabAllowed,
+} from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
@@ -59,6 +64,11 @@ export default function PagePreview({
     successfullyUpdated,
     setSuccessfullyUpdated,
   } = useContext(FullGridContext);
+
+  const tabsPermissions = getTabsPermissions(
+    "financial-receivables",
+    FullGridContext
+  );
   const [pageData, setPageData] = useState({
     loaded: false,
     filial_id: null,
@@ -296,7 +306,7 @@ export default function PagePreview({
     alertBox({
       title: "Attention!",
       descriptionHTML:
-        "Are you sure you want to send this invoice to the student?",
+        "Are you sure you want to send this invoice by email to the student?",
       buttons: [
         {
           title: "No",
@@ -357,41 +367,44 @@ export default function PagePreview({
               >
                 <Building size={16} /> General
               </RegisterFormMenu>
-              {pageData.status.includes("Pending") && (
-                <button
-                  type="button"
-                  onClick={() => handleSendInvoice()}
-                  className="w-full bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2"
-                >
-                  <Send size={14} />
-                  <strong>Send Invoice</strong>
-                </button>
-              )}
-              {pageData.settlements && pageData.settlements.length > 0 && (
-                <RegisterFormMenu
-                  setActiveMenu={setActiveMenu}
-                  activeMenu={activeMenu}
-                  name="settlements"
-                >
-                  <ReplaceAll size={16} /> Settlements
-                </RegisterFormMenu>
-              )}
-              {pageData.status.includes("Paid", "Parcial Paid") && (
-                <RegisterFormMenu
-                  setActiveMenu={setActiveMenu}
-                  activeMenu={activeMenu}
-                  name="refund"
-                >
-                  <UndoDot size={16} /> Refunds
-                </RegisterFormMenu>
-              )}
-              {pageData.maillogs.length > 0 && (
+              {pageData.status.includes("Pending") &&
+                tabAllowed(tabsPermissions, "resend-invoice-tab") && (
+                  <button
+                    type="button"
+                    onClick={() => handleSendInvoice()}
+                    className="w-full bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2"
+                  >
+                    <Send size={14} />
+                    <strong>Resend Invoice</strong>
+                  </button>
+                )}
+              {pageData.status.includes("Paid", "Parcial Paid") &&
+                tabAllowed(tabsPermissions, "settlements-tab") && (
+                  <RegisterFormMenu
+                    setActiveMenu={setActiveMenu}
+                    activeMenu={activeMenu}
+                    name="settlements"
+                  >
+                    <ReplaceAll size={16} /> Settlements
+                  </RegisterFormMenu>
+                )}
+              {pageData.status.includes("Paid", "Parcial Paid") &&
+                tabAllowed(tabsPermissions, "refunds-tab") && (
+                  <RegisterFormMenu
+                    setActiveMenu={setActiveMenu}
+                    activeMenu={activeMenu}
+                    name="refund"
+                  >
+                    <UndoDot size={16} /> Refunds
+                  </RegisterFormMenu>
+                )}
+              {tabAllowed(tabsPermissions, "mail-logs-tab") && (
                 <RegisterFormMenu
                   setActiveMenu={setActiveMenu}
                   activeMenu={activeMenu}
                   name="Mail Logs"
                 >
-                  <Mail size={16} /> Mail Logs
+                  <Mail size={16} /> Email Logs
                 </RegisterFormMenu>
               )}
             </div>
@@ -1278,15 +1291,18 @@ export default function PagePreview({
                         <>
                           <FormHeader
                             access={access}
-                            title={`Mail Logs - ${pageData.issuer.name}`}
+                            title={`Email Logs - ${pageData.issuer.name}`}
                             registry={registry}
                             InputContext={InputContext}
                           />
 
                           <InputLineGroup
-                            title="Mail Logs"
+                            title="E-mail Logs"
                             activeMenu={activeMenu === "Mail Logs"}
                           >
+                            {pageData.maillogs.length === 0 && (
+                              <p className="text-sm p-4">No email sent yet.</p>
+                            )}
                             {pageData.maillogs &&
                               pageData.maillogs.length > 0 &&
                               pageData.maillogs

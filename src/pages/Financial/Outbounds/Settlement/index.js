@@ -63,21 +63,43 @@ export default function PayeesSettlement() {
     },
   ];
   const [selected, setSelected] = useState([]);
-  const [settlementOpen, setSettlementOpen] = useState(false);
   const { alertBox } = useContext(AlertContext);
 
   const {
+    accessModule,
+    activeFilters,
+    gridData,
+    gridDetails,
+    gridHeader,
+    handleFilters,
+    handleOpened,
+    limit,
+    loadingData,
     opened,
     orderBy,
-    setGridData,
     page,
-    setPages,
-    limit,
+    pages,
     search,
     setActiveFilters,
-    setLoadingData,
+    setGridData,
     setGridDetails,
+    setGridHeader,
+    setLimit,
+    setLoadingData,
+    setOpened,
+    setOrderBy,
+    setPage,
+    setPages,
+    setSearch,
+    setTotalRows,
+    setSuccessfullyUpdated,
+    successfullyUpdated,
+    totalRows,
   } = useContext(FullGridContext);
+
+  const pageAccess = accessModule.children.find(
+    (el) => el.alias === "payees-settlement"
+  );
 
   useEffect(() => {
     setActiveFilters([]);
@@ -231,6 +253,7 @@ export default function PayeesSettlement() {
     <PageContainer
       FullGridContext={FullGridContext}
       PagePreview={null}
+      pageAccess={pageAccess}
       defaultGridHeader={defaultGridHeader}
       handleNew={false}
       handleEdit={false}

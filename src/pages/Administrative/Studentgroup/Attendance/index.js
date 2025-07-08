@@ -25,6 +25,7 @@ import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import { yesOrNoOptions } from "~/functions/selectPopoverOptions";
 import TdRadioInput from "~/components/RegisterForm/TdRadioInput";
 import { useSelector } from "react-redux";
+import { getTabsPermissions, hasAccessTo } from "~/functions";
 
 export const InputContext = createContext({});
 
@@ -38,6 +39,7 @@ export default function Attendance({
   const { alertBox } = useContext(AlertContext);
   const { successfullyUpdated, setSuccessfullyUpdated } =
     useContext(FullGridContext);
+  const tabsPermissions = getTabsPermissions("attendance", FullGridContext);
   const { profile } = useSelector((state) => state.user);
   const groupName = profile.groups[0].group.name;
   const [pageData, setPageData] = useState({
@@ -80,7 +82,7 @@ export default function Attendance({
   }
 
   function handleGeneralFormSubmit(data) {
-    if (data.lock && pageData.attendance?.locked_at && data.grades) {
+    if (data.lock && pageData.studentgroupclass?.locked_at && data.grades) {
       api
         .post(`/studentgroups/grades/${selected[0].id}`, {
           grades: data.grades,
@@ -91,7 +93,6 @@ export default function Attendance({
           handleOpened(null);
         })
         .catch((err) => {
-          console.log(err);
           toast(err.response.data.error, {
             type: "error",
             autoClose: 1000,
@@ -154,7 +155,7 @@ export default function Attendance({
       `/studentgroups/attendance/${selected[0].id}?attendanceId=${attendanceId}`
     );
     if (!attendanceId) {
-      setLastAttendance({ date: data.attendance.date });
+      setLastAttendance({ date: data.studentgroupclass.date });
     }
     setTimeout(() => {
       setPageData({ ...data, loaded: true });
@@ -166,7 +167,7 @@ export default function Attendance({
   }, [attendanceId]);
 
   function handleChangeAttendanceDay(id) {
-    if (id === pageData.attendance?.id) {
+    if (id === pageData.studentgroupclass?.id) {
       return;
     }
     if (!successfullyUpdated) {
@@ -206,13 +207,13 @@ export default function Attendance({
             >
               <Building size={16} /> Attendance
             </RegisterFormMenu>
-            {pageData.attendance?.paceguides?.find((paceguide) =>
+            {pageData.studentgroupclass?.paceguides?.find((paceguide) =>
               paceguide.type.includes("Test")
             ) && (
               <RegisterFormMenu
                 setActiveMenu={setActiveMenu}
                 activeMenu={activeMenu}
-                disabled={!pageData.attendance?.locked_at}
+                disabled={!pageData.studentgroupclass?.locked_at}
                 messageOnDisabled="Avaiable only on locked attendances that have given tests."
                 name="grades"
               >
@@ -243,7 +244,7 @@ export default function Attendance({
                       <FormHeader
                         access={access}
                         title={`Attendance - ${format(
-                          parseISO(pageData.attendance?.date),
+                          parseISO(pageData.studentgroupclass?.date),
                           "MM/dd/yyyy"
                         )}`}
                         registry={registry}
@@ -257,7 +258,7 @@ export default function Attendance({
                         <Input
                           type="hidden"
                           name="studentgroupclass_id"
-                          defaultValue={pageData.attendance?.id}
+                          defaultValue={pageData.studentgroupclass?.id}
                           InputContext={InputContext}
                         />
                         <InputLine title="Resume">
@@ -299,7 +300,7 @@ export default function Attendance({
                                         handleChangeAttendanceDay(otherClass.id)
                                       }
                                       className={`flex flex-col items-center justify-center rounded-lg border ${
-                                        pageData.attendance?.date ===
+                                        pageData.studentgroupclass?.date ===
                                         otherClass.date
                                           ? "border-mila_orange border-solid"
                                           : "border-gray-300 border-dashed"
@@ -373,11 +374,17 @@ export default function Attendance({
                             name="lock"
                             grow
                             title="Lock this attendance?"
-                            readOnly={groupName === "Teacher" ? true : false}
+                            readOnly={
+                              pageData.studentgroupclass?.locked_at
+                                ? !hasAccessTo(access, null, "attendance")
+                                    .inactivate
+                                : !hasAccessTo(access, null, "attendance")
+                                    .create
+                            }
                             InputContext={InputContext}
                             options={yesOrNoOptions}
                             defaultValue={
-                              pageData.attendance?.locked_at
+                              pageData.studentgroupclass?.locked_at
                                 ? yesOrNoOptions[0]
                                 : yesOrNoOptions[1]
                             }
@@ -389,14 +396,16 @@ export default function Attendance({
                             readOnly
                             grow
                             defaultValue={
-                              pageData.attendance?.studentgroup.staff?.name +
+                              pageData.studentgroupclass?.studentgroup.staff
+                                ?.name +
                               " " +
-                              pageData.attendance?.studentgroup.staff?.last_name
+                              pageData.studentgroupclass?.studentgroup.staff
+                                ?.last_name
                             }
                             InputContext={InputContext}
                           />
                         </InputLine>
-                        {pageData.attendance?.shift
+                        {pageData.studentgroupclass?.shift
                           ?.split("/")
                           .map((shift, index) => (
                             <Scope path={`shifts.${index}`} key={index}>
@@ -404,7 +413,9 @@ export default function Attendance({
                                 <Input
                                   type="hidden"
                                   name="date"
-                                  defaultValue={pageData.attendance?.date}
+                                  defaultValue={
+                                    pageData.studentgroupclass?.date
+                                  }
                                   InputContext={InputContext}
                                 />
                                 <Input
@@ -444,114 +455,122 @@ export default function Attendance({
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {pageData.attendance?.studentgroup?.students
+                                    {pageData?.students
                                       ?.sort((a, b) =>
-                                        (a.name + a.last_name).localeCompare(
-                                          b.name + b.last_name
-                                        )
+                                        a.name + a.last_name >
+                                        b.name + b.last_name
+                                          ? 1
+                                          : -1
                                       )
                                       .map((student, index) => {
-                                        const {
-                                          first_check = null,
-                                          second_check = null,
-                                          vacation_id = null,
-                                          medical_excuse_id = null,
-                                        } = pageData.attendance?.attendances?.find(
-                                          (attendance) =>
-                                            attendance.student_id ===
-                                              student.id &&
-                                            attendance.shift === shift
-                                        ) || {};
-                                        return (
-                                          <Scope
-                                            path={`students.${index}`}
-                                            key={index}
-                                          >
-                                            <tr
-                                              key={index}
-                                              className="text-center even:bg-gray-50"
-                                            >
-                                              <td className="px-2 h-8 text-left">
-                                                <Input
-                                                  type="hidden"
-                                                  name="id"
-                                                  defaultValue={student.id}
-                                                  InputContext={InputContext}
-                                                />
-                                                {student.name}{" "}
-                                                {student.last_name}
-                                              </td>
-                                              <TdRadioInput
-                                                name={`first_check_${shift}_${student.id}`}
-                                                value="Present"
-                                                options={[
-                                                  "Late",
-                                                  "Present",
-                                                  "Absent",
-                                                ]}
-                                                readOnly={
-                                                  pageData.attendance
-                                                    ?.locked_at ||
-                                                  medical_excuse_id ||
-                                                  vacation_id
-                                                }
-                                                InputContext={InputContext}
-                                                defaultValue={
-                                                  !first_check ||
-                                                  medical_excuse_id
-                                                    ? "Absent"
-                                                    : first_check
-                                                }
-                                              />
-                                              <td></td>
-                                              <TdRadioInput
-                                                name={`second_check_${shift}_${student.id}`}
-                                                value="Present"
-                                                options={[
-                                                  "Late",
-                                                  "Present",
-                                                  "Absent",
-                                                ]}
-                                                readOnly={
-                                                  pageData.attendance
-                                                    ?.locked_at ||
-                                                  medical_excuse_id ||
-                                                  vacation_id
-                                                }
-                                                InputContext={InputContext}
-                                                defaultValue={
-                                                  !second_check ||
-                                                  medical_excuse_id
-                                                    ? "Absent"
-                                                    : second_check
-                                                }
-                                              />
-                                              <td></td>
-                                              <TdRadioInput
-                                                name={`vacation_${shift}_${student.id}`}
-                                                readOnly
-                                                options={["Vacation"]}
-                                                InputContext={InputContext}
-                                                defaultValue={
-                                                  vacation_id
-                                                    ? "Vacation"
-                                                    : null
-                                                }
-                                              />
-                                              <TdRadioInput
-                                                name={`medical_excuse_${shift}_${student.id}`}
-                                                readOnly
-                                                options={["Medical Excuse"]}
-                                                InputContext={InputContext}
-                                                defaultValue={
-                                                  medical_excuse_id
-                                                    ? "Medical Excuse"
-                                                    : null
-                                                }
-                                              />
-                                            </tr>
-                                          </Scope>
-                                        );
+                                        return student.attendances
+                                          .filter(
+                                            (attendance) =>
+                                              attendance.shift === shift &&
+                                              attendance.status !== "C" &&
+                                              attendance.status !== "F" &&
+                                              attendance.status !== "T"
+                                          )
+                                          .map((attendance) => {
+                                            const {
+                                              first_check = null,
+                                              second_check = null,
+                                              vacation_id = null,
+                                              medical_excuse_id = null,
+                                            } = attendance || {};
+                                            return (
+                                              <Scope
+                                                path={`students.${index}`}
+                                                key={index}
+                                              >
+                                                <tr
+                                                  key={index}
+                                                  className="text-center even:bg-gray-50"
+                                                >
+                                                  <td className="px-2 h-8 text-left">
+                                                    <Input
+                                                      type="hidden"
+                                                      name="id"
+                                                      defaultValue={student.id}
+                                                      InputContext={
+                                                        InputContext
+                                                      }
+                                                    />
+                                                    {student.name}{" "}
+                                                    {student.last_name}
+                                                  </td>
+                                                  <TdRadioInput
+                                                    name={`first_check_${shift}_${student.id}`}
+                                                    value="Present"
+                                                    options={[
+                                                      "Late",
+                                                      "Present",
+                                                      "Absent",
+                                                    ]}
+                                                    readOnly={
+                                                      pageData.studentgroupclass
+                                                        ?.locked_at ||
+                                                      medical_excuse_id ||
+                                                      vacation_id
+                                                    }
+                                                    InputContext={InputContext}
+                                                    defaultValue={
+                                                      !first_check ||
+                                                      medical_excuse_id
+                                                        ? "Absent"
+                                                        : first_check
+                                                    }
+                                                  />
+                                                  <td></td>
+                                                  <TdRadioInput
+                                                    name={`second_check_${shift}_${student.id}`}
+                                                    value="Present"
+                                                    options={[
+                                                      "Late",
+                                                      "Present",
+                                                      "Absent",
+                                                    ]}
+                                                    readOnly={
+                                                      pageData.studentgroupclass
+                                                        ?.locked_at ||
+                                                      medical_excuse_id ||
+                                                      vacation_id
+                                                    }
+                                                    InputContext={InputContext}
+                                                    defaultValue={
+                                                      !second_check ||
+                                                      medical_excuse_id
+                                                        ? "Absent"
+                                                        : second_check
+                                                    }
+                                                  />
+                                                  <td></td>
+                                                  <TdRadioInput
+                                                    name={`vacation_${shift}_${student.id}`}
+                                                    readOnly
+                                                    options={["Vacation"]}
+                                                    InputContext={InputContext}
+                                                    defaultValue={
+                                                      vacation_id
+                                                        ? "Vacation"
+                                                        : null
+                                                    }
+                                                  />
+                                                  <TdRadioInput
+                                                    name={`medical_excuse_${shift}_${student.id}`}
+                                                    readOnly
+                                                    options={["Medical Excuse"]}
+                                                    InputContext={InputContext}
+                                                    defaultValue={
+                                                      medical_excuse_id
+                                                        ? "Medical Excuse"
+                                                        : null
+                                                    }
+                                                  />
+                                                </tr>
+                                              </Scope>
+                                            );
+                                          });
                                       })}
                                   </tbody>
                                 </table>
@@ -561,7 +580,8 @@ export default function Attendance({
                         <InputLine title="Program">
                           <div className="w-full overflow-y-scroll">
                             <table className="w-full text-sm text-center overflow-y-scroll ">
-                              {pageData.attendance?.paceguides.length > 0 && (
+                              {pageData.studentgroupclass?.paceguides.length >
+                                0 && (
                                 <thead className="">
                                   <tr className="bg-white sticky top-0 z-10">
                                     <th className="w-20">
@@ -573,7 +593,7 @@ export default function Attendance({
                                 </thead>
                               )}
                               <tbody>
-                                {pageData.attendance?.paceguides
+                                {pageData.studentgroupclass?.paceguides
                                   ?.sort((a, b) =>
                                     a.status + a.description >
                                     b.status + b.description
@@ -585,7 +605,7 @@ export default function Attendance({
                                       ?.filter(
                                         (classroom) =>
                                           classroom.id !==
-                                            pageData.attendance?.id &&
+                                            pageData.studentgroupclass?.id &&
                                           classroom.status !== "Locked"
                                       )
                                       .map((classroom) => classroom.paceguides)
@@ -594,7 +614,7 @@ export default function Attendance({
                                     return (
                                       <>
                                         {index ===
-                                          pageData.attendance?.paceguides
+                                          pageData.studentgroupclass?.paceguides
                                             .length && (
                                           <tr className="bg-white sticky top-0 z-20">
                                             <th className="w-20">
@@ -618,10 +638,11 @@ export default function Attendance({
                                               name={`paceguides.${index}.checked`}
                                               InputContext={InputContext}
                                               readOnly={
-                                                pageData.attendance?.locked_at
+                                                pageData.studentgroupclass
+                                                  ?.locked_at
                                               }
                                               defaultValue={
-                                                pageData.attendance.paceguides.find(
+                                                pageData.studentgroupclass.paceguides.find(
                                                   (pg) => pg.id === paceguide.id
                                                 )
                                                   ? true
@@ -646,7 +667,7 @@ export default function Attendance({
                         title="Grades"
                         activeMenu={activeMenu === "grades"}
                       >
-                        {pageData.attendance?.paceguides
+                        {pageData.studentgroupclass?.paceguides
                           ?.filter((paceguide) =>
                             paceguide.type.includes("Test")
                           )
@@ -675,17 +696,8 @@ export default function Attendance({
                                       </tr>
                                     </thead>
                                     <tbody>
-                                      {pageData.attendance?.studentgroup?.students.map(
+                                      {pageData.students.map(
                                         (student, index) => {
-                                          const {
-                                            first_check = null,
-                                            second_check = null,
-                                          } =
-                                            pageData.attendance?.attendances?.find(
-                                              (attendance) =>
-                                                attendance.student_id ===
-                                                student.id
-                                            ) || {};
                                           return (
                                             <Scope
                                               path={`students.${index}`}
@@ -695,7 +707,7 @@ export default function Attendance({
                                                 key={index}
                                                 className={`text-xs hover:bg-gray-100 ${
                                                   student.id ===
-                                                  pageData.attendance
+                                                  pageData.studentgroupclass
                                                     ?.student_id
                                                     ? "bg-gray-100"
                                                     : ""

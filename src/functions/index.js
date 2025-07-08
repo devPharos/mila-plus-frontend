@@ -10,7 +10,10 @@ export function today() {
 }
 
 export function hasAccessTo(
-  accesses = null,
+  accesses = {
+    children: null,
+    hierarchy: null,
+  },
   main_menu = null,
   menu_alias = null
 ) {
@@ -20,13 +23,17 @@ export function hasAccessTo(
     create: false,
     inactivate: false,
   };
-  if (!accesses || !accesses.hierarchy || !menu_alias) {
+  if (!accesses || !menu_alias) {
     return defaultFalse;
   }
 
   if (accesses.children) {
-    accesses.hierarchy = accesses.children;
+    accesses = { ...accesses, hierarchy: accesses.children };
   }
+  if (!accesses.hierarchy) {
+    return defaultFalse;
+  }
+
   let current = null;
   if (main_menu) {
     current = accesses.hierarchy
@@ -42,6 +49,33 @@ export function hasAccessTo(
 
   const { view, edit, create, inactivate } = current.MenuHierarchyXGroup;
   return { view, edit, create, inactivate };
+}
+
+export function getTabsPermissions(pageAlias = "", FullGridContext = null) {
+  const { accessModule } = useContext(FullGridContext);
+
+  const pageAccess = accessModule?.children?.find(
+    (el) => el.alias === pageAlias
+  );
+
+  let tabsPermissions = null;
+
+  if (!pageAccess) {
+    return null;
+  }
+  if (pageAccess && pageAccess.children) {
+    tabsPermissions = pageAccess.children.filter((el) =>
+      el.alias.includes("-tab")
+    );
+  }
+  return tabsPermissions;
+}
+
+export function tabAllowed(tabsPermissions = null, tabAlias = "") {
+  if (!tabsPermissions || !tabAlias) {
+    return false;
+  }
+  return tabsPermissions.find((el) => el.alias === tabAlias);
 }
 
 export function getCurrentPage() {

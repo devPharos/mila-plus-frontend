@@ -15,16 +15,30 @@ import InputLine from "~/components/RegisterForm/InputLine";
 import InputLineGroup from "~/components/RegisterForm/InputLineGroup";
 import FormHeader from "~/components/RegisterForm/FormHeader";
 import Preview from "~/components/Preview";
-import { getRegistries, handleUpdatedFields } from "~/functions";
+import { getRegistries, handleUpdatedFields, countries_list } from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import CountryList from "country-list-with-dial-code-and-flag";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
 import { FullGridContext } from "../..";
 import FindGeneric from "~/components/Finds/FindGeneric";
-import { agentTypeOptions } from "~/functions/selectPopoverOptions";
+import PhoneNumberInput from "~/components/RegisterForm/PhoneNumberInput";
 
 export const InputContext = createContext({});
+
+  export const yesOrNoOptions = [
+    { value: 'instagram', label: "Instagram" },
+    { value: 'facebook', label: "Facebook" },
+    { value: 'tiktok', label: "TikTok" },
+    { value: 'other', label: "Other" },
+  ];
+
+  export const compensationOptions = [
+    { value: 'flat_fee', label: "Flat fee" },
+    { value: 'percentage_per_enrollment', label: "Percentage Per Enrollment" },
+    { value: 'flat_fee_per_enrollment', label: "Flat fee Per Enrollment" },
+  ];
+
 
 export default function PagePreview({
   access,
@@ -37,6 +51,11 @@ export default function PagePreview({
     successfullyUpdated,
     setSuccessfullyUpdated,
   } = useContext(FullGridContext);
+
+  const countriesOptions = countries_list.map((country) => {
+    return { value: country, label: country };
+  });
+
   const [pageData, setPageData] = useState({
     name: "",
     email: "",
@@ -46,7 +65,6 @@ export default function PagePreview({
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
-  const [agentType, setAgentType] = useState(null);
   const [registry, setRegistry] = useState({
     created_by: null,
     created_at: null,
@@ -89,6 +107,7 @@ export default function PagePreview({
         setFormType("full");
       }
     }
+
     getPageData();
   }, []);
 
@@ -106,7 +125,7 @@ export default function PagePreview({
     }
     if (id === "new") {
       try {
-        const response = await api.post(`/agents`, { ...data });
+        const response = await api.post(`/partners_and_influencers`, { ...data });
         setOpened(response.data.id);
         setPageData({ ...pageData, ...data });
         setSuccessfullyUpdated(true);
@@ -116,24 +135,7 @@ export default function PagePreview({
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     } else if (id !== "new") {
-      const updated = handleUpdatedFields(data, pageData);
-      console.log(updated);
 
-      if (updated.length > 0) {
-        const objUpdated = Object.fromEntries(updated);
-        try {
-          await api.put(`/agents/${id}`, { ...objUpdated });
-          setPageData({ ...pageData, ...objUpdated });
-          setSuccessfullyUpdated(true);
-          toast("Saved!", { autoClose: 1000 });
-          handleOpened(null);
-        } catch (err) {
-          console.log(err);
-          toast(err.response.data.error, { type: "error", autoClose: 3000 });
-        }
-      } else {
-        // console.log(updated)
-      }
     }
   }
 
@@ -224,145 +226,161 @@ export default function PagePreview({
                           title="GENERAL"
                           activeMenu={activeMenu === "general"}
                         >
-                          <FindGeneric
-                            route="filials"
-                            title="Filial"
-                            scope="filial"
-                            required
-                            InputContext={InputContext}
-                            defaultValue={
-                              id === "new" && auth.filial.id !== 1
-                                ? {
-                                    id: auth.filial.id,
-                                    name: auth.filial.name,
-                                  }
-                                : {
-                                    id: pageData.filial?.id,
-                                    name: pageData.filial?.name,
-                                  }
-                            }
-                            fields={[
-                              {
-                                title: "Name",
-                                name: "name",
-                              },
-                            ]}
-                          />
-                          <InputLine title="General Data">
+                          <InputLine title="Profile Data">
                             <Input
                               type="text"
-                              name="name"
+                              name="partners_name"
                               required
                               grow
-                              title="Name"
-                              defaultValue={pageData.name}
+                              title="Partner's Name"
+                              defaultValue={pageData.partners_name}
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              type="text"
+                              name="contacts_name"
+                              grow
+                              required
+                              title="Contact's Name"
+                              defaultValue={pageData.contacts_name}
+                              InputContext={InputContext}
+                            />
+                          </InputLine>
+                          <InputLine>
+                            <SelectPopover
+                              name="social_network_type"
+                              defaultValue={yesOrNoOptions.find((option) => option.value === pageData.social_network_type)}
+                              centeredText={true}
+                              readOnly={false}
+                              title={'Social Network Type'}
+                              options={yesOrNoOptions}
+                              InputContext={InputContext}
+                              onChange={(e) => {
+                                setPageData((state) => ({
+                                  ...state,
+                                  social_network_type: e.value
+                                }))
+                              }}
+                            />
+                            <Input
+                              type="text"
+                              name="contacts_name"
+                              grow
+                              required
+                              readOnly={!pageData.social_network_type}
+                              title={`Input your ${pageData.social_network_type}`}
+                              defaultValue={pageData.contacts_name}
+                              InputContext={InputContext}
+                            />
+                            <div style={{ width: '300px' }}>
+                              <PhoneNumberInput
+                                type="text"
+                                name="phone"
+                                required
+                                grow
+                                readOnly={false}
+                                title="Phone Number"
+                                value={pageData.sponsor?.phone}
+                                InputContext={InputContext}
+                              />
+                            </div>
+                            <SelectPopover
+                              name="compensation"
+                              defaultValue={compensationOptions.find((option) => option.value === pageData.compensation)}
+                              centeredText={true}
+                              readOnly={false}
+                              shrink={true}
+                              title={'Compensation'}
+                              options={compensationOptions}
+                              InputContext={InputContext}
+                              onChange={(e) => {
+                                setPageData((state) => ({
+                                  ...state,
+                                  compensation: e.value
+                                }))
+                              }}
+                            />
+                            <Input
+                              type="text"
+                              name="compensation_value"
+                              grow
+                              required
+                              readOnly={!pageData.compensation}
+                              title={`Compensation value`}
+                              defaultValue={pageData.compensation_value}
+                              onlyFloat={true}
+                              value={pageData.compensation_value}
+                              InputContext={InputContext}
+                              onChange={(e) => {
+                                const value = parseFloat(e); // Convertendo para número
+                                const type = pageData.compensation_value; // Pegando o tipo atual
+
+                                if (type === 'percentage_per_enrollment') {
+                                  // Aceita apenas valores entre 0 e 100
+                                  if (value >= 0 && value <= 100) {
+                                    setPageData(state => ({
+                                      ...state,
+                                      compensation_value: value
+                                    }));
+                                  }
+                                } else {
+                                  // Aceita qualquer número (inteiro ou decimal positivo)
+                                  if (!isNaN(value)) {
+                                    setPageData(state => ({
+                                      ...state,
+                                      compensation_value: value
+                                    }));
+                                  }
+                                }
+                              }}
+                            />
+                          </InputLine>
+                          <InputLine title="Location">
+                            <Input
+                              type="text"
+                              name="address"
+                              title="Address"
+                              grow
+                              defaultValue={pageData.address}
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              type="text"
+                              name="zip"
+                              grow
+                              title="Zip Code"
+                              defaultValue={pageData.zip}
                               InputContext={InputContext}
                             />
                             <SelectPopover
-                              name="type"
-                              required
+                              name="birth_country"
                               grow
-                              title="Type"
+                              title="Country"
+                              options={countriesOptions}
                               isSearchable
-                              defaultValue={agentTypeOptions.find(
-                                (type) => type.value === pageData.type
+                              defaultValue={countriesOptions.find(
+                                (country) =>
+                                  country.value === pageData.birth_country
                               )}
-                              options={agentTypeOptions}
                               InputContext={InputContext}
-                              setReturnPopover={(val) => setAgentType(val[0])}
+                            />
+                            <Input
+                              type="text"
+                              name="state"
+                              grow
+                              title="State"
+                              defaultValue={pageData.state}
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              type="text"
+                              name="city"
+                              grow
+                              title="City"
+                              defaultValue={pageData.city}
+                              InputContext={InputContext}
                             />
                           </InputLine>
-                          {agentType && agentType.value === "External" && (
-                            <InputLine title="Company">
-                              <Input
-                                type="text"
-                                name="company_name"
-                                required
-                                grow
-                                title="Company Name"
-                                defaultValue={pageData.company_name}
-                                InputContext={InputContext}
-                              />
-                              <Input
-                                type="text"
-                                name="company_address"
-                                required
-                                grow
-                                title="Company Address"
-                                defaultValue={pageData.company_address}
-                                InputContext={InputContext}
-                              />
-                              <Input
-                                type="text"
-                                name="company_city"
-                                required
-                                grow
-                                title="Company City"
-                                defaultValue={pageData.company_city}
-                                InputContext={InputContext}
-                              />
-                              <Input
-                                type="text"
-                                name="company_state"
-                                required
-                                grow
-                                title="Company State"
-                                defaultValue={pageData.company_state}
-                                InputContext={InputContext}
-                              />
-
-                              <Input
-                                type="text"
-                                name="company_zip"
-                                required
-                                grow
-                                title="Company Zip"
-                                defaultValue={pageData.company_zip}
-                                InputContext={InputContext}
-                              />
-
-                              <Input
-                                type="text"
-                                name="company_phone_number"
-                                required
-                                grow
-                                title="Company Phone Number"
-                                defaultValue={pageData.company_phone_number}
-                                InputContext={InputContext}
-                              />
-
-                              <Input
-                                type="text"
-                                name="company_ein"
-                                required
-                                grow
-                                title="Company EIN"
-                                defaultValue={pageData.company_ein}
-                                InputContext={InputContext}
-                              />
-                            </InputLine>
-                          )}
-                          <FindGeneric
-                            route="users"
-                            title="User"
-                            scope="user"
-                            InputContext={InputContext}
-                            defaultValue={{
-                              id: pageData.user?.id,
-                              name: pageData.user?.name,
-                              email: pageData.user?.email,
-                            }}
-                            fields={[
-                              {
-                                title: "Name",
-                                name: "name",
-                              },
-                              {
-                                title: "E-mail",
-                                name: "email",
-                              },
-                            ]}
-                          />
                         </InputLineGroup>
                       </>
                     ) : (

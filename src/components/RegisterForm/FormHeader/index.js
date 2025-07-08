@@ -8,13 +8,20 @@ export default function FormHeader({
   loading = false,
   saveText = "Save changes",
   outside = false,
-  access = { view: false, edit: false, create: false, inactivate: false },
+  access = {
+    view: false,
+    edit: false,
+    create: false,
+    inactivate: false,
+    MenuHierarchyXGroup: null,
+  },
   title = "",
   registry = { registryBy: null, registryAt: null, registryStatus: null },
   InputContext = null,
   emailButtonText = "Send Mail",
   createText = "Create",
   createIcon = <Save size={16} />,
+  enableFullScreen = true,
 }) {
   const { registryBy, registryAt, registryStatus } = registry;
   const {
@@ -27,6 +34,10 @@ export default function FormHeader({
     canceled,
     handleOutsideMail,
   } = useContext(InputContext);
+
+  if (access.MenuHierarchyXGroup) {
+    access = access.MenuHierarchyXGroup;
+  }
 
   return (
     <div className="sticky top-0 z-50 bg-slate-100 h-24 mb-4 px-4 py-8 flex flex-row items-center justify-between w-full">
@@ -54,14 +65,16 @@ export default function FormHeader({
           <>
             {!outside && access && (
               <>
-                <button
-                  type="button"
-                  onClick={() => setFullscreen(!fullscreen)}
-                  className="text-md font-bold bg-secondary border hover:border-primary hover:text-primary rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1"
-                >
-                  <Scaling size={16} />{" "}
-                  {fullscreen ? "Minimize" : "Full Screen"}
-                </button>
+                {enableFullScreen && (
+                  <button
+                    type="button"
+                    onClick={() => setFullscreen(!fullscreen)}
+                    className="text-md font-bold bg-secondary border hover:border-primary hover:text-primary rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1"
+                  >
+                    <Scaling size={16} />{" "}
+                    {fullscreen ? "Minimize" : "Full Screen"}
+                  </button>
+                )}
                 {(access.edit && id !== "new") ||
                 (access.create && id === "new") ? (
                   <button

@@ -7,6 +7,9 @@ import PageHeader from "~/components/PageHeader";
 import { getCurrentPage } from "~/functions";
 import AbsenceControl from "./AbsenceControl";
 import { useSelector } from "react-redux";
+import api from "~/services/api";
+import { saveAs } from "file-saver";
+import { format, lastDayOfMonth } from "date-fns";
 
 export default function AdministrativeDashboard() {
   const { profile } = useSelector((state) => state.user);
@@ -32,7 +35,11 @@ export default function AdministrativeDashboard() {
           paddingTop: 24,
         }}
       >
-        {profile.id === 1 && <AbsenceControl />}
+        {profile.id === 1 && (
+          <>
+            <AbsenceControl />
+          </>
+        )}
       </div>
     </div>
   );

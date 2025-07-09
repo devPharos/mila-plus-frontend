@@ -226,6 +226,30 @@ export default function PagePreview({
                           title="GENERAL"
                           activeMenu={activeMenu === "general"}
                         >
+                          <FindGeneric
+                            route="filials"
+                            title="Filial"
+                            scope="filial"
+                            required
+                            InputContext={InputContext}
+                            defaultValue={
+                              id === "new" && auth.filial.id !== 1
+                                ? {
+                                    id: auth.filial.id,
+                                    name: auth.filial.name,
+                                  }
+                                : {
+                                    id: pageData.filial?.id,
+                                    name: pageData.filial?.name,
+                                  }
+                            }
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                          />
                           <InputLine title="Profile Data">
                             <Input
                               type="text"

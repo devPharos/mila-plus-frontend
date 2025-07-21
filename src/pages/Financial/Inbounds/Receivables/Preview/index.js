@@ -302,7 +302,43 @@ export default function PagePreview({
     getPageData(id);
   }, [id]);
 
-  async function handleSendInvoice() {
+  async function verifyOpenReceivables() {
+    const receivableBefore = await api.get(
+      `/receivables/has-invoice-before/${id}`
+    );
+    if (receivableBefore?.data?.due_date) {
+      const { due_date, invoice_number, status, balance } =
+        receivableBefore.data;
+      const formattedDate = format(parseISO(due_date), "MM/dd/yyyy");
+      alertBox({
+        title: "Attention!",
+        descriptionHTML:
+          "This student has other unpaid invoices:<br/><br/><hr /><br/><strong>Invoice number:</strong> " +
+          invoice_number.toString() +
+          "<br/><strong>Due date:</strong> " +
+          formattedDate +
+          "<br/><strong>Balance:</strong> " +
+          balance.toFixed(2),
+        buttons: [
+          {
+            title: "I understand",
+            class: "cancel",
+            onPress: () => {
+              setTimeout(() => {
+                handleSendInvoice();
+              }, 100);
+            },
+          },
+        ],
+      });
+    } else {
+      setTimeout(() => {
+        handleSendInvoice();
+      }, 100);
+    }
+  }
+
+  function handleSendInvoice() {
     alertBox({
       title: "Attention!",
       descriptionHTML:
@@ -371,7 +407,7 @@ export default function PagePreview({
                 tabAllowed(tabsPermissions, "resend-invoice-tab") && (
                   <button
                     type="button"
-                    onClick={() => handleSendInvoice()}
+                    onClick={verifyOpenReceivables}
                     className="w-full bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2"
                   >
                     <Send size={14} />

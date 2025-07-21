@@ -154,49 +154,38 @@ export default function Settlement({
         pageDescription:
           "Settlement for " + data.receivables.length + " receivables",
       };
-      await api
-        .post(`/emergepay/simple-form`, receivable)
-        .then(({ data: formData }) => {
-          const { transactionToken } = formData;
-          emergepay.open({
-            // (required) Used to set up the modal
-            transactionToken: transactionToken,
-            // (optional) Callback function that gets called after a successful transaction
-            onTransactionSuccess: async function (approvalData) {
-              await api
-                .post(`/emergepay/post-back-listener`, {
-                  ...approvalData,
-                  justTransaction: true,
-                })
-                .then(async () => {
-                  emergepay.close();
-                  return true;
-                })
-                .catch((err) => {
-                  console.log(err);
-                });
-            },
-            // (optional) Callback function that gets called after a failure occurs during the transaction (such as a declined card)
-            onTransactionFailure: function (failureData) {
-              toast("Payment error!", {
-                type: "error",
-                autoClose: 3000,
-              });
-              return false;
-            },
-            // (optional) Callback function that gets called after a user clicks the close button on the modal
-            onTransactionCancel: function () {
-              toast("Transaction cancelled!", {
-                type: "error",
-                autoClose: 3000,
-              });
-              return false;
-            },
-          });
-        })
-        .catch((err) => {
-          return false;
+      const { data: formData } = await api.post(
+        `/emergepay/simple-form`,
+        receivable
+      );
+      const { transactionToken } = formData;
+      return new Promise((resolve, reject) => {
+        emergepay.open({
+          transactionToken: transactionToken,
+          onTransactionSuccess: async function (approvalData) {
+            await api.post(`/emergepay/post-back-listener`, {
+              ...approvalData,
+              justTransaction: true,
+            });
+            emergepay.close();
+            resolve(true);
+          },
+          onTransactionFailure: function (failureData) {
+            toast("Payment error!", {
+              type: "error",
+              autoClose: 3000,
+            });
+            reject(false);
+          },
+          onTransactionCancel: function () {
+            toast("Transaction cancelled!", {
+              type: "error",
+              autoClose: 3000,
+            });
+            reject(false);
+          },
         });
+      });
     } else {
       return true;
     }
@@ -208,11 +197,6 @@ export default function Settlement({
       const isPartial =
         !hasDiscount &&
         parseFloat(data.settlement_amount) !== parseFloat(data.total_amount);
-      console.log({
-        isPartial,
-        settlement: data.settlement_amount,
-        total: data.total_amount,
-      });
 
       if (isPartial) {
         alertBox({

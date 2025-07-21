@@ -163,10 +163,10 @@ export default function Settlement({
         emergepay.open({
           transactionToken: transactionToken,
           onTransactionSuccess: async function (approvalData) {
-            await api.post(`/emergepay/post-back-listener`, {
-              ...approvalData,
-              justTransaction: true,
-            });
+            // await api.post(`/emergepay/post-back-listener`, {
+            //   ...approvalData,
+            //   justTransaction: true,
+            // });
             emergepay.close();
             resolve(true);
           },

@@ -643,7 +643,19 @@ export default function Attendance({
                                               }
                                               defaultValue={
                                                 pageData.studentgroupclass.paceguides.find(
-                                                  (pg) => pg.id === paceguide.id
+                                                  (pg) =>
+                                                    pg.id === paceguide.id &&
+                                                    ((pageData.studentgroupclass?.paceguides.find(
+                                                      (paceguide) =>
+                                                        paceguide.status ===
+                                                        "Done"
+                                                    ) &&
+                                                      pg.status === "Done") ||
+                                                      !pageData.studentgroupclass?.paceguides.find(
+                                                        (paceguide) =>
+                                                          paceguide.status ===
+                                                          "Done"
+                                                      ))
                                                 )
                                                   ? true
                                                   : false

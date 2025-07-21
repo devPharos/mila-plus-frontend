@@ -146,95 +146,100 @@ export default function Settlement({
       });
     }
   }
+  async function handleGravityPayment(data) {
+    if (data.paymentMethod.platform.includes("Gravity - Online")) {
+      const receivable = {
+        receivable_id: data.receivables[0].id,
+        amount: parseFloat(data.settlement_amount),
+        pageDescription:
+          "Settlement for " + data.receivables.length + " receivables",
+      };
+      await api
+        .post(`/emergepay/simple-form`, receivable)
+        .then(({ data: formData }) => {
+          const { transactionToken } = formData;
+          emergepay.open({
+            // (required) Used to set up the modal
+            transactionToken: transactionToken,
+            // (optional) Callback function that gets called after a successful transaction
+            onTransactionSuccess: async function (approvalData) {
+              await api
+                .post(`/emergepay/post-back-listener`, {
+                  ...approvalData,
+                  justTransaction: true,
+                })
+                .then(async () => {
+                  emergepay.close();
+                  return true;
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+            },
+            // (optional) Callback function that gets called after a failure occurs during the transaction (such as a declined card)
+            onTransactionFailure: function (failureData) {
+              toast("Payment error!", {
+                type: "error",
+                autoClose: 3000,
+              });
+              return false;
+            },
+            // (optional) Callback function that gets called after a user clicks the close button on the modal
+            onTransactionCancel: function () {
+              toast("Transaction cancelled!", {
+                type: "error",
+                autoClose: 3000,
+              });
+              return false;
+            },
+          });
+        })
+        .catch((err) => {
+          return false;
+        });
+    } else {
+      return true;
+    }
+  }
   async function handleGeneralFormSubmit(data) {
     try {
       setLoading(true);
       const hasDiscount = await applyDiscounts(data);
+      const isPartial =
+        !hasDiscount &&
+        parseFloat(data.settlement_amount) !== parseFloat(data.total_amount);
 
-      if (data.paymentMethod.platform.includes("Gravity - Online")) {
-        const receivable = {
-          receivable_id: data.receivables[0].id,
-          amount: parseFloat(data.settlement_amount),
-          pageDescription:
-            "Settlement for " + data.receivables.length + " receivables",
-        };
-        await api
-          .post(`/emergepay/simple-form`, receivable)
-          .then(({ data: formData }) => {
-            const { transactionToken } = formData;
-            emergepay.open({
-              // (required) Used to set up the modal
-              transactionToken: transactionToken,
-              // (optional) Callback function that gets called after a successful transaction
-              onTransactionSuccess: async function (approvalData) {
-                await fullSettlement(data);
-                await api
-                  .post(`/emergepay/post-back-listener`, {
-                    ...approvalData,
-                    justTransaction: true,
-                  })
-                  .then(async () => {
-                    emergepay.close();
-                    handleOpened(null);
-                    setLoading(false);
-                    return approvalData;
-                  })
-                  .catch((err) => {
-                    console.log(err);
-                  });
-              },
-              // (optional) Callback function that gets called after a failure occurs during the transaction (such as a declined card)
-              onTransactionFailure: function (failureData) {
-                toast("Payment error!", {
-                  type: "error",
-                  autoClose: 3000,
-                });
-                setLoading(false);
-              },
-              // (optional) Callback function that gets called after a user clicks the close button on the modal
-              onTransactionCancel: function () {
-                toast("Transaction cancelled!", {
-                  type: "error",
-                  autoClose: 3000,
-                });
-                setLoading(false);
-              },
-            });
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-      } else {
-        if (
-          hasDiscount ||
-          parseFloat(data.settlement_amount) === parseFloat(data.total_amount)
-        ) {
-          await fullSettlement(data);
-          handleOpened(null);
-          setLoading(false);
-        } else {
-          alertBox({
-            title: "Attention!",
-            descriptionHTML:
-              "Are you sure you want to settle this invoice by partial payment?",
-            buttons: [
-              {
-                title: "Yes",
-                onPress: async () => {
+      if (isPartial) {
+        alertBox({
+          title: "Attention!",
+          descriptionHTML:
+            "Are you sure you want to settle this invoice by partial payment?",
+          buttons: [
+            {
+              title: "Yes",
+              onPress: async () => {
+                const goOn = await handleGravityPayment(data);
+                if (goOn) {
                   await partialSettlement(data);
                   handleOpened(null);
-                  setLoading(false);
-                },
+                }
+                setLoading(false);
               },
-              {
-                title: "No",
-                class: "cancel",
-              },
-            ],
-          });
+            },
+            {
+              title: "No",
+              class: "cancel",
+            },
+          ],
+        });
+      } else {
+        const goOn = await handleGravityPayment(data);
+        if (goOn) {
+          await fullSettlement(data);
+          handleOpened(null);
         }
+        setLoading(false);
       }
-      return;
     } catch (err) {
       console.log(err);
     }

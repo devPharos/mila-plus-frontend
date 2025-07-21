@@ -45,6 +45,7 @@ export default function Renegociation({
     loaded: true,
     installment_amount: 0,
   });
+  const [loading, setLoading] = useState(false);
 
   const [registry, setRegistry] = useState({
     created_by: null,
@@ -68,7 +69,7 @@ export default function Renegociation({
   }
 
   async function handleGeneralFormSubmit(data) {
-    // return;
+    setLoading(true);
     async function handleRenegociation(data) {
       await api
         .post(`/receivables/renegociation`, {
@@ -80,9 +81,11 @@ export default function Renegociation({
         .then(({ data }) => {
           toast(data.message, { autoClose: 1000 });
           handleOpened(null);
+          setLoading(false);
         })
         .catch((err) => {
           toast(err.response.data.error, { type: "error", autoClose: 3000 });
+          setLoading(false);
         });
     }
     alertBox({
@@ -211,6 +214,7 @@ export default function Renegociation({
                           }
                           registry={registry}
                           InputContext={InputContext}
+                          loading={loading}
                         />
 
                         <InputLineGroup

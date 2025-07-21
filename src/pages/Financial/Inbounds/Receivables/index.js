@@ -271,7 +271,7 @@ export default function FinancialReceivables() {
               ,
             ],
             selectable:
-              status.includes("Pending") || status.includes("Parcial Paid"),
+              status.includes("Pending") || status.includes("Partial Paid"),
             attention: {
               title: "Due Date",
               show:

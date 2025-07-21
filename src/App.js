@@ -212,11 +212,11 @@ function App() {
       ],
     },
     {
-      name: "Operational",
+      name: "DSO",
       children: [
         {
-          alias: "operational-dashboard",
-          path: "/Operational/Dashboard",
+          alias: "dso-dashboard",
+          path: "/DSO/Dashboard",
           title: "Dashboard",
           icon: "LayoutDashboard",
         },

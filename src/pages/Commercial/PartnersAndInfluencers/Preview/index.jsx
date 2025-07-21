@@ -80,7 +80,7 @@ export default function PagePreview({
     async function getPageData() {
       if (id !== "new") {
         try {
-          const { data } = await api.get(`/agents/${id}`);
+          const { data } = await api.get(`/partners_and_influencers/${id}`);
           setPageData({ ...data, loaded: true });
           const {
             created_by,
@@ -135,7 +135,16 @@ export default function PagePreview({
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     } else if (id !== "new") {
-
+      try {
+        const response = await api.put(`/partners_and_influencers/${id}`, { ...data });
+        setOpened(response.data.id);
+        setPageData({ ...pageData, ...data });
+        setSuccessfullyUpdated(true);
+        toast("Saved!", { autoClose: 1000 });
+        handleOpened(null);
+      } catch (err) {
+        toast(err.response.data.error, { type: "error", autoClose: 3000 });
+      }
     }
   }
 
@@ -288,12 +297,12 @@ export default function PagePreview({
                             />
                             <Input
                               type="text"
-                              name="contacts_name"
+                              name="social_network"
                               grow
                               required
                               readOnly={!pageData.social_network_type}
-                              title={`Input your ${pageData.social_network_type}`}
-                              defaultValue={pageData.contacts_name}
+                              title={`Input your ${pageData && pageData.social_network_type? pageData.social_network_type : ""}`}
+                              defaultValue={pageData.social_network}
                               InputContext={InputContext}
                             />
                             <div style={{ width: '300px' }}>

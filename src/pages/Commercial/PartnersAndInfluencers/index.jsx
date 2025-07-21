@@ -8,10 +8,17 @@ import { FullGridContext } from "..";
 export default function PartnersAndInfluencers() {
   const filial = useSelector((state) => state.auth.filial);
   const defaultOrderBy = { column: "name", asc: true };
+
+  const compensationOptions = [
+    { value: 'flat_fee', label: "Flat fee" },
+    { value: 'percentage_per_enrollment', label: "Percentage Per Enrollment" },
+    { value: 'flat_fee_per_enrollment', label: "Flat fee Per Enrollment" },
+  ];
+
   const defaultGridHeader = [
     {
       title: "Partner's Name",
-      name: "partners_ame",
+      name: "partners_name",
       type: "text",
       filter: false,
     },
@@ -23,13 +30,19 @@ export default function PartnersAndInfluencers() {
     },
     {
       title: "Social Media ",
-      name: "social_µedia ",
+      name: "social_network_type ",
+      type: "text",
+      filter: false,
+    },
+    {
+      title: "Social Profile",
+      name: "social_network",
       type: "text",
       filter: false,
     },
     {
       title: "Telephone",
-      name: "telephoneame",
+      name: "phone",
       type: "text",
       filter: false,
     },
@@ -47,7 +60,7 @@ export default function PartnersAndInfluencers() {
     },
     {
       title: "Value or Percentual.",
-      name: "Campo Value/Percen.",
+      name: "compensation_value",
       type: "text",
       filter: false,
     },
@@ -92,31 +105,40 @@ export default function PartnersAndInfluencers() {
   async function loader() {
     setLoadingData(true);
 
-    // const data = await getData("partners-and-influencers", {
-    //   limit,
-    //   page,
-    //   orderBy,
-    //   setPages,
-    //   setGridData,
-    //   search,
-    //   defaultGridHeader,
-    //   defaultOrderBy,
-    //   setGridDetails,
-    // });
-
-
-    const data = [];
+    const data = await getData("partners_and_influencers", {
+      limit,
+      page,
+      orderBy,
+      setPages,
+      setGridData,
+      search,
+      defaultGridHeader,
+      defaultOrderBy,
+      setGridDetails,
+    });
 
     if (!data) {
       return;
     }
 
     const gridDataValues = data.map(
-      ({ id, name, email, canceled_at }, index) => {
+      ({ id, partners_name, contacts_name, social_network_type, social_network, phone, address, compensation_value, compensation, canceled_at }, index) => {
+
+        let compensation_value_format = '';
+
+        if(compensation === 'percentage_per_enrollment') {
+          compensation_value_format = `${compensation_value}%`;
+        } else {
+          compensation_value_format =  new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+          }).format(compensation_value);
+        }
+
         const ret = {
           show: true,
           id,
-          fields: [name, email],
+          fields: [partners_name, contacts_name, social_network_type, social_network, phone, address, compensationOptions.find(res => res.value === compensation).label, compensation_value_format],
           canceled: canceled_at,
           page: Math.ceil((index + 1) / limit),
         };

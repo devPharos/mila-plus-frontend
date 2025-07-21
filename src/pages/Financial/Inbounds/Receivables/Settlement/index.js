@@ -208,6 +208,11 @@ export default function Settlement({
       const isPartial =
         !hasDiscount &&
         parseFloat(data.settlement_amount) !== parseFloat(data.total_amount);
+      console.log({
+        isPartial,
+        settlement: data.settlement_amount,
+        total: data.total_amount,
+      });
 
       if (isPartial) {
         alertBox({

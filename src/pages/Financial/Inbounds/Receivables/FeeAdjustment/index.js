@@ -103,10 +103,7 @@ export default function FeeAdjustment({
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
 
-  const auth = useSelector((state) => state.auth);
-
   const generalForm = useRef();
-  const refundForm = useRef();
 
   function handleCloseForm() {
     if (!successfullyUpdated) {

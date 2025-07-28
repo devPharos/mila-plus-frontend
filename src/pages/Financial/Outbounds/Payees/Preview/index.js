@@ -17,7 +17,11 @@ import FormHeader from "~/components/RegisterForm/FormHeader";
 import Preview from "~/components/Preview";
 import { Zoom, toast } from "react-toastify";
 import api from "~/services/api";
-import { getRegistries, handleUpdatedFields } from "~/functions";
+import {
+  getRegistries,
+  getTabsPermissions,
+  handleUpdatedFields,
+} from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
@@ -41,6 +45,12 @@ export default function PagePreview({
     successfullyUpdated,
     setSuccessfullyUpdated,
   } = useContext(FullGridContext);
+
+  const tabsPermissions = getTabsPermissions(
+    "financial-payees",
+    FullGridContext
+  );
+
   const [pageData, setPageData] = useState({
     loaded: false,
     filial: {
@@ -274,13 +284,15 @@ export default function PagePreview({
               >
                 <Building size={16} /> General
               </RegisterFormMenu>
-              <RegisterFormMenu
-                setActiveMenu={setActiveMenu}
-                activeMenu={activeMenu}
-                name="Reclassify"
-              >
-                <List size={16} /> Reclassify
-              </RegisterFormMenu>
+              {tabAllowed(tabsPermissions, "payee-reclassify-tab") && (
+                <RegisterFormMenu
+                  setActiveMenu={setActiveMenu}
+                  activeMenu={activeMenu}
+                  name="Reclassify"
+                >
+                  <List size={16} /> Reclassify
+                </RegisterFormMenu>
+              )}
             </div>
             <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
               <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll">
@@ -594,34 +606,6 @@ export default function PagePreview({
                                 InputContext={InputContext}
                               />
                             </InputLine>
-
-                            {/* <FindGeneric
-                              route="chartofaccounts"
-                              title="Chart of Accounts"
-                              scope="chartOfAccount"
-                              required
-                              readOnly={
-                                id !== "new" && pageData.status !== "Pending"
-                              }
-                              searchDefault={merchantId}
-                              InputContext={InputContext}
-                              type="expenses"
-                              defaultValue={{
-                                id: pageData.chartOfAccount.id,
-                                code: pageData.chartOfAccount.code,
-                                name: pageData.chartOfAccount.name,
-                              }}
-                              fields={[
-                                {
-                                  title: "Code",
-                                  name: "code",
-                                },
-                                {
-                                  title: "Name",
-                                  name: "name",
-                                },
-                              ]}
-                            /> */}
 
                             <FindGeneric
                               route="chartofaccounts"

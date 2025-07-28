@@ -447,15 +447,15 @@ export default function PagePreview({
                     <UndoDot size={16} /> Refunds
                   </RegisterFormMenu>
                 )}
-              {/* {tabAllowed(tabsPermissions, "classify-tab") && ( */}
-              <RegisterFormMenu
-                setActiveMenu={setActiveMenu}
-                activeMenu={activeMenu}
-                name="Reclassify"
-              >
-                <List size={16} /> Reclassify
-              </RegisterFormMenu>
-              {/* )} */}
+              {tabAllowed(tabsPermissions, "receivable-reclassify-tab") && (
+                <RegisterFormMenu
+                  setActiveMenu={setActiveMenu}
+                  activeMenu={activeMenu}
+                  name="Reclassify"
+                >
+                  <List size={16} /> Reclassify
+                </RegisterFormMenu>
+              )}
               {tabAllowed(tabsPermissions, "mail-logs-tab") && (
                 <RegisterFormMenu
                   setActiveMenu={setActiveMenu}

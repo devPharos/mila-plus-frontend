@@ -146,6 +146,12 @@ function App() {
           icon: "Store",
         },
         {
+          alias: "cost-centers",
+          path: "/Financial/CostCenters",
+          title: "Cost Centers",
+          icon: "ChartGantt",
+        },
+        {
           alias: "chart-of-accounts",
           path: "/Financial/ChartOfAccounts",
           title: "Chart of Accounts",

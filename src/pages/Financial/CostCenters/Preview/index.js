@@ -15,7 +15,7 @@ import FormHeader from "~/components/RegisterForm/FormHeader";
 import Preview from "~/components/Preview";
 import { Zoom, toast } from "react-toastify";
 import api from "~/services/api";
-import { getRegistries, handleUpdatedFields } from "~/functions";
+import { getRegistries } from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { FullGridContext } from "../..";
@@ -56,7 +56,6 @@ export default function PagePreview({
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
-  const [chartOfAccountsOptions, setChartOfAccountsOptions] = useState([]);
   const generalForm = useRef();
   const visibilityOptions = [
     { value: "All", label: "All" },
@@ -83,7 +82,7 @@ export default function PagePreview({
     if (id === "new") {
       try {
         // console.log(data)
-        const response = await api.post(`/chartofaccounts`, data);
+        const response = await api.post(`/costcenters`, data);
         setOpened(response.data.id);
         setPageData({ ...pageData, ...data });
         setSuccessfullyUpdated(true);
@@ -94,7 +93,7 @@ export default function PagePreview({
       }
     } else if (id !== "new") {
       try {
-        await api.put(`/chartofaccounts/${id}`, data);
+        await api.put(`/costcenters/${id}`, data);
         setPageData({ ...pageData, ...data });
         setSuccessfullyUpdated(true);
         toast("Saved!", { autoClose: 1000 });
@@ -108,7 +107,7 @@ export default function PagePreview({
   useEffect(() => {
     async function getPageData() {
       try {
-        const { data } = await api.get(`chartofaccounts/${id}`);
+        const { data } = await api.get(`costcenters/${id}`);
         setPageData({ ...data, loaded: true });
         const {
           created_by,
@@ -131,27 +130,6 @@ export default function PagePreview({
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     }
-    async function getDefaultOptions() {
-      try {
-        const { data } = await api.get(`chartofaccounts`);
-        const chartsOfAccounts = data.rows
-          .filter((f) => f.id !== id)
-          .map(({ id: chartId, name, code, Father }) => {
-            let chartName = "";
-            if (Father) {
-              if (Father.Father) {
-                chartName += Father.Father.name + " > ";
-              }
-              chartName += Father.name + " > ";
-            }
-            return { value: chartId, label: chartName + name };
-          });
-        setChartOfAccountsOptions(chartsOfAccounts);
-      } catch (err) {
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
-      }
-    }
-    getDefaultOptions();
     if (id === "new") {
       setFormType("full");
     } else if (id) {
@@ -223,7 +201,7 @@ export default function PagePreview({
                           activeMenu={activeMenu === "general"}
                         >
                           <FindGeneric
-                            route="chartofaccounts"
+                            route="costcenters"
                             title="Father Account"
                             scope="Father"
                             required

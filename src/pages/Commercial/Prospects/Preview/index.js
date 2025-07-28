@@ -635,66 +635,24 @@ export default function PagePreview({
                               },
                             ]}
                           />
-                          {/* <InputLine title="Enrollment">
-                            <SelectPopover
-                              name="processtype_id"
-                              grow
-                              required
-                              title="Type"
-                              disabled={pageData.enrollmentProcess}
-                              onChange={(el) => {
-                                setPageData({
-                                  ...pageData,
-                                  searchFields: {
-                                    ...pageData.searchFields,
-                                    processsubstatus_id: null,
-                                    processtype_id: el.value,
-                                  },
-                                });
-                                setSuccessfullyUpdated(false);
-                              }}
-                              defaultValue={
-                                pageData.processtype_id &&
-                                pageData.typesOptions.length > 0
-                                  ? pageData.typesOptions.find(
-                                      (type) =>
-                                        type.value === pageData.processtype_id
-                                    )
-                                  : null
-                              }
-                              options={pageData.typesOptions}
-                              InputContext={InputContext}
-                            />
-                            <SelectPopover
-                              name="processsubstatus_id"
-                              grow
-                              required
-                              disabled={pageData.enrollmentProcess}
-                              title="Sub Status"
-                              onChange={(el) => {
-                                setSuccessfullyUpdated(false);
-                                setPageData({
-                                  ...pageData,
-                                  searchFields: {
-                                    ...pageData.searchFields,
-                                    processsubstatus_id: el.value,
-                                  },
-                                });
-                              }}
-                              isSearchable
-                              defaultValue={optionsSubStatus.find(
-                                (substatus) =>
-                                  substatus.value ===
-                                  pageData.processsubstatus_id
-                              )}
-                              options={optionsSubStatus.filter(
-                                (type) =>
-                                  type.type_id ===
-                                  pageData.searchFields.processtype_id
-                              )}
-                              InputContext={InputContext}
-                            />
-                          </InputLine> */}
+
+                          <FindGeneric
+                            route="partners_and_influencers"
+                            title="Partner and Influencer"
+                            scope="partners_and_influencers"
+                            InputContext={InputContext}
+                            defaultValue={{
+                              id: pageData.partners_and_influencers?.id,
+                              name: pageData.partners_and_influencers
+                                ?.partners_name,
+                            }}
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                          />
 
                           <PricesSimulation
                             student={pageData}

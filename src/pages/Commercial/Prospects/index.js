@@ -45,6 +45,12 @@ export default function CommercialProspects() {
       type: "text",
       filter: true,
     },
+    {
+      title: "Partner & Influencer",
+      name: "partners_and_influencers",
+      type: "text",
+      filter: true,
+    },
   ];
 
   const {
@@ -110,6 +116,7 @@ export default function CommercialProspects() {
           agent,
           processtypes,
           processsubstatuses,
+          partners_and_influencers,
         },
         index
       ) => {
@@ -120,9 +127,10 @@ export default function CommercialProspects() {
             name,
             last_name,
             email,
-            processtypes.name,
-            processsubstatuses.name,
-            agent.name,
+            processtypes?.name,
+            processsubstatuses?.name,
+            agent?.name,
+            partners_and_influencers?.partners_name,
           ],
           canceled: canceled_at,
           page: Math.ceil((index + 1) / limit),

@@ -113,8 +113,8 @@ export const subStatusOptions = [
     label: "Pending",
   },
   {
-    value: "Parcial Paid",
-    label: "Parcial Paid",
+    value: "Partial Paid",
+    label: "Partial Paid",
   },
   {
     value: "Paid",
@@ -170,8 +170,8 @@ export const receivableStatusesOptions = [
     label: "Paid",
   },
   {
-    value: "Parcial Paid",
-    label: "Parcial Paid",
+    value: "Partial Paid",
+    label: "Partial Paid",
   },
   {
     value: "Renegociated",

@@ -414,7 +414,7 @@ export default function PagePreview({
                     <strong>Resend Invoice</strong>
                   </button>
                 )}
-              {pageData.status.includes("Paid", "Parcial Paid") &&
+              {pageData.status.includes("Paid", "Partial Paid") &&
                 tabAllowed(tabsPermissions, "settlements-tab") && (
                   <RegisterFormMenu
                     setActiveMenu={setActiveMenu}
@@ -424,7 +424,7 @@ export default function PagePreview({
                     <ReplaceAll size={16} /> Settlements
                   </RegisterFormMenu>
                 )}
-              {pageData.status.includes("Paid", "Parcial Paid") &&
+              {pageData.status.includes("Paid", "Partial Paid") &&
                 tabAllowed(tabsPermissions, "refunds-tab") && (
                   <RegisterFormMenu
                     setActiveMenu={setActiveMenu}

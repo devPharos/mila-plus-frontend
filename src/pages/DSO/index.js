@@ -7,13 +7,11 @@ import { useSelector } from "react-redux";
 
 export const FullGridContext = createContext();
 
-export default function Operational() {
+export default function DSO() {
   const { pages } = useContext(PageContext);
   const { pathname } = useLocation();
   const { accesses } = useSelector((state) => state.auth);
-  const accessModule = accesses.hierarchy.find(
-    (el) => el.alias === "operational"
-  );
+  const accessModule = accesses.hierarchy.find((el) => el.alias === "dso");
   const navigate = useNavigate();
   const [activeFilters, setActiveFilters] = useState([]);
   const [opened, setOpened] = useState(false);

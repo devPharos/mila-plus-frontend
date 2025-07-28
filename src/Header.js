@@ -37,8 +37,8 @@ export default function Header() {
       alias: "financial",
     },
     {
-      title: "Operational",
-      alias: "operational",
+      title: "DSO",
+      alias: "dso",
     },
     {
       title: "Settings",

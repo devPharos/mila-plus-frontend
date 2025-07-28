@@ -24,6 +24,7 @@ import PricesSimulation from "~/components/PricesSimulation";
 import { Scope } from "@unform/core";
 import Textarea from "~/components/RegisterForm/Textarea";
 import FindGeneric from "~/components/Finds/FindGeneric";
+import { AlertContext } from "~/App";
 
 export const InputContext = createContext({});
 
@@ -36,6 +37,7 @@ export default function Settlement({
 }) {
   const { successfullyUpdated, setSuccessfullyUpdated } =
     useContext(FullGridContext);
+  const { alertBox } = useContext(AlertContext);
   const [pageData, setPageData] = useState({
     loaded: false,
     bank_name: "",
@@ -67,11 +69,12 @@ export default function Settlement({
     handleOpened(null);
   }
   async function handleSettlement(data, approvalData) {
+    delete data.total_amount;
     await api
       .post(`/receivables/settlement`, {
         ...data,
+        total_amount: parseFloat(data.settlement_amount),
         approvalData,
-        total_amount: totalAmount,
         settlement_date: format(data.settlement_date, "yyyyMMdd"),
       })
       .then(({ data }) => {
@@ -84,66 +87,151 @@ export default function Settlement({
       });
   }
 
-  async function handleGeneralFormSubmit(data) {
-    setLoading(true);
+  async function fullSettlement(data) {
+    try {
+      const { receivables } = data;
+      for (let receivable of receivables) {
+        await api.post(`/receivables/full-settlement`, {
+          ...data,
+          receivable_id: receivable.id,
+          settlement_date: format(data.settlement_date, "yyyy-MM-dd"),
+        });
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
+  async function partialSettlement(data) {
+    try {
+      await api.post(`/receivables/partial-settlement`, {
+        ...data,
+        settlement_amount: data.settlement_amount,
+        receivable_id: data.receivables[0].id,
+        settlement_date: format(data.settlement_date, "yyyy-MM-dd"),
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  }
+  async function applyDiscounts(data) {
+    let hasDiscount = false;
+    try {
+      const { receivables, prices } = data;
+
+      if (prices?.discounts?.length > 0) {
+        for (let receivable of receivables) {
+          for (let discount of prices.discounts) {
+            hasDiscount = true;
+            const { filial_discount_list_id, start_date, end_date } = discount;
+            await api.post(`/receivables/apply-discounts`, {
+              receivable_id: receivable.id,
+              discount_id: filial_discount_list_id,
+            });
+          }
+        }
+      }
+
+      return hasDiscount;
+    } catch (err) {
+      alertBox({
+        title: "Attention!",
+        descriptionHTML:
+          "There was an error applying discounts, please try again.",
+        buttons: [
+          {
+            title: "Ok",
+            class: "cancel",
+          },
+        ],
+      });
+    }
+  }
+  async function handleGravityPayment(data) {
     if (data.paymentMethod.platform.includes("Gravity - Online")) {
       const receivable = {
         receivable_id: data.receivables[0].id,
-        amount: parseFloat(data.total_amount),
+        amount: parseFloat(data.settlement_amount),
         pageDescription:
           "Settlement for " + data.receivables.length + " receivables",
       };
-      await api
-        .post(`/emergepay/simple-form`, receivable)
-        .then(({ data: formData }) => {
-          const { transactionToken } = formData;
-          emergepay.open({
-            // (required) Used to set up the modal
-            transactionToken: transactionToken,
-            // (optional) Callback function that gets called after a successful transaction
-            onTransactionSuccess: async function (approvalData) {
-              setLoading(false);
-              await handleSettlement(data, approvalData);
-              await api
-                .post(`/emergepay/post-back-listener`, {
-                  ...approvalData,
-                  justTransaction: true,
-                })
-                .then(async () => {
-                  emergepay.close();
-                  return approvalData;
-                })
-                .catch((err) => {
-                  console.log(err);
-                });
-            },
-            // (optional) Callback function that gets called after a failure occurs during the transaction (such as a declined card)
-            onTransactionFailure: function (failureData) {
-              toast("Payment error!", {
-                type: "error",
-                autoClose: 3000,
-              });
-              setLoading(false);
-            },
-            // (optional) Callback function that gets called after a user clicks the close button on the modal
-            onTransactionCancel: function () {
-              toast("Transaction cancelled!", {
-                type: "error",
-                autoClose: 3000,
-              });
-              setLoading(false);
-            },
-          });
-        })
-        .catch((err) => {
-          console.log(err);
+      const { data: formData } = await api.post(
+        `/emergepay/simple-form`,
+        receivable
+      );
+      const { transactionToken } = formData;
+      return new Promise((resolve, reject) => {
+        emergepay.open({
+          transactionToken: transactionToken,
+          onTransactionSuccess: async function (approvalData) {
+            // await api.post(`/emergepay/post-back-listener`, {
+            //   ...approvalData,
+            //   justTransaction: true,
+            // });
+            emergepay.close();
+            resolve(true);
+          },
+          onTransactionFailure: function (failureData) {
+            toast("Payment error!", {
+              type: "error",
+              autoClose: 3000,
+            });
+            reject(false);
+          },
+          onTransactionCancel: function () {
+            toast("Transaction cancelled!", {
+              type: "error",
+              autoClose: 3000,
+            });
+            reject(false);
+          },
         });
+      });
     } else {
-      await handleSettlement(data);
-      setLoading(false);
+      return true;
     }
-    handleOpened(null);
-    return;
+  }
+  async function handleGeneralFormSubmit(data) {
+    try {
+      setLoading(true);
+      const hasDiscount = await applyDiscounts(data);
+      const isPartial =
+        !hasDiscount &&
+        parseFloat(data.settlement_amount) !== parseFloat(data.total_amount);
+
+      if (isPartial) {
+        alertBox({
+          title: "Attention!",
+          descriptionHTML:
+            "Are you sure you want to settle this invoice by partial payment?",
+          buttons: [
+            {
+              title: "Yes",
+              onPress: async () => {
+                const goOn = await handleGravityPayment(data);
+                if (goOn) {
+                  await partialSettlement(data);
+                  handleOpened(null);
+                }
+                setLoading(false);
+              },
+            },
+            {
+              title: "No",
+              class: "cancel",
+            },
+          ],
+        });
+      } else {
+        const goOn = await handleGravityPayment(data);
+        if (goOn) {
+          await fullSettlement(data);
+          handleOpened(null);
+        }
+        setLoading(false);
+      }
+    } catch (err) {
+      console.log(err);
+    }
   }
   async function loadData() {
     const receivables = [];
@@ -153,7 +241,6 @@ export default function Settlement({
       receivables.push(data);
     }
     if (receivables.length === 0) return;
-    console.log(receivables);
     const { student } = receivables[0].issuer;
     setPageData({
       ...pageData,
@@ -175,11 +262,9 @@ export default function Settlement({
       }, 0)
     );
   }
-
   useEffect(() => {
     loadData();
   }, []);
-
   function handleValueChange(value) {
     const originalValue = pageData.receivables.reduce((acc, curr) => {
       return acc + curr.balance;
@@ -193,14 +278,30 @@ export default function Settlement({
       setTotalAmount(parseFloat(value));
     }
   }
-
   useEffect(() => {
     if (hasDiscount) {
       const originalValue = pageData.receivables.reduce((acc, curr) => {
         return acc + curr.balance;
       }, 0);
-      generalForm.current.setFieldValue("total_amount", originalValue);
-      setTotalAmount(originalValue);
+      // console.log(hasDiscount, originalValue);
+      generalForm.current.setFieldValue(
+        "total_amount",
+        originalValue.toFixed(2)
+      );
+      // setTotalAmount(originalValue);
+      generalForm.current.setFieldValue(
+        "total_discount",
+        parseFloat(
+          generalForm.current.getFieldValue("prices.total_discount")
+        ).toFixed(2)
+      );
+      generalForm.current.setFieldValue(
+        "settlement_amount",
+        (
+          parseFloat(generalForm.current.getFieldValue("total_amount")) -
+          parseFloat(generalForm.current.getFieldValue("total_discount"))
+        ).toFixed(2)
+      );
     }
   }, [hasDiscount]);
 
@@ -285,12 +386,35 @@ export default function Settlement({
                                   name="total_amount"
                                   shrink
                                   required
-                                  readOnly={selected.length > 1 || hasDiscount}
+                                  readOnly={true}
                                   onlyFloat
                                   title="Total Amount"
-                                  defaultValue={totalAmount}
+                                  defaultValue={totalAmount.toFixed(2)}
                                   InputContext={InputContext}
                                   onChange={(value) => handleValueChange(value)}
+                                />
+
+                                <Input
+                                  type="text"
+                                  name="total_discount"
+                                  shrink
+                                  required
+                                  readOnly={true}
+                                  onlyFloat
+                                  title="Discount"
+                                  defaultValue={0}
+                                  InputContext={InputContext}
+                                />
+                                <Input
+                                  type="text"
+                                  name="settlement_amount"
+                                  shrink
+                                  required
+                                  readOnly={selected.length > 1 || hasDiscount}
+                                  onlyFloat
+                                  title="Settlement"
+                                  defaultValue={totalAmount.toFixed(2)}
+                                  InputContext={InputContext}
                                 />
 
                                 <DatePicker

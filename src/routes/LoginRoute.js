@@ -25,8 +25,8 @@ function LoginRoute({ children }) {
       module_page = "Administrative";
     } else if (hasAccessTo(accesses, null, "academic").view) {
       module_page = "Academic";
-    } else if (hasAccessTo(accesses, null, "operational").view) {
-      module_page = "Operational";
+    } else if (hasAccessTo(accesses, null, "dso").view) {
+      module_page = "DSO";
     } else if (hasAccessTo(accesses, null, "commercial").view) {
       module_page = "Commercial";
     } else if (hasAccessTo(accesses, null, "marketing").view) {

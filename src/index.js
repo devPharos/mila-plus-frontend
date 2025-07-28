@@ -43,10 +43,10 @@ import CommercialDashboard from "./pages/Commercial/Dashboard";
 import CommercialProspects from "./pages/Commercial/Prospects";
 import AdministrativeStudent from "./pages/Administrative/Student";
 import Financial from "./pages/Financial";
-import Operational from "./pages/Operational";
+import DSO from "./pages/DSO";
 import Settings from "./pages/Settings";
 import FinancialDashboard from "./pages/Financial/Dashboard";
-import OperationalDashboard from "./pages/Operational/Dashboard";
+import DSODashboard from "./pages/DSO/Dashboard";
 import AdministrativeStaffs from "./pages/Administrative/Staffs";
 import AdministrativeAgents from "./pages/Commercial/Agents";
 import AdministrativeCalendar from "./pages/Administrative/Calendar";
@@ -329,16 +329,16 @@ const router = createBrowserRouter([
         ],
       },
       {
-        path: "/Operational",
+        path: "/DSO",
         element: (
           <ProtectedRoute>
-            <Operational />
+            <DSO />
           </ProtectedRoute>
         ),
         children: [
           {
-            path: "/Operational/Dashboard",
-            element: <OperationalDashboard />,
+            path: "/DSO/Dashboard",
+            element: <DSODashboard />,
           },
         ],
       },

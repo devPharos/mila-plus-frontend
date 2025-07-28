@@ -125,10 +125,6 @@ export default function Filters({
             <p className="text-xs pl-2 text-gray-500">No avaiable functions</p>
           ) : (
             selection.functions.map((func, index) => {
-              console.log(
-                allowAll,
-                access.children.find((el) => el.alias === func.alias)
-              );
               if (
                 allowAll ||
                 access.children.find((el) => el.alias === func.alias)

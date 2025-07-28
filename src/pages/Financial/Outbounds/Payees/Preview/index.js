@@ -21,6 +21,7 @@ import {
   getRegistries,
   getTabsPermissions,
   handleUpdatedFields,
+  tabAllowed,
 } from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";

@@ -165,6 +165,7 @@ export default function PagePreview({
       try {
         const response = await api.put(`/receivables/classify/${id}`, data);
         setPageData({ ...pageData, ...response.data });
+        handleOpened(null);
         setSuccessfullyUpdated(true);
         toast("Saved!", { autoClose: 1000 });
       } catch (err) {
@@ -1021,7 +1022,6 @@ export default function PagePreview({
                               route="costcenters"
                               title="Cost Centers"
                               scope="costCenter"
-                              required
                               readOnly={
                                 pageData.is_recurrence ||
                                 pageData.status !== "Pending"
@@ -1029,11 +1029,11 @@ export default function PagePreview({
                               InputContext={InputContext}
                               defaultValue={{
                                 id: pageData.costcenter_id,
-                                code: pageData.costcenter?.code,
-                                name: pageData.costcenter?.name,
-                                father: pageData.costcenter?.Father?.name,
+                                code: pageData.costCenter?.code,
+                                name: pageData.costCenter?.name,
+                                father: pageData.costCenter?.Father?.name,
                                 granFather:
-                                  pageData.costcenter?.Father?.Father?.name,
+                                  pageData.costCenter?.Father?.Father?.name,
                               }}
                               fields={[
                                 {
@@ -1542,11 +1542,11 @@ export default function PagePreview({
                               InputContext={InputContext}
                               defaultValue={{
                                 id: pageData.costcenter_id,
-                                code: pageData.costcenter?.code,
-                                name: pageData.costcenter?.name,
-                                father: pageData.costcenter?.Father?.name,
+                                code: pageData.costCenter?.code,
+                                name: pageData.costCenter?.name,
+                                father: pageData.costCenter?.Father?.name,
                                 granFather:
-                                  pageData.costcenter?.Father?.Father?.name,
+                                  pageData.costCenter?.Father?.Father?.name,
                               }}
                               fields={[
                                 {

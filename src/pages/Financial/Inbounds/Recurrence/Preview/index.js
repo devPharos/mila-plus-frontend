@@ -506,53 +506,47 @@ export default function PagePreview({
                             },
                           ]}
                         />
-                        {/* <InputLine>
-                          <SelectPopover
-                            name="paymentmethod_id"
-                            required
-                            title="Payment Method"
-                            isSearchable
-                            grow
-                            defaultValue={paymentMethods.filter(
-                              (paymentMethod) =>
-                                paymentMethod.value ===
-                                pageData?.issuer?.issuer_x_recurrence
-                                  ?.paymentmethod_id
-                            )}
-                            options={paymentMethods}
-                            InputContext={InputContext}
-                          />
-                          <SelectPopover
-                            name="paymentcriteria_id"
-                            required
-                            title="Payment Criteria"
-                            isSearchable
-                            grow
-                            defaultValue={paymentCriterias.filter(
-                              (paymentMethod) =>
-                                paymentMethod.value ===
-                                pageData?.issuer?.issuer_x_recurrence
-                                  ?.paymentcriteria_id
-                            )}
-                            options={paymentCriterias}
-                            InputContext={InputContext}
-                          />
-                        </InputLine>
-                        <InputLine>
-                          <SelectPopover
-                            name="chartofaccount_id"
-                            required
-                            title="Chart of Account"
-                            isSearchable
-                            grow
-                            defaultValue={chartOfAccountOptions.find(
-                              (chartOfAccount) =>
-                                chartOfAccount.code === "01.007"
-                            )}
-                            options={chartOfAccountOptions}
-                            InputContext={InputContext}
-                          />
-                        </InputLine> */}
+                        <FindGeneric
+                          route="costcenters"
+                          title="Cost Centers"
+                          scope="costCenter"
+                          InputContext={InputContext}
+                          defaultValue={{
+                            id: pageData.issuer?.issuer_x_recurrence?.costCenter
+                              ?.id,
+                            code: pageData.issuer?.issuer_x_recurrence
+                              ?.costCenter?.code,
+                            name: pageData.issuer?.issuer_x_recurrence
+                              ?.costCenter?.name,
+                            father:
+                              pageData.issuer?.issuer_x_recurrence?.costCenter
+                                ?.Father?.name,
+                            granFather:
+                              pageData.issuer?.issuer_x_recurrence?.costCenter
+                                ?.Father?.Father?.name,
+                          }}
+                          fields={[
+                            {
+                              title: "Code",
+                              name: "code",
+                            },
+                            {
+                              title: "Name",
+                              name: "name",
+                            },
+                            {
+                              title: "Father",
+                              model: "Father",
+                              name: "name",
+                            },
+                            {
+                              title: "Father",
+                              model: "Father",
+                              model2: "Father",
+                              name: "name",
+                            },
+                          ]}
+                        />
                         <InputLine>
                           <Textarea
                             name="memo"

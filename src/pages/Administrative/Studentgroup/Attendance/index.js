@@ -263,13 +263,8 @@ export default function Attendance({
                         />
                         <InputLine title="Resume">
                           <div className="flex flex-row items-center justify-start gap-2 px-2 pb-4 max-w-full overflow-x-scroll">
-                            {pageData.otherPaceGuides
-                              ?.filter((other) =>
-                                groupName === "Teacher"
-                                  ? other.date <= lastAttendance?.date
-                                  : true
-                              )
-                              ?.map((otherClass, index) => {
+                            {pageData.otherPaceGuides?.map(
+                              (otherClass, index) => {
                                 let month = null;
                                 if (
                                   index === 0 ||
@@ -334,7 +329,8 @@ export default function Attendance({
                                     </button>
                                   </>
                                 );
-                              })}
+                              }
+                            )}
                           </div>
                         </InputLine>
                         <InputLine>
@@ -605,10 +601,12 @@ export default function Attendance({
                                       ?.filter(
                                         (classroom) =>
                                           classroom.id !==
-                                            pageData.studentgroupclass?.id &&
-                                          classroom.status !== "Locked"
+                                          pageData.studentgroupclass?.id
                                       )
                                       .map((classroom) => classroom.paceguides)
+                                  )
+                                  .filter(
+                                    (paceguide) => paceguide.status !== "Done"
                                   )
                                   .map((paceguide, index) => {
                                     return (

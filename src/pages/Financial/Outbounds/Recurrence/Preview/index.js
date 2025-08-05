@@ -426,22 +426,42 @@ export default function PagePreview({
                             },
                           ]}
                         />
-                        {/* <InputLine> */}
-                        {/* <SelectPopover
-                            name="chartofaccount_id"
-                            required
-                            title="Chart of Account"
-                            isSearchable
-                            grow
-                            defaultValue={chartOfAccountOptions.find(
-                              (chartOfAccount) =>
-                                chartOfAccount.code ===
-                                pageData.chartOfAccount.code
-                            )}
-                            options={chartOfAccountOptions}
-                            InputContext={InputContext}
-                          /> */}
-                        {/* </InputLine> */}
+
+                        <FindGeneric
+                          route="costcenters"
+                          title="Cost Centers"
+                          scope="costCenter"
+                          InputContext={InputContext}
+                          defaultValue={{
+                            id: pageData.costcenter_id,
+                            code: pageData.costCenter?.code,
+                            name: pageData.costCenter?.name,
+                            father: pageData.costCenter?.Father?.name,
+                            granFather:
+                              pageData.costCenter?.Father?.Father?.name,
+                          }}
+                          fields={[
+                            {
+                              title: "Code",
+                              name: "code",
+                            },
+                            {
+                              title: "Name",
+                              name: "name",
+                            },
+                            {
+                              title: "Father",
+                              model: "Father",
+                              name: "name",
+                            },
+                            {
+                              title: "Father",
+                              model: "Father",
+                              model2: "Father",
+                              name: "name",
+                            },
+                          ]}
+                        />
                         <InputLine>
                           <Textarea
                             name="memo"

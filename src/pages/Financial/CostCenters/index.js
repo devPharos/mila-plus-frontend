@@ -5,49 +5,55 @@ import { getData } from "~/functions/gridFunctions";
 import PageContainer from "~/components/PageContainer";
 import { FullGridContext } from "..";
 
-export default function CommercialProspects() {
+export default function CostCenters() {
   const filial = useSelector((state) => state.auth.filial);
-  const defaultOrderBy = { column: "name", asc: true };
+  const defaultOrderBy = { column: "code", asc: true };
   const defaultGridHeader = [
     {
-      title: "Name",
-      name: "name",
-      type: "text",
-      filter: false,
-    },
-    {
-      title: "Last Name",
-      name: "last_name",
-      type: "text",
-      filter: false,
-    },
-    {
-      title: "E-mail",
-      name: "email",
+      title: "Code",
+      name: "code",
       type: "text",
       filter: false,
     },
     {
       title: "Type",
-      name: "processtypes",
+      name: "type",
       type: "text",
       filter: true,
     },
     {
-      title: "Sub Status",
-      name: "processsubstatuses",
+      title: "Level 2",
+      name: "name",
       type: "text",
+      filter: false,
+    },
+    {
+      title: "Level 3",
+      name: "name",
+      type: "text",
+      filter: false,
+    },
+    {
+      title: "Level 4",
+      name: "name",
+      type: "text",
+      filter: false,
+    },
+    {
+      title: "P&L",
+      name: "profit_and_loss",
+      type: "boolean",
       filter: true,
     },
     {
-      title: "Responsible Agent",
-      name: "agent",
-      type: "text",
+      title: "Posting",
+      name: "allow_use",
+      type: "boolean",
       filter: true,
     },
     {
-      title: "Partner & Influencer",
-      name: "partners_and_influencers",
+      title: "Visibility",
+      name: "visibility",
       type: "text",
       filter: true,
     },
@@ -86,11 +92,15 @@ export default function CommercialProspects() {
   } = useContext(FullGridContext);
 
   const pageAccess = accessModule.children.find(
-    (el) => el.alias === "prospects"
+    (el) => el.alias === "cost-centers"
   );
+
+  useEffect(() => {
+    setActiveFilters([]);
+  }, []);
   async function loader() {
     setLoadingData(true);
-    const data = await getData("prospects", {
+    const data = await getData("costCenters", {
       limit,
       page,
       orderBy,
@@ -101,41 +111,58 @@ export default function CommercialProspects() {
       defaultOrderBy,
       setGridDetails,
     });
-
     if (!data) {
       return;
     }
     const gridDataValues = data.map(
       (
-        {
-          id,
-          name,
-          last_name,
-          email,
-          canceled_at,
-          agent,
-          processtypes,
-          processsubstatuses,
-          partners_and_influencers,
-        },
+        { id, code, name, Father, visibility, allow_use, profit_and_loss },
         index
       ) => {
-        const ret = {
+        let fullName = "";
+        let levelOne = "";
+        let levelTwo = "";
+        let levelThree = "";
+        let levelFour = "";
+        if (Father) {
+          if (Father.Father) {
+            if (Father.Father.Father) {
+              levelOne = Father.Father.Father.name;
+              levelTwo = Father.Father.name;
+              levelThree = Father.name;
+              levelFour = name;
+              fullName += Father.Father.Father.name + " > ";
+            } else {
+              levelOne = Father.Father.name;
+              levelTwo = Father.name;
+              levelThree = name;
+            }
+            fullName += Father.Father.name + " > ";
+          } else {
+            levelOne = Father.name;
+            levelTwo = name;
+          }
+          fullName += Father.name + " > ";
+        } else {
+          levelOne = name;
+        }
+        fullName += name;
+
+        return {
           show: true,
           id,
           fields: [
-            name,
-            last_name,
-            email,
-            processtypes?.name,
-            processsubstatuses?.name,
-            agent?.name,
-            partners_and_influencers?.partners_name,
+            code,
+            levelOne,
+            levelTwo,
+            levelThree,
+            levelFour,
+            profit_and_loss,
+            allow_use,
+            visibility,
           ],
-          canceled: canceled_at,
           page: Math.ceil((index + 1) / limit),
         };
-        return ret;
       }
     );
     setGridData(gridDataValues);

@@ -9,6 +9,7 @@ import {
   ReplaceAll,
   Send,
   Mail,
+  List,
 } from "lucide-react";
 import React, {
   createContext,
@@ -157,6 +158,19 @@ export default function PagePreview({
         type: "info",
         transition: Zoom,
       });
+      return;
+    }
+
+    if (activeMenu === "Reclassify") {
+      try {
+        const response = await api.put(`/receivables/classify/${id}`, data);
+        setPageData({ ...pageData, ...response.data });
+        handleOpened(null);
+        setSuccessfullyUpdated(true);
+        toast("Saved!", { autoClose: 1000 });
+      } catch (err) {
+        toast(err.response.data.error, { type: "error", autoClose: 3000 });
+      }
       return;
     }
 
@@ -434,6 +448,15 @@ export default function PagePreview({
                     <UndoDot size={16} /> Refunds
                   </RegisterFormMenu>
                 )}
+              {tabAllowed(tabsPermissions, "receivable-reclassify-tab") && (
+                <RegisterFormMenu
+                  setActiveMenu={setActiveMenu}
+                  activeMenu={activeMenu}
+                  name="Reclassify"
+                >
+                  <List size={16} /> Reclassify
+                </RegisterFormMenu>
+              )}
               {tabAllowed(tabsPermissions, "mail-logs-tab") && (
                 <RegisterFormMenu
                   setActiveMenu={setActiveMenu}
@@ -994,6 +1017,46 @@ export default function PagePreview({
                                 },
                               ]}
                             />
+
+                            <FindGeneric
+                              route="costcenters"
+                              title="Cost Centers"
+                              scope="costCenter"
+                              readOnly={
+                                pageData.is_recurrence ||
+                                pageData.status !== "Pending"
+                              }
+                              InputContext={InputContext}
+                              defaultValue={{
+                                id: pageData.costcenter_id,
+                                code: pageData.costCenter?.code,
+                                name: pageData.costCenter?.name,
+                                father: pageData.costCenter?.Father?.name,
+                                granFather:
+                                  pageData.costCenter?.Father?.Father?.name,
+                              }}
+                              fields={[
+                                {
+                                  title: "Code",
+                                  name: "code",
+                                },
+                                {
+                                  title: "Name",
+                                  name: "name",
+                                },
+                                {
+                                  title: "Father",
+                                  model: "Father",
+                                  name: "name",
+                                },
+                                {
+                                  title: "Father",
+                                  model: "Father",
+                                  model2: "Father",
+                                  name: "name",
+                                },
+                              ]}
+                            />
                           </InputLineGroup>
                         </>
                       ) : (
@@ -1396,6 +1459,117 @@ export default function PagePreview({
                                     </Scope>
                                   );
                                 })}
+                          </InputLineGroup>
+                        </>
+                      ) : (
+                        <FormLoading />
+                      )}
+                    </InputContext.Provider>
+                  </Form>
+                )}
+
+                {activeMenu === "Reclassify" && (
+                  <Form
+                    id={`scrollPage-${activeMenu}`}
+                    ref={generalForm}
+                    onSubmit={handleGeneralFormSubmit}
+                    className="w-full pb-32"
+                  >
+                    <InputContext.Provider
+                      value={{
+                        id,
+                        generalForm,
+                        setSuccessfullyUpdated,
+                        fullscreen,
+                        setFullscreen,
+                        successfullyUpdated,
+                        handleCloseForm,
+                      }}
+                    >
+                      {id !== "new" && pageData.loaded ? (
+                        <>
+                          <FormHeader
+                            access={access}
+                            title={`Reclassify - ${pageData.issuer.name}`}
+                            registry={registry}
+                            InputContext={InputContext}
+                          />
+
+                          <InputLineGroup
+                            title="Reclassify"
+                            activeMenu={activeMenu === "Reclassify"}
+                          >
+                            <FindGeneric
+                              route="chartofaccounts"
+                              title="Chart of Accounts"
+                              scope="chartOfAccount"
+                              type="receipts"
+                              InputContext={InputContext}
+                              defaultValue={{
+                                id: pageData.chartOfAccount?.id,
+                                code: pageData.chartOfAccount?.code,
+                                name: pageData.chartOfAccount?.name,
+                                father: pageData.chartOfAccount?.Father?.name,
+                                granFather:
+                                  pageData.chartOfAccount?.Father?.Father?.name,
+                              }}
+                              fields={[
+                                {
+                                  title: "Code",
+                                  name: "code",
+                                },
+                                {
+                                  title: "Name",
+                                  name: "name",
+                                },
+                                {
+                                  title: "Father",
+                                  model: "Father",
+                                  name: "name",
+                                },
+                                {
+                                  title: "Father",
+                                  model: "Father",
+                                  model2: "Father",
+                                  name: "name",
+                                },
+                              ]}
+                            />
+                            <FindGeneric
+                              route="costcenters"
+                              title="Cost Centers"
+                              scope="costCenter"
+                              InputContext={InputContext}
+                              defaultValue={{
+                                id: pageData.costcenter_id,
+                                code: pageData.costCenter?.code,
+                                name: pageData.costCenter?.name,
+                                father: pageData.costCenter?.Father?.name,
+                                granFather:
+                                  pageData.costCenter?.Father?.Father?.name,
+                              }}
+                              fields={[
+                                {
+                                  title: "Code",
+                                  name: "code",
+                                },
+                                {
+                                  title: "Name",
+                                  name: "name",
+                                },
+                                {
+                                  title: "Father",
+                                  model: "Father",
+                                  name: "name",
+                                },
+                                {
+                                  title: "Father",
+                                  model: "Father",
+                                  model2: "Father",
+                                  name: "name",
+                                },
+                              ]}
+                            />
                           </InputLineGroup>
                         </>
                       ) : (

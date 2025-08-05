@@ -84,6 +84,7 @@ import Studentgroups from "./pages/Administrative/Studentgroup";
 import ResetPassword from "./pages/Auth/ResetPassword";
 import Messages from "./pages/Administrative/Message";
 import PartnersAndInfluencers from "./pages/Commercial/PartnersAndInfluencers";
+import CostCenters from "./pages/Financial/CostCenters";
 
 injectStore(store);
 
@@ -281,6 +282,10 @@ const router = createBrowserRouter([
           {
             path: "/Financial/Merchants",
             element: <FinancialMerchants />,
+          },
+          {
+            path: "/Financial/CostCenters",
+            element: <CostCenters />,
           },
           {
             path: "/Financial/ChartOfAccounts",

@@ -15,17 +15,12 @@ import FormHeader from "~/components/RegisterForm/FormHeader";
 import Preview from "~/components/Preview";
 import { Zoom, toast } from "react-toastify";
 import api from "~/services/api";
-import { getRegistries, handleUpdatedFields } from "~/functions";
+import { getRegistries } from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";
-import { useSelector } from "react-redux";
 import { FullGridContext } from "../..";
-import {
-  paymentPlatformOptions,
-  typeOfPaymentOptions,
-  yesOrNoOptions,
-} from "~/functions/selectPopoverOptions";
 import FindGeneric from "~/components/Finds/FindGeneric";
+import { yesOrNoOptions } from "~/functions/selectPopoverOptions";
 
 export const InputContext = createContext({});
 
@@ -41,19 +36,13 @@ export default function PagePreview({
     setSuccessfullyUpdated,
   } = useContext(FullGridContext);
   const [pageData, setPageData] = useState({
-    loaded: false,
-    description: "",
-    bankaccount_id: null,
-    bankAccount: {
-      account: "",
-      bank: {
-        bank_name: "",
-      },
-    },
-    filial_id: null,
-    filial: {
+    father_id: null,
+    name: "",
+    code: "",
+    Father: {
       name: "",
     },
+    loaded: false,
   });
 
   const [registry, setRegistry] = useState({
@@ -67,12 +56,12 @@ export default function PagePreview({
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
-  const [filialOptions, setFilialOptions] = useState([]);
-  const [bankAccountOptions, setBankAccountOptions] = useState([]);
-
-  const auth = useSelector((state) => state.auth);
-
   const generalForm = useRef();
+  const visibilityOptions = [
+    { value: "All", label: "All" },
+    { value: "Filial Only", label: "Filial Only" },
+    { value: "Holding Only", label: "Holding Only" },
+  ];
 
   function handleCloseForm() {
     if (!successfullyUpdated) {
@@ -92,10 +81,10 @@ export default function PagePreview({
     }
     if (id === "new") {
       try {
-        const response = await api.post(`/paymentmethods`, data);
+        // console.log(data)
+        const response = await api.post(`/costcenters`, data);
         setOpened(response.data.id);
         setPageData({ ...pageData, ...data });
-
         setSuccessfullyUpdated(true);
         toast("Saved!", { autoClose: 1000 });
         handleOpened(null);
@@ -103,21 +92,14 @@ export default function PagePreview({
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     } else if (id !== "new") {
-      const updated = handleUpdatedFields(data, pageData);
-
-      if (updated.length > 0) {
-        const objUpdated = Object.fromEntries(updated);
-        try {
-          await api.put(`/paymentmethods/${id}`, objUpdated);
-          setPageData({ ...pageData, ...objUpdated });
-          setSuccessfullyUpdated(true);
-          toast("Saved!", { autoClose: 1000 });
-          handleOpened(null);
-        } catch (err) {
-          toast(err.response.data.error, { type: "error", autoClose: 3000 });
-        }
-      } else {
-        console.log(updated);
+      try {
+        await api.put(`/costcenters/${id}`, data);
+        setPageData({ ...pageData, ...data });
+        setSuccessfullyUpdated(true);
+        toast("Saved!", { autoClose: 1000 });
+        handleOpened(null);
+      } catch (err) {
+        toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     }
   }
@@ -125,7 +107,7 @@ export default function PagePreview({
   useEffect(() => {
     async function getPageData() {
       try {
-        const { data } = await api.get(`/paymentmethods/${id}`);
+        const { data } = await api.get(`costcenters/${id}`);
         setPageData({ ...data, loaded: true });
         const {
           created_by,
@@ -145,11 +127,9 @@ export default function PagePreview({
         });
         setRegistry(registries);
       } catch (err) {
-        console.log(err);
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     }
-
     if (id === "new") {
       setFormType("full");
     } else if (id) {
@@ -211,7 +191,7 @@ export default function PagePreview({
                       <>
                         <FormHeader
                           access={access}
-                          title={pageData.description.slice(0, 30)}
+                          title={pageData.name}
                           registry={registry}
                           InputContext={InputContext}
                         />
@@ -221,104 +201,89 @@ export default function PagePreview({
                           activeMenu={activeMenu === "general"}
                         >
                           <FindGeneric
-                            route="filials"
-                            title="Filial"
-                            scope="filial"
-                            required
+                            route="costcenters"
+                            title="Father Account"
+                            scope="Father"
                             InputContext={InputContext}
-                            defaultValue={
-                              id === "new" && auth.filial.id !== 1
-                                ? {
-                                    id: auth.filial.id,
-                                    name: auth.filial.name,
-                                  }
-                                : {
-                                    id: pageData.filial?.id,
-                                    name: pageData.filial?.name,
-                                  }
-                            }
+                            defaultValue={{
+                              id: pageData.Father?.id,
+                              code: pageData.Father?.code,
+                              name: pageData.Father?.name,
+                            }}
                             fields={[
+                              {
+                                title: "Code",
+                                name: "code",
+                              },
                               {
                                 title: "Name",
                                 name: "name",
                               },
                             ]}
                           />
-
-                          <FindGeneric
-                            route="bankaccounts"
-                            title="Bank Account"
-                            scope="bankAccount"
-                            required
-                            InputContext={InputContext}
-                            defaultValue={{
-                              id: pageData.bankAccount.id,
-                              account: pageData.bankAccount.account,
-                              routing_number:
-                                pageData.bankAccount.routing_number,
-                            }}
-                            fields={[
-                              {
-                                title: "Account",
-                                name: "account",
-                              },
-                              {
-                                title: "Routing Number",
-                                name: "routing_number",
-                              },
-                            ]}
-                          />
-                          <InputLine title="Details">
+                          <InputLine title="General Data">
                             <Input
-                              name="description"
+                              type="text"
+                              name="name"
                               required
                               title="Name"
                               grow
-                              defaultValue={pageData.description}
+                              defaultValue={pageData.name}
                               InputContext={InputContext}
                             />
-                            <Input
-                              name="payment_details"
-                              title="Payment Details"
+                            <SelectPopover
+                              type="select"
+                              isSearchable
+                              name="profit_and_loss"
+                              required
+                              title="Profit and Loss"
+                              options={yesOrNoOptions}
                               grow
-                              defaultValue={pageData.payment_details}
+                              defaultValue={yesOrNoOptions.find(
+                                (type) =>
+                                  type.value === pageData.profit_and_loss
+                              )}
+                              InputContext={InputContext}
+                            />
+                            <SelectPopover
+                              type="text"
+                              isSearchable
+                              name="visibility"
+                              required
+                              title="Visibility"
+                              options={visibilityOptions}
+                              grow
+                              defaultValue={
+                                pageData.visibility
+                                  ? visibilityOptions.find(
+                                      (f) => f.value === pageData.visibility
+                                    )
+                                  : null
+                              }
+                              InputContext={InputContext}
+                            />
+                            <SelectPopover
+                              type="text"
+                              isSearchable
+                              name="allow_use"
+                              required
+                              title="Allows Posting"
+                              options={yesOrNoOptions}
+                              grow
+                              defaultValue={yesOrNoOptions.find(
+                                (f) => f.value === pageData.allow_use
+                              )}
                               InputContext={InputContext}
                             />
                           </InputLine>
-                          <InputLine>
-                            <SelectPopover
-                              name="type_of_payment"
-                              required
-                              title="Apply at"
-                              isSearchable
+                          <InputLine title="Other Data">
+                            <Input
+                              title="Old Code"
+                              type="text"
+                              name="old_code"
+                              readOnly
                               grow
-                              defaultValue={typeOfPaymentOptions.find(
-                                (opt) => opt.value === pageData.type_of_payment
-                              )}
-                              options={typeOfPaymentOptions}
-                              InputContext={InputContext}
-                            />
-                            <SelectPopover
-                              name="platform"
-                              title="Platform"
-                              isSearchable
-                              grow
-                              defaultValue={paymentPlatformOptions.find(
-                                (opt) => opt.value === pageData.platform
-                              )}
-                              options={paymentPlatformOptions}
-                              InputContext={InputContext}
-                            />
-                            <SelectPopover
-                              name="notify_settlement"
-                              title="Send e-mail on Settlement"
-                              isSearchable
-                              grow
-                              defaultValue={yesOrNoOptions.find(
-                                (opt) =>
-                                  opt.value === pageData.notify_settlement
-                              )}
-                              options={yesOrNoOptions}
+                              defaultValue={pageData.old_code}
                               InputContext={InputContext}
                             />
                           </InputLine>

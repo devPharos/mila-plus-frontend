@@ -1,5 +1,5 @@
 import { Form } from "@unform/web";
-import { Building, Pencil, X } from "lucide-react";
+import { Building, List, Pencil, X } from "lucide-react";
 import React, {
   createContext,
   useContext,
@@ -17,7 +17,12 @@ import FormHeader from "~/components/RegisterForm/FormHeader";
 import Preview from "~/components/Preview";
 import { Zoom, toast } from "react-toastify";
 import api from "~/services/api";
-import { getRegistries, handleUpdatedFields } from "~/functions";
+import {
+  getRegistries,
+  getTabsPermissions,
+  handleUpdatedFields,
+  tabAllowed,
+} from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
@@ -41,6 +46,12 @@ export default function PagePreview({
     successfullyUpdated,
     setSuccessfullyUpdated,
   } = useContext(FullGridContext);
+
+  const tabsPermissions = getTabsPermissions(
+    "financial-payees",
+    FullGridContext
+  );
+
   const [pageData, setPageData] = useState({
     loaded: false,
     filial: {
@@ -120,6 +131,18 @@ export default function PagePreview({
         type: "info",
         transition: Zoom,
       });
+      return;
+    }
+
+    if (activeMenu === "Reclassify") {
+      try {
+        const response = await api.put(`/payee/classify/${id}`, data);
+        setPageData({ ...pageData, ...response.data });
+        setSuccessfullyUpdated(true);
+        toast("Saved!", { autoClose: 1000 });
+      } catch (err) {
+        toast(err.response.data.error, { type: "error", autoClose: 3000 });
+      }
       return;
     }
 
@@ -262,6 +285,15 @@ export default function PagePreview({
               >
                 <Building size={16} /> General
               </RegisterFormMenu>
+              {tabAllowed(tabsPermissions, "payee-reclassify-tab") && (
+                <RegisterFormMenu
+                  setActiveMenu={setActiveMenu}
+                  activeMenu={activeMenu}
+                  name="Reclassify"
+                >
+                  <List size={16} /> Reclassify
+                </RegisterFormMenu>
+              )}
             </div>
             <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
               <div className="flex flex-col items-start justify-start text-sm overflow-y-scroll">
@@ -576,34 +608,6 @@ export default function PagePreview({
                               />
                             </InputLine>
 
-                            {/* <FindGeneric
-                              route="chartofaccounts"
-                              title="Chart of Accounts"
-                              scope="chartOfAccount"
-                              required
-                              readOnly={
-                                id !== "new" && pageData.status !== "Pending"
-                              }
-                              searchDefault={merchantId}
-                              InputContext={InputContext}
-                              type="expenses"
-                              defaultValue={{
-                                id: pageData.chartOfAccount.id,
-                                code: pageData.chartOfAccount.code,
-                                name: pageData.chartOfAccount.name,
-                              }}
-                              fields={[
-                                {
-                                  title: "Code",
-                                  name: "code",
-                                },
-                                {
-                                  title: "Name",
-                                  name: "name",
-                                },
-                              ]}
-                            /> */}
-
                             <FindGeneric
                               route="chartofaccounts"
                               title="Chart of Account"
@@ -622,6 +626,153 @@ export default function PagePreview({
                                 father: pageData.chartOfAccount?.Father?.name,
                                 granFather:
                                   pageData.chartOfAccount?.Father?.Father?.name,
+                              }}
+                              fields={[
+                                {
+                                  title: "Code",
+                                  name: "code",
+                                },
+                                {
+                                  title: "Name",
+                                  name: "name",
+                                },
+                                {
+                                  title: "Father",
+                                  model: "Father",
+                                  name: "name",
+                                },
+                                {
+                                  title: "Father",
+                                  model: "Father",
+                                  model2: "Father",
+                                  name: "name",
+                                },
+                              ]}
+                            />
+
+                            <FindGeneric
+                              route="costcenters"
+                              title="Cost Centers"
+                              scope="costCenter"
+                              InputContext={InputContext}
+                              defaultValue={{
+                                id: pageData.costcenter_id,
+                                code: pageData.costCenter?.code,
+                                name: pageData.costCenter?.name,
+                                father: pageData.costCenter?.Father?.name,
+                                granFather:
+                                  pageData.costCenter?.Father?.Father?.name,
+                              }}
+                              fields={[
+                                {
+                                  title: "Code",
+                                  name: "code",
+                                },
+                                {
+                                  title: "Name",
+                                  name: "name",
+                                },
+                                {
+                                  title: "Father",
+                                  model: "Father",
+                                  name: "name",
+                                },
+                                {
+                                  title: "Father",
+                                  model: "Father",
+                                  model2: "Father",
+                                  name: "name",
+                                },
+                              ]}
+                            />
+                          </InputLineGroup>
+                        </>
+                      ) : (
+                        <FormLoading />
+                      )}
+                    </InputContext.Provider>
+                  </Form>
+                )}
+
+                {activeMenu === "Reclassify" && (
+                  <Form
+                    id={`scrollPage-${activeMenu}`}
+                    ref={generalForm}
+                    onSubmit={handleGeneralFormSubmit}
+                    className="w-full pb-32"
+                  >
+                    <InputContext.Provider
+                      value={{
+                        id,
+                        generalForm,
+                        setSuccessfullyUpdated,
+                        fullscreen,
+                        setFullscreen,
+                        successfullyUpdated,
+                        handleCloseForm,
+                      }}
+                    >
+                      {id !== "new" && pageData.loaded ? (
+                        <>
+                          <FormHeader
+                            access={access}
+                            title={`Reclassify - ${pageData.issuer.name}`}
+                            registry={registry}
+                            InputContext={InputContext}
+                          />
+
+                          <InputLineGroup
+                            title="Reclassify"
+                            activeMenu={activeMenu === "Reclassify"}
+                          >
+                            <FindGeneric
+                              route="chartofaccounts"
+                              title="Chart of Accounts"
+                              scope="chartOfAccount"
+                              type="expenses"
+                              InputContext={InputContext}
+                              defaultValue={{
+                                id: pageData.chartOfAccount?.id,
+                                code: pageData.chartOfAccount?.code,
+                                name: pageData.chartOfAccount?.name,
+                                father: pageData.chartOfAccount?.Father?.name,
+                                granFather:
+                                  pageData.chartOfAccount?.Father?.Father?.name,
+                              }}
+                              fields={[
+                                {
+                                  title: "Code",
+                                  name: "code",
+                                },
+                                {
+                                  title: "Name",
+                                  name: "name",
+                                },
+                                {
+                                  title: "Father",
+                                  model: "Father",
+                                  name: "name",
+                                },
+                                {
+                                  title: "Father",
+                                  model: "Father",
+                                  model2: "Father",
+                                  name: "name",
+                                },
+                              ]}
+                            />
+                            <FindGeneric
+                              route="costcenters"
+                              title="Cost Centers"
+                              scope="costCenter"
+                              InputContext={InputContext}
+                              defaultValue={{
+                                id: pageData.costcenter_id,
+                                code: pageData.costCenter?.code,
+                                name: pageData.costCenter?.name,
+                                father: pageData.costCenter?.Father?.name,
+                                granFather:
+                                  pageData.costCenter?.Father?.Father?.name,
                               }}
                               fields={[
                                 {

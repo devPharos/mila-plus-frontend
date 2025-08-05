@@ -168,26 +168,29 @@ export default function Settlement({
             //   justTransaction: true,
             // });
             emergepay.close();
-            resolve(true);
+            resolve("paid");
+            setLoading(false);
           },
           onTransactionFailure: function (failureData) {
             toast("Payment error!", {
               type: "error",
               autoClose: 3000,
             });
-            reject(false);
+            reject("canceled");
+            setLoading(false);
           },
           onTransactionCancel: function () {
             toast("Transaction cancelled!", {
               type: "error",
               autoClose: 3000,
             });
-            reject(false);
+            setLoading(false);
+            reject("canceled");
           },
         });
       });
     } else {
-      return true;
+      return "continue";
     }
   }
   async function handleGeneralFormSubmit(data) {
@@ -207,9 +210,11 @@ export default function Settlement({
             {
               title: "Yes",
               onPress: async () => {
-                const goOn = await handleGravityPayment(data);
-                if (goOn) {
+                const status = await handleGravityPayment(data);
+                if (status === "continue") {
                   await partialSettlement(data);
+                }
+                if (status !== "canceled") {
                   handleOpened(null);
                 }
                 setLoading(false);
@@ -222,9 +227,11 @@ export default function Settlement({
           ],
         });
       } else {
-        const goOn = await handleGravityPayment(data);
-        if (goOn) {
+        const status = await handleGravityPayment(data);
+        if (status === "continue") {
           await fullSettlement(data);
+        }
+        if (status !== "canceled") {
           handleOpened(null);
         }
         setLoading(false);

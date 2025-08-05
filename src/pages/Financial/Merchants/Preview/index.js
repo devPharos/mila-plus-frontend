@@ -85,54 +85,13 @@ export default function PagePreview({
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
-  const [filialOptions, setFilialOptions] = useState([]);
-
-  const [orderBy, setOrderBy] = useState({ column: "Code", asc: true });
-
-  const [chartOfAccountOptions, setChartOfAccountOptions] = useState([]);
-  const [chartOfAccountData, setChartOfAccountData] = useState([]);
-
-  const [chartOfAccountSelected, setChartOfAccountSelected] = useState();
 
   const [newMerchantxchartofaccounts, setNewMerchantxchartofaccounts] =
     useState([]);
 
   const [gridData, setGridData] = useState([]);
-  const [gridHeader] = useState([
-    {
-      title: "Code",
-      type: "text",
-      filter: false,
-    },
-    {
-      title: "Name",
-      type: "text",
-      filter: false,
-    },
-    {
-      title: "Type",
-      type: "text",
-      filter: true,
-    },
-    {
-      title: "Visibility",
-      type: "text",
-      filter: true,
-    },
-  ]);
   const [returnFindGeneric, setReturnFindGeneric] = useState(null);
-
-  const loadOptions = (inputValue, callback) => {
-    callback(
-      chartOfAccountOptions.filter((i) =>
-        i.label.toLowerCase().includes(inputValue.toLowerCase())
-      )
-    );
-  };
-
-  const handleChanged = (value) => {
-    setChartOfAccountSelected(value);
-  };
+  const [returnCostCenter, setReturnCostCenter] = useState(null);
 
   const auth = useSelector((state) => state.auth);
 
@@ -267,6 +226,32 @@ export default function PagePreview({
     }
   }, [returnFindGeneric]);
 
+  useEffect(() => {
+    if (returnCostCenter) {
+      if (
+        pageData.merchantxcostcenters.find(
+          (el) => el.id === returnCostCenter.id
+        )
+      ) {
+        toast("Cost Center already added!", {
+          autoClose: 1000,
+          type: "info",
+          transition: Zoom,
+        });
+        setReturnCostCenter(null);
+        return;
+      } else {
+        setPageData({
+          ...pageData,
+          merchantxcostcenters: [
+            ...pageData.merchantxcostcenters,
+            returnCostCenter,
+          ],
+        });
+      }
+    }
+  }, [returnCostCenter]);
+
   function removeChartOfAccount(id) {
     setPageData({
       ...pageData,
@@ -276,20 +261,43 @@ export default function PagePreview({
     });
   }
 
+  function removeCostCenter(id) {
+    setPageData({
+      ...pageData,
+      merchantxcostcenters: pageData.merchantxcostcenters.filter(
+        (el) => el.id !== id
+      ),
+    });
+  }
+
   useEffect(() => {
     async function getPageData() {
       try {
-        const { data } = await api.get(`/merchants/${id}`);
-        let { merchantxchartofaccounts } = data;
-        merchantxchartofaccounts = data.merchantxchartofaccounts.map((el) => {
-          console.log(el.chartOfAccount);
+        const response = await api.get(`/merchants/${id}`);
+        console.log(response.data);
+        let { merchantxchartofaccounts, merchantxcostcenters } = response.data;
+        merchantxchartofaccounts = response.data.merchantxchartofaccounts.map(
+          (el) => {
+            return {
+              id: el.chartOfAccount.id,
+              code: el.chartOfAccount.code,
+              name: el.chartOfAccount.name,
+            };
+          }
+        );
+        merchantxcostcenters = response.data.merchantxcostcenters.map((el) => {
           return {
-            id: el.chartOfAccount.id,
-            code: el.chartOfAccount.code,
-            name: el.chartOfAccount.name,
+            id: el.costcenter.id,
+            code: el.costcenter.code,
+            name: el.costcenter.name,
           };
         });
-        setPageData({ ...data, loaded: true, merchantxchartofaccounts });
+        setPageData({
+          ...response.data,
+          loaded: true,
+          merchantxchartofaccounts,
+          merchantxcostcenters,
+        });
 
         const {
           created_by,
@@ -312,44 +320,7 @@ export default function PagePreview({
         setRegistry(registries);
       } catch (err) {
         console.log(err);
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
-      }
-    }
-
-    async function getDefaultOptions() {
-      try {
-        const filialData = await api.get(`/filials`);
-        const filialOptions = filialData.data
-          .filter((f) => f.id !== id)
-          .map((f) => {
-            return { value: f.id, label: f.name };
-          });
-
-        const chartOfAccountData = await api.get(
-          `/chartofaccounts?type=expenses`
-        );
-
-        const chartOfAccountOptions = chartOfAccountData.data.rows
-          .filter((f) => f.id !== id)
-          .map((f) => {
-            return {
-              value: f.id,
-              label: `${
-                f.Father?.Father?.Father?.name
-                  ? `${f.Father?.Father?.Father?.name} > `
-                  : ""
-              }${f.Father?.Father?.name ? `${f.Father?.Father?.name} > ` : ""}${
-                f.Father?.name ? `${f.Father?.name} > ` : ""
-              }${f.name}`,
-            };
-          });
-
-        setChartOfAccountOptions(chartOfAccountOptions);
-        setChartOfAccountData(chartOfAccountData?.data);
-
-        setFilialOptions(filialOptions);
-      } catch (err) {
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
+        toast(err.response?.data?.error, { type: "error", autoClose: 3000 });
       }
     }
 
@@ -358,32 +329,7 @@ export default function PagePreview({
     } else if (id) {
       getPageData();
     }
-    getDefaultOptions();
-
-    if (newMerchantxchartofaccounts.length > 0) {
-      const newChartOfAccountOptions = chartOfAccountOptions.filter(
-        (el) =>
-          !newMerchantxchartofaccounts.find(
-            (el2) => el2.chartofaccount_id === el.value
-          )
-      );
-
-      setChartOfAccountOptions(newChartOfAccountOptions);
-    }
   }, []);
-
-  useEffect(() => {
-    if (newMerchantxchartofaccounts.length > 0) {
-      const newChartOfAccountOptions = chartOfAccountOptions.filter(
-        (el) =>
-          !newMerchantxchartofaccounts.find(
-            (el2) => el2.chartofaccount_id === el.value
-          )
-      );
-
-      setChartOfAccountOptions(newChartOfAccountOptions);
-    }
-  }, [newMerchantxchartofaccounts]);
 
   return (
     <Preview formType={formType} fullscreen={fullscreen}>
@@ -424,6 +370,15 @@ export default function PagePreview({
                 disabled={id === "new"}
               >
                 <ChartGantt size={16} /> Chart of Accounts
+              </RegisterFormMenu>
+              <RegisterFormMenu
+                setActiveMenu={setActiveMenu}
+                activeMenu={activeMenu}
+                name="Cost Centers"
+                messageOnDisabled="You need to save the merchant first"
+                disabled={id === "new"}
+              >
+                <ChartGantt size={16} /> Cost Centers
               </RegisterFormMenu>
             </div>
             <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
@@ -547,6 +502,138 @@ export default function PagePreview({
                                           readOnly
                                           title="Name"
                                           defaultValue={chartofaccount.name}
+                                          InputContext={InputContext}
+                                        />
+                                      </InputLine>
+                                    </Scope>
+                                  </div>
+                                );
+                              })}
+                          </div>
+                        </InputLine>
+                      </InputLineGroup>
+                    </InputContext.Provider>
+                  </Form>
+                ) : null}
+
+                {activeMenu === "Cost Centers" ? (
+                  <Form
+                    ref={generalForm}
+                    onSubmit={handleGeneralFormSubmit}
+                    className="w-full pb-32"
+                  >
+                    <InputContext.Provider
+                      value={{
+                        id,
+                        generalForm,
+                        setSuccessfullyUpdated,
+                        fullscreen,
+                        setFullscreen,
+                        successfullyUpdated,
+                        handleCloseForm,
+                      }}
+                    >
+                      <FormHeader
+                        access={access}
+                        title={pageData?.name}
+                        registry={registry}
+                        InputContext={InputContext}
+                      />
+
+                      <InputLineGroup
+                        title="Cost Centers"
+                        activeMenu={activeMenu === "Cost Centers"}
+                      >
+                        <FindGeneric
+                          route="costcenters"
+                          title="Cost Centers"
+                          scope="costcenters"
+                          setReturnFindGeneric={setReturnCostCenter}
+                          InputContext={InputContext}
+                          defaultValue={{
+                            id: pageData.issuer?.issuer_x_recurrence?.costcenter
+                              ?.id,
+                            code: pageData.issuer?.issuer_x_recurrence
+                              ?.costcenter?.code,
+                            name: pageData.issuer?.issuer_x_recurrence
+                              ?.costcenter?.name,
+                            father:
+                              pageData.issuer?.issuer_x_recurrence?.costcenter
+                                ?.Father?.name,
+                            granFather:
+                              pageData.issuer?.issuer_x_recurrence?.costcenter
+                                ?.Father?.Father?.name,
+                          }}
+                          fields={[
+                            {
+                              title: "Code",
+                              name: "code",
+                            },
+                            {
+                              title: "Name",
+                              name: "name",
+                            },
+                            {
+                              title: "Father",
+                              model: "Father",
+                              name: "name",
+                            },
+                            {
+                              title: "Father",
+                              model: "Father",
+                              model2: "Father",
+                              name: "name",
+                            },
+                          ]}
+                        />
+
+                        <InputLine title="Merchant x Cost Center">
+                          <div className="flex flex-col justify-center items-start relative w-full">
+                            {pageData.merchantxcostcenters
+                              .sort((a, b) => a.code - b.code)
+                              .map((costcenter, index) => {
+                                return (
+                                  <div
+                                    className="flex flex-row justify-center items-center relative w-full"
+                                    key={index}
+                                  >
+                                    <button
+                                      className="mt-2"
+                                      type="button"
+                                      onClick={() => {
+                                        removeCostCenter(costcenter.id);
+                                        setSuccessfullyUpdated(false);
+                                      }}
+                                    >
+                                      <Trash size={18} />
+                                    </button>
+                                    <Scope
+                                      key={index}
+                                      path={`merchantxcostcenters[${index}]`}
+                                    >
+                                      <InputLine>
+                                        <Input
+                                          type="hidden"
+                                          name="id"
+                                          defaultValue={costcenter.id}
+                                          InputContext={InputContext}
+                                        />
+                                        <Input
+                                          type="text"
+                                          name="code"
+                                          grow
+                                          readOnly
+                                          title="Code"
+                                          defaultValue={costcenter.code}
+                                          InputContext={InputContext}
+                                        />
+                                        <Input
+                                          type="text"
+                                          name="name"
+                                          grow
+                                          readOnly
+                                          title="Name"
+                                          defaultValue={costcenter.name}
                                           InputContext={InputContext}
                                         />
                                       </InputLine>

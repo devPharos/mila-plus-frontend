@@ -299,6 +299,17 @@ export default function PagePreview({
                               InputContext={InputContext}
                             />
                           </InputLine>
+                          <InputLine title="Other Data">
+                            <Input
+                              title="Old Code"
+                              type="text"
+                              name="old_code"
+                              readOnly
+                              grow
+                              defaultValue={pageData.old_code}
+                              InputContext={InputContext}
+                            />
+                          </InputLine>
                         </InputLineGroup>
                       </>
                     ) : (

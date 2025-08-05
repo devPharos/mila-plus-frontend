@@ -273,16 +273,19 @@ export default function PagePreview({
   useEffect(() => {
     async function getPageData() {
       try {
-        const { data } = await api.get(`/merchants/${id}`);
-        let { merchantxchartofaccounts, merchantxcostcenters } = data;
-        merchantxchartofaccounts = data.merchantxchartofaccounts.map((el) => {
-          return {
-            id: el.chartOfAccount.id,
-            code: el.chartOfAccount.code,
-            name: el.chartOfAccount.name,
-          };
-        });
-        merchantxcostcenters = data.merchantxcostcenters.map((el) => {
+        const response = await api.get(`/merchants/${id}`);
+        console.log(response.data);
+        let { merchantxchartofaccounts, merchantxcostcenters } = response.data;
+        merchantxchartofaccounts = response.data.merchantxchartofaccounts.map(
+          (el) => {
+            return {
+              id: el.chartOfAccount.id,
+              code: el.chartOfAccount.code,
+              name: el.chartOfAccount.name,
+            };
+          }
+        );
+        merchantxcostcenters = response.data.merchantxcostcenters.map((el) => {
           return {
             id: el.costcenter.id,
             code: el.costcenter.code,
@@ -290,7 +293,7 @@ export default function PagePreview({
           };
         });
         setPageData({
-          ...data,
+          ...response.data,
           loaded: true,
           merchantxchartofaccounts,
           merchantxcostcenters,
@@ -317,7 +320,7 @@ export default function PagePreview({
         setRegistry(registries);
       } catch (err) {
         console.log(err);
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
+        toast(err.response?.data?.error, { type: "error", autoClose: 3000 });
       }
     }
 

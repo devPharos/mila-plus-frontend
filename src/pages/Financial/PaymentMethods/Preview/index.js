@@ -19,11 +19,11 @@ import { getRegistries, handleUpdatedFields } from "~/functions";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
-import Textarea from "~/components/RegisterForm/Textarea";
 import { FullGridContext } from "../..";
 import {
   paymentPlatformOptions,
   typeOfPaymentOptions,
+  yesOrNoOptions,
 } from "~/functions/selectPopoverOptions";
 import FindGeneric from "~/components/Finds/FindGeneric";
 
@@ -268,7 +268,24 @@ export default function PagePreview({
                               },
                             ]}
                           />
-                          <InputLine title="Bank Account">
+                          <InputLine title="Details">
+                            <Input
+                              name="description"
+                              required
+                              title="Name"
+                              grow
+                              defaultValue={pageData.description}
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              name="payment_details"
+                              title="Payment Details"
+                              grow
+                              defaultValue={pageData.payment_details}
+                              InputContext={InputContext}
+                            />
+                          </InputLine>
+                          <InputLine>
                             <SelectPopover
                               name="type_of_payment"
                               required
@@ -292,21 +309,16 @@ export default function PagePreview({
                               options={paymentPlatformOptions}
                               InputContext={InputContext}
                             />
-                          </InputLine>
-                          <InputLine title="Details">
-                            <Input
-                              name="description"
-                              required
-                              title="Name"
+                            <SelectPopover
+                              name="notify_settlement"
+                              title="Send e-mail on Settlement"
+                              isSearchable
                               grow
-                              defaultValue={pageData.description}
-                              InputContext={InputContext}
-                            />
-                            <Input
-                              name="payment_details"
-                              title="Payment Details"
-                              grow
-                              defaultValue={pageData.payment_details}
+                              defaultValue={yesOrNoOptions.find(
+                                (opt) =>
+                                  opt.value === pageData.notify_settlement
+                              )}
+                              options={yesOrNoOptions}
                               InputContext={InputContext}
                             />
                           </InputLine>

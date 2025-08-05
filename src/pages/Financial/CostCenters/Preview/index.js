@@ -204,7 +204,6 @@ export default function PagePreview({
                             route="costcenters"
                             title="Father Account"
                             scope="Father"
-                            required
                             InputContext={InputContext}
                             defaultValue={{
                               id: pageData.Father?.id,

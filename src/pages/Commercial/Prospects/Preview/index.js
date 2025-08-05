@@ -649,7 +649,7 @@ export default function PagePreview({
                             fields={[
                               {
                                 title: "Name",
-                                name: "name",
+                                name: "partners_name",
                               },
                             ]}
                           />

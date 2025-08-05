@@ -144,7 +144,7 @@ function EnrollmentProcess({
     api
       // .get("/pdf/affidavit-support/bc59904a-686e-4b05-b69f-64960af78565", {
       // .get("/pdf/transfer-eligibility/137a1ee0-3d8c-4122-b1bf-f41e9bf7def9", {
-      .get(`/pdf/new-enrollment/${enrollment.id}`, {
+      .get(`/pdf/enrollment/${enrollment.id}`, {
         responseType: "blob",
       })
       .then((res) => {

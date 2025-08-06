@@ -56,6 +56,8 @@ export default function Attendance({
     },
   });
 
+  const pageAccess = access.children.find((el) => el.alias === "attendance");
+
   const [registry, setRegistry] = useState({
     created_by: null,
     created_at: null,
@@ -242,7 +244,7 @@ export default function Attendance({
                   {id === "new" || pageData.loaded ? (
                     <>
                       <FormHeader
-                        access={access}
+                        access={pageAccess}
                         title={`Attendance - ${format(
                           parseISO(pageData.studentgroupclass?.date),
                           "MM/dd/yyyy"

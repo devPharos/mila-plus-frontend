@@ -49,10 +49,8 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 export const InputContext = createContext({});
 
 export default function SponsorOutside({
-  access = null,
+  access = { view: true, create: true, edit: true, inactivate: false },
   handleOpened,
-  setOpened,
-  defaultFormType = "preview",
 }) {
   const { profile } = useSelector((state) => state.user);
   const [pageData, setPageData] = useState({

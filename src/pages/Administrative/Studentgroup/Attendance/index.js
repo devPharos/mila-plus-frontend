@@ -56,6 +56,8 @@ export default function Attendance({
     },
   });
 
+  access = access.children.find((el) => el.alias === "attendance");
+
   const [registry, setRegistry] = useState({
     created_by: null,
     created_at: null,

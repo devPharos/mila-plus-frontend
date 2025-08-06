@@ -142,14 +142,23 @@ function EnrollmentProcess({
 
   function handlePDF() {
     api
-      // .get("/pdf/affidavit-support/bc59904a-686e-4b05-b69f-64960af78565", {
-      // .get("/pdf/transfer-eligibility/137a1ee0-3d8c-4122-b1bf-f41e9bf7def9", {
-      .get(`/pdf/new-enrollment/${enrollment.id}`, {
+      .get(`/pdf/enrollment/${enrollment.id}`, {
         responseType: "blob",
       })
       .then((res) => {
         const pdfBlob = new Blob([res.data], { type: "application/pdf" });
         saveAs(pdfBlob, `enrollment_${enrollment.id}.pdf`);
+      });
+  }
+
+  function handlePDF2() {
+    api
+      .get(`/pdf/new-enrollment/${enrollment.id}`, {
+        responseType: "blob",
+      })
+      .then((res) => {
+        const pdfBlob = new Blob([res.data], { type: "application/pdf" });
+        saveAs(pdfBlob, `enrollment_${enrollment.id}_new.pdf`);
       });
   }
 
@@ -199,15 +208,27 @@ function EnrollmentProcess({
                   </button>
                 </>
               ) : (
-                <button
-                  type="button"
-                  disabled={loading}
-                  onClick={handlePDF}
-                  className={`bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2`}
-                >
-                  <Download size={14} />
-                  <strong>Download PDF</strong>
-                </button>
+                <>
+                  <button
+                    type="button"
+                    disabled={loading}
+                    onClick={handlePDF}
+                    className={`bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2`}
+                  >
+                    <Download size={14} />
+                    <strong>Download PDF</strong>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={loading}
+                    onClick={handlePDF2}
+                    className={`bg-slate-300 text-slate-500 border border-slate-400 hover:bg-slate-400 hover:text-white rounded-md py-4 px-4 my-2 px-2 h-6 flex flex-row items-center justify-start text-xs gap-2`}
+                  >
+                    <Download size={14} />
+                    <strong>Download PDF - Novo</strong>
+                  </button>
+                </>
               )}
             </div>
           </div>

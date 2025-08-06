@@ -47,8 +47,6 @@ export default function PagePreview({
   const auth = useSelector((state) => state.auth);
   const [pageData, setPageData] = useState({
     name: "",
-    filialtype_id: null,
-    FilialType: null,
     loaded: false,
   });
   const [formType, setFormType] = useState(defaultFormType);
@@ -682,8 +680,6 @@ export default function PagePreview({
                                 </Scope>
                               );
                             })}
-                          {/* <Input type='text' name='name' required title='Name' grow defaultValue={pageData.name} InputContext={InputContext} />
-                                            {id === 'new' || pageData.Filialtype ? <SelectPopover name='filialtype_id' title='Filial Type' options={filialTypesOptions} defaultValue={{ value: pageData.filialtype_id, label: pageData.Filialtype ? pageData.Filialtype.name : '' }} InputContext={InputContext} /> : null} */}
                         </InputLineGroup>
 
                         <InputLineGroup

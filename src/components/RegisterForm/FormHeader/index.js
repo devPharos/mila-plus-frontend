@@ -30,8 +30,6 @@ export default function FormHeader({
     setFullscreen,
     successfullyUpdated,
     handleCloseForm,
-    handleInactivate,
-    canceled,
     handleOutsideMail,
   } = useContext(InputContext);
 

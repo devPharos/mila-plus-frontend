@@ -11,7 +11,7 @@ import { AlertContext } from "~/App";
 export default function Groups() {
   const { alertBox } = useContext(AlertContext);
   const filial = useSelector((state) => state.auth.filial);
-  const defaultOrderBy = { column: "bank_name", asc: true };
+  const defaultOrderBy = { column: "name", asc: true };
   const defaultGridHeader = [
     {
       title: "Name",

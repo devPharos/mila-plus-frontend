@@ -11,7 +11,9 @@ export default function DSO() {
   const { pages } = useContext(PageContext);
   const { pathname } = useLocation();
   const { accesses } = useSelector((state) => state.auth);
-  const accessModule = accesses.hierarchy.find((el) => el.alias === "dso");
+  const accessModule = accesses.hierarchy.find(
+    (el) => el.alias.toUpperCase() === "DSO"
+  );
   const navigate = useNavigate();
   const [activeFilters, setActiveFilters] = useState([]);
   const [opened, setOpened] = useState(false);
@@ -76,7 +78,10 @@ export default function DSO() {
     <div className="w-full bg-gradient-to-br from-gray-300 via-indigo-300 to-mila_orange flex flex-1 flex-row justify-between items-center px-4 pt-8 shadow-lg overflow-y-scroll">
       <Sidebar
         main={routeName.toLowerCase()}
-        pages={pages && pages.find((page) => page.name === routeName).children}
+        pages={
+          pages &&
+          pages.find((page) => page.name === routeName.toUpperCase()).children
+        }
       />
 
       <FullGridContext.Provider

@@ -81,8 +81,10 @@ export default function Sidebar({ main = null, pages = [] }) {
         {pages.map((page, index) => {
           if (
             accesses.hierarchy
-              .find((h) => h.alias === main)
-              .children.find((h) => h.alias === page.alias)
+              .find((h) => h.alias.toUpperCase() === main.toUpperCase())
+              .children.find(
+                (h) => h.alias.toUpperCase() === page.alias.toUpperCase()
+              )
           ) {
             return (
               <>
@@ -147,8 +149,15 @@ export default function Sidebar({ main = null, pages = [] }) {
                       {page.children.map((child, childIndex) => {
                         if (
                           accesses.hierarchy
-                            .find((h) => h.alias === main)
-                            .children.find((h) => h.alias === child.alias)
+                            .find(
+                              (h) =>
+                                h.alias.toUpperCase() === main.toUpperCase()
+                            )
+                            .children.find(
+                              (h) =>
+                                h.alias.toUpperCase() ===
+                                child.alias.toUpperCase()
+                            )
                         ) {
                           return (
                             <NavLink

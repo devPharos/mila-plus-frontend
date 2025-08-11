@@ -85,6 +85,7 @@ import ResetPassword from "./pages/Auth/ResetPassword";
 import Messages from "./pages/Administrative/Message";
 import PartnersAndInfluencers from "./pages/Commercial/PartnersAndInfluencers";
 import CostCenters from "./pages/Financial/CostCenters";
+import I20Pendings from "./pages/DSO/I20 Pendings";
 
 injectStore(store);
 
@@ -344,6 +345,10 @@ const router = createBrowserRouter([
           {
             path: "/DSO/Dashboard",
             element: <DSODashboard />,
+          },
+          {
+            path: "/DSO/I20 Pendings",
+            element: <I20Pendings />,
           },
         ],
       },

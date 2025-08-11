@@ -287,7 +287,7 @@ export default function PagePreview({
                             type="text"
                             name="name"
                             required
-                            readOnly={groupName === "Teacher"}
+                            readOnly={!access.MenuHierarchyXGroup?.edit}
                             grow
                             title="Name"
                             defaultValue={pageData.name}
@@ -591,7 +591,7 @@ export default function PagePreview({
                           required
                           InputContext={InputContext}
                           type="Active"
-                          readOnly={groupName === "Teacher"}
+                          readOnly={!access.MenuHierarchyXGroup?.edit}
                           defaultValue={{
                             id: pageData.classroom?.id,
                             class_number: pageData.classroom?.class_number,
@@ -614,7 +614,7 @@ export default function PagePreview({
                           title="Teacher"
                           scope="staff"
                           required
-                          readOnly={groupName === "Teacher"}
+                          readOnly={!access.MenuHierarchyXGroup?.edit}
                           type="Faculty"
                           InputContext={InputContext}
                           defaultValue={{

@@ -358,7 +358,7 @@ export default function PagePreview({
                             ]}
                             setReturnFindGeneric={setSelectedGroup}
                           />
-                          {selectedGroup?.name === "Teacher" && (
+                          {selectedGroup?.name.includes("Teacher") && (
                             <FindGeneric
                               route="staffs"
                               title="Teacher"

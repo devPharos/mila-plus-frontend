@@ -37,7 +37,7 @@ export default function Filters({
 
   if (selection?.functions?.length > 0) {
     const allowedFunctions = selection?.functions?.filter((func) =>
-      access.children?.find((el) => el.alias === func.alias)
+      access.children?.find((el) => el.alias === func.alias || !func.alias)
     );
     if (access.children && access.children.length === 0) {
       allowAll = true;
@@ -125,7 +125,9 @@ export default function Filters({
             <p className="text-xs pl-2 text-gray-500">No avaiable functions</p>
           ) : (
             selection.functions.map((func, index) => {
+              console.log(func);
               if (
+                !func.alias ||
                 allowAll ||
                 access.children.find((el) => el.alias === func.alias)
               ) {

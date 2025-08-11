@@ -685,6 +685,53 @@ export default function PagePreview({
                               InputContext={InputContext}
                             />
                           </InputLine>
+                          <InputLine title="Home Country">
+                            <Input
+                              type="text"
+                              name="address"
+                              title="Address"
+                              grow
+                              defaultValue={pageData.home_country_address}
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              type="text"
+                              name="zip"
+                              grow
+                              title="Zip Code"
+                              defaultValue={pageData.home_country_zip}
+                              InputContext={InputContext}
+                            />
+                            <SelectPopover
+                              name="birth_country"
+                              grow
+                              title="Country"
+                              options={countriesOptions}
+                              isSearchable
+                              defaultValue={countriesOptions.find(
+                                (country) =>
+                                  country.value ===
+                                  pageData.home_country_country
+                              )}
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              type="text"
+                              name="state"
+                              grow
+                              title="State"
+                              defaultValue={pageData.home_country_state}
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              type="text"
+                              name="city"
+                              grow
+                              title="City"
+                              defaultValue={pageData.home_country_city}
+                              InputContext={InputContext}
+                            />
+                          </InputLine>
                           <InputLine title="Contact">
                             <Input
                               type="text"

@@ -258,7 +258,6 @@ export default function Studentgroups() {
   const selectionFunctions = [];
 
   // Função liberada para professor
-  // if (groupName === "Teacher") {
   if (selected.length > 0 && selected[0].fields[1] === "Ongoing") {
     selectionFunctions.push({
       title: "Attendance",

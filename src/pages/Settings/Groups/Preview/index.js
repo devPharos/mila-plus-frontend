@@ -63,37 +63,34 @@ export default function PagePreview({
     canceled_at: null,
   });
   const generalForm = useRef();
+  async function getPageData() {
+    try {
+      const { data } = await api.get(`groups/${id}`);
+      const { data: groupAccess } = await api.get(`MenuHierarchy/group/${id}`);
+      setPageData({ ...data, groupAccess, loaded: true });
+      const {
+        created_by,
+        created_at,
+        updated_by,
+        updated_at,
+        canceled_by,
+        canceled_at,
+      } = data;
+      const registries = await getRegistries({
+        created_by,
+        created_at,
+        updated_by,
+        updated_at,
+        canceled_by,
+        canceled_at,
+      });
+      setRegistry(registries);
+    } catch (err) {
+      toast(err.response.data.error, { type: "error", autoClose: 3000 });
+    }
+  }
 
   useEffect(() => {
-    async function getPageData() {
-      try {
-        const { data } = await api.get(`groups/${id}`);
-        const { data: groupAccess } = await api.get(
-          `MenuHierarchy/group/${id}`
-        );
-        setPageData({ ...data, groupAccess, loaded: true });
-        const {
-          created_by,
-          created_at,
-          updated_by,
-          updated_at,
-          canceled_by,
-          canceled_at,
-        } = data;
-        const registries = await getRegistries({
-          created_by,
-          created_at,
-          updated_by,
-          updated_at,
-          canceled_by,
-          canceled_at,
-        });
-        setRegistry(registries);
-      } catch (err) {
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
-      }
-    }
-
     if (id === "new") {
       setFormType("full");
     } else if (id) {

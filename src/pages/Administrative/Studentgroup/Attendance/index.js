@@ -70,6 +70,8 @@ export default function Attendance({
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
   const [attendanceId, setAttendanceId] = useState(null);
+  const otherClassesRef = useRef(null);
+  const lastAttendanceRef = useRef(null);
   const [lastAttendance, setLastAttendance] = useState({
     date: null,
   });
@@ -157,7 +159,10 @@ export default function Attendance({
       `/studentgroups/attendance/${selected[0].id}?attendanceId=${attendanceId}`
     );
     if (!attendanceId) {
-      setLastAttendance({ date: data.studentgroupclass.date });
+      setLastAttendance({
+        date: data.studentgroupclass.date,
+        id: data.studentgroupclass.id,
+      });
     }
     setTimeout(() => {
       setPageData({ ...data, loaded: true });
@@ -197,6 +202,20 @@ export default function Attendance({
     }
   }
 
+  setTimeout(() => {
+    if (
+      !lastAttendance.id ||
+      !otherClassesRef.current ||
+      !lastAttendanceRef.current
+    ) {
+      return;
+    }
+
+    const targetScrollLeft =
+      lastAttendanceRef.current.offsetLeft - otherClassesRef.current.offsetLeft;
+
+    otherClassesRef.current.scrollLeft = targetScrollLeft;
+  }, 100);
   return (
     <Preview formType={formType} fullscreen={fullscreen}>
       {pageData ? (
@@ -264,7 +283,10 @@ export default function Attendance({
                           InputContext={InputContext}
                         />
                         <InputLine title="Resume">
-                          <div className="flex flex-row items-center justify-start gap-2 px-2 pb-4 max-w-full overflow-x-scroll">
+                          <div
+                            ref={otherClassesRef}
+                            className="flex flex-row items-center justify-start gap-2 px-2 pb-4 max-w-full overflow-x-scroll"
+                          >
                             {pageData.otherPaceGuides?.map(
                               (otherClass, index) => {
                                 let month = null;
@@ -292,6 +314,12 @@ export default function Attendance({
                                   <>
                                     {month}
                                     <button
+                                      ref={
+                                        lastAttendance.id === otherClass.id
+                                          ? lastAttendanceRef
+                                          : null
+                                      }
+                                      id={otherClass.id}
                                       type="button"
                                       onClick={() =>
                                         handleChangeAttendanceDay(otherClass.id)

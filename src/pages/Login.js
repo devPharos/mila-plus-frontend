@@ -41,7 +41,8 @@ export default function Login() {
         });
         formRef.current.setErrors(validationErrors);
         // Validation failed
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
+        // console.log(err);
+        toast("Validation failed", { type: "error", autoClose: 3000 });
       }
     }
   };

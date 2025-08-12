@@ -1534,23 +1534,6 @@ export default function EnrollmentOutside({
                                             )}
                                             InputContext={InputContext}
                                           />
-                                          {/* <SelectPopover
-                                            name="dept1_type"
-                                            required
-                                            grow
-                                            title="Dept1 Type"
-                                            readOnly={
-                                              pageData.lastActiveMenu.order >= 7
-                                            }
-                                            options={dept1TypeOptions}
-                                            isSearchable
-                                            defaultValue={dept1TypeOptions.find(
-                                              (dept1Type) =>
-                                                dept1Type.value ===
-                                                dependent.dept1_type
-                                            )}
-                                            InputContext={InputContext}
-                                          /> */}
                                           <SelectPopover
                                             name="relationship_type"
                                             required
@@ -2170,12 +2153,6 @@ export default function EnrollmentOutside({
                             pageData.activeMenu === "student-signature"
                           }
                         >
-                          {console.log(
-                            pageData.contracts.find(
-                              (contract) =>
-                                contract.file.document.subtype === "F1 Contract"
-                            ).file.url
-                          )}
                           {!pageData.signature ? (
                             <InputLine title="Student Signature">
                               {pageData.contracts &&

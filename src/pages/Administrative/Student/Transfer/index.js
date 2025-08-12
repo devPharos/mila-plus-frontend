@@ -17,9 +17,7 @@ import api from "~/services/api";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { FullGridContext } from "../..";
 import DatePicker from "~/components/RegisterForm/DatePicker";
-import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import { AlertContext } from "~/App";
-import { inactiveReasonsOptions } from "~/functions/selectPopoverOptions";
 import { format, parseISO } from "date-fns";
 import FindGeneric from "~/components/Finds/FindGeneric";
 import Input from "~/components/RegisterForm/Input";
@@ -43,6 +41,13 @@ export default function Transfer({
     loaded: true,
     installment_amount: 0,
     studentxgroups: [],
+    studentgroup: {
+      id: null,
+      name: "",
+      description: "",
+      start_date: null,
+      end_date: null,
+    },
   });
 
   const [registry, setRegistry] = useState({

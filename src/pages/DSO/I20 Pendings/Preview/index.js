@@ -1,5 +1,5 @@
 import { Form } from "@unform/web";
-import { GraduationCap, MessageSquareShare } from "lucide-react";
+
 import React, {
   createContext,
   useContext,
@@ -7,7 +7,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import Input from "~/components/RegisterForm/Input";
 import RegisterFormMenu from "~/components/RegisterForm/Menu";
 import api from "~/services/api";
 import { toast } from "react-toastify";
@@ -15,22 +14,40 @@ import InputLine from "~/components/RegisterForm/InputLine";
 import InputLineGroup from "~/components/RegisterForm/InputLineGroup";
 import FormHeader from "~/components/RegisterForm/FormHeader";
 import Preview from "~/components/Preview";
-import { getRegistries } from "~/functions";
+import { countries_list, getRegistries } from "~/functions";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
 import { FullGridContext } from "../..";
-import FindGeneric from "~/components/Finds/FindGeneric";
+import { AlertContext } from "~/App";
+import {
+  Ambulance,
+  BadgeDollarSign,
+  BookText,
+  Contact,
+  FileInputIcon,
+  MessageSquareShare,
+  Send,
+  User,
+} from "lucide-react";
+import Input from "~/components/RegisterForm/Input";
+import PDFViewer from "~/components/PDFViewer";
 import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import {
-  messageMethodOptions,
-  messageToStudentsOptions,
-  messageTypeOptions,
+  addressOptions,
+  dependentRelationshipTypeOptions,
+  genderOptions,
+  maritalStatusOptions,
+  relationshipTypeOptions,
+  scheduleOptions,
+  sponsorRelationshipTypeOptions,
   yesOrNoOptions,
 } from "~/functions/selectPopoverOptions";
-import Textarea from "~/components/RegisterForm/Textarea";
-import CheckboxInput from "~/components/RegisterForm/CheckboxInput";
+import DatePicker from "~/components/RegisterForm/DatePicker";
+import { parseISO } from "date-fns";
+import PhoneNumberInput from "~/components/RegisterForm/PhoneNumberInput";
 import { Scope } from "@unform/core";
-import { AlertContext } from "~/App";
+import FileInput from "~/components/RegisterForm/FileInput";
+import { organizeMultiAndSingleFiles } from "~/functions/uploadFile";
 
 export const InputContext = createContext({});
 
@@ -51,8 +68,8 @@ export default function PagePreview({
     groups: [],
   });
   const [formType, setFormType] = useState(defaultFormType);
-  const [fullscreen, setFullscreen] = useState(false);
-  const [activeMenu, setActiveMenu] = useState("message");
+  const [fullscreen, setFullscreen] = useState(true);
+  const [activeMenu, setActiveMenu] = useState("student");
   const [registry, setRegistry] = useState({
     created_by: null,
     created_at: null,
@@ -63,20 +80,10 @@ export default function PagePreview({
   });
   const generalForm = useRef();
   const auth = useSelector((state) => state.auth);
-  const [filters, setFilters] = useState({
-    studentsToReceive: messageToStudentsOptions[0],
-    shifts: {
-      morning: {
-        value: true,
-      },
-      afternoon: {
-        value: true,
-      },
-      evening: {
-        value: true,
-      },
-    },
-    level_id: null,
+  const [openedDocumentIndex, setOpenedDocumentIndex] = useState(0);
+
+  const countriesOptions = countries_list.map((country) => {
+    return { value: country, label: country };
   });
 
   useEffect(() => {
@@ -84,90 +91,91 @@ export default function PagePreview({
   }, [activeMenu]);
 
   async function getPageData() {
-    if (id !== "new") {
-      try {
-        const { data } = await api.get(`/messages/${id}`);
-        setPageData({
-          ...data,
-          loaded: true,
-        });
-        const {
-          created_by,
-          created_at,
-          updated_by,
-          updated_at,
-          canceled_by,
-          canceled_at,
-        } = data;
-        const registries = await getRegistries({
-          created_by,
-          created_at,
-          updated_by,
-          updated_at,
-          canceled_by,
-          canceled_at,
-        });
-        setRegistry(registries);
-      } catch (err) {
-        // console.log(err);
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
+    try {
+      const { data } = await api.get(`/i20pendings/${id}`);
+      setPageData({
+        ...data,
+        loaded: true,
+      });
+      if (data.i20form.status === "Confirmed") {
+        setActiveMenu("i-20");
       }
-    } else {
-      const { data: students } = await api.get(`/messages-students`);
-      setPageData({ ...pageData, students, loaded: true });
-      setFormType("full");
+      const {
+        created_by,
+        created_at,
+        updated_by,
+        updated_at,
+        canceled_by,
+        canceled_at,
+      } = data;
+      const registries = await getRegistries({
+        created_by,
+        created_at,
+        updated_by,
+        updated_at,
+        canceled_by,
+        canceled_at,
+      });
+      setRegistry(registries);
+    } catch (err) {
+      // console.log(err);
+      toast(err.response.data.error, { type: "error", autoClose: 3000 });
     }
   }
 
   useEffect(() => {
     getPageData();
+    setSuccessfullyUpdated(false);
   }, []);
 
   async function handleGeneralFormSubmit(data) {
-    if (!data.students.find((student) => student.selected === "true")) {
-      toast("At least one student must be selected!", {
-        type: "error",
-        autoClose: 3000,
-      });
-      return;
+    function send(file = null) {
+      api
+        .put(`/enrollments/${id}`, {
+          ...data,
+          new_program: data.new_program
+            ? { ...data.new_program, file_id: file }
+            : null,
+        })
+        .then((response) => {
+          if (activeMenu === "i-20") {
+            toast("I-20 Submitted successfully!", { autoClose: 1000 });
+            setSuccessfullyUpdated(true);
+            handleOpened(null);
+            return;
+          }
+          toast("Saved!", { autoClose: 1000 });
+          setSuccessfullyUpdated(true);
+          setPageData({
+            ...pageData,
+            i20form: { ...pageData.i20form, status: "Confirmed" },
+          });
+          setActiveMenu("i-20");
+        })
+        .catch((err) => {
+          console.log(err);
+          toast(err, { type: "error", autoClose: 3000 });
+        });
     }
-    alertBox({
-      title: "Attention!",
-      descriptionHTML: `Are you sure you want to send this message to <strong>${data.students_to_receive}</strong>? \n This action cannot be undone.`,
-      buttons: [
-        {
-          title: "No",
-          class: "cancel",
-        },
-        {
-          title: "Yes",
-          onPress: () => {
-            api
-              .post(`/messages`, {
-                ...data,
-              })
-              .then((response) => {
-                toast(response.data.message, { autoClose: 1000 });
-                handleOpened(null);
-              })
-              .catch((err) => {
-                if (err.message) {
-                  toast(err.message, {
-                    type: "error",
-                    autoClose: 3000,
-                  });
-                } else {
-                  toast(err.response.data.error, {
-                    type: "error",
-                    autoClose: 3000,
-                  });
-                }
-              });
-          },
-        },
-      ],
-    });
-    return;
+    if (activeMenu === "i-20") {
+      if (data.new_program.file_id) {
+        const allPromises = organizeMultiAndSingleFiles(
+          [data.new_program],
+          "StudentPrograms"
+        );
+
+        Promise.all(allPromises).then(async (files) => {
+          files.map(async (file) => {
+            if (!file) {
+              return;
+            }
+            send(file);
+          });
+        });
+      }
+    } else {
+      send();
+    }
   }
 
   function handleCloseForm() {
@@ -177,87 +185,6 @@ export default function PagePreview({
     handleOpened(null);
   }
 
-  useEffect(() => {
-    const filtered = [];
-    const filteredLevels = [];
-    const filteredGroups = [];
-    if (filters.studentsToReceive.value === "All students in filial") {
-      for (let student of pageData.students) {
-        student.message = true;
-        filtered.push(student);
-      }
-      setPageData({
-        ...pageData,
-        students: filtered,
-      });
-    } else {
-      if (pageData.students.length > 0) {
-        for (let student of pageData.students) {
-          student.message = false;
-
-          if (student.studentgroup) {
-            if (filters.shifts.morning.value && student.studentgroup.morning) {
-              student.message = true;
-            }
-            if (
-              filters.shifts.afternoon.value &&
-              student.studentgroup.afternoon
-            ) {
-              student.message = true;
-            }
-            if (filters.shifts.evening.value && student.studentgroup.evening) {
-              student.message = true;
-            }
-
-            if (student.message) {
-              if (
-                !filteredLevels.find(
-                  (level) => level.value === student.studentgroup.level_id
-                )
-              ) {
-                filteredLevels.push({
-                  label: student.studentgroup.level.name,
-                  value: student.studentgroup.level_id,
-                });
-              }
-              if (
-                !filteredGroups.find(
-                  (group) => group.value === student.studentgroup.id
-                )
-              ) {
-                filteredGroups.push({
-                  label: student.studentgroup.name,
-                  value: student.studentgroup.id,
-                });
-              }
-            }
-
-            if (filters.level_id?.value) {
-              if (student.studentgroup.level_id !== filters.level_id.value) {
-                student.message = false;
-              }
-            }
-            if (filters.group_id?.value) {
-              if (student.studentgroup.id !== filters.group_id.value) {
-                student.message = false;
-              }
-            }
-            console.log(filters, student.message);
-          } else {
-            student.message = false;
-          }
-          filtered.push(student);
-        }
-        setPageData({
-          ...pageData,
-          students: filtered,
-          levels: filteredLevels,
-          groups: filteredGroups,
-        });
-      }
-    }
-  }, [filters]);
-
   return (
     <Preview formType={formType} fullscreen={fullscreen}>
       {pageData ? (
@@ -266,17 +193,48 @@ export default function PagePreview({
             <RegisterFormMenu
               setActiveMenu={setActiveMenu}
               activeMenu={activeMenu}
-              name="message"
+              name="student"
             >
-              <MessageSquareShare size={16} /> Message
+              <User size={16} /> Student Information
             </RegisterFormMenu>
             <RegisterFormMenu
               setActiveMenu={setActiveMenu}
               activeMenu={activeMenu}
-              name="students"
+              name="emergency-contact"
             >
-              <GraduationCap size={16} /> Students
+              <Ambulance size={16} /> Emergency Contact
             </RegisterFormMenu>
+            <RegisterFormMenu
+              setActiveMenu={setActiveMenu}
+              activeMenu={activeMenu}
+              name="enrollment"
+            >
+              <BookText size={16} /> Enrollment
+            </RegisterFormMenu>
+            <RegisterFormMenu
+              setActiveMenu={setActiveMenu}
+              activeMenu={activeMenu}
+              name="dependents"
+            >
+              <Contact size={16} /> Dependents
+            </RegisterFormMenu>
+            <RegisterFormMenu
+              setActiveMenu={setActiveMenu}
+              activeMenu={activeMenu}
+              name="affidavit-of-support"
+            >
+              <BadgeDollarSign size={16} /> Affidavit of Support
+            </RegisterFormMenu>
+
+            {pageData?.i20form?.status === "Confirmed" && (
+              <RegisterFormMenu
+                setActiveMenu={setActiveMenu}
+                activeMenu={activeMenu}
+                name="i-20"
+              >
+                <FileInputIcon size={16} /> I-20
+              </RegisterFormMenu>
+            )}
           </div>
           <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">
             <InputContext.Provider
@@ -306,332 +264,818 @@ export default function PagePreview({
                       <FormHeader
                         access={{ ...access, edit: false }}
                         title={`${
-                          pageData.subject ? pageData.subject : "New Message"
+                          pageData.subject
+                            ? pageData.subject
+                            : "Enrollment Process"
                         }`}
                         registry={registry}
                         InputContext={InputContext}
-                        createText="Send Message"
-                        createIcon={<MessageSquareShare size={16} />}
+                        saveText={`${
+                          activeMenu !== "i-20"
+                            ? "Save & Confirm"
+                            : "Submit I-20"
+                        }`}
+                        saveIcon="Send"
+                        // otherButtons={[
+                        //   {
+                        //     icon: "Plus",
+                        //     text: "Add Dependent",
+                        //     onClick: () => console.log("oi"),
+                        //   },
+                        // ]}
+                        enableFullScreen={false}
                       />
                       <InputLineGroup
-                        title="message"
-                        activeMenu={activeMenu === "message"}
+                        title="student"
+                        activeMenu={activeMenu === "student"}
                       >
-                        <FindGeneric
-                          route="filials"
-                          title="Filial"
-                          scope="filial"
-                          required
-                          InputContext={InputContext}
-                          readOnly={id !== "new"}
-                          defaultValue={
-                            id === "new" && auth.filial.id !== 1
-                              ? {
-                                  id: auth.filial.id,
-                                  name: auth.filial.name,
-                                }
-                              : {
-                                  id: pageData.filial?.id,
-                                  name: pageData.filial?.name,
-                                }
-                          }
-                          fields={[
-                            {
-                              title: "Name",
-                              name: "name",
-                            },
-                          ]}
-                        />
-                        <InputLine title="Message Information">
-                          <SelectPopover
-                            name="type"
-                            required
-                            grow
-                            title="Type"
-                            isSearchable
-                            readOnly={id !== "new"}
-                            defaultValue={messageTypeOptions.find(
-                              (opt) => opt.value === pageData.type
-                            )}
-                            options={messageTypeOptions}
-                            InputContext={InputContext}
-                          />
-                          <SelectPopover
-                            name="method"
-                            required
-                            grow
-                            title="Method"
-                            isSearchable
-                            readOnly={id !== "new"}
-                            // defaultValue={messageMethodOptions.find(
-                            //   (opt) => opt.value === pageData.method
-                            // )}
-                            defaultValue={messageMethodOptions[0]}
-                            options={messageMethodOptions}
-                            InputContext={InputContext}
-                          />
-                          <Input
-                            name="subject"
-                            required
-                            grow
-                            title="Subject"
-                            readOnly={id !== "new"}
-                            defaultValue={pageData.subject}
-                            InputContext={InputContext}
-                          />
-                        </InputLine>
-                        <InputLine>
-                          <Textarea
-                            name="content"
-                            required
-                            grow
-                            title="Content"
-                            readOnly={id !== "new"}
-                            defaultValue={pageData.content}
-                            InputContext={InputContext}
-                            rows={10}
-                          />
-                        </InputLine>
-                      </InputLineGroup>
-                      <InputLineGroup
-                        title="students"
-                        activeMenu={activeMenu === "students"}
-                      >
-                        {id === "new" && (
-                          <>
-                            <InputLine title={`Students`}>
-                              <SelectPopover
-                                name="students_to_receive"
-                                required
-                                grow
-                                title="Students to receive message:"
-                                isSearchable
-                                options={messageToStudentsOptions}
-                                defaultValue={
-                                  filters.studentsToReceive
-                                    ? messageToStudentsOptions.find(
-                                        (opt) =>
-                                          opt.value ===
-                                          filters.studentsToReceive.value
-                                      )
-                                    : null
-                                }
-                                onChange={(value) => {
-                                  setFilters({
-                                    ...filters,
-                                    studentsToReceive: value,
-                                  });
-                                }}
-                                InputContext={InputContext}
-                              />
-                              {console.log(
-                                pageData.students.filter(
-                                  (student) => student.message === true
-                                )
-                              )}
-                            </InputLine>
-                            {filters.studentsToReceive?.value ===
-                              "Selected students in filial" && (
-                              <>
-                                <InputLine title="Filters">
-                                  <SelectPopover
-                                    name="morning"
-                                    title="Morning shift"
-                                    isSearchable
-                                    shrink
-                                    options={yesOrNoOptions}
-                                    InputContext={InputContext}
-                                    defaultValue={yesOrNoOptions[0]}
-                                    onChange={(value) => {
-                                      setFilters({
-                                        ...filters,
-                                        shifts: {
-                                          ...filters.shifts,
-                                          morning: value,
-                                        },
-                                      });
-                                    }}
-                                  />
-                                  <SelectPopover
-                                    name="afternoon"
-                                    title="Afternoon shift"
-                                    isSearchable
-                                    shrink
-                                    options={yesOrNoOptions}
-                                    InputContext={InputContext}
-                                    defaultValue={yesOrNoOptions[0]}
-                                    onChange={(value) => {
-                                      setFilters({
-                                        ...filters,
-                                        shifts: {
-                                          ...filters.shifts,
-                                          afternoon: value,
-                                        },
-                                      });
-                                    }}
-                                  />
-                                  <SelectPopover
-                                    name="evening"
-                                    title="Evening shift"
-                                    isSearchable
-                                    shrink
-                                    options={yesOrNoOptions}
-                                    InputContext={InputContext}
-                                    defaultValue={yesOrNoOptions[0]}
-                                    onChange={(value) => {
-                                      setFilters({
-                                        ...filters,
-                                        shifts: {
-                                          ...filters.shifts,
-                                          evening: value,
-                                        },
-                                      });
-                                    }}
-                                  />
-                                  <SelectPopover
-                                    name="level"
-                                    title="Levels"
-                                    isSearchable
+                        <div className="w-full flex flex-row justify-between items-start gap-4">
+                          <div className="flex-1 flex flex-col justify-start items-start overflow-y-scroll h-[520px]">
+                            <Scope path={`studentData`}>
+                              <InputLine title={`General Data`}>
+                                <Input
+                                  type="hidden"
+                                  name="id"
+                                  defaultValue={pageData.students.id}
+                                  InputContext={InputContext}
+                                />
+                                <Input
+                                  type="text"
+                                  name="name"
+                                  required
+                                  grow
+                                  title="Name"
+                                  defaultValue={pageData.students.name}
+                                  InputContext={InputContext}
+                                />
+                              </InputLine>
+                              <InputLine>
+                                <Input
+                                  type="text"
+                                  name="last_name"
+                                  required
+                                  grow
+                                  title="Last Name"
+                                  defaultValue={pageData.students.last_name}
+                                  InputContext={InputContext}
+                                />
+                              </InputLine>
+                              <InputLine>
+                                <DatePicker
+                                  name="date_of_birth"
+                                  required
+                                  grow
+                                  title="Birth Date"
+                                  defaultValue={
+                                    pageData.students.date_of_birth
+                                      ? parseISO(
+                                          pageData.students.date_of_birth
+                                        )
+                                      : null
+                                  }
+                                  placeholderText="MM/DD/YYYY"
+                                  InputContext={InputContext}
+                                />
+                              </InputLine>
+                              <InputLine>
+                                <SelectPopover
+                                  name="marital_status"
+                                  required
+                                  grow
+                                  title="Marital Status"
+                                  isSearchable
+                                  defaultValue={maritalStatusOptions.find(
+                                    (maritalStatus) =>
+                                      maritalStatus.value ===
+                                      pageData.students.marital_status
+                                  )}
+                                  options={maritalStatusOptions}
+                                  InputContext={InputContext}
+                                />
+                              </InputLine>
+                              <InputLine title="Birth Location">
+                                <Input
+                                  type="text"
+                                  name="birth_city"
+                                  required
+                                  grow
+                                  title="Birth City"
+                                  defaultValue={pageData.students.birth_city}
+                                  InputContext={InputContext}
+                                />
+                              </InputLine>
+                              <InputLine>
+                                <Input
+                                  type="text"
+                                  name="birth_state"
+                                  required
+                                  grow
+                                  title="Birth State"
+                                  defaultValue={pageData.students.birth_state}
+                                  InputContext={InputContext}
+                                />
+                              </InputLine>
+                              <InputLine>
+                                <SelectPopover
+                                  name="birth_country"
+                                  required
+                                  grow
+                                  title="Birth Country"
+                                  isSearchable
+                                  defaultValue={countriesOptions.find(
+                                    (country) =>
+                                      country.value ===
+                                      pageData.students.birth_country
+                                  )}
+                                  options={countriesOptions}
+                                  InputContext={InputContext}
+                                />
+                              </InputLine>
+                              <InputLine>
+                                <Input
+                                  type="text"
+                                  name="native_language"
+                                  required
+                                  grow
+                                  title="Native Language"
+                                  defaultValue={
+                                    pageData.students.native_language
+                                  }
+                                  InputContext={InputContext}
+                                />
+                              </InputLine>
+                              <InputLine>
+                                <SelectPopover
+                                  name="citizen_country"
+                                  required
+                                  grow
+                                  title="Citizen Country"
+                                  isSearchable
+                                  defaultValue={countriesOptions.find(
+                                    (country) =>
+                                      country.value ===
+                                      pageData.students.citizen_country
+                                  )}
+                                  options={countriesOptions}
+                                  InputContext={InputContext}
+                                />
+                              </InputLine>
+                              <InputLine title="Documentation">
+                                <Input
+                                  type="text"
+                                  name="passport_number"
+                                  required
+                                  grow
+                                  title="Passport Number"
+                                  placeholder="-----"
+                                  defaultValue={
+                                    pageData.students.passport_number
+                                  }
+                                  InputContext={InputContext}
+                                />
+                              </InputLine>
+                              <InputLine>
+                                <DatePicker
+                                  name="passport_expiration_date"
+                                  required
+                                  grow
+                                  title="Passport Expiration Date"
+                                  defaultValue={
+                                    pageData.students.passport_expiration_date
+                                      ? parseISO(
+                                          pageData.students
+                                            .passport_expiration_date
+                                        )
+                                      : null
+                                  }
+                                  placeholderText="MM/DD/YYYY"
+                                  InputContext={InputContext}
+                                />
+                              </InputLine>
+                              <InputLine>
+                                {pageData.students.sub_status ===
+                                  "Change of Visa Status" && (
+                                  <DatePicker
+                                    name="i94_expiration_date"
+                                    required
                                     grow
-                                    options={[
-                                      {
-                                        value: null,
-                                        label: "All Levels",
-                                      },
-                                      ...pageData.levels,
-                                    ]}
-                                    defaultValue={{
-                                      value: null,
-                                      label: "All Levels",
-                                    }}
+                                    title="I94 Expiration Date"
+                                    defaultValue={
+                                      pageData.students.i94_expiration_date
+                                        ? parseISO(
+                                            pageData.students
+                                              .i94_expiration_date
+                                          )
+                                        : null
+                                    }
+                                    placeholderText="MM/DD/YYYY"
                                     InputContext={InputContext}
-                                    onChange={(value) => {
-                                      setFilters({
-                                        ...filters,
-                                        level_id: value,
-                                      });
-                                    }}
                                   />
+                                )}
+                              </InputLine>
+                              {pageData.students.sub_status !== "Initial" && (
+                                <InputLine title="Admission Correspondence">
                                   <SelectPopover
-                                    name="groups"
-                                    title="Groups"
-                                    isSearchable
+                                    name="admission_correspondence_address"
+                                    required
                                     grow
-                                    options={[
-                                      {
-                                        value: null,
-                                        label: "All Groups",
-                                      },
-                                      ...pageData.groups,
-                                    ]}
-                                    defaultValue={{
-                                      value: null,
-                                      label: "All Groups",
-                                    }}
+                                    title="Please check the box where you wish your admission correspondence to be mailed"
+                                    options={addressOptions}
+                                    defaultValue={addressOptions.find(
+                                      (address) =>
+                                        address.value ===
+                                        pageData.admission_correspondence_address
+                                    )}
                                     InputContext={InputContext}
-                                    onChange={(value) => {
-                                      setFilters({
-                                        ...filters,
-                                        group_id: value,
-                                      });
-                                    }}
                                   />
                                 </InputLine>
-                              </>
-                            )}
-                          </>
-                        )}
-                        <InputLine title={`Filtered Students`}>
-                          <div className="w-full overflow-y-scroll">
-                            <table className="w-full text-sm text-center overflow-y-scroll">
-                              <thead className="">
-                                <tr className="bg-white sticky top-0">
-                                  <th className="w-20">Sel.</th>
-                                  <th className="text-left">Student</th>
-                                  <th>Level</th>
-                                  <th>Student Group</th>
-                                  <th>Shifts</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {pageData.students
-                                  .filter(
-                                    (student) =>
-                                      student.message ||
-                                      typeof student.message === "undefined"
-                                  )
-                                  .map((student, index) => {
-                                    if (student.student) {
-                                      student = student.student;
-                                    }
-                                    return (
-                                      <Scope
-                                        path={`students[${index}]`}
-                                        key={index}
-                                      >
-                                        <tr
-                                          key={index}
-                                          className={`text-xs hover:bg-gray-50 border-b ${
-                                            student.id === pageData.student_id
-                                              ? "bg-gray-100"
-                                              : ""
-                                          } even:bg-gray-50`}
-                                        >
-                                          <td className="px-2 py-2 text-center w-20">
-                                            <CheckboxInput
-                                              name={`selected`}
-                                              defaultValue="true"
-                                              InputContext={InputContext}
-                                              readOnly={
-                                                filters.studentsToReceive
-                                                  .value ===
-                                                "All students in filial"
-                                              }
-                                            />
-                                          </td>
-                                          <td className="px-2 py-2 text-left">
-                                            <Input
-                                              type="hidden"
-                                              name={`id`}
-                                              defaultValue={student.id}
-                                              InputContext={InputContext}
-                                            />
-                                            <strong>
-                                              {student.name} {student.last_name}
-                                            </strong>
-                                            <br />
-                                            {student.email}
-                                          </td>
-                                          <td className="px-2 py-2 text-center">
-                                            {student.studentgroup?.level?.name}
-                                          </td>
-                                          <td className="px-2 py-2 text-center">
-                                            {student.studentgroup?.name}
-                                          </td>
-                                          <td className="px-2 py-2 text-center">
-                                            {student.studentgroup?.morning &&
-                                              "Morning"}
-                                            {student.studentgroup?.afternoon
-                                              ? student.studentgroup?.morning
-                                                ? " / Afternoon"
-                                                : "Afternoon"
-                                              : ""}
-                                            {student.studentgroup?.evening
-                                              ? student.studentgroup?.morning ||
-                                                student.studentgroup?.afternoon
-                                                ? " / Evening"
-                                                : "Evening"
-                                              : ""}
-                                          </td>
-                                        </tr>
-                                      </Scope>
-                                    );
-                                  })}
-                              </tbody>
-                            </table>
+                              )}
+                              {pageData.students.sub_status !==
+                                "Transfer In" && (
+                                <>
+                                  <InputLine title="Address in Home Country">
+                                    <PhoneNumberInput
+                                      type="text"
+                                      name="home_country_phone"
+                                      grow
+                                      title="Phone Number"
+                                      value={pageData.students.home_country_phone.replaceAll(
+                                        " ",
+                                        ""
+                                      )}
+                                      InputContext={InputContext}
+                                    />
+                                  </InputLine>
+                                  <InputLine>
+                                    <Input
+                                      type="text"
+                                      name="home_country_address"
+                                      grow
+                                      title="Address"
+                                      defaultValue={
+                                        pageData.students.home_country_address
+                                      }
+                                      InputContext={InputContext}
+                                    />
+                                  </InputLine>
+                                  <InputLine>
+                                    <Input
+                                      type="text"
+                                      name="home_country_zip"
+                                      grow
+                                      title="Zip Code"
+                                      defaultValue={
+                                        pageData.students.home_country_zip
+                                      }
+                                      InputContext={InputContext}
+                                    />
+                                  </InputLine>
+                                  <InputLine>
+                                    <Input
+                                      type="text"
+                                      name="home_country_city"
+                                      grow
+                                      title="City"
+                                      defaultValue={
+                                        pageData.students.home_country_city
+                                      }
+                                      InputContext={InputContext}
+                                    />
+                                  </InputLine>
+                                  <InputLine>
+                                    <Input
+                                      type="text"
+                                      name="home_country_state"
+                                      grow
+                                      title="State"
+                                      defaultValue={
+                                        pageData.students.home_country_state
+                                      }
+                                      InputContext={InputContext}
+                                    />
+                                  </InputLine>
+                                  <InputLine>
+                                    <SelectPopover
+                                      name="home_country_country"
+                                      grow
+                                      title="Country"
+                                      isSearchable
+                                      defaultValue={countriesOptions.find(
+                                        (country) =>
+                                          country.value ===
+                                          pageData.students.home_country_country
+                                      )}
+                                      options={countriesOptions}
+                                      InputContext={InputContext}
+                                    />
+                                  </InputLine>
+                                </>
+                              )}
+                              {pageData.students.sub_status !== "Initial" && (
+                                <>
+                                  <InputLine title="Address in United States">
+                                    <PhoneNumberInput
+                                      type="text"
+                                      name="phone"
+                                      grow
+                                      title="USA Phone Number"
+                                      value={pageData.students.phone.replaceAll(
+                                        " ",
+                                        ""
+                                      )}
+                                      InputContext={InputContext}
+                                    />
+                                  </InputLine>
+                                  <InputLine>
+                                    <Input
+                                      type="text"
+                                      name="address"
+                                      grow
+                                      title="USA Address"
+                                      defaultValue={pageData.students.address}
+                                      InputContext={InputContext}
+                                    />
+                                  </InputLine>
+                                  <InputLine>
+                                    <Input
+                                      type="text"
+                                      name="zip"
+                                      grow
+                                      title="USA Zip Code"
+                                      isZipCode
+                                      defaultValue={pageData.students.zip}
+                                      InputContext={InputContext}
+                                    />
+                                  </InputLine>
+                                </>
+                              )}
+                              {pageData.students.sub_status !== "Initial" && (
+                                <>
+                                  <InputLine>
+                                    <Input
+                                      type="text"
+                                      name="city"
+                                      grow
+                                      title="USA City"
+                                      defaultValue={pageData.students.city}
+                                      InputContext={InputContext}
+                                    />
+                                  </InputLine>
+                                  <InputLine>
+                                    <Input
+                                      type="text"
+                                      name="state"
+                                      grow
+                                      title="USA State"
+                                      defaultValue={pageData.students.state}
+                                      InputContext={InputContext}
+                                    />
+                                  </InputLine>
+                                </>
+                              )}
+                            </Scope>
                           </div>
-                        </InputLine>
+
+                          <div className="flex-1 max-w-4xl overflow-y-scroll h-[520px]">
+                            <div className="flex flex-row items-center justify-center gap-2">
+                              <InputLine title={`Documents`}>
+                                {pageData.enrollmentdocuments &&
+                                  pageData.enrollmentdocuments.length > 0 &&
+                                  pageData.enrollmentdocuments.map(
+                                    (enrollmentdocument, index) => (
+                                      <button
+                                        key={index}
+                                        type="button"
+                                        onClick={() =>
+                                          setOpenedDocumentIndex(index)
+                                        }
+                                        className={`${
+                                          openedDocumentIndex === index
+                                            ? "bg-primary text-white"
+                                            : "bg-secondary text-primary"
+                                        } rounded-md py-4 px-8 my-2 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1`}
+                                      >
+                                        {enrollmentdocument?.documents?.title}
+                                      </button>
+                                    )
+                                  )}
+                              </InputLine>
+                            </div>
+
+                            {pageData.enrollmentdocuments &&
+                              pageData.enrollmentdocuments.length > 0 &&
+                              pageData.enrollmentdocuments.map(
+                                (enrollmentdocument, index) => {
+                                  if (openedDocumentIndex === index) {
+                                    return (
+                                      <PDFViewer
+                                        key={index}
+                                        download={true}
+                                        file={{
+                                          url: enrollmentdocument.file?.url,
+                                        }}
+                                        height={900}
+                                      />
+                                    );
+                                  }
+                                }
+                              )}
+                          </div>
+                        </div>
                       </InputLineGroup>
+                      <InputLineGroup
+                        title="Emergency Contact"
+                        activeMenu={activeMenu === "emergency-contact"}
+                      >
+                        <Scope path={`emergencyData`}>
+                          <InputLine title="Emergency Contact">
+                            <Input
+                              type="hidden"
+                              name="id"
+                              defaultValue={
+                                pageData.enrollmentemergencies[0].id
+                              }
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              type="text"
+                              name="name"
+                              required
+                              grow
+                              title="Full Name"
+                              defaultValue={
+                                pageData.enrollmentemergencies.length > 0
+                                  ? pageData.enrollmentemergencies[0].name
+                                  : ""
+                              }
+                              InputContext={InputContext}
+                            />
+                            {pageData.enrollmentemergencies.length > 0 ? (
+                              <SelectPopover
+                                name="relationship_type"
+                                required
+                                grow
+                                title="Relationship Type"
+                                options={relationshipTypeOptions}
+                                isSearchable
+                                defaultValue={relationshipTypeOptions.find(
+                                  (relationshipType) =>
+                                    relationshipType.value ===
+                                    pageData.enrollmentemergencies[0]
+                                      .relationship_type
+                                )}
+                                InputContext={InputContext}
+                              />
+                            ) : (
+                              <SelectPopover
+                                name="relationship_type"
+                                required
+                                grow
+                                title="Relationship Type"
+                                options={relationshipTypeOptions}
+                                isSearchable
+                                InputContext={InputContext}
+                              />
+                            )}
+                          </InputLine>
+                          <InputLine>
+                            <Input
+                              type="text"
+                              name="email"
+                              required
+                              grow
+                              title="E-mail"
+                              defaultValue={
+                                pageData.enrollmentemergencies.length > 0
+                                  ? pageData.enrollmentemergencies[0].email
+                                  : ""
+                              }
+                              InputContext={InputContext}
+                            />
+                            <PhoneNumberInput
+                              type="text"
+                              name="phone"
+                              required
+                              grow
+                              title="Phone Number"
+                              value={
+                                pageData.enrollmentemergencies.length > 0
+                                  ? pageData.enrollmentemergencies[0].phone.replaceAll(
+                                      " ",
+                                      ""
+                                    )
+                                  : ""
+                              }
+                              InputContext={InputContext}
+                            />
+                          </InputLine>
+                        </Scope>
+                      </InputLineGroup>
+                      <InputLineGroup
+                        title="enrollment"
+                        activeMenu={activeMenu === "enrollment"}
+                      >
+                        <Scope path={`enrollmentData`}>
+                          <InputLine title="Enrollment Information">
+                            <Input
+                              type="text"
+                              name="plan_months"
+                              required
+                              title="How many months do you plan to study?"
+                              defaultValue={pageData.plan_months}
+                              InputContext={InputContext}
+                            />
+                            <SelectPopover
+                              name="plan_schedule"
+                              required
+                              grow
+                              title="What is your plan schedule?"
+                              options={scheduleOptions}
+                              isSearchable
+                              defaultValue={scheduleOptions.find(
+                                (schedule) =>
+                                  schedule.value === pageData.plan_schedule
+                              )}
+                              InputContext={InputContext}
+                            />
+                            <DatePicker
+                              name="plan_date"
+                              required
+                              grow
+                              title="What date do you wish to begin classes (M)?"
+                              defaultValue={
+                                pageData.plan_date
+                                  ? parseISO(pageData.plan_date)
+                                  : null
+                              }
+                              placeholderText="MM/DD/YYYY"
+                              InputContext={InputContext}
+                            />
+                          </InputLine>
+                        </Scope>
+                      </InputLineGroup>
+                      <InputLineGroup
+                        title="Dependent Information"
+                        activeMenu={activeMenu === "dependents"}
+                      >
+                        {pageData.enrollmentdependents.length === 0 && (
+                          <InputLine title="Dependent Information">
+                            <p>No dependents.</p>
+                          </InputLine>
+                        )}
+                        {pageData.enrollmentdependents.map(
+                          (dependent, index) => {
+                            return (
+                              <div
+                                key={index}
+                                className="w-full flex flex-row justify-between items-start gap-4 pb-8"
+                              >
+                                <Scope path={`dependentsData[${index}]`}>
+                                  <div className="flex-1 flex flex-col justify-start items-start">
+                                    <InputLine title={`Dependent ${index + 1}`}>
+                                      <Input
+                                        type="hidden"
+                                        name="id"
+                                        defaultValue={dependent.id}
+                                        InputContext={InputContext}
+                                      />
+                                    </InputLine>
+                                    <InputLine>
+                                      <Input
+                                        type="text"
+                                        name="name"
+                                        required
+                                        grow
+                                        title="Full Name"
+                                        defaultValue={dependent.name}
+                                        InputContext={InputContext}
+                                      />
+                                    </InputLine>
+                                    <InputLine>
+                                      <SelectPopover
+                                        name="gender"
+                                        required
+                                        grow
+                                        title="Gender"
+                                        options={genderOptions}
+                                        isSearchable
+                                        defaultValue={genderOptions.find(
+                                          (gender) =>
+                                            gender.value === dependent.gender
+                                        )}
+                                        InputContext={InputContext}
+                                      />
+                                    </InputLine>
+                                    <InputLine>
+                                      <SelectPopover
+                                        name="relationship_type"
+                                        required
+                                        grow
+                                        title="Relationship Type"
+                                        options={
+                                          dependentRelationshipTypeOptions
+                                        }
+                                        isSearchable
+                                        defaultValue={dependentRelationshipTypeOptions.find(
+                                          (relationshipType) =>
+                                            relationshipType.value ===
+                                            dependent.relationship_type
+                                        )}
+                                        InputContext={InputContext}
+                                      />
+                                    </InputLine>
+                                    <InputLine>
+                                      <Input
+                                        type="text"
+                                        name="email"
+                                        required
+                                        grow
+                                        title="E-mail"
+                                        defaultValue={dependent.email}
+                                        InputContext={InputContext}
+                                      />
+                                    </InputLine>
+                                    <InputLine>
+                                      <PhoneNumberInput
+                                        type="text"
+                                        name="phone"
+                                        required
+                                        grow
+                                        title="Phone Number"
+                                        value={dependent.phone.replaceAll(
+                                          " ",
+                                          ""
+                                        )}
+                                        InputContext={InputContext}
+                                      />
+                                    </InputLine>
+                                  </div>
+                                </Scope>
+                                <div className="flex-1 max-w-4xl overflow-y-scroll h-[520px]">
+                                  <div className="flex flex-row items-center justify-center gap-2">
+                                    <InputLine title={`Documents`}>
+                                      {dependent.documents &&
+                                        dependent.documents.length > 0 &&
+                                        dependent.documents.map(
+                                          (depDoc, index) => (
+                                            <button
+                                              key={index}
+                                              type="button"
+                                              onClick={() =>
+                                                setOpenedDocumentIndex(index)
+                                              }
+                                              className={`bg-primary text-white
+                                               rounded-md py-4 px-8 my-2 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1`}
+                                            >
+                                              {depDoc.documents?.title}
+                                            </button>
+                                          )
+                                        )}
+                                    </InputLine>
+                                  </div>
+
+                                  {pageData.enrollmentdocuments &&
+                                    pageData.enrollmentdocuments.length > 0 &&
+                                    pageData.enrollmentdocuments.map(
+                                      (enrollmentdocument, index) => {
+                                        if (openedDocumentIndex === index) {
+                                          return (
+                                            <PDFViewer
+                                              key={index}
+                                              download={true}
+                                              file={{
+                                                url: enrollmentdocument.file
+                                                  ?.url,
+                                              }}
+                                              height={900}
+                                            />
+                                          );
+                                        }
+                                      }
+                                    )}
+                                </div>
+                              </div>
+                            );
+                          }
+                        )}
+                      </InputLineGroup>
+                      <InputLineGroup
+                        title="Affidavit of Support"
+                        activeMenu={activeMenu === "affidavit-of-support"}
+                      >
+                        {pageData.enrollmentsponsors &&
+                          pageData.enrollmentsponsors.map((sponsor, index) => {
+                            if (sponsor) {
+                              return (
+                                <Scope
+                                  key={index}
+                                  path={`sponsorsData[${index}]`}
+                                >
+                                  <InputLine title={`Sponsor ${index + 1}`}>
+                                    <Input
+                                      type="hidden"
+                                      name="id"
+                                      defaultValue={sponsor.id}
+                                      InputContext={InputContext}
+                                    />
+                                    <Input
+                                      type="text"
+                                      name="name"
+                                      required
+                                      grow
+                                      title="Full Name"
+                                      defaultValue={sponsor.name}
+                                      InputContext={InputContext}
+                                    />
+                                    <SelectPopover
+                                      name="relationship_type"
+                                      required
+                                      grow
+                                      title="Relationship Type"
+                                      options={sponsorRelationshipTypeOptions}
+                                      isSearchable
+                                      defaultValue={
+                                        sponsorRelationshipTypeOptions.find(
+                                          (relationshipType) =>
+                                            relationshipType.value ===
+                                            sponsor.relationship_type
+                                        ) ||
+                                        sponsorRelationshipTypeOptions[
+                                          sponsorRelationshipTypeOptions.length -
+                                            1
+                                        ]
+                                      }
+                                      InputContext={InputContext}
+                                    />
+                                  </InputLine>
+                                  <InputLine>
+                                    <Input
+                                      type="text"
+                                      name="email"
+                                      required
+                                      grow
+                                      title="E-mail"
+                                      defaultValue={sponsor.email}
+                                      InputContext={InputContext}
+                                    />
+                                    <PhoneNumberInput
+                                      type="text"
+                                      name="phone"
+                                      required
+                                      grow
+                                      title="Phone Number"
+                                      value={sponsor.phone.replaceAll(" ", "")}
+                                      InputContext={InputContext}
+                                    />
+                                  </InputLine>
+                                </Scope>
+                              );
+                            }
+                          })}
+                      </InputLineGroup>
+                      {pageData.i20form.status === "Confirmed" && (
+                        <InputLineGroup
+                          title="I-20"
+                          activeMenu={activeMenu === "i-20"}
+                        >
+                          <Scope path="new_program">
+                            <InputLine title="Submit I-20">
+                              <Input
+                                type="text"
+                                name="registration_number"
+                                required
+                                grow
+                                title="Registration Number"
+                                defaultValue={
+                                  pageData.students.registration_number
+                                }
+                                InputContext={InputContext}
+                              />
+                              <FileInput
+                                name="file_id"
+                                title="I-20"
+                                required
+                                grow
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="date"
+                                name="start_date"
+                                grow
+                                title="Program Start Date"
+                                InputContext={InputContext}
+                              />
+                              <Input
+                                type="date"
+                                name="end_date"
+                                grow
+                                title="Program End Date"
+                                InputContext={InputContext}
+                              />
+                            </InputLine>
+                          </Scope>
+                        </InputLineGroup>
+                      )}
                     </>
                   ) : (
                     <FormLoading />

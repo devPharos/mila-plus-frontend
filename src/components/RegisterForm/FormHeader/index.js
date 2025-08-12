@@ -1,12 +1,14 @@
 import { format } from "date-fns";
 import { CheckCheck, Loader2, Mail, Save, Scaling, X } from "lucide-react";
 import React, { useContext } from "react";
+import Icon from "~/components/Icon";
 
 // import { Container } from './styles';
 
 export default function FormHeader({
   loading = false,
   saveText = "Save changes",
+  saveIcon = "Save",
   outside = false,
   access = {
     view: false,
@@ -22,6 +24,7 @@ export default function FormHeader({
   createText = "Create",
   createIcon = <Save size={16} />,
   enableFullScreen = true,
+  otherButtons = null,
 }) {
   const { registryBy, registryAt, registryStatus } = registry;
   const {
@@ -108,6 +111,19 @@ export default function FormHeader({
                 </>
               </button>
             )}
+            {otherButtons &&
+              otherButtons.map((button, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={button.onClick}
+                  className={`text-md font-bold border border-dashed border-red-500 text-red-500 rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1`}
+                >
+                  <>
+                    <Icon name={button.icon} size={16} /> {button.text}
+                  </>
+                </button>
+              ))}
             {(outside || (access && access.edit)) && id !== "new" && (
               <button
                 type="submit"
@@ -117,7 +133,7 @@ export default function FormHeader({
               >
                 {!successfullyUpdated ? (
                   <>
-                    <Save size={16} /> {saveText}
+                    <Icon name={saveIcon} size={16} /> {saveText}
                   </>
                 ) : (
                   <>

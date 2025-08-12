@@ -49,6 +49,7 @@ import {
 import PricesSimulation from "~/components/PricesSimulation";
 import PhoneNumberInput from "~/components/RegisterForm/PhoneNumberInput";
 import FindGeneric from "~/components/Finds/FindGeneric";
+import I20Process from "./I20Process";
 
 export const InputContext = createContext({});
 
@@ -286,7 +287,7 @@ export default function PagePreview({
             enrollments: pageData.enrollments.push(data),
           });
           getPageData();
-          toast("Transfer Eligibility process has been started!", {
+          toast("The process has been started!", {
             autoClose: 1000,
           });
           setLoading(false);
@@ -296,6 +297,24 @@ export default function PagePreview({
       toast("Error!", { autoClose: 1000 });
       console.log(err);
     }
+  }
+
+  async function handleI20Process() {
+    api
+      .post(`/enrollments/start-i20-process`, {
+        enrollment_id: pageData.enrollments[0].id,
+      })
+      .then(({ data }) => {
+        toast("The process has been started!", {
+          autoClose: 1000,
+        });
+        setLoading(false);
+      })
+      .catch((err) => {
+        setLoading(false);
+        toast("Error!", { autoClose: 1000 });
+        console.log(err);
+      });
   }
 
   return (
@@ -416,6 +435,20 @@ export default function PagePreview({
                     <CircleX size={16} />
                   )}{" "}
                   Placement Test
+                </RegisterFormMenu>
+              )}
+              {id !== "new" && pageData?.enrollments?.length > 0 && (
+                <RegisterFormMenu
+                  setActiveMenu={setActiveMenu}
+                  activeMenu={activeMenu}
+                  name="i20-process"
+                >
+                  {!pageData?.enrollments[0]?.i20form ? (
+                    <CircleX size={16} />
+                  ) : (
+                    <CirclePlay size={16} />
+                  )}{" "}
+                  I20 Process
                 </RegisterFormMenu>
               )}
             </div>
@@ -1007,6 +1040,16 @@ export default function PagePreview({
                             enrollment={pageData.placementTest}
                             loading={loading}
                             handleStartProcess={handleStartProcess}
+                          />
+                        </InputLineGroup>
+                        <InputLineGroup
+                          title="I20 Process"
+                          activeMenu={activeMenu === "i20-process"}
+                        >
+                          <I20Process
+                            enrollment={pageData.i20Process}
+                            loading={loading}
+                            handleStartProcess={handleI20Process}
                           />
                         </InputLineGroup>
                       </>

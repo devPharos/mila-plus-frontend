@@ -12,32 +12,14 @@ export default function I20Pendings() {
   const defaultOrderBy = { column: "created_at", asc: false };
   const defaultGridHeader = [
     {
-      title: "Type",
+      title: "Student",
       name: "type",
       type: "text",
-      filter: true,
+      filter: false,
     },
     {
-      title: "Subject",
+      title: "Status",
       name: "subject",
-      type: "text",
-      filter: false,
-    },
-    {
-      title: "Delivered to",
-      name: "students",
-      type: "text",
-      filter: false,
-    },
-    {
-      title: "Sent on",
-      name: "created_at",
-      type: "text",
-      filter: false,
-    },
-    {
-      title: "Method",
-      name: "method",
       type: "text",
       filter: false,
     },
@@ -83,7 +65,7 @@ export default function I20Pendings() {
 
   async function loader() {
     setLoadingData(true);
-    const data = await getData("messages", {
+    const data = await getData("i20pendings", {
       limit,
       page,
       orderBy,
@@ -100,20 +82,13 @@ export default function I20Pendings() {
       return;
     }
     const gridDataValues = data.map(
-      (
-        { id, type, subject, students, canceled_at, created_at, method },
-        index
-      ) => {
+      ({ id, status, enrollments, canceled_at }, index) => {
+        const { students } = enrollments;
+        const { name, last_name } = students;
         const ret = {
           show: true,
-          id,
-          fields: [
-            type,
-            subject,
-            students.length + " students",
-            format(created_at, "yyyy-MM-dd @ HH:mm"),
-            method,
-          ],
+          id: enrollments.id,
+          fields: [name + " " + last_name, status],
           selectable: true,
           canceled: canceled_at,
           page: Math.ceil((index + 1) / limit),

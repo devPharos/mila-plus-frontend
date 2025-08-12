@@ -2,29 +2,16 @@ import { Edit, Loader2, Mail, PlayCircle } from "lucide-react";
 import React from "react";
 import { NavLink } from "react-router-dom";
 
-function PlacementTest({
+function I20Process({
   enrollment = null,
   student_id = null,
   setLoading = () => null,
   loading = false,
   handleStartProcess = null,
 }) {
-  const process = `Placement Test`;
-  const routine = `placement-test`;
+  const process = `I20`;
+  const routine = `i20-process`;
 
-  function handleSendMail() {
-    setLoading(true);
-    api
-      .post(`/enrollments/send-form-mail`, {
-        type: routine,
-        enrollment_id: enrollment.id,
-        student_id,
-      })
-      .then(({ data }) => {
-        setLoading(false);
-        toast("Form mail sent!", { autoClose: 1000 });
-      });
-  }
   if (!enrollment) {
     return (
       <div className="flex flex-1 w-full flex-col items-start justify-start text-center gap-4 px-4">
@@ -46,8 +33,7 @@ function PlacementTest({
             </button>
           )}
           <p className="text-xs text-gray-500 text-left px-2 border-t pt-4">
-            This action will send an email to the student with a link to
-            complete the {process} form.
+            This action will open all enrollment fields to be checked.
           </p>
         </div>
       </div>
@@ -85,4 +71,4 @@ function PlacementTest({
   );
 }
 
-export default PlacementTest;
+export default I20Process;

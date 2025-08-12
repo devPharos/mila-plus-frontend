@@ -228,8 +228,8 @@ function App() {
         },
         {
           alias: "i20-pendings",
-          path: "/DSO/I20 Pendings",
-          title: "I20 Pendings",
+          path: "/DSO/I-20 Pendings",
+          title: "I-20 Pendings",
           icon: "ListTodo",
         },
       ],

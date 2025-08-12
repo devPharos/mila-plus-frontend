@@ -86,7 +86,9 @@ export function getCurrentPage() {
   let currentModule = null;
   if (signed) {
     currentModule = pages.filter(
-      (module) => module.name.toUpperCase() === paths[0].toUpperCase()
+      (module) =>
+        module.name.replaceAll("%20", " ").toUpperCase() ===
+        paths[0].replaceAll("%20", " ").toUpperCase()
     )[0];
   } else {
     currentModule = pages[pages.length - 1];
@@ -95,20 +97,23 @@ export function getCurrentPage() {
   if (currentModule) {
     currentPage = currentModule?.children?.filter(
       (page) =>
-        page.path.toUpperCase() ===
-        "/" + paths[0].toUpperCase() + "/" + paths[1].toUpperCase()
+        page.path.replaceAll("%20", " ").toUpperCase() ===
+        "/" +
+          paths[0].replaceAll("%20", " ").toUpperCase() +
+          "/" +
+          paths[1].replaceAll("%20", " ").toUpperCase()
     )[0];
     if (currentPage?.children) {
       if (pathname.split("/").length === 4) {
         currentPage = currentPage?.children.filter(
           (page) =>
-            page.path.toUpperCase() ===
+            page.path.replaceAll("%20", " ").toUpperCase() ===
             "/" +
-              paths[0].toUpperCase() +
+              paths[0].replaceAll("%20", " ").toUpperCase() +
               "/" +
-              paths[1].toUpperCase() +
+              paths[1].replaceAll("%20", " ").toUpperCase() +
               "/" +
-              paths[2].toUpperCase()
+              paths[2].replaceAll("%20", " ").toUpperCase()
         )[0];
       }
     }

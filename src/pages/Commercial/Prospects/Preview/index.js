@@ -122,6 +122,7 @@ export default function PagePreview({
     if (prospectId !== "new") {
       try {
         const { data } = await api.get(`/prospects/${prospectId}`);
+        console.log(data);
         setPageData({
           ...data,
           searchFields: {
@@ -140,6 +141,7 @@ export default function PagePreview({
           placementTest: data.enrollments.find(
             (enrollment) => enrollment.application === "Placement Test"
           ),
+          i20Process: data.enrollments[0]?.i20form,
         });
         const {
           created_by,
@@ -308,6 +310,7 @@ export default function PagePreview({
         toast("The process has been started!", {
           autoClose: 1000,
         });
+        handleOpened(null);
         setLoading(false);
       })
       .catch((err) => {
@@ -448,7 +451,7 @@ export default function PagePreview({
                   ) : (
                     <CirclePlay size={16} />
                   )}{" "}
-                  I20 Process
+                  I-20 Process
                 </RegisterFormMenu>
               )}
             </div>
@@ -1043,7 +1046,7 @@ export default function PagePreview({
                           />
                         </InputLineGroup>
                         <InputLineGroup
-                          title="I20 Process"
+                          title="I-20 Process"
                           activeMenu={activeMenu === "i20-process"}
                         >
                           <I20Process

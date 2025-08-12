@@ -109,6 +109,7 @@ export default function I20Pendings() {
       FullGridContext={FullGridContext}
       PagePreview={PagePreview}
       pageAccess={pageAccess}
+      handleNew={false}
       defaultGridHeader={defaultGridHeader}
     />
   );

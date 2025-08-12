@@ -221,7 +221,7 @@ export default function Transfer({
                           </InputLine>
                         ) : (
                           <>
-                            {pageData.studentgroup && (
+                            {pageData?.studentgroup?.id && (
                               <FindGeneric
                                 route="studentgroups"
                                 title="Student Group From"
@@ -231,14 +231,22 @@ export default function Transfer({
                                 defaultValue={{
                                   id: pageData.studentgroup?.id,
                                   name: pageData.studentgroup?.name,
-                                  start_date: format(
-                                    parseISO(pageData.studentgroup?.start_date),
-                                    "MM/dd/yyyy"
-                                  ),
-                                  end_date: format(
-                                    parseISO(pageData.studentgroup?.end_date),
-                                    "MM/dd/yyyy"
-                                  ),
+                                  start_date: pageData.studentgroup?.start_date
+                                    ? format(
+                                        parseISO(
+                                          pageData.studentgroup?.start_date
+                                        ),
+                                        "MM/dd/yyyy"
+                                      )
+                                    : null,
+                                  end_date: pageData.studentgroup?.end_date
+                                    ? format(
+                                        parseISO(
+                                          pageData.studentgroup?.end_date
+                                        ),
+                                        "MM/dd/yyyy"
+                                      )
+                                    : null,
                                 }}
                                 fields={[
                                   {

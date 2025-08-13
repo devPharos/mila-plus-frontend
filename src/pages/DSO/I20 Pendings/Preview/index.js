@@ -655,7 +655,10 @@ export default function PagePreview({
                                             : "bg-secondary text-primary"
                                         } rounded-md py-4 px-8 my-2 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1`}
                                       >
-                                        {enrollmentdocument?.documents?.title}
+                                        {
+                                          enrollmentdocument?.documents
+                                            ?.short_name
+                                        }
                                       </button>
                                     )
                                   )}
@@ -927,7 +930,7 @@ export default function PagePreview({
                                               className={`bg-primary text-white
                                                rounded-md py-4 px-8 my-2 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1`}
                                             >
-                                              {depDoc.documents?.title}
+                                              {depDoc.documents?.short_name}
                                             </button>
                                           )
                                         )}

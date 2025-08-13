@@ -6,16 +6,11 @@ export default function FullGridContext({ children }) {
   function handleFilters({ title = "", value = "" }) {
     const [activeFilters, setActiveFilters] = useState([]);
     const [search, setSearch] = useState("");
-    const [gridDetails, setGridDetails] = useState({
-      totalRows: 0,
-      pages: 1,
-    });
 
     if (title === "search") {
       clearTimeout(delayDebounceFn);
       delayDebounceFn = setTimeout(() => {
         setActiveFilters([]);
-        // setSearch({ route: title, value });
         setSearch(value);
       }, 700);
 

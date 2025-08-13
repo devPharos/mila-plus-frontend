@@ -562,6 +562,15 @@ export default function PagePreview({
                               defaultValue={pageData.title}
                               InputContext={InputContext}
                             />
+                            <Input
+                              type="text"
+                              name="short_name"
+                              required
+                              grow
+                              title="Short Name"
+                              defaultValue={pageData.short_name}
+                              InputContext={InputContext}
+                            />
                             <SelectPopover
                               name="required"
                               required

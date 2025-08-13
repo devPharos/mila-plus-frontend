@@ -347,7 +347,7 @@ const router = createBrowserRouter([
             element: <DSODashboard />,
           },
           {
-            path: "/DSO/I20 Pendings",
+            path: "/DSO/I-20 Pendings",
             element: <I20Pendings />,
           },
         ],

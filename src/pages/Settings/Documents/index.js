@@ -33,6 +33,12 @@ export default function Documents() {
       type: "text",
       filter: false,
     },
+    {
+      title: "Short Name",
+      name: "short_name",
+      type: "text",
+      filter: false,
+    },
   ];
 
   const {
@@ -91,11 +97,14 @@ export default function Documents() {
       return;
     }
     const gridDataValues = data.map(
-      ({ id, origin, type, subtype, title, canceled_at }, index) => {
+      (
+        { id, origin, type, subtype, title, short_name, canceled_at },
+        index
+      ) => {
         const ret = {
           show: true,
           id,
-          fields: [origin, type, subtype, title],
+          fields: [origin, type, subtype, title, short_name],
           canceled: canceled_at,
           page: Math.ceil((index + 1) / limit),
         };

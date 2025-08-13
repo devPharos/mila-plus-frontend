@@ -1,8 +1,6 @@
-import { Edit, Loader2, Mail, Play, PlayCircle } from "lucide-react";
+import { Edit, Loader2, Mail, PlayCircle } from "lucide-react";
 import React from "react";
 import { NavLink } from "react-router-dom";
-
-// import { Container } from './styles';
 
 function PlacementTest({
   enrollment = null,

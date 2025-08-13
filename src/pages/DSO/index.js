@@ -34,7 +34,7 @@ export default function DSO() {
   const paths = pathname.split("/");
   const routeName = capitalizeFirstLetter(paths[1]);
   const finalRouteName = capitalizeFirstLetter(
-    paths.length > 2 ? paths[2] : "Dashboard"
+    paths.length > 2 ? paths[2] : "I-20 Pendings"
   );
 
   function handleFilters({ title = "", value = "" }) {

@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import { FullGridContext } from "..";
 import { getData } from "~/functions/gridFunctions";
 import PageContainer from "~/components/PageContainer";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { useLocation } from "react-router-dom";
 
 export default function I20Pendings() {
@@ -12,32 +12,38 @@ export default function I20Pendings() {
   const defaultOrderBy = { column: "created_at", asc: false };
   const defaultGridHeader = [
     {
-      title: "Type",
+      title: "Full Name",
+      name: "type",
+      type: "text",
+      filter: false,
+    },
+    {
+      title: "Registration Number",
+      name: "type",
+      type: "text",
+      filter: false,
+    },
+    {
+      title: "Category",
       name: "type",
       type: "text",
       filter: true,
     },
     {
-      title: "Subject",
+      title: "Application",
+      name: "type",
+      type: "text",
+      filter: true,
+    },
+    {
+      title: "Status",
       name: "subject",
       type: "text",
-      filter: false,
+      filter: true,
     },
     {
-      title: "Delivered to",
-      name: "students",
-      type: "text",
-      filter: false,
-    },
-    {
-      title: "Sent on",
-      name: "created_at",
-      type: "text",
-      filter: false,
-    },
-    {
-      title: "Method",
-      name: "method",
+      title: "Enrollment Date",
+      name: "type",
       type: "text",
       filter: false,
     },
@@ -83,7 +89,7 @@ export default function I20Pendings() {
 
   async function loader() {
     setLoadingData(true);
-    const data = await getData("messages", {
+    const data = await getData("i20pendings", {
       limit,
       page,
       orderBy,
@@ -100,19 +106,19 @@ export default function I20Pendings() {
       return;
     }
     const gridDataValues = data.map(
-      (
-        { id, type, subject, students, canceled_at, created_at, method },
-        index
-      ) => {
+      ({ status, enrollments, solicitation_date, canceled_at }, index) => {
+        const { students, application } = enrollments;
+        const { name, last_name, category, registration_number } = students;
         const ret = {
           show: true,
-          id,
+          id: enrollments.id,
           fields: [
-            type,
-            subject,
-            students.length + " students",
-            format(created_at, "yyyy-MM-dd @ HH:mm"),
-            method,
+            name + " " + last_name,
+            registration_number,
+            category,
+            application,
+            status,
+            format(parseISO(solicitation_date), "MM/dd/yyyy"),
           ],
           selectable: true,
           canceled: canceled_at,
@@ -134,6 +140,7 @@ export default function I20Pendings() {
       FullGridContext={FullGridContext}
       PagePreview={PagePreview}
       pageAccess={pageAccess}
+      handleNew={false}
       defaultGridHeader={defaultGridHeader}
     />
   );

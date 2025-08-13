@@ -85,20 +85,35 @@ export function getCurrentPage() {
   const paths = pathname.substring(1).split("/");
   let currentModule = null;
   if (signed) {
-    currentModule = pages.filter((module) => module.name === paths[0])[0];
+    currentModule = pages.filter(
+      (module) =>
+        module.name.replaceAll("%20", " ").toUpperCase() ===
+        paths[0].replaceAll("%20", " ").toUpperCase()
+    )[0];
   } else {
     currentModule = pages[pages.length - 1];
   }
   let currentPage = null;
   if (currentModule) {
-    currentPage = currentModule.children.filter(
-      (page) => page.path === "/" + paths[0] + "/" + paths[1]
+    currentPage = currentModule?.children?.filter(
+      (page) =>
+        page.path.replaceAll("%20", " ").toUpperCase() ===
+        "/" +
+          paths[0].replaceAll("%20", " ").toUpperCase() +
+          "/" +
+          paths[1].replaceAll("%20", " ").toUpperCase()
     )[0];
-    if (currentPage.children) {
+    if (currentPage?.children) {
       if (pathname.split("/").length === 4) {
-        currentPage = currentPage.children.filter(
+        currentPage = currentPage?.children.filter(
           (page) =>
-            page.path === "/" + paths[0] + "/" + paths[1] + "/" + paths[2]
+            page.path.replaceAll("%20", " ").toUpperCase() ===
+            "/" +
+              paths[0].replaceAll("%20", " ").toUpperCase() +
+              "/" +
+              paths[1].replaceAll("%20", " ").toUpperCase() +
+              "/" +
+              paths[2].replaceAll("%20", " ").toUpperCase()
         )[0];
       }
     }

@@ -50,7 +50,9 @@ export default function Filters({
 
   function PopoverFilter(index, options) {
     const { title } = gridHeader[index];
-    const active = activeFilters.filter((el) => el.title === title);
+    const active = activeFilters.filter(
+      (el) => el.title.toUpperCase() === title.toUpperCase()
+    );
     return (
       <div className="absolute top-12 right-2 flex flex-col bg-secondary border border-gray-300 rounded-xl gap-1 shadow-xl p-2 text-xs *:border-b">
         {options
@@ -267,7 +269,7 @@ export default function Filters({
           gridHeader.map((head, index) => {
             if (head.filter) {
               const active = activeFilters.filter(
-                (el) => el.title === head.title
+                (el) => el.title.toUpperCase() === head.title.toUpperCase()
               );
               return (
                 <Popover

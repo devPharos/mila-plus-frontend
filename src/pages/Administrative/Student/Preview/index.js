@@ -196,7 +196,7 @@ export default function PagePreview({
       });
       return;
     }
-    if (data.new_program.file_id) {
+    if (data.new_program && data.new_program.file_id) {
       const allPromises = organizeMultiAndSingleFiles(
         [data.new_program],
         "StudentPrograms"

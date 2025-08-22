@@ -93,70 +93,68 @@ export default function SponsorOutside({
   const countriesOptions = countries_list.map((country) => {
     return { value: country, label: country };
   });
+  async function getDocuments(type = "") {
+    const { data } = await api.get(
+      `/documentsByOrigin?origin=Enrollment&type=${type}&subtype=Sponsor`
+    );
+    return data;
+  }
+  async function getPageData() {
+    if (id !== "new") {
+      try {
+        let documents = [];
+        const { data } = await api.get(`/outside/sponsors/${id}`);
+        const { data: filialData } = await api.get(
+          `/filials/${data.filial_id}`
+        );
 
-  useEffect(() => {
-    async function getDocuments(type = "") {
-      const { data } = await api.get(
-        `/documentsByOrigin?origin=Enrollment&type=${type}&subtype=Sponsor`
-      );
-      return data;
-    }
-    async function getPageData() {
-      if (id !== "new") {
-        try {
-          let documents = [];
-          const { data } = await api.get(`/outside/sponsors/${id}`);
-          const { data: filialData } = await api.get(
-            `/filials/${data.filial_id}`
-          );
+        documents = await getDocuments(data.students.processsubstatuses.name);
 
-          documents = await getDocuments(data.students.processsubstatuses.name);
-
-          const {
-            created_by,
-            created_at,
-            updated_by,
-            updated_at,
-            canceled_by,
-            canceled_at,
-          } = data;
-          const registries = await getRegistries({
-            created_by,
-            created_at,
-            updated_by,
-            updated_at,
-            canceled_by,
-            canceled_at,
-          });
-          setRegistry(registries);
-          setPageData({
-            ...data,
-            documents,
-            contracts: filialData.filialdocuments,
-            loaded: true,
-            activeMenu: searchparams.has("activeMenu")
-              ? searchparams.get("activeMenu")
-              : data.form_step === "transfer-agent"
-              ? "sponsor-signature"
-              : data.form_step,
-            lastActiveMenu: menus.find((menu) => menu.name === data.form_step),
-            sponsor_signature: data.enrollmentsponsors.find(
-              (sponsor) => sponsor.id === id
-            ).signature
-              ? true
-              : false,
-            sponsor: data.enrollmentsponsors.find(
-              (sponsor) => sponsor.id === id
-            ),
-          });
-        } catch (err) {
-          if (err.response && err.response.data && err.response.data.error) {
-            toast(err.response.data.error, { type: "error", autoClose: 3000 });
-          }
-          console.log(err);
+        const {
+          created_by,
+          created_at,
+          updated_by,
+          updated_at,
+          canceled_by,
+          canceled_at,
+        } = data;
+        const registries = await getRegistries({
+          created_by,
+          created_at,
+          updated_by,
+          updated_at,
+          canceled_by,
+          canceled_at,
+        });
+        setRegistry(registries);
+        setPageData({
+          ...data,
+          documents,
+          contracts: filialData.filialdocuments,
+          loaded: true,
+          activeMenu: searchparams.has("activeMenu")
+            ? searchparams.get("activeMenu")
+            : data.form_step === "transfer-agent"
+            ? "sponsor-signature"
+            : data.form_step,
+          lastActiveMenu: menus.find((menu) => menu.name === data.form_step),
+          sponsor_signature: data.enrollmentsponsors.find(
+            (sponsor) => sponsor.id === id
+          ).signature
+            ? true
+            : false,
+          sponsor: data.enrollmentsponsors.find((sponsor) => sponsor.id === id),
+        });
+      } catch (err) {
+        if (err.response && err.response.data && err.response.data.error) {
+          toast(err.response.data.error, { type: "error", autoClose: 3000 });
         }
+        console.log(err);
       }
     }
+  }
+
+  useEffect(() => {
     if (!pageData.loaded) {
       getPageData();
     }
@@ -243,7 +241,7 @@ export default function SponsorOutside({
                 return;
               }
               if (file.name) {
-                api.post(`/enrollmentdocuments`, {
+                await api.post(`/enrollmentdocuments`, {
                   enrollment_id: pageData.id,
                   files: file,
                 });
@@ -282,7 +280,7 @@ export default function SponsorOutside({
           }
           // return
           delete data.documents;
-          api
+          await api
             .put(`/outside/sponsors/${id}`, {
               ...data,
               activeMenu: pageData.activeMenu,
@@ -290,16 +288,16 @@ export default function SponsorOutside({
               birthday: birthday ? format(birthday, "yyyyMMdd") : null,
             })
             .then(async (response) => {
-              const sponsor = pageData.enrollmentsponsors.findIndex(
-                (sponsor) => sponsor.id === id
-              );
               setPageData({
                 ...pageData,
                 activeMenu: "finished",
+                loaded: false,
               });
+              setTimeout(() => {
+                getPageData();
+              }, 1000);
               setSuccessfullyUpdated(true);
               toast("Saved!", { autoClose: 1000 });
-              // setSent(true);
               setLoading(false);
             })
             .catch((err) => {
@@ -319,7 +317,7 @@ export default function SponsorOutside({
             birthday: birthday ? format(birthday, "yyyyMMdd") : null,
           })
           .then(async (response) => {
-            setPageData({ ...pageData, activeMenu: "finished" });
+            setPageData({ ...pageData, activeMenu: "finished", loaded: false });
             setSuccessfullyUpdated(true);
             toast("Saved!", { autoClose: 1000 });
             // setSent(true);
@@ -485,11 +483,11 @@ export default function SponsorOutside({
                               name="birthday"
                               required
                               grow
-                              readOnly={!profile && pageData.sponsor_signature}
+                              readOnly={!profile && pageData?.sponsor_signature}
                               title="Birth Date"
                               defaultValue={
-                                pageData.sponsor.birthday
-                                  ? parseISO(pageData.sponsor.birthday)
+                                pageData?.sponsor.birthday
+                                  ? parseISO(pageData?.sponsor.birthday)
                                   : null
                               }
                               placeholderText="MM/DD/YYYY"
@@ -796,20 +794,17 @@ export default function SponsorOutside({
                                                             }
                                                           </div>
                                                         </a>
-                                                        {!pageData.sponsor_signature && (
-                                                          <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                              handleDeleteDocument(
-                                                                enrollmentdocument.id
-                                                              )
-                                                            }
-                                                            className="text-xs text-red-700 cursor-pointer flex flex-row items-center justify-start gap-1 mt-1 px-2 py-1 rounded hover:bg-red-100"
-                                                          >
-                                                            <X size={12} />{" "}
-                                                            Delete
-                                                          </button>
-                                                        )}
+                                                        <button
+                                                          type="button"
+                                                          onClick={() =>
+                                                            handleDeleteDocument(
+                                                              enrollmentdocument.id
+                                                            )
+                                                          }
+                                                          className="text-xs text-red-700 cursor-pointer flex flex-row items-center justify-start gap-1 mt-1 px-2 py-1 rounded hover:bg-red-100"
+                                                        >
+                                                          <X size={12} /> Delete
+                                                        </button>
                                                       </div>
                                                     </>
                                                   );

@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, createContext, useContext } from 'react';
 import { Form } from "@unform/web";
-import { ClipboardPlus, TreePalm, Trash, Edit } from "lucide-react";
+import { ClipboardPlus, TreePalm, Trash, Edit, File } from "lucide-react";
 import { format, parseISO } from 'date-fns';
 import { toast } from "react-toastify";
 import { getDownloadURL, ref } from "firebase/storage";
@@ -64,9 +64,9 @@ export default function MedicalCertificateVacation({
     async function loadData() {
       const { data } = await api.get(`/students/${selected[0].id}`);
 
-      const { last_name, name } = data
+      const { last_name, name, registration_number } = data
 
-      setPageData(state => ({ ...state, name, last_name, loaded: true }));
+      setPageData(state => ({ ...state, name, last_name, registration_number, loaded: true }));
     }
     loadData();
   }, []);
@@ -132,35 +132,6 @@ export default function MedicalCertificateVacation({
     })
   }
 
-  async function handlerUpdateFormSubmit(data) {
-    console.log(data)
-
-  }
-
-  async function handlerDownload(files) {
-    const zip = new JSZip();
-
-    for (const path of files) {
-      const fileRef = ref(storage, path.url);
-      const url = await getDownloadURL(fileRef);
-
-      const response = await fetch(url);
-      const blob = await response.blob();
-
-      const filename = path.url.split('/').pop();
-      zip.file(filename, blob);
-    }
-
-    // Gerar o zip
-    const zipBlob = await zip.generateAsync({ type: 'blob' });
-
-    // Criar link para download
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(zipBlob);
-    link.download = 'files.zip';
-    link.click();
-  }
-
   async function handleRemove(valueForDelete) {
     alertBox({
       title: "Attention!",
@@ -190,28 +161,6 @@ export default function MedicalCertificateVacation({
         },
       ],
     });
-  }
-
-  async function handleEdit(valueForDetails) {
-    // setPageData(state => ({
-    //   ...state,
-    //   loaded: false
-    // }));
-
-    try {
-      const { data } = await api.get(`students/${activeMenu.replace(/\s+/g, "_")}/details/${valueForDetails}`);
-
-
-      setPageData(state => ({
-        ...state,
-        date_from: format(parseISO(data.date_from), "yyyy-MM-dd"),
-        date_to: format(parseISO(data.date_to), "yyyy-MM-dd"),
-        note: data.note,
-        loaded: true,
-      }));
-    } catch(err) {
-      toast(err.response.data.error, { type: "error", autoClose: 3000 });
-    }
   }
 
   return (
@@ -255,6 +204,7 @@ export default function MedicalCertificateVacation({
                   access={access}
                   title={
                     activeMenu+" - " +
+                    pageData.registration_number + " - " +
                     pageData.name +
                     " " +
                     pageData.last_name
@@ -311,7 +261,7 @@ export default function MedicalCertificateVacation({
               {pageData.data.length > 0 && (
                 <div className="relative flex flex-1 justify-start w-full overflow-y-scroll bg-secondary-50 rounded-xl" style={{ height: 'min-content' }}>
                   <table className="w-full table-auto text-xs text-left whitespace-nowrap" style={{ height: 'min-content' }}>
-                    <thead className="sticky top-0 bg-secondary-50 z-10">
+                    <thead className="sticky top-0 bg-secondary-50">
                       <tr>
                         {/* <th className="p-2 min-w-[120px]" style={{ width: '50px' }}></th> */}
                         <th className="p-2 min-w-[120px]" style={{ width: '50px' }}></th>
@@ -333,7 +283,7 @@ export default function MedicalCertificateVacation({
                               <Edit size={16} />
                             </button>
                           </td> */}
-                          <td className="px-2 py-2 bg-white" style={{ width: '50px' }}>
+                          <td className="px-2 py-2 bg-transparent" style={{ width: '50px' }}>
                             <button
                               type="button"
                               onClick={() => handleRemove(res.id)}
@@ -342,13 +292,13 @@ export default function MedicalCertificateVacation({
                               <Trash size={16} />
                             </button>
                           </td>
-                          <td className="px-2 py-2 bg-white" style={{ width: '120px' }}>{format(parseISO(res.date_from), "MM/dd/yyyy")}</td>
-                          <td className="px-2 py-2 bg-white" style={{ width: '120px' }}>{format(parseISO(res.date_to), "MM/dd/yyyy")}</td>
-                          <td className="px-2 py-2 bg-white">{res.note}</td>
-                          <td className="pl-2 py-2 bg-white flex flex-wrap gap-2 h-full">
+                          <td className="px-2 py-2 bg-transparent" style={{ width: '120px' }}>{format(parseISO(res.date_from), "MM/dd/yyyy")}</td>
+                          <td className="px-2 py-2 bg-transparent" style={{ width: '120px' }}>{format(parseISO(res.date_to), "MM/dd/yyyy")}</td>
+                          <td className="px-2 py-2 bg-transparent">{res.note}</td>
+                          <td className="pl-2 py-2 bg-transparent flex flex-wrap gap-2 h-full">
                             {res.files.length > 0 && res.files.map((data, i) => (
-                              <a href={`${data.url}`} target='_blank'>
-                                File {i + 1}
+                              <a href={`${data.url}`} target='_blank' className='flex flex-row items-center gap-2 bg-white border rounded p-1'>
+                                <File size={16} /> File {i + 1}
                               </a>
                             ))}
                           </td>

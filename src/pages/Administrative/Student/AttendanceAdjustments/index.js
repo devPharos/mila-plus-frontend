@@ -131,6 +131,8 @@ export default function AttendanceAdjustments({
                         access={access}
                         title={
                           "Attendance Adjustments - " +
+                          pageData.student?.registration_number +
+                          " - " +
                           pageData.student?.name +
                           " " +
                           pageData.student?.last_name
@@ -282,6 +284,9 @@ export default function AttendanceAdjustments({
                                               "Present",
                                               "Absent",
                                             ]}
+                                            readOnly={
+                                              medical_excuse_id || vacation_id
+                                            }
                                             InputContext={InputContext}
                                             defaultValue={
                                               !first_check || medical_excuse_id
@@ -298,6 +303,9 @@ export default function AttendanceAdjustments({
                                               "Present",
                                               "Absent",
                                             ]}
+                                            readOnly={
+                                              medical_excuse_id || vacation_id
+                                            }
                                             InputContext={InputContext}
                                             defaultValue={
                                               !second_check || medical_excuse_id

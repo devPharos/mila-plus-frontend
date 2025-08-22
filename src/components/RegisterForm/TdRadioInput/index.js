@@ -46,7 +46,6 @@ const TdRadioInput = ({
   const { generalForm, setSuccessfullyUpdated } = useContext(InputContext);
 
   function handleChange(e, inputRef) {
-    console.log(e.currentTarget.value);
     setSuccessfullyUpdated(false);
     setCheckedValue(e.target.value);
     inputRef.current.value = e.target.value;

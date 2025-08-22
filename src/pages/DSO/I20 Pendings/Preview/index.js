@@ -636,7 +636,7 @@ export default function PagePreview({
                             </Scope>
                           </div>
 
-                          <div className="flex-1 max-w-4xl overflow-y-scroll h-[520px]">
+                          <div className="flex-1 max-w-4xl h-[520px]">
                             <div className="flex flex-row items-center justify-center gap-2">
                               <InputLine title={`Documents`}>
                                 {pageData.enrollmentdocuments &&
@@ -677,14 +677,16 @@ export default function PagePreview({
                                 .map((enrollmentdocument, index) => {
                                   if (openedDocumentIndex === index) {
                                     return (
-                                      <PDFViewer
-                                        key={index}
-                                        download={true}
-                                        file={{
-                                          url: enrollmentdocument.file?.url,
-                                        }}
-                                        height={900}
-                                      />
+                                      <div className="overflow-y-scroll h-[420px]">
+                                        <PDFViewer
+                                          key={index}
+                                          download={true}
+                                          file={{
+                                            url: enrollmentdocument.file?.url,
+                                          }}
+                                          height={900}
+                                        />
+                                      </div>
                                     );
                                   }
                                 })}
@@ -919,7 +921,7 @@ export default function PagePreview({
                                     </InputLine>
                                   </div>
                                 </Scope>
-                                <div className="flex-1 max-w-4xl overflow-y-scroll h-[520px]">
+                                <div className="flex-1 max-w-4xl h-[520px]">
                                   <div className="flex flex-row items-center justify-center gap-2">
                                     <InputLine title={`Documents`}>
                                       {dependent.documents &&
@@ -948,15 +950,17 @@ export default function PagePreview({
                                       (enrollmentdocument, index) => {
                                         if (openedDocumentIndex === index) {
                                           return (
-                                            <PDFViewer
-                                              key={index}
-                                              download={true}
-                                              file={{
-                                                url: enrollmentdocument.file
-                                                  ?.url,
-                                              }}
-                                              height={900}
-                                            />
+                                            <div className="overflow-y-scroll h-[420px]">
+                                              <PDFViewer
+                                                key={index}
+                                                download={true}
+                                                file={{
+                                                  url: enrollmentdocument.file
+                                                    ?.url,
+                                                }}
+                                                height={900}
+                                              />
+                                            </div>
                                           );
                                         }
                                       }
@@ -1046,7 +1050,7 @@ export default function PagePreview({
                                     </Scope>
                                   </div>
 
-                                  <div className="flex-1 max-w-4xl overflow-y-scroll h-[520px]">
+                                  <div className="flex-1 max-w-4xl h-[520px]">
                                     <div className="flex flex-row items-center justify-center gap-2">
                                       <InputLine title={`Documents`}>
                                         {pageData.enrollmentdocuments &&
@@ -1095,15 +1099,17 @@ export default function PagePreview({
                                         .map((enrollmentdocument, index) => {
                                           if (openedDocumentIndex === index) {
                                             return (
-                                              <PDFViewer
-                                                key={index}
-                                                download={true}
-                                                file={{
-                                                  url: enrollmentdocument.file
-                                                    ?.url,
-                                                }}
-                                                height={900}
-                                              />
+                                              <div className="overflow-y-scroll h-[420px]">
+                                                <PDFViewer
+                                                  key={index}
+                                                  download={true}
+                                                  file={{
+                                                    url: enrollmentdocument.file
+                                                      ?.url,
+                                                  }}
+                                                  height={900}
+                                                />
+                                              </div>
                                             );
                                           }
                                         })}

@@ -636,13 +636,17 @@ export default function PagePreview({
                             </Scope>
                           </div>
 
-                          <div className="flex-1 max-w-4xl overflow-y-scroll h-[520px]">
+                          <div className="flex-1 max-w-4xl h-[520px]">
                             <div className="flex flex-row items-center justify-center gap-2">
                               <InputLine title={`Documents`}>
                                 {pageData.enrollmentdocuments &&
                                   pageData.enrollmentdocuments.length > 0 &&
-                                  pageData.enrollmentdocuments.map(
-                                    (enrollmentdocument, index) => (
+                                  pageData.enrollmentdocuments
+                                    .filter(
+                                      (doc) =>
+                                        doc.documents?.subtype === "Student"
+                                    )
+                                    .map((enrollmentdocument, index) => (
                                       <button
                                         key={index}
                                         type="button"
@@ -660,29 +664,32 @@ export default function PagePreview({
                                             ?.short_name
                                         }
                                       </button>
-                                    )
-                                  )}
+                                    ))}
                               </InputLine>
                             </div>
 
                             {pageData.enrollmentdocuments &&
                               pageData.enrollmentdocuments.length > 0 &&
-                              pageData.enrollmentdocuments.map(
-                                (enrollmentdocument, index) => {
+                              pageData.enrollmentdocuments
+                                .filter(
+                                  (doc) => doc.documents?.subtype === "Student"
+                                )
+                                .map((enrollmentdocument, index) => {
                                   if (openedDocumentIndex === index) {
                                     return (
-                                      <PDFViewer
-                                        key={index}
-                                        download={true}
-                                        file={{
-                                          url: enrollmentdocument.file?.url,
-                                        }}
-                                        height={900}
-                                      />
+                                      <div className="overflow-y-scroll h-[420px]">
+                                        <PDFViewer
+                                          key={index}
+                                          download={true}
+                                          file={{
+                                            url: enrollmentdocument.file?.url,
+                                          }}
+                                          height={900}
+                                        />
+                                      </div>
                                     );
                                   }
-                                }
-                              )}
+                                })}
                           </div>
                         </div>
                       </InputLineGroup>
@@ -914,7 +921,7 @@ export default function PagePreview({
                                     </InputLine>
                                   </div>
                                 </Scope>
-                                <div className="flex-1 max-w-4xl overflow-y-scroll h-[520px]">
+                                <div className="flex-1 max-w-4xl h-[520px]">
                                   <div className="flex flex-row items-center justify-center gap-2">
                                     <InputLine title={`Documents`}>
                                       {dependent.documents &&
@@ -943,15 +950,17 @@ export default function PagePreview({
                                       (enrollmentdocument, index) => {
                                         if (openedDocumentIndex === index) {
                                           return (
-                                            <PDFViewer
-                                              key={index}
-                                              download={true}
-                                              file={{
-                                                url: enrollmentdocument.file
-                                                  ?.url,
-                                              }}
-                                              height={900}
-                                            />
+                                            <div className="overflow-y-scroll h-[420px]">
+                                              <PDFViewer
+                                                key={index}
+                                                download={true}
+                                                file={{
+                                                  url: enrollmentdocument.file
+                                                    ?.url,
+                                                }}
+                                                height={900}
+                                              />
+                                            </div>
                                           );
                                         }
                                       }
@@ -970,68 +979,142 @@ export default function PagePreview({
                           pageData.enrollmentsponsors.map((sponsor, index) => {
                             if (sponsor) {
                               return (
-                                <Scope
-                                  key={index}
-                                  path={`sponsorsData[${index}]`}
-                                >
-                                  <InputLine title={`Sponsor ${index + 1}`}>
-                                    <Input
-                                      type="hidden"
-                                      name="id"
-                                      defaultValue={sponsor.id}
-                                      InputContext={InputContext}
-                                    />
-                                    <Input
-                                      type="text"
-                                      name="name"
-                                      required
-                                      grow
-                                      title="Full Name"
-                                      defaultValue={sponsor.name}
-                                      InputContext={InputContext}
-                                    />
-                                    <SelectPopover
-                                      name="relationship_type"
-                                      required
-                                      grow
-                                      title="Relationship Type"
-                                      options={sponsorRelationshipTypeOptions}
-                                      isSearchable
-                                      defaultValue={
-                                        sponsorRelationshipTypeOptions.find(
-                                          (relationshipType) =>
-                                            relationshipType.value ===
-                                            sponsor.relationship_type
-                                        ) ||
-                                        sponsorRelationshipTypeOptions[
-                                          sponsorRelationshipTypeOptions.length -
-                                            1
-                                        ]
-                                      }
-                                      InputContext={InputContext}
-                                    />
-                                  </InputLine>
-                                  <InputLine>
-                                    <Input
-                                      type="text"
-                                      name="email"
-                                      required
-                                      grow
-                                      title="E-mail"
-                                      defaultValue={sponsor.email}
-                                      InputContext={InputContext}
-                                    />
-                                    <PhoneNumberInput
-                                      type="text"
-                                      name="phone"
-                                      required
-                                      grow
-                                      title="Phone Number"
-                                      value={sponsor.phone.replaceAll(" ", "")}
-                                      InputContext={InputContext}
-                                    />
-                                  </InputLine>
-                                </Scope>
+                                <div className="w-full flex flex-row justify-between items-start gap-4">
+                                  <div className="flex-1 flex flex-col justify-start items-start overflow-y-scroll h-[520px]">
+                                    <Scope
+                                      key={index}
+                                      path={`sponsorsData[${index}]`}
+                                    >
+                                      <InputLine title={`Sponsor ${index + 1}`}>
+                                        <Input
+                                          type="hidden"
+                                          name="id"
+                                          defaultValue={sponsor.id}
+                                          InputContext={InputContext}
+                                        />
+                                        <Input
+                                          type="text"
+                                          name="name"
+                                          required
+                                          grow
+                                          title="Full Name"
+                                          defaultValue={sponsor.name}
+                                          InputContext={InputContext}
+                                        />
+                                        <SelectPopover
+                                          name="relationship_type"
+                                          required
+                                          grow
+                                          title="Relationship Type"
+                                          options={
+                                            sponsorRelationshipTypeOptions
+                                          }
+                                          isSearchable
+                                          defaultValue={
+                                            sponsorRelationshipTypeOptions.find(
+                                              (relationshipType) =>
+                                                relationshipType.value ===
+                                                sponsor.relationship_type
+                                            ) ||
+                                            sponsorRelationshipTypeOptions[
+                                              sponsorRelationshipTypeOptions.length -
+                                                1
+                                            ]
+                                          }
+                                          InputContext={InputContext}
+                                        />
+                                      </InputLine>
+                                      <InputLine>
+                                        <Input
+                                          type="text"
+                                          name="email"
+                                          required
+                                          grow
+                                          title="E-mail"
+                                          defaultValue={sponsor.email}
+                                          InputContext={InputContext}
+                                        />
+                                        <PhoneNumberInput
+                                          type="text"
+                                          name="phone"
+                                          required
+                                          grow
+                                          title="Phone Number"
+                                          value={sponsor.phone.replaceAll(
+                                            " ",
+                                            ""
+                                          )}
+                                          InputContext={InputContext}
+                                        />
+                                      </InputLine>
+                                    </Scope>
+                                  </div>
+
+                                  <div className="flex-1 max-w-4xl h-[520px]">
+                                    <div className="flex flex-row items-center justify-center gap-2">
+                                      <InputLine title={`Documents`}>
+                                        {pageData.enrollmentdocuments &&
+                                          pageData.enrollmentdocuments.length >
+                                            0 &&
+                                          pageData.enrollmentdocuments
+                                            .filter(
+                                              (doc) =>
+                                                doc.documents?.subtype ===
+                                                "Sponsor"
+                                            )
+                                            .map(
+                                              (enrollmentdocument, index) => (
+                                                <button
+                                                  key={index}
+                                                  type="button"
+                                                  onClick={() =>
+                                                    setOpenedDocumentIndex(
+                                                      index
+                                                    )
+                                                  }
+                                                  className={`${
+                                                    openedDocumentIndex ===
+                                                    index
+                                                      ? "bg-primary text-white"
+                                                      : "bg-secondary text-primary"
+                                                  } rounded-md py-4 px-8 my-2 px-2 h-6 flex flex-row items-center justify-center text-xs gap-1`}
+                                                >
+                                                  {
+                                                    enrollmentdocument
+                                                      ?.documents?.short_name
+                                                  }
+                                                </button>
+                                              )
+                                            )}
+                                      </InputLine>
+                                    </div>
+
+                                    {pageData.enrollmentdocuments &&
+                                      pageData.enrollmentdocuments.length > 0 &&
+                                      pageData.enrollmentdocuments
+                                        .filter(
+                                          (doc) =>
+                                            doc.documents?.subtype === "Sponsor"
+                                        )
+                                        .map((enrollmentdocument, index) => {
+                                          if (openedDocumentIndex === index) {
+                                            return (
+                                              <div className="overflow-y-scroll h-[420px]">
+                                                <PDFViewer
+                                                  key={index}
+                                                  download={true}
+                                                  file={{
+                                                    url: enrollmentdocument.file
+                                                      ?.url,
+                                                  }}
+                                                  height={900}
+                                                />
+                                              </div>
+                                            );
+                                          }
+                                        })}
+                                  </div>
+                                </div>
                               );
                             }
                           })}

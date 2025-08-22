@@ -104,6 +104,12 @@ function App() {
           title: "Partners & influencers",
           icon: "Handshake",
         },
+        {
+          alias: "campaign",
+          path: "/Commercial/Campaign",
+          title: "Campaign",
+          icon: "Megaphone",
+        },
       ],
     },
     {

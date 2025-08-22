@@ -82,7 +82,8 @@ export default function Transfer({
       handleOpened(null);
     } catch (err) {
       console.log(err);
-      // toast(err.response.data.error, { type: "error", autoClose: 3000 });
+      // console.log(err);
+      toast(err.response.data.error, { type: "error", autoClose: 3000 });
     }
   }
 

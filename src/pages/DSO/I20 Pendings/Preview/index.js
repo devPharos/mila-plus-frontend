@@ -123,6 +123,17 @@ export default function PagePreview({
     }
   }
 
+  function handleOpenPDF() {
+    api
+      .get(`/pdf/new-enrollment/${pageData.i20form.enrollment_id}`, {
+        responseType: "blob",
+      })
+      .then((res) => {
+        const pdfBlob = new Blob([res.data], { type: "application/pdf" });
+        saveAs(pdfBlob, `enrollment_${pageData.i20form.enrollment_id}_new.pdf`);
+      });
+  }
+
   useEffect(() => {
     getPageData();
     setSuccessfullyUpdated(false);
@@ -224,6 +235,13 @@ export default function PagePreview({
               name="affidavit-of-support"
             >
               <BadgeDollarSign size={16} /> Affidavit of Support
+            </RegisterFormMenu>
+            <RegisterFormMenu
+              setActiveMenu={() => handleOpenPDF()}
+              activeMenu={activeMenu}
+              name="i-20"
+            >
+              <FileInputIcon size={16} /> Enrollment PDF
             </RegisterFormMenu>
 
             {pageData?.i20form?.status === "Confirmed" && (

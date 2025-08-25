@@ -253,7 +253,7 @@ export default function Studentgroups() {
     if (selected.length === 0) {
       loader();
     }
-  }, [opened, filial, orderBy, search, limit, selected]);
+  }, [opened, filial, orderBy, search, limit, selected, page]);
 
   const selectionFunctions = [];
 

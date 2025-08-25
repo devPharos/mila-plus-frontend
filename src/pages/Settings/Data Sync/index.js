@@ -68,7 +68,7 @@ export default function DataSync() {
         </FiltersBar>
       </PageHeader>
       <div className="flex flex-1 w-full flex-col items-start justify-start text-center gap-4 px-4">
-        <h2 className="text-xl font-bold mt-4">Import Data</h2>
+        <h2 className="text-xl font-bold mt-4">Import Data (Only CSV files)</h2>
         <Form
           ref={generalForm}
           onSubmit={handleGeneralFormSubmit}
@@ -94,6 +94,10 @@ export default function DataSync() {
                   name="import"
                   options={[
                     { label: "Students", value: "Students" },
+                    {
+                      label: "Medical Excuses & Vacations",
+                      value: "Medical Excuses & Vacations",
+                    },
                     {
                       label: "Gravity Transactions",
                       value: "EmergepayTransactions",

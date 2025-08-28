@@ -396,23 +396,24 @@ export default function Attendance({
                           </div>
                         </InputLine>
                         <InputLine title="Attendance">
-                          {!pageData.studentgroupclass?.locked_at ||
-                          tabsPermissions.find(
-                            (tab) => tab.alias === "attendance-unlock-tab"
-                          ) ? (
-                            <SelectPopover
-                              name="lock"
-                              grow
-                              title="Lock this attendance?"
-                              InputContext={InputContext}
-                              options={yesOrNoOptions}
-                              defaultValue={
-                                pageData.studentgroupclass?.locked_at
-                                  ? yesOrNoOptions[0]
-                                  : yesOrNoOptions[1]
-                              }
-                            />
-                          ) : null}
+                          <SelectPopover
+                            name="lock"
+                            grow
+                            title="Lock this attendance?"
+                            InputContext={InputContext}
+                            options={yesOrNoOptions}
+                            readOnly={
+                              pageData.studentgroupclass?.locked_at &&
+                              !tabsPermissions.find(
+                                (tab) => tab.alias === "attendance-unlock-tab"
+                              )
+                            }
+                            defaultValue={
+                              pageData.studentgroupclass?.locked_at
+                                ? yesOrNoOptions[0]
+                                : yesOrNoOptions[1]
+                            }
+                          />
                           <Input
                             type="text"
                             name="staff_name"
@@ -714,9 +715,9 @@ export default function Attendance({
                                         <th className="w-36 bg-emerald-400">
                                           Score
                                         </th>
-                                        <th className="w-36 bg-red-400">
+                                        {/* <th className="w-36 bg-red-400">
                                           Discard Score
-                                        </th>
+                                        </th> */}
                                       </tr>
                                     </thead>
                                     <tbody>
@@ -763,7 +764,7 @@ export default function Attendance({
                                                     InputContext={InputContext}
                                                   />
                                                 </td>
-                                                <td>
+                                                {/* <td>
                                                   <SelectPopover
                                                     name="discarded"
                                                     grow
@@ -782,7 +783,7 @@ export default function Attendance({
                                                     }
                                                     InputContext={InputContext}
                                                   />
-                                                </td>
+                                                </td> */}
                                               </tr>
                                             </Scope>
                                           );

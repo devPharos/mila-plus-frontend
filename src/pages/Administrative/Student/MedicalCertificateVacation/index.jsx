@@ -36,7 +36,7 @@ export default function MedicalCertificateVacation({
   const { alertBox } = useContext(AlertContext);
   const [formType, setFormType] = useState(defaultFormType);
   const [fullscreen, setFullscreen] = useState(false);
-  const [activeMenu, setActiveMenu] = useState("Vacation");
+  const [activeMenu, setActiveMenu] = useState("Medical Excuse");
   const [pageData, setPageData] = useState({
     loaded: false,
     name: "",

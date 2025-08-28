@@ -213,6 +213,9 @@ export default function AttendanceAdjustments({
                               </thead>
                               <tbody>
                                 {pageData.attendances
+                                  ?.filter(
+                                    (attendance) => attendance.status !== "T"
+                                  )
                                   ?.sort((a, b) =>
                                     a.studentgroupclasses.date >
                                     b.studentgroupclasses.date

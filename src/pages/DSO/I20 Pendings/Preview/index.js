@@ -308,7 +308,7 @@ export default function PagePreview({
                         activeMenu={activeMenu === "student"}
                       >
                         <div className="w-full flex flex-row justify-between items-start gap-4">
-                          <div className="flex-1 flex flex-col justify-start items-start overflow-y-scroll h-[650px]">
+                          <div className="flex-1 flex flex-col justify-start items-start overflow-y-scroll h-[1040px]">
                             <Scope path={`studentData`}>
                               <InputLine title={`General Data`}>
                                 <Input
@@ -654,7 +654,7 @@ export default function PagePreview({
                             </Scope>
                           </div>
 
-                          <div className="flex-1 max-w-4xl h-[650px]">
+                          <div className="flex-1 max-w-4xl h-[1040px]">
                             <div className="flex flex-row items-center justify-center gap-2">
                               <InputLine title={`Documents`}>
                                 {pageData.enrollmentdocuments &&
@@ -939,7 +939,7 @@ export default function PagePreview({
                                     </InputLine>
                                   </div>
                                 </Scope>
-                                <div className="flex-1 max-w-4xl h-[650px]">
+                                <div className="flex-1 max-w-4xl h-[1040px]">
                                   <div className="flex flex-row items-center justify-center gap-2">
                                     <InputLine title={`Documents`}>
                                       {dependent.documents &&
@@ -998,7 +998,7 @@ export default function PagePreview({
                             if (sponsor) {
                               return (
                                 <div className="w-full flex flex-row justify-between items-start gap-4">
-                                  <div className="flex-1 flex flex-col justify-start items-start overflow-y-scroll h-[650px]">
+                                  <div className="flex-1 flex flex-col justify-start items-start overflow-y-scroll h-[1040px]">
                                     <Scope
                                       key={index}
                                       path={`sponsorsData[${index}]`}
@@ -1068,7 +1068,7 @@ export default function PagePreview({
                                     </Scope>
                                   </div>
 
-                                  <div className="flex-1 max-w-4xl h-[650px]">
+                                  <div className="flex-1 max-w-4xl h-[1040px]">
                                     <div className="flex flex-row items-center justify-center gap-2">
                                       <InputLine title={`Documents`}>
                                         {pageData.enrollmentdocuments &&

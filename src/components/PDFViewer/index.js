@@ -30,6 +30,7 @@ function PDFViewer({
         onLoadError={console.error}
         onLoadSuccess={onDocumentLoadSuccess}
         options={options}
+        showToolbar={true}
         className="relative border rounded h-full w-full"
       >
         <Page

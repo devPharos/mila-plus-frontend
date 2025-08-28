@@ -631,10 +631,12 @@ export default function Attendance({
                                           classroom.id !==
                                           pageData.studentgroupclass?.id
                                       )
-                                      .map((classroom) => classroom.paceguides)
-                                  )
-                                  .filter(
-                                    (paceguide) => paceguide.status !== "Done"
+                                      .map((classroom) =>
+                                        classroom.paceguides.filter(
+                                          (paceguide) =>
+                                            paceguide.status !== "Done"
+                                        )
+                                      )
                                   )
                                   .map((paceguide, index) => {
                                     return (
@@ -668,23 +670,7 @@ export default function Attendance({
                                                   ?.locked_at
                                               }
                                               defaultValue={
-                                                pageData.studentgroupclass.paceguides.find(
-                                                  (pg) =>
-                                                    pg.id === paceguide.id &&
-                                                    ((pageData.studentgroupclass?.paceguides.find(
-                                                      (paceguide) =>
-                                                        paceguide.status ===
-                                                        "Done"
-                                                    ) &&
-                                                      pg.status === "Done") ||
-                                                      !pageData.studentgroupclass?.paceguides.find(
-                                                        (paceguide) =>
-                                                          paceguide.status ===
-                                                          "Done"
-                                                      ))
-                                                )
-                                                  ? true
-                                                  : false
+                                                paceguide.status === "Done"
                                               }
                                             />
                                           </td>

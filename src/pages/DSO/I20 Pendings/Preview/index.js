@@ -1155,6 +1155,15 @@ export default function PagePreview({
                                 }
                                 InputContext={InputContext}
                               />
+                              <Input
+                                type="text"
+                                name="nsevis"
+                                required
+                                grow
+                                title="SEVIS Number"
+                                defaultValue={pageData.students.nsevis}
+                                InputContext={InputContext}
+                              />
                               <FileInput
                                 name="file_id"
                                 title="I-20"
@@ -1165,6 +1174,7 @@ export default function PagePreview({
                               <Input
                                 type="date"
                                 name="start_date"
+                                required
                                 grow
                                 title="Program Start Date"
                                 InputContext={InputContext}
@@ -1172,6 +1182,7 @@ export default function PagePreview({
                               <Input
                                 type="date"
                                 name="end_date"
+                                required
                                 grow
                                 title="Program End Date"
                                 InputContext={InputContext}

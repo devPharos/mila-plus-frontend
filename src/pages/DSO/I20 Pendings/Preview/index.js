@@ -695,7 +695,7 @@ export default function PagePreview({
                                 .map((enrollmentdocument, index) => {
                                   if (openedDocumentIndex === index) {
                                     return (
-                                      <div className="overflow-y-scroll h-[420px]">
+                                      <div className="overflow-y-scroll h-[940px]">
                                         <PDFViewer
                                           key={index}
                                           download={true}
@@ -968,7 +968,7 @@ export default function PagePreview({
                                       (enrollmentdocument, index) => {
                                         if (openedDocumentIndex === index) {
                                           return (
-                                            <div className="overflow-y-scroll h-[420px]">
+                                            <div className="overflow-y-scroll h-[940px]">
                                               <PDFViewer
                                                 key={index}
                                                 download={true}
@@ -1117,7 +1117,7 @@ export default function PagePreview({
                                         .map((enrollmentdocument, index) => {
                                           if (openedDocumentIndex === index) {
                                             return (
-                                              <div className="overflow-y-scroll h-[420px]">
+                                              <div className="overflow-y-scroll h-[940px]">
                                                 <PDFViewer
                                                   key={index}
                                                   download={true}

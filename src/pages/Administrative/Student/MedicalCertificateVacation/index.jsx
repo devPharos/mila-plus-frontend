@@ -170,16 +170,16 @@ export default function MedicalCertificateVacation({
           <RegisterFormMenu
             setActiveMenu={setActiveMenu}
             activeMenu={activeMenu}
-            name="Vacation"
+            name="Medical Excuse"
           >
-            <TreePalm size={16} /> Vacation
+            <ClipboardPlus size={16} /> Medical Excuse
           </RegisterFormMenu>
           <RegisterFormMenu
             setActiveMenu={setActiveMenu}
             activeMenu={activeMenu}
-            name="Medical Excuse"
+            name="Vacation"
           >
-            <ClipboardPlus size={16} /> Medical Excuse
+            <TreePalm size={16} /> Vacation
           </RegisterFormMenu>
         </div>
         <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">

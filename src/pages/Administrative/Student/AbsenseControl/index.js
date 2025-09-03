@@ -492,6 +492,7 @@ export default function AbsenseControl({
                                               defaultValue={id}
                                               InputContext={InputContext}
                                             />
+                                            {console.log(attendance)}
                                             {studentgroupclasses.date
                                               ? format(
                                                   parseISO(
@@ -569,6 +570,7 @@ export default function AbsenseControl({
                                               type="text"
                                               name={`dso_note_${id}`}
                                               grow
+                                              placeholder="DSO Note..."
                                               className="mb-4 shadow-sm"
                                               rows={3}
                                               InputContext={InputContext}

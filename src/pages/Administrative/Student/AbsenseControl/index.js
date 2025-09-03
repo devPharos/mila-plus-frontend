@@ -492,7 +492,6 @@ export default function AbsenseControl({
                                               defaultValue={id}
                                               InputContext={InputContext}
                                             />
-                                            {console.log(attendance)}
                                             {studentgroupclasses.date
                                               ? format(
                                                   parseISO(
@@ -516,7 +515,9 @@ export default function AbsenseControl({
                                             readOnly
                                             InputContext={InputContext}
                                             defaultValue={
-                                              !first_check || medical_excuse_id
+                                              !first_check ||
+                                              medical_excuse_id ||
+                                              vacation_id
                                                 ? "Absent"
                                                 : first_check
                                             }
@@ -533,7 +534,9 @@ export default function AbsenseControl({
                                             readOnly
                                             InputContext={InputContext}
                                             defaultValue={
-                                              !second_check || medical_excuse_id
+                                              !second_check ||
+                                              medical_excuse_id ||
+                                              vacation_id
                                                 ? "Absent"
                                                 : second_check
                                             }

@@ -208,63 +208,64 @@ export default function AbsenseControl({
                         </InputLine>
                         {pageData.totals.groups
                           .sort((a, b) =>
-                            a.group.studentxgroups[0].start_date <
-                            b.group.studentxgroups[0].start_date
+                            a.group?.studentxgroups[0]?.start_date <
+                            b.group?.studentxgroups[0]?.start_date
                               ? -1
                               : 1
                           )
                           .map((group, index) => {
-                            return group.group.studentxgroups.map((period) => {
-                              return (
-                                <InputLine
-                                  title={index === 0 && "Groups in period"}
-                                >
-                                  <Input
-                                    type="text"
-                                    name="group"
-                                    title="Group Name"
-                                    readOnly
-                                    grow
-                                    defaultValue={group.group.name}
-                                    InputContext={InputContext}
-                                  />
-                                  <Input
-                                    type="text"
-                                    name="classSD"
-                                    title="Class SD"
-                                    readOnly
-                                    shrink
-                                    defaultValue={format(
-                                      parseISO(group.group.start_date),
-                                      "MM/dd/yyyy"
-                                    )}
-                                    InputContext={InputContext}
-                                  />
-                                  <Input
-                                    type="text"
-                                    name="classED"
-                                    title="Class ED"
-                                    readOnly
-                                    shrink
-                                    defaultValue={format(
-                                      parseISO(group.group.end_date),
-                                      "MM/dd/yyyy"
-                                    )}
-                                    InputContext={InputContext}
-                                  />
-                                  <Input
-                                    type="text"
-                                    name="studentSD"
-                                    title="Student SD"
-                                    readOnly
-                                    shrink
-                                    defaultValue={format(
-                                      parseISO(period.start_date),
-                                      "MM/dd/yyyy"
-                                    )}
-                                    InputContext={InputContext}
-                                  />
-                                  {/* <Input
+                            return group.group?.studentxgroups?.map(
+                              (period) => {
+                                return (
+                                  <InputLine
+                                    title={index === 0 && "Groups in period"}
+                                  >
+                                    <Input
+                                      type="text"
+                                      name="group"
+                                      title="Group Name"
+                                      readOnly
+                                      grow
+                                      defaultValue={group.group.name}
+                                      InputContext={InputContext}
+                                    />
+                                    <Input
+                                      type="text"
+                                      name="classSD"
+                                      title="Class SD"
+                                      readOnly
+                                      shrink
+                                      defaultValue={format(
+                                        parseISO(group.group.start_date),
+                                        "MM/dd/yyyy"
+                                      )}
+                                      InputContext={InputContext}
+                                    />
+                                    <Input
+                                      type="text"
+                                      name="classED"
+                                      title="Class ED"
+                                      readOnly
+                                      shrink
+                                      defaultValue={format(
+                                        parseISO(group.group.end_date),
+                                        "MM/dd/yyyy"
+                                      )}
+                                      InputContext={InputContext}
+                                    />
+                                    <Input
+                                      type="text"
+                                      name="studentSD"
+                                      title="Student SD"
+                                      readOnly
+                                      shrink
+                                      defaultValue={format(
+                                        parseISO(period.start_date),
+                                        "MM/dd/yyyy"
+                                      )}
+                                      InputContext={InputContext}
+                                    />
+                                    {/* <Input
                                     type="text"
                                     name="studentED"
                                     title="Student ED"
@@ -280,29 +281,30 @@ export default function AbsenseControl({
                                     }
                                     InputContext={InputContext}
                                   /> */}
-                                  <Input
-                                    type="text"
-                                    name="totalAbsenses"
-                                    title="Absences"
-                                    readOnly
-                                    shrink
-                                    defaultValue={group.totalAbsenses}
-                                    InputContext={InputContext}
-                                  />
-                                  <Input
-                                    type="text"
-                                    name="frequency"
-                                    title="Frequency"
-                                    readOnly
-                                    shrink
-                                    defaultValue={
-                                      Math.ceil(group.frequency) + "%"
-                                    }
-                                    InputContext={InputContext}
-                                  />
-                                </InputLine>
-                              );
-                            });
+                                    <Input
+                                      type="text"
+                                      name="totalAbsenses"
+                                      title="Absences"
+                                      readOnly
+                                      shrink
+                                      defaultValue={group.totalAbsenses}
+                                      InputContext={InputContext}
+                                    />
+                                    <Input
+                                      type="text"
+                                      name="frequency"
+                                      title="Frequency"
+                                      readOnly
+                                      shrink
+                                      defaultValue={
+                                        Math.ceil(group.frequency) + "%"
+                                      }
+                                      InputContext={InputContext}
+                                    />
+                                  </InputLine>
+                                );
+                              }
+                            );
                             // return (
                             //   <InputLine
                             //     title={index === 0 && "Groups in period"}

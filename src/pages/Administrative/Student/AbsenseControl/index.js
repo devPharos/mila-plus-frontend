@@ -444,7 +444,6 @@ export default function AbsenseControl({
                                 </tr>
                               </thead>
                               <tbody>
-                                {console.log(pageData)}
                                 {pageData.attendances
                                   ?.sort((a, b) =>
                                     a.studentgroupclasses.date >
@@ -460,6 +459,15 @@ export default function AbsenseControl({
                                       medical_excuse_id = null,
                                       shift,
                                       id = null,
+                                      dso_note,
+                                      studentgroupclasses = [
+                                        {
+                                          date: null,
+                                          studentgroup: {
+                                            name: null,
+                                          },
+                                        },
+                                      ],
                                     } = attendance;
                                     return (
                                       <Scope
@@ -472,8 +480,8 @@ export default function AbsenseControl({
                                         >
                                           <td className="px-2 h-8 text-left">
                                             {
-                                              attendance.studentgroupclasses
-                                                .studentgroup.name
+                                              studentgroupclasses?.studentgroup
+                                                ?.name
                                             }
                                           </td>
                                           <td className="px-2 h-8 text-left">
@@ -484,13 +492,14 @@ export default function AbsenseControl({
                                               defaultValue={id}
                                               InputContext={InputContext}
                                             />
-                                            {format(
-                                              parseISO(
-                                                attendance.studentgroupclasses
-                                                  .date
-                                              ),
-                                              "MM/dd"
-                                            )}
+                                            {studentgroupclasses.date
+                                              ? format(
+                                                  parseISO(
+                                                    studentgroupclasses.date
+                                                  ),
+                                                  "MM/dd"
+                                                )
+                                              : null}
                                           </td>
                                           <td className="px-2 h-8 text-left">
                                             {shift}
@@ -563,7 +572,7 @@ export default function AbsenseControl({
                                               className="mb-4 shadow-sm"
                                               rows={3}
                                               InputContext={InputContext}
-                                              defaultValue={attendance.dso_note}
+                                              defaultValue={dso_note}
                                             />
                                           </td>
                                         </tr>

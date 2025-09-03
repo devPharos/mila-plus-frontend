@@ -2,10 +2,13 @@ import React, { createContext, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import AlertBoxContainer from "./components/AlertBox/AlertBoxContainer";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export const AlertContext = createContext();
 
 export const PageContext = createContext();
+
+const queryClient = new QueryClient();
 
 function App() {
   const [alertData, setAlertData] = useState({ open: false, title: false });
@@ -354,11 +357,13 @@ function App() {
   ];
   return (
     <AlertContext.Provider value={{ alertData, setAlertData, alertBox }}>
-      <PageContext.Provider value={{ pages }}>
-        <Outlet />
-        <ToastContainer autoClose={2500} />
-        <AlertBoxContainer />
-      </PageContext.Provider>
+      <QueryClientProvider client={queryClient}>
+        <PageContext.Provider value={{ pages }}>
+          <Outlet />
+          <ToastContainer autoClose={2500} />
+          <AlertBoxContainer />
+        </PageContext.Provider>
+      </QueryClientProvider>
     </AlertContext.Provider>
   );
 }

@@ -64,8 +64,6 @@ export default function PagePreview({
   const [fullscreen, setFullscreen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("general");
   const generalForm = useRef();
-  const [levelOptions, setLevelOptions] = useState([]);
-  const [languageModeOptions, setLanguageModeOptions] = useState([]);
   const typesOptions = [
     {
       value: "Content",
@@ -306,42 +304,6 @@ export default function PagePreview({
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     }
-    async function getLevelsOptions() {
-      try {
-        const { data } = await api.get(`levels`);
-        const levels = data.map(
-          ({ id, name, total_hours, Programcategory }) => {
-            const programcategory_name = Programcategory.name;
-            return {
-              value: id,
-              label:
-                programcategory_name +
-                " - " +
-                name +
-                " (" +
-                total_hours.toString() +
-                "h)",
-            };
-          }
-        );
-        setLevelOptions(levels);
-      } catch (err) {
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
-      }
-    }
-    async function getLanguageModeOptions() {
-      try {
-        const { data } = await api.get(`languagemodes`);
-        const languagesmodes = data.map(({ id, name }) => {
-          return { value: id, label: name };
-        });
-        setLanguageModeOptions(languagesmodes);
-      } catch (err) {
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
-      }
-    }
-    // getLevelsOptions();
-    // getLanguageModeOptions();
     if (id === "new") {
       setFormType("full");
     } else if (id) {
@@ -658,6 +620,15 @@ export default function PagePreview({
                                               title="Description"
                                               grow
                                               defaultValue={classes.description}
+                                              InputContext={InputContext}
+                                            />
+                                            <Input
+                                              type="text"
+                                              name="percentage"
+                                              required
+                                              title="Percentage"
+                                              grow
+                                              defaultValue={classes.percentage}
                                               InputContext={InputContext}
                                             />
                                           </InputLine>

@@ -23,12 +23,8 @@ export default function AdministrativeDashboard() {
       </PageHeader>
 
       <div className="flex flex-1 flex-row gap-4 p-4 justify-start items-start rounded-tr-2xl">
-        {profile.id === 1 && (
-          <>
-            <AbsenceControl />
-            <ClassSchedule />
-          </>
-        )}
+        <AbsenceControl />
+        <ClassSchedule />
       </div>
     </div>
   );

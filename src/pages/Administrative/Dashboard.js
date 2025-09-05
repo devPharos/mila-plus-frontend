@@ -5,11 +5,9 @@ import FiltersBar from "~/components/FiltersBar";
 import PageHeader from "~/components/PageHeader";
 
 import { getCurrentPage } from "~/functions";
-import AbsenceControl from "./AbsenceControl";
+import AbsenceControl from "./Reports/AbsenceControl";
 import { useSelector } from "react-redux";
-import api from "~/services/api";
-import { saveAs } from "file-saver";
-import { format, lastDayOfMonth } from "date-fns";
+import ClassSchedule from "./Reports/ClassSchedule";
 
 export default function AdministrativeDashboard() {
   const { profile } = useSelector((state) => state.user);
@@ -24,20 +22,11 @@ export default function AdministrativeDashboard() {
         </FiltersBar>
       </PageHeader>
 
-      <div
-        style={{
-          flex: 1,
-          width: "100%",
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "start",
-          paddingTop: 24,
-        }}
-      >
+      <div className="flex flex-1 flex-row gap-4 p-4 justify-start items-start rounded-tr-2xl">
         {profile.id === 1 && (
           <>
             <AbsenceControl />
+            <ClassSchedule />
           </>
         )}
       </div>

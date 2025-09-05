@@ -87,6 +87,10 @@ import PartnersAndInfluencers from "./pages/Commercial/PartnersAndInfluencers";
 import CostCenters from "./pages/Financial/CostCenters";
 import I20Pendings from "./pages/DSO/I20 Pendings";
 import CampaignRegistration from "./pages/Commercial/CampaignRegistration";
+import ReportFinancialPayees, {
+  ReportFinancialOutbounds,
+} from "./pages/Reports/Financial/Payees";
+import Report from "./pages/Reports";
 
 injectStore(store);
 
@@ -420,6 +424,30 @@ const router = createBrowserRouter([
           {
             path: "/Settings/DataSync",
             element: <DataSync />,
+          },
+        ],
+      },
+      {
+        path: "/Reports",
+        element: (
+          <ProtectedRoute>
+            <Report />
+          </ProtectedRoute>
+        ),
+        children: [
+          {
+            path: "/Reports/Financial",
+            element: <ReportFinancialOutbounds />,
+            children: [
+              {
+                path: "/Reports/Financial/Receivables",
+                element: <ReportFinancialPayees />,
+              },
+              {
+                path: "/Reports/Financial/Payees",
+                element: <ReportFinancialPayees />,
+              },
+            ],
           },
         ],
       },

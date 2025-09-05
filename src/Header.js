@@ -44,6 +44,10 @@ export default function Header() {
       title: "Settings",
       alias: "settings",
     },
+    {
+      title: "Reports",
+      alias: "reports",
+    },
   ];
   const modules = defaultModules;
 
@@ -93,7 +97,8 @@ export default function Header() {
                   if (
                     auth.accesses?.hierarchy?.find(
                       (access) => access.alias === module.alias
-                    )?.children.length > 0
+                    )?.children.length > 0 ||
+                    module.alias === "reports"
                   ) {
                     return (
                       <NavLink

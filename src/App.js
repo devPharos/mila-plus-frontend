@@ -333,6 +333,31 @@ function App() {
       ],
     },
     {
+      name: "Reports",
+      children: [
+        {
+          alias: "report-financial",
+          path: "/Reports/Financial",
+          title: "Financial",
+          icon: "BadgeDollarSign",
+          children: [
+            {
+              alias: "report-financial-receivables",
+              path: "/Reports/Financial/Receivables",
+              title: "Receivables",
+              icon: "BadgeDollarSign",
+            },
+            {
+              alias: "report-financial-payees",
+              path: "/Reports/Financial/Payees",
+              title: "Payees",
+              icon: "BadgeDollarSign",
+            },
+          ],
+        },
+      ],
+    },
+    {
       name: "FillForm",
       children: [
         {

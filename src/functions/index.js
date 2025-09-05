@@ -51,6 +51,11 @@ export function hasAccessTo(
   return { view, edit, create, inactivate };
 }
 
+export const USDollar = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+});
+
 export function getTabsPermissions(pageAlias = "", FullGridContext = null) {
   const { accessModule } = useContext(FullGridContext);
 

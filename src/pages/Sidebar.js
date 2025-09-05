@@ -78,12 +78,13 @@ export default function Sidebar({ main = null, pages = [] }) {
       <div
         className={`my-12 flex flex-1 flex-col justify-start items-start gap-4 w-full`}
       >
+        {console.log({ main })}
         {pages.map((page, index) => {
           if (
             accesses.hierarchy
-              .find((h) => h.alias.toUpperCase() === main.toUpperCase())
+              .find((h) => h.alias?.toUpperCase() === main?.toUpperCase())
               .children.find(
-                (h) => h.alias.toUpperCase() === page.alias.toUpperCase()
+                (h) => h.alias?.toUpperCase() === page?.alias?.toUpperCase()
               )
           ) {
             return (
@@ -156,7 +157,8 @@ export default function Sidebar({ main = null, pages = [] }) {
                             .children.find(
                               (h) =>
                                 h.alias.toUpperCase() ===
-                                child.alias.toUpperCase()
+                                  child.alias.toUpperCase() ||
+                                h.alias.includes("report")
                             )
                         ) {
                           return (

@@ -64,6 +64,9 @@ export default function AttendanceAdjustments({
   }
 
   function handleGeneralFormSubmit(data) {
+    if (!data.attendances) {
+      return;
+    }
     api
       .put(`/attendances/${selected[0].id}`, data)
       .then((res) => {

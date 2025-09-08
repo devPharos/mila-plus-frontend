@@ -8,7 +8,7 @@ import PageHeader from "~/components/PageHeader";
 
 import { getCurrentPage } from "~/functions";
 
-export default function FinancialDashboard() {
+export default function ReportDashboard() {
   const { profile } = useSelector((state) => state.user);
   const currentPage = getCurrentPage();
 

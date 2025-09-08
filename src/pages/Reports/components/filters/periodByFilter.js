@@ -36,7 +36,7 @@ export default function PeriodByFilter() {
           className="flex flex-row justify-between items-center gap-x-2 text-xs cursor-pointer p-1 text-left"
         >
           <div className="flex flex-col">
-            <span>Filter by</span>
+            <span>Period by</span>
             <strong className="text-sm">{selected?.label}</strong>
           </div>
           {open ? <ChevronUp size={16} /> : <ChevronDown size={16} />}

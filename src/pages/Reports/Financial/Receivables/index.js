@@ -13,8 +13,9 @@ import GridReceivables from "../../components/grids/gridReceivables";
 import api from "~/services/api";
 import useReportsStore from "~/store/reportsStore";
 import { format } from "date-fns";
+import { toast } from "react-toastify";
 
-export function ReportFinancialOutbounds() {
+export function ReportFinancialInbounds() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { pages } = useContext(PageContext);
@@ -31,10 +32,11 @@ export function ReportFinancialOutbounds() {
   return <Outlet />;
 }
 
-export default function ReportFinancialPayees() {
+export default function ReportFinancialReceivables() {
   const { profile } = useSelector((state) => state.user);
   const currentPage = getCurrentPage();
-  const { filters } = useReportsStore();
+  const { filters, chartOfAccountSelected } = useReportsStore();
+  const [loading, setLoading] = useState(true);
 
   // const [data, setData] = useState([
   //   {
@@ -2313,6 +2315,7 @@ export default function ReportFinancialPayees() {
   const [data, setData] = useState(null);
 
   function loadData() {
+    setLoading(true);
     api
       .get(
         `/reports/receivables?period_from=${format(
@@ -2322,15 +2325,33 @@ export default function ReportFinancialPayees() {
           filters.period_by.value
         }`
       )
-      .then(({ data }) => setData(data));
+      .then(({ data }) => {
+        setData(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        toast(err.response.data.error, { type: "error", autoClose: 3000 });
+        setLoading(false);
+      });
   }
+  useEffect(() => {
+    if (chartOfAccountSelected) {
+      setTimeout(() => {
+        // smooth scroll to 500
+        document.getElementById("reportPage").scrollTo(0, 500);
+      }, 300);
+    }
+  }, [chartOfAccountSelected]);
 
   useEffect(() => {
     loadData();
   }, [filters]);
 
   return (
-    <div className="h-full bg-white flex flex-1 flex-col justify-start items-start rounded-tr-2xl px-4 overflow-y-scroll">
+    <div
+      id="reportPage"
+      className="scroll-smooth h-full bg-white flex flex-1 flex-col justify-start items-start rounded-tr-2xl px-4 overflow-y-scroll"
+    >
       <PageHeader>
         <Breadcrumbs currentPage={currentPage} />
         <FiltersBar></FiltersBar>
@@ -2349,6 +2370,12 @@ export default function ReportFinancialPayees() {
         <ChartReceivables data={data} />
         <GridReceivables data={data} setData={setData} />
       </div>
+
+      {loading && (
+        <div className="flex justify-center items-center h-screen absolute top-0 left-0 w-full bg-gray-500 bg-opacity-50 z-10">
+          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-700" />
+        </div>
+      )}
     </div>
   );
 }

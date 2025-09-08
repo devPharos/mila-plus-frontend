@@ -4,6 +4,7 @@ import Sidebar from "../Sidebar";
 import { PageContext } from "~/App";
 import { capitalizeFirstLetter } from "~/functions";
 import { useSelector } from "react-redux";
+import useReportsStore from "~/store/reportsStore";
 
 export const FullGridContext = createContext();
 
@@ -25,6 +26,7 @@ export default function Report() {
   const [limit, setLimit] = useState(50);
   const [search, setSearch] = useState("");
   const [totalRows, setTotalRows] = useState(0);
+  const { chartOfAccountSelected } = useReportsStore();
   const [gridDetails, setGridDetails] = useState({
     totalRows: 0,
     pages: 1,

@@ -208,10 +208,7 @@ export default function AbsenseControl({
                         </InputLine>
                         {pageData.totals.groups
                           .sort((a, b) =>
-                            a.group?.studentxgroups[0]?.start_date <
-                            b.group?.studentxgroups[0]?.start_date
-                              ? -1
-                              : 1
+                            a.group?.start_date < b.group?.start_date ? -1 : 1
                           )
                           .map((group, index) => {
                             return group.group?.studentxgroups?.map(
@@ -445,6 +442,10 @@ export default function AbsenseControl({
                               </thead>
                               <tbody>
                                 {pageData.attendances
+                                  ?.filter(
+                                    (attendance) =>
+                                      !attendance.studentgroupclasses.locked_at
+                                  )
                                   ?.sort((a, b) =>
                                     a.studentgroupclasses.date >
                                     b.studentgroupclasses.date
@@ -466,6 +467,7 @@ export default function AbsenseControl({
                                           studentgroup: {
                                             name: null,
                                           },
+                                          locked_at: null,
                                         },
                                       ],
                                     } = attendance;

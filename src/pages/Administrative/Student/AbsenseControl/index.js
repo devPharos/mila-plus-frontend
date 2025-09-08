@@ -444,7 +444,8 @@ export default function AbsenseControl({
                                 {pageData.attendances
                                   ?.filter(
                                     (attendance) =>
-                                      !attendance.studentgroupclasses.locked_at
+                                      !attendance.studentgroupclasses
+                                        .locked_at && attendance.status !== "T"
                                   )
                                   ?.sort((a, b) =>
                                     a.studentgroupclasses.date >

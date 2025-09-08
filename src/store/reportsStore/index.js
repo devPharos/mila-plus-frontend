@@ -41,11 +41,6 @@ const periodOptions = [
     label: "Last 12 months",
   },
   {
-    from: parseISO("2000-01-01"),
-    to: new Date(),
-    label: "Entire history",
-  },
-  {
     from: new Date(),
     to: new Date(),
     label: "Custom",
@@ -78,6 +73,9 @@ const useReportsStore = create((set) => ({
     },
     period_by: periodByOptions[0],
   },
+  chartOfAccountSelected: null,
+  setChartOfAccountSelected: (chartOfAccountSelected) =>
+    set({ chartOfAccountSelected }),
   periodOptions,
   periodByOptions,
   setFilters: (filters) => set({ filters }),

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -11,13 +11,25 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { USDollar } from "~/functions";
+import useReportsStore from "~/store/reportsStore";
 
 export default function ChartReceivables({ data }) {
   const [activeIndex, setActiveIndex] = useState(null);
+  const { chartOfAccountSelected, setChartOfAccountSelected } =
+    useReportsStore();
 
   const handleClick = (data, index) => {
     setActiveIndex(index === activeIndex ? null : index);
+    setChartOfAccountSelected(
+      data.code === chartOfAccountSelected ? null : data.code
+    );
   };
+
+  useEffect(() => {
+    if (!chartOfAccountSelected) {
+      setActiveIndex(null);
+    }
+  }, [chartOfAccountSelected]);
 
   if (!data) return null;
 
@@ -35,7 +47,9 @@ export default function ChartReceivables({ data }) {
             <h2 className="text-sm font-light text-gray-500">Total</h2>
             <span>
               {USDollar.format(
-                data.byChartOfAccount?.reduce((a, b) => a + b.total, 0)
+                Math.round(
+                  data.byChartOfAccount?.reduce((a, b) => a + b.total, 0)
+                )
               )}
             </span>
           </div>

@@ -336,6 +336,12 @@ function App() {
       name: "Reports",
       children: [
         {
+          alias: "report-dashboard",
+          path: "/Reports/Dashboard",
+          title: "Financial",
+          icon: "BadgeDollarSign",
+        },
+        {
           alias: "report-financial",
           path: "/Reports/Financial",
           title: "Financial",
@@ -345,12 +351,6 @@ function App() {
               alias: "report-financial-receivables",
               path: "/Reports/Financial/Receivables",
               title: "Receivables",
-              icon: "BadgeDollarSign",
-            },
-            {
-              alias: "report-financial-payees",
-              path: "/Reports/Financial/Payees",
-              title: "Payees",
               icon: "BadgeDollarSign",
             },
           ],

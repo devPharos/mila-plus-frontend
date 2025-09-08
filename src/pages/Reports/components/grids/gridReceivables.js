@@ -1,4 +1,5 @@
-import { ChevronDown, ChevronRight, Minus } from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { USDollar } from "~/functions";
 
@@ -11,16 +12,16 @@ export default function GridReceivables({ data }) {
       <div className="flex w-full flex-row items-center justify-center">
         <table className="w-full text-center text-xs text-zinc-500 rounded-lg overflow-hidden shadow-sm">
           <tr className="bg-zinc-100 text-zinc-950">
-            <td className="text-left font-bold border-b p-2">
+            <td className="w-[300px] text-left font-bold border-b p-2">
               Chart of Accounts
             </td>
-            {data[0].periods.map((item, index) => (
+            {data?.periods?.map((item, index) => (
               <td className="font-bold border-b p-2" key={index}>
-                {item.name}
+                {format(parseISO(item.period + "-01"), "MMM/yyyy")}
               </td>
             ))}
           </tr>
-          {data.map((item, index) => {
+          {data?.byChartOfAccount?.map((item, index) => {
             return (
               <>
                 <tr key={index} className="odd:bg-zinc-50 hover:bg-zinc-200">
@@ -47,10 +48,10 @@ export default function GridReceivables({ data }) {
                   ))}
                 </tr>
                 {firstLevelIndex === index &&
-                  item.chartOfAccounts?.map((item, index) => (
+                  item.children?.map((item, index) => (
                     <tr key={index} className="hover:bg-zinc-100">
                       <td className="text-left font-bold border-b p-2 pl-8 flex flex-row items-center gap-2">
-                        {item.chartOfAccounts?.length ? (
+                        {item.children?.length ? (
                           <ChevronRight
                             size={16}
                             className={`transition duration-300 ${
@@ -58,7 +59,7 @@ export default function GridReceivables({ data }) {
                             }`}
                           />
                         ) : (
-                          <Minus size={16} />
+                          <div className="w-0"></div>
                         )}
                         {item.name}
                       </td>

@@ -34,13 +34,15 @@ export default function ChartReceivables({ data }) {
           <div className="text-xl font-bold border-b border-l p-2 rounded w-40">
             <h2 className="text-sm font-light text-gray-500">Total</h2>
             <span>
-              {USDollar.format(data.reduce((a, b) => a + b.total, 0))}
+              {USDollar.format(
+                data.byChartOfAccount?.reduce((a, b) => a + b.total, 0)
+              )}
             </span>
           </div>
         </div>
       </div>
       <ResponsiveContainer width="100%" height={150}>
-        <BarChart width={150} height={40} data={data}>
+        <BarChart width={150} height={40} data={data.byChartOfAccount}>
           <Tooltip
             contentStyle={{ backgroundColor: "transparent", border: "none" }}
             wrapperStyle={{
@@ -74,7 +76,7 @@ export default function ChartReceivables({ data }) {
             </linearGradient>
           </defs>
           <Bar dataKey="total" onClick={handleClick}>
-            {data.map((entry, index) => (
+            {data.byChartOfAccount?.map((entry, index) => (
               <Cell
                 cursor="pointer"
                 key={`cell-${index}`}

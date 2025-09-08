@@ -1,6 +1,8 @@
+import { format, parseISO, subMonths } from "date-fns";
 import { Loader2, Table2 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { toast, Zoom } from "react-toastify";
+import Select from "~/components/RegisterForm/Select";
 import api, { baseURL } from "~/services/api";
 
 // import { Container } from './styles';
@@ -10,43 +12,56 @@ function AbsenceControl() {
   const [error, setError] = useState(false);
   const fromDateRef = useRef();
   const untilDateRef = useRef();
+  const periodRef = useRef();
 
   function handleGenerateReport() {
     setError(false);
     setLoading(true);
-    const from_date = fromDateRef.current.value;
-    const until_date = untilDateRef.current.value;
+    // const from_date = fromDateRef.current.value;
+    // const until_date = untilDateRef.current.value;
 
-    if (!from_date) {
+    if (!periodRef) {
       setLoading(false);
       setTimeout(() => {
-        toast("From date is required!", {
+        toast("Period is required!", {
           autoClose: 1500,
           type: "error",
           transition: Zoom,
         });
-        setError("from_date");
+        setError("period");
       }, 300);
       return;
     }
 
-    if (!until_date) {
-      setLoading(false);
-      setTimeout(() => {
-        toast("Until date is required!", {
-          autoClose: 1500,
-          type: "error",
-          transition: Zoom,
-        });
-        setError("until_date");
-      }, 300);
-      return;
-    }
+    // if (!from_date) {
+    //   setLoading(false);
+    //   setTimeout(() => {
+    //     toast("From date is required!", {
+    //       autoClose: 1500,
+    //       type: "error",
+    //       transition: Zoom,
+    //     });
+    //     setError("from_date");
+    //   }, 300);
+    //   return;
+    // }
+
+    // if (!until_date) {
+    //   setLoading(false);
+    //   setTimeout(() => {
+    //     toast("Until date is required!", {
+    //       autoClose: 1500,
+    //       type: "error",
+    //       transition: Zoom,
+    //     });
+    //     setError("until_date");
+    //   }, 300);
+    //   return;
+    // }
 
     api
       .post(`/reports/studentsUnderLimit`, {
-        from_date,
-        until_date,
+        period: periodRef.current.value,
       })
       .then(({ data }) => {
         saveAs(`${baseURL}/get-file/${data.name}`, `${data.name}.xlsx`);
@@ -56,6 +71,12 @@ function AbsenceControl() {
         console.log(err);
         setLoading(false);
       });
+  }
+
+  const today = format(new Date(), "yyyy-MM");
+  const lastPeriods = [];
+  for (let i = 0; i < 12; i++) {
+    lastPeriods.push(subMonths(parseISO(today + "-01"), i));
   }
 
   useEffect(() => {
@@ -70,6 +91,20 @@ function AbsenceControl() {
       </h2>
       <div className="flex flex-row items-end gap-2 p-2">
         <div className="flex flex-col gap-2">
+          <label className="text-xs font-bold flex-1 text-center">Period</label>
+          <select
+            name="period"
+            ref={periodRef}
+            className="transition ease-in-out duration-300 w-36 text-xs bg-white text-gray-500 p-2 border rounded"
+          >
+            {lastPeriods.map((date, index) => (
+              <option key={index} value={format(date, "yyyy-MM")}>
+                {format(date, "MMMM, yyyy")}
+              </option>
+            ))}
+          </select>
+        </div>
+        {/* <div className="flex flex-col gap-2">
           <label className="text-xs font-bold flex-1 text-center">
             From date
           </label>
@@ -94,7 +129,7 @@ function AbsenceControl() {
               error === "until_date" && "border-red-500"
             }`}
           />
-        </div>
+        </div> */}
         <div className="flex flex-col gap-2">
           <button
             type="button"

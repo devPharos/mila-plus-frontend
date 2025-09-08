@@ -6,11 +6,9 @@ import PageHeader from "~/components/PageHeader";
 
 import { getCurrentPage } from "~/functions";
 import AbsenceControl from "./Reports/AbsenceControl";
-import { useSelector } from "react-redux";
 import ClassSchedule from "./Reports/ClassSchedule";
 
 export default function AdministrativeDashboard() {
-  const { profile } = useSelector((state) => state.user);
   const currentPage = getCurrentPage();
 
   return (

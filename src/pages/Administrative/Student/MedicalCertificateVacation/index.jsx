@@ -118,11 +118,11 @@ export default function MedicalCertificateVacation({
 
         setPageData(state => ({ ...state, data, loaded: true }));
 
-        setSuccessfullyUpdated(true);
-
         generalForm.current.reset();
 
         setLoading(false);
+
+      setSuccessfullyUpdated(true);
         // handleOpened(null);
       } catch (err) {
         // console.log(err);

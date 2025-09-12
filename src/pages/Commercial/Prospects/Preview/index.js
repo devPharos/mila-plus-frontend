@@ -44,6 +44,7 @@ import PlacementTest from "./PlacementTest";
 import { FullGridContext } from "../..";
 import {
   genderOptions,
+  optionsContactForm,
   optionsSubStatus,
 } from "~/functions/selectPopoverOptions";
 import PricesSimulation from "~/components/PricesSimulation";
@@ -701,7 +702,7 @@ export default function PagePreview({
                             isFinancialDiscountChangable={false}
                           />
 
-                          <InputLine title="Location">
+                          <InputLine title="U.S. Location">
                             <Input
                               type="text"
                               name="address"
@@ -718,7 +719,7 @@ export default function PagePreview({
                               defaultValue={pageData.zip}
                               InputContext={InputContext}
                             />
-                            <SelectPopover
+                            {/* <SelectPopover
                               name="birth_country"
                               grow
                               title="Country"
@@ -729,7 +730,7 @@ export default function PagePreview({
                                   country.value === pageData.birth_country
                               )}
                               InputContext={InputContext}
-                            />
+                            /> */}
                             <Input
                               type="text"
                               name="state"
@@ -809,6 +810,7 @@ export default function PagePreview({
                               grow
                               name="whatsapp"
                               title="Whatsapp"
+                              isPhoneNumber
                               value={pageData.whatsapp}
                               InputContext={InputContext}
                             />
@@ -830,12 +832,16 @@ export default function PagePreview({
                             />
                           </InputLine>
                           <InputLine>
-                            <Input
-                              type="text"
+                            <SelectPopover
                               name="preferred_contact_form"
                               grow
                               title="Preferred Contact Form"
-                              defaultValue={pageData.preferred_contact_form}
+                              isSearchable
+                              defaultValue={optionsContactForm.find(
+                                (opt) =>
+                                  opt.value === pageData.preferred_contact_form
+                              )}
+                              options={optionsContactForm}
                               InputContext={InputContext}
                             />
                           </InputLine>

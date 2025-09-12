@@ -69,7 +69,9 @@ export default function DatePicker({
         <ReactDatePicker
           ref={datepickerRef}
           selected={date}
-          className="bg-transparent w-full "
+          className={`bg-transparent w-full ${
+            disabled || readOnly ? "text-black/40" : ""
+          } `}
           onChange={handleOnChange}
           {...rest}
         />

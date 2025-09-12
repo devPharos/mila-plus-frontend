@@ -281,3 +281,10 @@ export const monthsOptions = [
   { value: "11", label: "November" },
   { value: "12", label: "December" },
 ];
+
+export const optionsContactForm = [
+  { value: "Email", label: "Email" },
+  { value: "WhatsApp", label: "WhatsApp" },
+  { value: "U.S. Phone", label: "U.S. Phone" },
+  { value: "Home Country Phone", label: "Home Country Phone" },
+];

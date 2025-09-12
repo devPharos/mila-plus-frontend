@@ -21,6 +21,12 @@ export default function CommercialAgents() {
       type: "text",
       filter: false,
     },
+    {
+      title: "Is Active?",
+      name: "active",
+      type: "boolean",
+      filter: true,
+    },
   ];
 
   const {
@@ -73,12 +79,12 @@ export default function CommercialAgents() {
       return;
     }
     const gridDataValues = data.map(
-      ({ id, name, email, canceled_at }, index) => {
+      ({ id, name, email, active, canceled_at }, index) => {
         const ret = {
           show: true,
           id,
-          fields: [name, email],
-          canceled: canceled_at,
+          fields: [name, email, active],
+          canceled: canceled_at || !active,
           page: Math.ceil((index + 1) / limit),
         };
         return ret;

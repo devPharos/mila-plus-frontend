@@ -25,7 +25,7 @@ import SelectPopover from "~/components/RegisterForm/SelectPopover";
 import { yesOrNoOptions } from "~/functions/selectPopoverOptions";
 import TdRadioInput from "~/components/RegisterForm/TdRadioInput";
 import { useSelector } from "react-redux";
-import { getTabsPermissions, hasAccessTo } from "~/functions";
+import { getTabsPermissions } from "~/functions";
 
 export const InputContext = createContext({});
 
@@ -287,7 +287,7 @@ export default function Attendance({
                             ref={otherClassesRef}
                             className="flex flex-row items-center justify-start gap-2 px-2 pb-4 max-w-full overflow-x-scroll"
                           >
-                            {pageData.otherPaceGuides?.map(
+                            {pageData.otherPaceGuides.map(
                               (otherClass, index) => {
                                 let month = null;
                                 if (
@@ -310,6 +310,11 @@ export default function Attendance({
                                     </div>
                                   );
                                 }
+                                const disabled =
+                                  groupName === "Teacher" &&
+                                  (otherClass.date > lastAttendance.date ||
+                                    otherClass.date >
+                                      format(new Date(), "yyyy-MM-dd"));
                                 return (
                                   <>
                                     {month}
@@ -321,6 +326,7 @@ export default function Attendance({
                                       }
                                       id={otherClass.id}
                                       type="button"
+                                      disabled={disabled}
                                       onClick={() =>
                                         handleChangeAttendanceDay(otherClass.id)
                                       }
@@ -328,6 +334,8 @@ export default function Attendance({
                                         pageData.studentgroupclass?.date ===
                                         otherClass.date
                                           ? "border-mila_orange border-solid"
+                                          : disabled
+                                          ? "opacity-50"
                                           : "border-gray-300 border-dashed"
                                       } text-xs min-w-24 max-w-24`}
                                     >

@@ -55,6 +55,7 @@ import {
   genderOptions,
   inactiveReasonsOptions,
   optionsCategory,
+  optionsContactForm,
   optionsStatus,
   optionsSubStatus,
   optionsTypes,
@@ -551,10 +552,73 @@ export default function PagePreview({
                               InputContext={InputContext}
                             />
                           </InputLine>
+                          <InputLine>
+                            <Input
+                              type="text"
+                              name="birth_country"
+                              title="Country of Birth"
+                              grow
+                              defaultValue={pageData.birth_country}
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              type="text"
+                              name="birth_state"
+                              title="State / Province of Birth"
+                              grow
+                              defaultValue={pageData.birth_state}
+                              InputContext={InputContext}
+                            />
+                            <Input
+                              type="text"
+                              name="birth_city"
+                              title="City of Birth"
+                              grow
+                              defaultValue={pageData.birth_city}
+                              InputContext={InputContext}
+                            />
+                          </InputLine>
+
+                          <FindGeneric
+                            route="agents"
+                            title="Responsible Agent"
+                            scope="agent"
+                            required
+                            InputContext={InputContext}
+                            defaultValue={{
+                              id: pageData.agent?.id,
+                              name: pageData.agent?.name,
+                            }}
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                          />
+
+                          <FindGeneric
+                            route="partners_and_influencers"
+                            title="Partner and Influencer"
+                            scope="partners_and_influencers"
+                            InputContext={InputContext}
+                            defaultValue={{
+                              id: pageData.partners_and_influencers?.id,
+                              name: pageData.partners_and_influencers
+                                ?.partners_name,
+                            }}
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                          />
                           <InputLine title="Enrollment">
                             <SelectPopover
                               name="status"
                               required
+                              grow
                               title="Status"
                               readOnly={id !== "new"}
                               isSearchable
@@ -565,22 +629,40 @@ export default function PagePreview({
                               InputContext={InputContext}
                             />
                             {pageData.status === "Inactive" && (
-                              <SelectPopover
-                                name="inactive_reason"
-                                grow
-                                readOnly={id !== "new"}
-                                title="Inactive Reason"
-                                defaultValue={inactiveReasonsOptions.find(
-                                  (opt) =>
-                                    opt.value === pageData.inactive_reason
-                                )}
-                                options={inactiveReasonsOptions}
-                                InputContext={InputContext}
-                              />
+                              <>
+                                <SelectPopover
+                                  name="inactive_reason"
+                                  grow
+                                  readOnly={id !== "new"}
+                                  title="Inactivation Reason"
+                                  defaultValue={inactiveReasonsOptions.find(
+                                    (opt) =>
+                                      opt.value === pageData.inactive_reason
+                                  )}
+                                  options={inactiveReasonsOptions}
+                                  InputContext={InputContext}
+                                />
+                                <DatePicker
+                                  disabled={true}
+                                  grow
+                                  name="inactivation_date"
+                                  title="Inactivation Date"
+                                  InputContext={InputContext}
+                                  defaultValue={
+                                    pageData.inactivation?.date
+                                      ? format(
+                                          parseISO(pageData.inactivation?.date),
+                                          "MM/dd/yyyy"
+                                        )
+                                      : null
+                                  }
+                                />
+                              </>
                             )}
                             <SelectPopover
                               name="category"
                               required
+                              grow
                               title="Category"
                               readOnly={id !== "new"}
                               isSearchable
@@ -639,7 +721,7 @@ export default function PagePreview({
                             isFinancialDiscountChangable={false}
                           />
 
-                          <InputLine title="Location">
+                          <InputLine title="U.S. Location">
                             <Input
                               type="text"
                               name="address"
@@ -656,7 +738,7 @@ export default function PagePreview({
                               defaultValue={pageData.zip}
                               InputContext={InputContext}
                             />
-                            <SelectPopover
+                            {/* <SelectPopover
                               name="birth_country"
                               grow
                               title="Country"
@@ -667,7 +749,7 @@ export default function PagePreview({
                                   country.value === pageData.birth_country
                               )}
                               InputContext={InputContext}
-                            />
+                            /> */}
                             <Input
                               type="text"
                               name="state"
@@ -754,6 +836,14 @@ export default function PagePreview({
                             <PhoneNumberInput
                               type="text"
                               grow
+                              name="phone"
+                              title="U.S. Phone"
+                              value={pageData.phone}
+                              InputContext={InputContext}
+                            />
+                            <PhoneNumberInput
+                              type="text"
+                              grow
                               name="home_country_phone"
                               title="Home Country Phone"
                               value={pageData.home_country_phone}
@@ -761,12 +851,16 @@ export default function PagePreview({
                             />
                           </InputLine>
                           <InputLine>
-                            <Input
-                              type="text"
+                            <SelectPopover
                               name="preferred_contact_form"
                               grow
                               title="Preferred Contact Form"
-                              defaultValue={pageData.preferred_contact_form}
+                              isSearchable
+                              defaultValue={optionsContactForm.find(
+                                (opt) =>
+                                  opt.value === pageData.preferred_contact_form
+                              )}
+                              options={optionsContactForm}
                               InputContext={InputContext}
                             />
                           </InputLine>

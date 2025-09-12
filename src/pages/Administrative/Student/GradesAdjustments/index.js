@@ -69,11 +69,12 @@ export default function GradesAdjustments({
     for (let grade of data.grades.students) {
       if (
         (grade.score !== grade.old_score ||
-          grade.discarded !== grade.old_discarded ||
+          grade.discarded.toString() !== grade.old_discarded ||
           grade.old_dso_note) &&
         !grade.dso_note
       ) {
-        toast("DSO Notes are required when changing scores!", {
+        console.log({ grade });
+        toast("Notes are required when changing scores!", {
           type: "error",
           autoClose: 3000,
         });
@@ -200,10 +201,16 @@ export default function GradesAdjustments({
                               paceguide.type.includes("Test")
                             )
                             .map((paceguide, index) => {
-                              console.log({ paceguide });
                               return (
                                 <Scope path={`grades`} key={index}>
-                                  <InputLine title={paceguide.description}>
+                                  <InputLine
+                                    title={
+                                      paceguide.description +
+                                      " - " +
+                                      attendance.studentgroupclasses
+                                        .studentgroup.name
+                                    }
+                                  >
                                     <Input
                                       type="hidden"
                                       name="id"
@@ -223,7 +230,7 @@ export default function GradesAdjustments({
                                             Discard Score
                                           </th>
                                           <th className="w-96 ">
-                                            DSO Note (Required when changed)
+                                            Notes (Required when changed)
                                           </th>
                                         </tr>
                                       </thead>
@@ -235,7 +242,6 @@ export default function GradesAdjustments({
                                               pageData.student.id
                                           )
                                           .map((grade, index) => {
-                                            console.log({ grade });
                                             return (
                                               <Scope
                                                 path={`students.${index}`}

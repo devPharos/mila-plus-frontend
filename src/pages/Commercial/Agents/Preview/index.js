@@ -22,7 +22,10 @@ import FormLoading from "~/components/RegisterForm/FormLoading";
 import { useSelector } from "react-redux";
 import { FullGridContext } from "../..";
 import FindGeneric from "~/components/Finds/FindGeneric";
-import { agentTypeOptions } from "~/functions/selectPopoverOptions";
+import {
+  agentTypeOptions,
+  yesOrNoOptions,
+} from "~/functions/selectPopoverOptions";
 
 export const InputContext = createContext({});
 
@@ -270,6 +273,27 @@ export default function PagePreview({
                               options={agentTypeOptions}
                               InputContext={InputContext}
                               setReturnPopover={(val) => setAgentType(val[0])}
+                            />
+                            <SelectPopover
+                              name="active"
+                              required
+                              grow
+                              title="Is Active?"
+                              isSearchable
+                              defaultValue={yesOrNoOptions.find(
+                                (type) => type.value === pageData.active
+                              )}
+                              options={yesOrNoOptions}
+                              InputContext={InputContext}
+                            />
+                          </InputLine>
+                          <InputLine>
+                            <Input
+                              name="old_name"
+                              grow
+                              title="Old Name"
+                              defaultValue={pageData.old_name}
+                              InputContext={InputContext}
                             />
                           </InputLine>
                           {agentType && agentType.value === "External" && (

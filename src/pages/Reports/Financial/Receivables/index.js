@@ -2358,28 +2358,30 @@ export default function ReportFinancialReceivables() {
       </PageHeader>
 
       <div className="w-full flex flex-row justify-start items-start gap-4">
-        <div className="flex flex-col h-full px-2 w-48 items-center justify-start text-xs gap-4 bg-gray-100">
+        <div className="flex flex-col h-full px-2 min-w-44 w-44 items-center justify-start text-xs gap-4 bg-gray-100">
           <div className="text-sm p-2 py-4">
             <strong>Receivable Reports</strong>
           </div>
-          {["Received", "Outstanding", "Renegotiated"].map((report, index) => (
-            <button
-              key={index}
-              onClick={() => setFilters({ ...filters, report })}
-              className={`text-sm w-full p-2 ${
-                filters.report === report && "bg-zinc-200"
-              } rounded hover:bg-zinc-300`}
-            >
-              {report}
-            </button>
-          ))}
+          {["Received", "Outstanding", "Renegotiated", "Custom"].map(
+            (report, index) => (
+              <button
+                key={index}
+                onClick={() => setFilters({ ...filters, report })}
+                className={`text-sm w-full p-2 ${
+                  filters.report === report && "bg-zinc-200"
+                } rounded hover:bg-zinc-300`}
+              >
+                {report}
+              </button>
+            )
+          )}
         </div>
-        <div className="flex flex-col flex-1 items-center justify-center text-xs gap-4">
-          <div className="flex w-full flex-row justify-start items-start rounded-tr-2xl p-4 gap-4">
+        <div className="flex flex-col w-full max-w-[68rem] flex-1 items-center justify-center text-xs">
+          <div className="flex w-full flex-row justify-start items-start rounded-tr-2xl p-2 gap-4">
             {profile.id === 1 && (
               <>
                 <PeriodFilter />
-                <PeriodByFilter />
+                {filters.report === "Custom" && <PeriodByFilter />}
               </>
             )}
           </div>

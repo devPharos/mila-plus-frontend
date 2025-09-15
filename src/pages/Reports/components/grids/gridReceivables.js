@@ -1,5 +1,5 @@
 import { format, parseISO } from "date-fns";
-import { ChevronRight, X } from "lucide-react";
+import { ChevronRight, Eye, EyeOff, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { USDollar } from "~/functions";
 import useReportsStore from "~/store/reportsStore";
@@ -7,6 +7,7 @@ import useReportsStore from "~/store/reportsStore";
 export default function GridReceivables({ data }) {
   if (!data) return null;
   const [firstLevelIndex, setFirstLevelIndex] = useState(null);
+  const [showAll, setShowAll] = useState(false);
   const { chartOfAccountSelected, setChartOfAccountSelected } =
     useReportsStore();
 
@@ -29,6 +30,22 @@ export default function GridReceivables({ data }) {
       id="grid"
       className="flex w-full flex-1 flex-col justify-center items-center mt-4 select-none overflow-x-scroll"
     >
+      <div className="w-full flex flex-row items-center justify-end gap-2 my-2">
+        <button
+          onClick={() => setShowAll(!showAll)}
+          className="flex flex-row items-center gap-2 hover:bg-zinc-100 p-2 rounded"
+        >
+          {showAll ? (
+            <>
+              <EyeOff size={12} /> Show only with values
+            </>
+          ) : (
+            <>
+              <Eye size={12} /> Show all chart of accounts
+            </>
+          )}
+        </button>
+      </div>
       {chartOfAccountSelected && (
         <div className="w-full flex flex-row items-center justify-start gap-2 my-2">
           <button
@@ -68,6 +85,11 @@ export default function GridReceivables({ data }) {
               (item) =>
                 !chartOfAccountSelected || item.code === chartOfAccountSelected
             )
+            ?.filter(
+              (item) =>
+                showAll ||
+                item.periods.reduce((acc, period) => acc + period.total, 0) > 0
+            )
             ?.map((item, index) => {
               return (
                 <>
@@ -81,7 +103,7 @@ export default function GridReceivables({ data }) {
                           index === firstLevelIndex ? null : index
                         )
                       }
-                      className="min-w-[250px] text-left font-bold border-b p-2 cursor-pointer gap-2 sticky left-0 group-hover:bg-zinc-200 bg-white group-odd:bg-zinc-50"
+                      className="min-w-[250px] text-left font-bold border-b py-2 px-1 cursor-pointer gap-2 sticky left-0 group-hover:bg-zinc-200 bg-white group-odd:bg-zinc-50"
                     >
                       <div className="flex flex-row items-center gap-2">
                         <ChevronRight
@@ -94,7 +116,7 @@ export default function GridReceivables({ data }) {
                       </div>
                     </td>
                     {item.periods.map((item, index) => (
-                      <td className="border-b p-2 min-w-24" key={index}>
+                      <td className="border-b py-2 px-1 min-w-16" key={index}>
                         {USDollar.format(Math.round(item.total))}
                       </td>
                     ))}
@@ -105,7 +127,7 @@ export default function GridReceivables({ data }) {
                         key={index}
                         className="bg-white odd:bg-zinc-50 hover:bg-zinc-100 group"
                       >
-                        <td className="text-left font-bold border-b p-2 pl-8 sticky left-0 group-hover:bg-zinc-100 bg-white group-odd:bg-zinc-50">
+                        <td className="text-left font-bold border-b py-2 px-1 pl-8 sticky left-0 group-hover:bg-zinc-100 bg-white group-odd:bg-zinc-50">
                           <div className="flex flex-row items-center gap-2">
                             {item.children?.length ? (
                               <ChevronRight
@@ -121,7 +143,7 @@ export default function GridReceivables({ data }) {
                           </div>
                         </td>
                         {item.periods.map((item, index) => (
-                          <td className="border-b p-2" key={index}>
+                          <td className="border-b py-2 px-1" key={index}>
                             {USDollar.format(Math.round(item.total))}
                           </td>
                         ))}

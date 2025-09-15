@@ -11,7 +11,7 @@ import PeriodByFilter from "../../components/filters/periodByFilter";
 import ChartReceivables from "../../components/charts/chartReceivables";
 import GridReceivables from "../../components/grids/gridReceivables";
 import api from "~/services/api";
-import useReportsStore from "~/store/reportsStore";
+import useReportsStore, { periodByOptions } from "~/store/reportsStore";
 import { format } from "date-fns";
 import { toast } from "react-toastify";
 
@@ -35,7 +35,7 @@ export function ReportFinancialInbounds() {
 export default function ReportFinancialReceivables() {
   const { profile } = useSelector((state) => state.user);
   const currentPage = getCurrentPage();
-  const { filters, chartOfAccountSelected } = useReportsStore();
+  const { filters, setFilters, chartOfAccountSelected } = useReportsStore();
   const [loading, setLoading] = useState(true);
 
   // const [data, setData] = useState([
@@ -2357,25 +2357,45 @@ export default function ReportFinancialReceivables() {
         <FiltersBar></FiltersBar>
       </PageHeader>
 
-      <div className="flex flex-row justify-start items-start rounded-tr-2xl p-4 gap-4">
-        {profile.id === 1 && (
-          <>
-            <PeriodFilter />
-            <PeriodByFilter />
-          </>
-        )}
-      </div>
-
-      <div className="flex w-full flex-1 flex-col justify-start items-start">
-        <ChartReceivables data={data} />
-        <GridReceivables data={data} setData={setData} />
-      </div>
-
-      {loading && (
-        <div className="flex justify-center items-center h-screen absolute top-0 left-0 w-full bg-gray-500 bg-opacity-50 z-10">
-          <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-700" />
+      <div className="w-full flex flex-row justify-start items-start gap-4">
+        <div className="flex flex-col h-full px-2 w-48 items-center justify-start text-xs gap-4 bg-gray-100">
+          <div className="text-sm p-2 py-4">
+            <strong>Receivable Reports</strong>
+          </div>
+          {["Received", "Outstanding", "Renegotiated"].map((report, index) => (
+            <button
+              key={index}
+              onClick={() => setFilters({ ...filters, report })}
+              className={`text-sm w-full p-2 ${
+                filters.report === report && "bg-zinc-200"
+              } rounded hover:bg-zinc-300`}
+            >
+              {report}
+            </button>
+          ))}
         </div>
-      )}
+        <div className="flex flex-col flex-1 items-center justify-center text-xs gap-4">
+          <div className="flex w-full flex-row justify-start items-start rounded-tr-2xl p-4 gap-4">
+            {profile.id === 1 && (
+              <>
+                <PeriodFilter />
+                <PeriodByFilter />
+              </>
+            )}
+          </div>
+
+          <div className="flex w-full flex-1 flex-col justify-start items-start">
+            <ChartReceivables data={data} />
+            <GridReceivables data={data} setData={setData} />
+          </div>
+
+          {loading && (
+            <div className="flex justify-center items-center h-screen absolute top-0 left-0 w-full bg-gray-500 bg-opacity-50 z-10">
+              <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-700" />
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

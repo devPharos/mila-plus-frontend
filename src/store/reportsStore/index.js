@@ -47,7 +47,7 @@ const periodOptions = [
   },
 ];
 
-const periodByOptions = [
+export const periodByOptions = [
   {
     value: "Due Date",
     label: "Due Date",
@@ -66,6 +66,7 @@ const defaultPeriod = periodOptions.find((o) => o.label === "This month");
 
 const useReportsStore = create((set) => ({
   filters: {
+    report: "Received",
     period: {
       label: defaultPeriod.label,
       from: defaultPeriod.from,
@@ -78,7 +79,32 @@ const useReportsStore = create((set) => ({
     set({ chartOfAccountSelected }),
   periodOptions,
   periodByOptions,
-  setFilters: (filters) => set({ filters }),
+  setFilters: (filters) => {
+    if (filters.report === "Received") {
+      set({
+        filters: {
+          ...filters,
+          period_by: periodByOptions.find((o) => o.label === "Settlement Date"),
+        },
+      });
+    } else if (filters.report === "Outstanding") {
+      set({
+        filters: {
+          ...filters,
+          period_by: periodByOptions.find((o) => o.label === "Competence Date"),
+        },
+      });
+    } else if (filters.report === "Renegotiated") {
+      set({
+        filters: {
+          ...filters,
+          period_by: periodByOptions.find((o) => o.label === "Due Date"),
+        },
+      });
+    } else {
+      set({ filters });
+    }
+  },
 }));
 
 export default useReportsStore;

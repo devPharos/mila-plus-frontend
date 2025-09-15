@@ -9,7 +9,7 @@ import {
   subMonths,
 } from "date-fns";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import useReportsStore from "~/store/reportsStore";
 
@@ -17,6 +17,12 @@ export default function PeriodByFilter() {
   const [open, setOpen] = useState(false);
   const { filters, setFilters, periodByOptions } = useReportsStore();
   const [selected, setSelected] = useState(filters.period_by);
+
+  useEffect(() => {
+    if (selected) {
+      setSelected(filters.period_by);
+    }
+  }, [filters]);
   return (
     <div className="flex flex-row justify-start items-start gap-2 h-16">
       {open && (

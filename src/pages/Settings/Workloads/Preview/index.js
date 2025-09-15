@@ -120,6 +120,7 @@ export default function PagePreview({
   ].sort((a, b) => a.label > b.label);
   const { alertBox } = useContext(AlertContext);
   const [loading, setLoading] = useState(false);
+  const [requireds, setRequireds] = useState([]);
 
   function handleCloseForm() {
     if (!successfullyUpdated) {
@@ -129,6 +130,24 @@ export default function PagePreview({
   }
 
   async function handleGeneralFormSubmit(data) {
+    let totalPercentage = 0;
+    for (let paceGuide of data.paceGuides) {
+      if (paceGuide.data) {
+        for (let class_ of paceGuide.data) {
+          if (class_.percentage) {
+            totalPercentage += parseInt(class_.percentage);
+          }
+        }
+      }
+    }
+    if (totalPercentage !== 200) {
+      toast(`The total percentage must be 200, but it is ${totalPercentage}`, {
+        autoClose: 3000,
+        type: "error",
+        transition: Zoom,
+      });
+      return;
+    }
     setLoading(true);
     if (successfullyUpdated) {
       toast("No need to be saved!", {
@@ -611,6 +630,17 @@ export default function PagePreview({
                                                 value: classes.type,
                                                 label: classes.type,
                                               }}
+                                              setReturnPopover={({ value }) => {
+                                                setRequireds([
+                                                  ...requireds.filter(
+                                                    (i) => i.index !== index
+                                                  ),
+                                                  {
+                                                    index,
+                                                    value,
+                                                  },
+                                                ]);
+                                              }}
                                               InputContext={InputContext}
                                             />
                                             <Input
@@ -622,15 +652,32 @@ export default function PagePreview({
                                               defaultValue={classes.description}
                                               InputContext={InputContext}
                                             />
-                                            <Input
-                                              type="text"
-                                              name="percentage"
-                                              required
-                                              title="Percentage"
-                                              grow
-                                              defaultValue={classes.percentage}
-                                              InputContext={InputContext}
-                                            />
+                                            {(requireds
+                                              ?.find((i) => i.index === index)
+                                              ?.value?.toUpperCase()
+                                              .includes("TEST") ||
+                                              classes.type
+                                                .toUpperCase()
+                                                .includes("TEST") ||
+                                              requireds
+                                                ?.find((i) => i.index === index)
+                                                ?.value?.toUpperCase()
+                                                .includes("VIEWPOINT") ||
+                                              classes.type
+                                                .toUpperCase()
+                                                .includes("VIEWPOINT")) && (
+                                              <Input
+                                                type="text"
+                                                name="percentage"
+                                                title="Percentage"
+                                                grow
+                                                required
+                                                defaultValue={
+                                                  classes.percentage
+                                                }
+                                                InputContext={InputContext}
+                                              />
+                                            )}
                                           </InputLine>
                                         </Scope>
                                       );

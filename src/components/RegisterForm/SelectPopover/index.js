@@ -54,12 +54,11 @@ export default function SelectPopover({
     });
   }, [fieldName, registerField, rest.isMulti]);
 
-  function handleChanged() {
+  function handleChanged(value) {
     if (InputContext) {
       setSuccessfullyUpdated(false);
       if (setReturnPopover) {
-        // console.log(inputRef.current.getValue());
-        setReturnPopover(inputRef.current.state.selectValue);
+        setReturnPopover(value);
       }
     }
   }

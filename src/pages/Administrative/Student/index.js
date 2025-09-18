@@ -391,6 +391,22 @@ export default function AdministrativeStudent() {
         selected,
       });
       selectionFunctions.push({
+        title: "Transfer",
+        alias: "transfer",
+        fun: handleTransfer,
+        icon: "Replace",
+        Page: Transfer,
+        opened: transferOpen,
+        setOpened: setTransferOpen,
+        selected,
+      });
+    }
+
+    if (
+      selected[0].fields[statusIndex] === "In Class" ||
+      selected[0].fields[statusIndex] === "Inactive"
+    ) {
+      selectionFunctions.push({
         title: "Attendance Adjust.",
         alias: "attendance-adjustments",
         fun: handleAttendanceAdjustments,
@@ -418,16 +434,6 @@ export default function AdministrativeStudent() {
         Page: GradesAdjustments,
         opened: gradesAdjustmentsOpen,
         setOpened: setGradesAdjustmentsOpen,
-        selected,
-      });
-      selectionFunctions.push({
-        title: "Transfer",
-        alias: "transfer",
-        fun: handleTransfer,
-        icon: "Replace",
-        Page: Transfer,
-        opened: transferOpen,
-        setOpened: setTransferOpen,
         selected,
       });
     }

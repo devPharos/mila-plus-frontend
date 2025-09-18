@@ -1,24 +1,13 @@
-import {
-  ChevronDown,
-  ChevronRight,
-  CornerDownLeft,
-  CornerDownRight,
-  X,
-} from "lucide-react";
-import React, { useContext, useState } from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { NavLink } from "react-router-dom";
-import { PageContext } from "~/App";
 import Icon from "~/components/Icon";
-import { hasAccessTo } from "~/functions";
-
-// import { Container } from './styles';
+import OpenClose from "~/components/Sidebar/OpenClose";
 
 export default function Sidebar({ main = null, pages = [] }) {
   const [oppened, setOppened] = useState(true);
   const { accesses } = useSelector((state) => state.auth);
-
-  // const { pages } = useContext(PageContext)
 
   const activeMenu = {
     class:
@@ -38,47 +27,11 @@ export default function Sidebar({ main = null, pages = [] }) {
         oppened ? "min-w-[140px]" : "min-w-[70px]"
       } h-full bg-secondary flex flex-col justify-start items-start rounded-tl-2xl p-4 overflow-y-scroll`}
     >
-      <div className="flex flex-row justify-center items-center">
-        <button
-          type="button"
-          onClick={() => setOppened(!oppened)}
-          className="relative w-10 h-10 text-gray-300 rounded hover:bg-gray-300 transition mr-2 lg:block"
-          id="menu-toggle"
-          aria-label="Abrir Menu"
-          aria-haspopup="dialog"
-          aria-expanded="false"
-          aria-controls="radix-:R9b6uubda:"
-          data-state="closed"
-        >
-          <span
-            className={`${
-              !oppened
-                ? "bg-gray-500 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[16px] h-[2px] rounded transition"
-                : "absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[16px] h-[2px] rounded transition bg-transparent"
-            }`}
-          ></span>
-          <span
-            className={`bg-gray-500 ${
-              !oppened
-                ? "absolute left-1/2 top-[calc(50%-6px)] -translate-x-1/2 -translate-y-1/2 w-[16px] h-[2px] rounded transition-all"
-                : "absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-[16px] h-[2px] rounded transition-all top-1/2 rotate-45"
-            }`}
-          ></span>
-          <span
-            className={`bg-gray-500 ${
-              !oppened
-                ? "absolute left-1/2 top-[calc(50%+6px)] -translate-x-1/2 -translate-y-1/2 w-[16px] h-[2px] rounded transition-all"
-                : "absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-[16px] h-[2px] rounded transition-all top-1/2 -rotate-45"
-            }`}
-          ></span>
-        </button>
-        {oppened && <span className="text-gray-500 text-xs">Minimize</span>}
-      </div>
+      <OpenClose oppened={oppened} setOppened={setOppened} />
 
       <div
         className={`my-12 flex flex-1 flex-col justify-start items-start gap-4 w-full`}
       >
-        {console.log({ main })}
         {pages.map((page, index) => {
           if (
             accesses.hierarchy

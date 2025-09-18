@@ -92,7 +92,7 @@ export default function Header() {
                 </div>
               </div>
 
-              <div className="hidden md:flex flex flex-row justify-between items-center gap-x-8 text-xl">
+              <div className="hidden md:flex flex flex-row justify-between items-center xl:gap-x-8 gap-x-4 xl:text-sm text-xs">
                 {modules.map((module, index) => {
                   if (
                     auth.accesses?.hierarchy?.find(
@@ -104,7 +104,7 @@ export default function Header() {
                       <NavLink
                         key={index}
                         to={`/${module.alias}`}
-                        className={`relative text-gray-400 text-sm`}
+                        className={`relative text-gray-400`}
                       >
                         {({ isActive }) => {
                           return (
@@ -134,7 +134,7 @@ export default function Header() {
                 name="notifications"
                 active={activePopover}
                 opened={activePopover}
-                setOppened={setActivePopover}
+                // setOppened={setActivePopover}
               >
                 <div
                   className={`rounded-xl p-2 bg-secondary flex flex-row justify-center items-center cursor-pointer hover:ring hover:ring-secondary-50`}
@@ -147,7 +147,7 @@ export default function Header() {
                 name="inbox"
                 active={activePopover}
                 opened={activePopover}
-                setOppened={setActivePopover}
+                // setOppened={setActivePopover}
               >
                 <div
                   className={`rounded-xl p-2 bg-secondary flex flex-row justify-center items-center cursor-pointer hover:ring hover:ring-secondary-50`}

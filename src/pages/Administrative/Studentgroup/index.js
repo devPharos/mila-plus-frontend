@@ -199,10 +199,8 @@ export default function Studentgroups() {
           id,
           name,
           status,
-          private: privateStatus,
           classes,
           level,
-          languagemode,
           classroom,
           workload,
           staff,
@@ -217,7 +215,6 @@ export default function Studentgroups() {
         const { name: workload_name } = workload;
         const { name: staff_name } = staff;
         const { name: level_name } = level;
-        const { name: languagemode_name } = languagemode;
 
         const ret = {
           show: true,
@@ -225,9 +222,7 @@ export default function Studentgroups() {
           fields: [
             name,
             status,
-            // privateStatus,
             level_name,
-            // languagemode_name,
             classroom_name,
             workload_name,
             staff_name,

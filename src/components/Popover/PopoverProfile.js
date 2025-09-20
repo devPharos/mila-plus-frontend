@@ -64,7 +64,7 @@ const schema = Yup.object().shape({
 
 export default function PopoverProfile() {
     const inputRef = useRef();
-    const { profile } = useSelector((state) => state.user);
+    const { profile, loading } = useSelector((state) => state.user);
     console.log(profile);
     const dispatch = useDispatch();
     const formRef = useRef();
@@ -242,20 +242,30 @@ export default function PopoverProfile() {
                 <Separator />
                 <div className="space-y-3">
                     <button
-                        type='submit'
-                        className="flex items-center justify-center w-full h-10 font-medium bg-[#ee5827] rounded-md hover:bg-[#d34414] transition-colors"
+                        type="submit"
+                        disabled={loading}
+                        className={`flex items-center justify-center w-full h-10 font-medium rounded-md transition-colors ${loading ? "bg-[#d34414]/50 cursor-not-allowed" : "bg-[#ee5827] hover:bg-[#d34414]"
+                            }`}
                     >
-                        <Save size={16} className="mr-2 text-white" />
-                        <h3 className="font-semibold text-foreground text-white">Save</h3>
+                        {loading ? (
+                            <span className="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4 mr-2"></span>
+                        ) : (
+                            <Save size={16} className="mr-2 text-white" />
+                        )}
+                        <h3 className="font-semibold text-white">{loading ? "Saving..." : "Save"}</h3>
                     </button>
                     <button
                         onClick={handleLogout}
                         type="button"
-                        className="flex items-center justify-center w-full h-10 font-medium border border-red-500 rounded-md hover:bg-red-500/20 transition-colors"
+                        disabled={loading}
+                        className={`flex items-center justify-center w-full h-10 font-medium border rounded-md transition-colors ${loading ? "border-red-500/50 cursor-not-allowed" : "border-red-500 hover:bg-red-500/20"}`}
                     >
                         <LogOut size={16} className="mr-2 text-red-500" />
-                        <h3 className="font-semibold text-foreground text-red-500">Logout</h3>
+                        <h3 className={`font-semibold ${loading ? "text-red-500/50" : "text-red-500"}`}>
+                            Logout
+                        </h3>
                     </button>
+
                 </div>
             </Form>
         </div>

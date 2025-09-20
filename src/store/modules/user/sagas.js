@@ -5,6 +5,7 @@ import {
     updateProfileSuccess,
     updateProfileFailure,
 } from "./actions";
+import { getFileUrl } from "~/services/firebase";
 
 function* updateProfile({ payload }) {
     try {
@@ -12,8 +13,14 @@ function* updateProfile({ payload }) {
 
         const response = yield call(api.patch, "/users/me", data);
 
+        let profileWithAvatar = { ...response.data };
+        if (profileWithAvatar.avatar?.key) {
+            const avatarUrl = yield call(getFileUrl, profileWithAvatar.avatar.key);
+            profileWithAvatar.avatar.url = avatarUrl;
+        }
+
         toast.success("Profile updated with success!");
-        yield put(updateProfileSuccess(response.data));
+        yield put(updateProfileSuccess(profileWithAvatar));
     } catch (err) {
         switch (err.response.data.error) {
             case "email-already-used":

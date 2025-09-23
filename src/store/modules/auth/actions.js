@@ -1,53 +1,73 @@
 export function loginRequest(email, password) {
   return {
     type: "@auth/LOGIN_REQUEST",
-    payload: { email, password }
+    payload: { email, password },
   };
 }
 
 export function loginSuccess(token, user, accesses, firstFilial) {
   return {
     type: "@auth/LOGIN_SUCCESS",
-    payload: { token, user, accesses, firstFilial }
+    payload: { token, user, accesses, firstFilial },
   };
 }
 
 export function loginFailure() {
   return {
-    type: "@auth/LOGIN_FAILURE"
+    type: "@auth/LOGIN_FAILURE",
   };
 }
 
 export function registerRequest(name, email, password) {
   return {
     type: "@auth/REGISTER_REQUEST",
-    payload: { name, email, password }
+    payload: { name, email, password },
   };
 }
 
 export function registerFailure(name, email, password) {
   return {
     type: "@auth/REGISTER_REQUEST",
-    payload: { name, email, password }
+    payload: { name, email, password },
   };
 }
 
 export function filial_change(filial) {
   return {
     type: "@auth/FILIAL_CHANGE",
-    payload: { filial }
+    payload: { filial },
   };
 }
 
 export function department_change(department) {
   return {
     type: "@auth/DEPARTMENT_CHANGE",
-    payload: { department }
+    payload: { department },
   };
 }
 
 export function logout() {
   return {
     type: "@auth/LOGOUT",
+  };
+}
+
+export function updateProfileRequest(data) {
+  return {
+    type: "@auth/UPDATE_PROFILE_REQUEST",
+    payload: { data },
+  };
+}
+
+export function updateProfileSuccess(profile) {
+  return {
+    type: "@auth/UPDATE_PROFILE_SUCCESS",
+    payload: { profile },
+  };
+}
+
+export function updateProfileFailure() {
+  return {
+    type: "@auth/UPDATE_PROFILE_FAILURE",
   };
 }

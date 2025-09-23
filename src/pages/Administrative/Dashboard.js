@@ -7,6 +7,7 @@ import PageHeader from "~/components/PageHeader";
 import { getCurrentPage } from "~/functions";
 import AbsenceControl from "./Reports/AbsenceControl";
 import ClassSchedule from "./Reports/ClassSchedule";
+import EvaluationChart from "./Reports/EvaluationChart";
 
 export default function AdministrativeDashboard() {
   const currentPage = getCurrentPage();
@@ -23,6 +24,7 @@ export default function AdministrativeDashboard() {
       <div className="flex flex-1 flex-row gap-4 p-4 justify-start items-start rounded-tr-2xl">
         <AbsenceControl />
         <ClassSchedule />
+        <EvaluationChart />
       </div>
     </div>
   );

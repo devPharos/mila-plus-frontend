@@ -76,8 +76,6 @@ export default function PagePreview({
   });
   const generalForm = useRef();
   const auth = useSelector((state) => state.auth);
-  const { profile } = useSelector((state) => state.user);
-  const groupName = profile.groups[0].group.name;
   const [returnToWorkload, setReturnToWorkload] = useState({
     level_id: null,
     languagemode_id: null,

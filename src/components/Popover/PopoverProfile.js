@@ -62,7 +62,12 @@ export default function PopoverProfile() {
   const [zoom, setZoom] = useState(1);
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
-  const [preview, setPreview] = useState(profile?.avatar?.url || null);
+  const [preview, setPreview] = useState(null);
+  if (profile?.avatar) {
+    getFileUrl(profile?.avatar?.key).then((url) => {
+      setPreview(url);
+    });
+  }
   const [avatarFile, setAvatarFile] = useState(null);
 
   const onCropComplete = useCallback((_, croppedPixels) => {

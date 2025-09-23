@@ -218,7 +218,7 @@ export default function FinancialReceivables() {
       setPages,
       setGridData,
       search,
-      type: null,
+      type,
       defaultGridHeader,
       defaultOrderBy,
       setTotalRows,

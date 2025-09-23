@@ -40,7 +40,7 @@ export default function Attendance({
   const { successfullyUpdated, setSuccessfullyUpdated } =
     useContext(FullGridContext);
   const { profile } = useSelector((state) => state.user);
-  const groupName = profile.groups[0].group.name;
+  const groupName = profile.groups[0]?.group.name;
   const [pageData, setPageData] = useState({
     attendance: {
       date: null,

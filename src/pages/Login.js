@@ -34,6 +34,7 @@ export default function Login() {
 
       // navigate("/commercial/dashboard")
     } catch (err) {
+      console.log(err);
       const validationErrors = {};
       if (err instanceof Yup.ValidationError) {
         err.inner.forEach((error) => {

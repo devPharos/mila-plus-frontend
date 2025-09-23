@@ -14,9 +14,8 @@ import HeaderLink from "./components/HeaderLink";
 export const HeaderContext = createContext({});
 
 export default function Header() {
-  const { signed } = useSelector((state) => state.auth);
+  const { signed, profile } = useSelector((state) => state.auth);
   const [activePopover, setActivePopover] = useState("");
-  const { profile } = useSelector((state) => state.user);
   const [openBurger, setOpenBurger] = useState(false);
   const auth = useSelector((state) => state.auth);
   const defaultModules = [
@@ -123,7 +122,7 @@ export default function Header() {
               <div className="hidden md:block leading-none text-xs text-right">
                 Welcome,
                 <br />
-                <strong className="text-gray-700">{profile.name}</strong>
+                <strong className="text-gray-700">{profile?.name}</strong>
               </div>
             </div>
           )}

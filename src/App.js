@@ -72,6 +72,12 @@ function App() {
           title: "Student Groups",
           icon: "GraduationCap",
         },
+        {
+          alias: "rotation",
+          path: "/Administrative/Rotation",
+          title: "Rotation",
+          icon: "Rotate3d",
+        },
       ],
     },
     {

@@ -1,5 +1,5 @@
 import { Form } from "@unform/web";
-import { Building, Lock, LockOpen } from "lucide-react";
+import { BookOpenCheck, Building, Lock, LockOpen } from "lucide-react";
 import React, {
   createContext,
   useContext,
@@ -39,8 +39,11 @@ export default function Attendance({
   const { alertBox } = useContext(AlertContext);
   const { successfullyUpdated, setSuccessfullyUpdated } =
     useContext(FullGridContext);
-  const { profile } = useSelector((state) => state.user);
-  const groupName = profile.groups[0]?.group.name;
+  const { profile } = useSelector((state) => state.auth);
+  let groupName = null;
+  if (profile?.groups?.length > 0) {
+    groupName = profile?.groups[0]?.group?.name;
+  }
   const [pageData, setPageData] = useState({
     attendance: {
       date: null,
@@ -364,6 +367,21 @@ export default function Attendance({
                                           </span>
                                         )}
                                       </div>
+                                      {otherClass.paceguides.find((paceguide) =>
+                                        paceguide.type.includes("Test")
+                                      ) ? (
+                                        <div className="flex flex-row items-center gap-2 h-6">
+                                          <span className="text-nowrap w-full flex flex-row items-center justify-center gap-2">
+                                            <BookOpenCheck
+                                              size={16}
+                                              className="text-primary"
+                                            />{" "}
+                                            Grades
+                                          </span>
+                                        </div>
+                                      ) : (
+                                        <div className="flex flex-row items-center gap-2 h-6"></div>
+                                      )}
                                     </button>
                                   </>
                                 );

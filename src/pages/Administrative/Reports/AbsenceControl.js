@@ -104,32 +104,6 @@ function AbsenceControl() {
             ))}
           </select>
         </div>
-        {/* <div className="flex flex-col gap-2">
-          <label className="text-xs font-bold flex-1 text-center">
-            From date
-          </label>
-          <input
-            type="date"
-            name="from_date"
-            ref={fromDateRef}
-            className={`transition ease-in-out duration-300 w-36 text-xs text-gray-500 p-2 border rounded ${
-              error === "from_date" && "border-red-500"
-            }`}
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <label className="text-xs font-bold flex-1 text-center">
-            Until date
-          </label>
-          <input
-            type="date"
-            name="until_date"
-            ref={untilDateRef}
-            className={`transition ease-in-out duration-300 w-36 text-xs text-gray-500 p-2 border rounded ${
-              error === "until_date" && "border-red-500"
-            }`}
-          />
-        </div> */}
         <div className="flex flex-col gap-2">
           <button
             type="button"

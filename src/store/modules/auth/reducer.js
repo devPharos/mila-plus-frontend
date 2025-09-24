@@ -53,7 +53,6 @@ export default function auth(state = INITIAL_STATE, action) {
         break;
       }
       case "@auth/UPDATE_PROFILE_SUCCESS": {
-        console.log("UPDATE_PROFILE_SUCCESS");
         draft.profile = { ...draft.profile, ...action.payload.profile };
         draft.loading = false;
         break;

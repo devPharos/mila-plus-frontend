@@ -6,6 +6,7 @@ import api from "~/services/api";
 
 import { loginSuccess, loginFailure, registerFailure } from "./actions";
 import { updateProfileFailure, updateProfileSuccess } from "../auth/actions";
+import { getFileUrl } from "~/services/firebase";
 
 export function* login({ payload }) {
   try {
@@ -95,7 +96,8 @@ export function* updateProfile({ payload }) {
     toast.success("Profile updated with success!");
     yield put(updateProfileSuccess(profileWithAvatar));
   } catch (err) {
-    switch (err.response.data.error) {
+    console.log(err);
+    switch (err.response?.data.error) {
       case "email-already-used":
         toast.error("Email is already used.");
         break;

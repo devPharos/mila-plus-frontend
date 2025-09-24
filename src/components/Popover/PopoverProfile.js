@@ -54,7 +54,8 @@ const schema = Yup.object().shape({
 
 export default function PopoverProfile() {
   const inputRef = useRef();
-  const { profile, loading } = useSelector((state) => state.auth);
+  const { profile } = useSelector((state) => state.auth);
+  const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const formRef = useRef();
   const navigate = useNavigate();
@@ -76,6 +77,7 @@ export default function PopoverProfile() {
 
   const handleSumbit = useCallback(
     async (data) => {
+      setLoading(true);
       try {
         formRef.current.setErrors({});
         await schema.validate(data, { abortEarly: false });
@@ -89,8 +91,10 @@ export default function PopoverProfile() {
           formData.append("avatar", avatarFile, "avatar.png");
         }
 
+        setLoading(false);
         dispatch(updateProfileRequest(formData));
       } catch (err) {
+        setLoading(false);
         if (err instanceof Yup.ValidationError) {
           const validationErrors = {};
           err.inner.forEach((error) => {

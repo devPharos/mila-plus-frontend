@@ -16,7 +16,7 @@ export default function Rotation() {
   const statusRef = useRef();
   const [error, setError] = useState(false);
   const [statuses, setStatuses] = useState([]);
-  const [status, setStatus] = useState("All");
+  const [status, setStatus] = useState("");
   const [group, setGroup] = useState(null);
 
   const {
@@ -413,19 +413,78 @@ export default function Rotation() {
                         return (
                           <tr
                             key={index}
-                            className="border-b even:bg-zinc-50 text-zinc-500 h-8"
+                            className="border-b even:bg-zinc-50 text-zinc-500 h-12 hover:bg-zinc-100"
                           >
                             <td>{(index + 1).toString()}</td>
                             <td className="text-left">
                               {studentGroup?.frequency.student?.name}{" "}
                               {studentGroup?.frequency.student?.last_name}
                             </td>
-                            <td>{studentGroup?.frequency.frequency || 0}%</td>
-                            <td>0</td>
-                            <td className={`${color} text-black/80`}>
-                              {result}
+                            <td>
+                              <div className="w-full flex flex-row justify-center items-center">
+                                <div
+                                  className={`${color} text-black/80 w-16 rounded`}
+                                >
+                                  {studentGroup?.frequency.frequency || 0}%
+                                </div>
+                              </div>
                             </td>
-                            <td></td>
+                            <td>
+                              <div className="w-full flex flex-row justify-center items-center">
+                                <div
+                                  className={`${color} text-black/80 w-16 rounded`}
+                                >
+                                  {random.toFixed(0)}
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="w-full flex flex-row justify-center items-center">
+                                <div
+                                  className={`${color} text-black/80 w-24 rounded`}
+                                >
+                                  {result}
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="w-full flex flex-col justify-center items-center gap-1">
+                                <div className="w-full flex flex-row justify-center items-center gap-1">
+                                  <div
+                                    className={`${color} text-black/80 w-4 h-4 rounded`}
+                                  ></div>
+                                  <div
+                                    className={`bg-emerald-400 text-black/80 w-4 h-4 rounded`}
+                                  ></div>
+                                  <div
+                                    className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
+                                  ></div>
+                                  <div
+                                    className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
+                                  ></div>
+                                  <div
+                                    className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
+                                  ></div>
+                                </div>
+                                <div className="w-full flex flex-row justify-center items-center gap-1">
+                                  <div
+                                    className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
+                                  ></div>
+                                  <div
+                                    className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
+                                  ></div>
+                                  <div
+                                    className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
+                                  ></div>
+                                  <div
+                                    className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
+                                  ></div>
+                                  <div
+                                    className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
+                                  ></div>
+                                </div>
+                              </div>
+                            </td>
                             <td>
                               {studentGroup.start_date &&
                                 format(

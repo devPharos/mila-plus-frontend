@@ -4,9 +4,9 @@ import { getCurrentPage } from "~/functions";
 import PageHeader from "~/components/PageHeader";
 import Breadcrumbs from "~/components/Breadcrumbs";
 import FiltersBar from "~/components/FiltersBar";
-import { Filter, Search } from "lucide-react";
+import { CalendarX2, Filter, Search, TreePalm } from "lucide-react";
 import api from "~/services/api";
-import { format, parseISO } from "date-fns";
+import { differenceInCalendarDays, format, parseISO } from "date-fns";
 
 export default function Rotation() {
   const [loading, setLoading] = useState(true);
@@ -257,6 +257,16 @@ export default function Rotation() {
                         format(parseISO(group.end_date), "MM/dd/yyyy")}
                     </div>
                   </div>
+                  <div className="flex flex-grow flex-col gap-1">
+                    <label className="text-xs font-bold flex-1 text-left">
+                      Total Days
+                    </label>
+                    <div
+                      className={`w-full transition ease-in-out duration-300 w-36 text-xs bg-white text-gray-500 p-2 border rounded`}
+                    >
+                      {group.total_classes}
+                    </div>
+                  </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold flex-1 text-left">
                       Mon
@@ -371,6 +381,9 @@ export default function Rotation() {
                         Student
                       </th>
                       <th className="border rounded p-2 hover:bg-gray-100 text-center">
+                        Vacation Days
+                      </th>
+                      <th className="border rounded p-2 hover:bg-gray-100 text-center">
                         Frequency %
                       </th>
                       <th className="border rounded p-2 hover:bg-gray-100 text-center">
@@ -398,18 +411,13 @@ export default function Rotation() {
                           : -1
                       )
                       .map((studentGroup, index) => {
-                        const random = Math.random() * 100;
-                        let result = "FAIL";
-                        let color = "bg-red-400";
-                        if (random > 80) {
-                          result = "PASS";
-                          color = "bg-green-400";
-                        } else if (random > 50) {
-                          result = "REDO";
-                          color = "bg-yellow-400";
-                        } else {
-                          result = "FAIL";
-                        }
+                        const totalInGroup =
+                          studentGroup?.frequency?.totals?.groups.find(
+                            (g) => g.group.id === group.id
+                          ) || { frequency: 0 };
+                        const frequency =
+                          parseInt(totalInGroup.frequency?.toFixed(0)) || 0;
+                        const score = totalInGroup.score;
                         return (
                           <tr
                             key={index}
@@ -417,33 +425,53 @@ export default function Rotation() {
                           >
                             <td>{(index + 1).toString()}</td>
                             <td className="text-left">
-                              {studentGroup?.frequency.student?.name}{" "}
-                              {studentGroup?.frequency.student?.last_name}
+                              {studentGroup?.frequency?.student?.name}{" "}
+                              {studentGroup?.frequency?.student?.last_name}
+                            </td>
+                            <td>
+                              {studentGroup?.vacation_days > 0 && (
+                                <div className="w-full flex flex-row justify-center gap-1 items-center">
+                                  {studentGroup?.vacation_days}
+                                  <CalendarX2 size={12} />
+                                </div>
+                              )}
                             </td>
                             <td>
                               <div className="w-full flex flex-row justify-center items-center">
                                 <div
-                                  className={`${color} text-black/80 w-16 rounded`}
+                                  className={`${
+                                    frequency >= 80
+                                      ? "bg-emerald-400"
+                                      : "bg-red-400"
+                                  } text-black/80 w-16 rounded`}
                                 >
-                                  {studentGroup?.frequency.frequency || 0}%
+                                  {frequency}%
                                 </div>
                               </div>
                             </td>
                             <td>
                               <div className="w-full flex flex-row justify-center items-center">
                                 <div
-                                  className={`${color} text-black/80 w-16 rounded`}
+                                  className={`${
+                                    score >= 80
+                                      ? "bg-emerald-400"
+                                      : "bg-red-400"
+                                  } text-black/80 w-16 rounded`}
                                 >
-                                  {random.toFixed(0)}
+                                  {score || 0}
                                 </div>
                               </div>
                             </td>
                             <td>
                               <div className="w-full flex flex-row justify-center items-center">
                                 <div
-                                  className={`${color} text-black/80 w-24 rounded`}
+                                  className={`${
+                                    score >= 80
+                                      ? "bg-emerald-400"
+                                      : "bg-red-400"
+                                  } text-black/80 w-20 rounded`}
                                 >
-                                  {result}
+                                  {score >= 80 ? "PASS" : "FAIL"}
                                 </div>
                               </div>
                             </td>
@@ -451,10 +479,14 @@ export default function Rotation() {
                               <div className="w-full flex flex-col justify-center items-center gap-1">
                                 <div className="w-full flex flex-row justify-center items-center gap-1">
                                   <div
-                                    className={`${color} text-black/80 w-4 h-4 rounded`}
+                                    className={`${
+                                      score >= 80
+                                        ? "bg-emerald-400"
+                                        : "bg-red-400"
+                                    } text-black/80 w-4 h-4 rounded`}
                                   ></div>
                                   <div
-                                    className={`bg-emerald-400 text-black/80 w-4 h-4 rounded`}
+                                    className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
                                   ></div>
                                   <div
                                     className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}

@@ -75,7 +75,7 @@ function App() {
         {
           alias: "rotation",
           path: "/Administrative/Rotation",
-          title: "Rotation",
+          title: "Rotation 1st Step",
           icon: "Rotate3d",
         },
       ],

@@ -74,7 +74,7 @@ export default function MedicalCertificateVacation({
   useEffect(() => {
     async function loadData() {
       setPageData(state => ({ ...state, data: [], loaded: false }));
-      const { data } = await api.get(`/students/${activeMenu.replace(/\s+/g, "_")}/${selected[0].id}`);
+      const { data } = await api.get(`/${activeMenu.replace(/\s+/g, "_")}/${selected[0].id}`);
       setPageData(state => ({ ...state, data, loaded: true }));
     }
     loadData();
@@ -97,13 +97,13 @@ export default function MedicalCertificateVacation({
     for (let i = 0; i < files.length; i++) {
       allPromises.push(uploadFile(
         files[i],
-        `Students/${activeMenu.replace(/\s+/g, "_")}`
+        `${activeMenu.replace(/\s+/g, "_")}`
       ));
     }
 
     Promise.all(allPromises).then(async (files_res) => {
       try {
-        const { data } = await api.post(`/students/${activeMenu.replace(/\s+/g, "_")}`, {
+        const { data } = await api.post(`/${activeMenu.replace(/\s+/g, "_")}`, {
           student_id: selected[0].id,
           date_from: format(date_from, "yyyy-MM-dd"),
           date_to: format(date_to, "yyyy-MM-dd"),
@@ -146,7 +146,7 @@ export default function MedicalCertificateVacation({
           title: "Yes",
           onPress: async () => {
             try {
-              await api.delete(`/students/${activeMenu.replace(/\s+/g, "_")}/${valueForDelete}`);
+              await api.delete(`/${activeMenu.replace(/\s+/g, "_")}/${valueForDelete}`);
 
               toast(`${activeMenu.replace(/\s+/g, " ")} deleted successfully`, { autoClose: 1000 });
 
@@ -177,9 +177,9 @@ export default function MedicalCertificateVacation({
           <RegisterFormMenu
             setActiveMenu={setActiveMenu}
             activeMenu={activeMenu}
-            name="Vacation"
+            name="Vacations"
           >
-            <TreePalm size={16} /> Vacation
+            <TreePalm size={16} /> Vacations
           </RegisterFormMenu>
         </div>
         <div className="border h-full rounded-xl overflow-hidden flex flex-1 flex-col justify-start">

@@ -35,15 +35,6 @@ export default function PeriodFilter() {
           <div className="flex flex-col">
             <span>Period</span>
             <strong className="text-sm">{selected?.label}</strong>
-            {/* {selected.label !== "Custom" && (
-              <>
-                <br />
-                {selected.from
-                  ? format(selected.from, "MM/dd/yyyy")
-                  : null} -{" "}
-                {selected.to ? format(selected.to, "MM/dd/yyyy") : null}
-              </>
-            )} */}
           </div>
           {open ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>

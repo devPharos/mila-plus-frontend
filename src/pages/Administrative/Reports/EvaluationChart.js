@@ -47,7 +47,8 @@ function EvaluationChart() {
 
   async function getGroups() {
     try {
-      const { data } = await api.get("/studentgroups");
+      const { data } = await api.get("/studentgroups?limit=100");
+      console.log(data.rows);
       setGroups(data.rows.map((group) => ({ id: group.id, name: group.name })));
     } catch (err) {
       console.log(err);

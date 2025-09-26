@@ -97,24 +97,20 @@ export default function EnrollmentBarChart({ year }) {
         <div className="flex flex-col items-start justify-center">
           <h1 className="text-xl font-bold">Students in Class</h1>
           <h1 className="text-base font-extralight text-gray-500">
-            {year ? `Year ${year}` : "This month"}
+            {year ? `Year ${year}` : "This year"}
           </h1>
         </div>
-        <div className="flex flex-row items-end justify-center gap-5">
-          <div className="text-2xl font-bold border-b border-l p-3 rounded w-44">
-            <h2 className="text-base font-light text-gray-500">
-              In Class
-            </h2>
+        <div className="flex flex-row items-end justify-center gap-4">
+          <div className="text-xl font-bold border-b border-l p-2 rounded w-40">
+            <h2 className="text-sm font-light text-gray-500">In Class</h2>
             {summaryLoading ? (
               <div className="h-7 w-24 bg-gray-200 animate-pulse rounded mt-1" />
             ) : (
               <span>{summary.inClass.toLocaleString()}</span>
             )}
           </div>
-          <div className="text-2xl font-bold border-b border-l p-3 rounded w-44">
-            <h2 className="text-base font-light text-gray-500">
-              Waiting
-            </h2>
+          <div className="text-xl font-bold border-b border-l p-2 rounded w-40">
+            <h2 className="text-base font-light text-gray-500">Waiting</h2>
             {summaryLoading ? (
               <div className="h-7 w-24 bg-gray-200 animate-pulse rounded mt-1" />
             ) : (
@@ -124,7 +120,7 @@ export default function EnrollmentBarChart({ year }) {
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={180}>
+      <ResponsiveContainer width="100%" height={150}>
         <BarChart data={data}>
           <Tooltip
             contentStyle={{ backgroundColor: "transparent", border: "none" }}
@@ -140,12 +136,12 @@ export default function EnrollmentBarChart({ year }) {
           <CartesianGrid vertical={false} strokeOpacity={0.15} />
           <XAxis
             dataKey="month"
-            fontSize={14}
+            fontSize={12}
             tickFormatter={(value) => format(parseISO(value + "-01"), "MMM")}
           />
           <YAxis
             width={50}
-            fontSize={14}
+            fontSize={12}
             tickFormatter={(value) => value.toLocaleString()}
           />
           <defs>
@@ -153,7 +149,13 @@ export default function EnrollmentBarChart({ year }) {
               <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
               <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
             </linearGradient>
-            <linearGradient id="colorStudentsActive" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient
+              id="colorStudentsActive"
+              x1="0"
+              y1="0"
+              x2="0"
+              y2="1"
+            >
               <stop offset="5%" stopColor="rgb(238 88 39)" stopOpacity={0.8} />
               <stop offset="95%" stopColor="rgb(238 88 39)" stopOpacity={0} />
             </linearGradient>

@@ -8,6 +8,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  LabelList,
 } from "recharts";
 import { Loader2, Calendar, UserCheck, Clock } from "lucide-react";
 import { parseISO, format } from "date-fns";
@@ -27,10 +28,8 @@ export default function EnrollmentBarChart({ year }) {
   async function fetchData() {
     try {
       setLoading(true);
-
       const params = {};
       if (typeof year === "number") params.year = year;
-
       const resp = await api.get("/enrollment-stats/month", { params });
       setData(resp.data || []);
     } catch (err) {
@@ -161,6 +160,13 @@ export default function EnrollmentBarChart({ year }) {
             </linearGradient>
           </defs>
           <Bar dataKey="students" onClick={handleClick}>
+            <LabelList
+              dataKey="students"
+              position="insideBottom"
+              offset={6}
+              className="text-[12px] font-semibold"
+              fill="#111827"
+            />
             {data.map((_entry, index) => (
               <Cell
                 cursor="pointer"

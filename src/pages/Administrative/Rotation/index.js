@@ -4,9 +4,11 @@ import { getCurrentPage } from "~/functions";
 import PageHeader from "~/components/PageHeader";
 import Breadcrumbs from "~/components/Breadcrumbs";
 import FiltersBar from "~/components/FiltersBar";
-import { CalendarX2, Filter, Search, TreePalm } from "lucide-react";
+import { CalendarX2, Edit, Eye, Filter, Search } from "lucide-react";
 import api from "~/services/api";
-import { differenceInCalendarDays, format, parseISO } from "date-fns";
+import { format, parseISO } from "date-fns";
+import StudentDetail from "./components/studentDetail";
+import EditResult from "./components/editResult";
 
 export default function Rotation() {
   const [loading, setLoading] = useState(true);
@@ -18,6 +20,8 @@ export default function Rotation() {
   const [statuses, setStatuses] = useState([]);
   const [status, setStatus] = useState("");
   const [group, setGroup] = useState(null);
+  const [showDetails, setShowDetails] = useState(null);
+  const [edit, setEdit] = useState(null);
 
   const {
     accessModule,
@@ -376,7 +380,9 @@ export default function Rotation() {
                 <table className="w-full text-sm text-center">
                   <thead className="sticky top-0 border-b bg-zinc-100">
                     <tr>
-                      <th className="border-0 rounded p-2 hover:bg-gray-100 w-[43px]"></th>
+                      <th className="border-0 rounded p-2 hover:bg-gray-100 w-[43px]">
+                        #
+                      </th>
                       <th className="border rounded p-2 hover:bg-gray-100 text-left">
                         Student
                       </th>
@@ -393,6 +399,9 @@ export default function Rotation() {
                         Result
                       </th>
                       <th className="border rounded p-2 hover:bg-gray-100 text-center">
+                        Actions
+                      </th>
+                      <th className="border rounded p-2 hover:bg-gray-100 text-center">
                         Level History
                       </th>
                       <th className="border rounded p-2 hover:bg-gray-100 text-center">
@@ -403,9 +412,9 @@ export default function Rotation() {
                   <tbody>
                     {group?.studentxgroups
                       ?.sort((a, b) =>
-                        a.frequency?.student.name +
-                          a.frequency.student?.last_name >
-                        b.frequency?.student.name +
+                        a.frequency?.student?.name +
+                          a.frequency?.student?.last_name >
+                        b.frequency?.student?.name +
                           b.frequency?.student?.last_name
                           ? 1
                           : -1
@@ -463,7 +472,7 @@ export default function Rotation() {
                               </div>
                             </td>
                             <td>
-                              <div className="w-full flex flex-row justify-center items-center">
+                              <div className="w-full flex flex-row justify-center items-center gap-1">
                                 <div
                                   className={`${
                                     score >= 80
@@ -473,6 +482,22 @@ export default function Rotation() {
                                 >
                                   {score >= 80 ? "PASS" : "FAIL"}
                                 </div>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="w-full flex flex-row justify-center items-center">
+                                <button
+                                  onClick={() => setShowDetails(studentGroup)}
+                                  className="p-2 rounded hover:bg-zinc-200 cursor-pointer"
+                                >
+                                  <Eye size={16} />
+                                </button>
+                                <button
+                                  onClick={() => setEdit(studentGroup)}
+                                  className="p-2 rounded hover:bg-zinc-200 cursor-pointer"
+                                >
+                                  <Edit size={16} />
+                                </button>
                               </div>
                             </td>
                             <td>
@@ -534,6 +559,18 @@ export default function Rotation() {
           )}
         </div>
       </div>
+      {/* Modal */}
+      {showDetails && (
+        <StudentDetail
+          setShowDetails={setShowDetails}
+          studentGroup={showDetails}
+          group={group}
+        />
+      )}
+
+      {edit && (
+        <EditResult setEdit={setEdit} studentGroup={edit} group={group} />
+      )}
       {loading && (
         <div className="flex justify-center items-center h-screen absolute top-0 left-0 w-full bg-gray-500 bg-opacity-50">
           <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-700" />

@@ -408,7 +408,7 @@ export default function RotationOne() {
                     onClick={handleFinishRotation}
                     className="text-md font-bold bg-white border border-primary text-primary hover:border-white hover:bg-primary hover:text-white rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1 transition ease-in-out duration-300"
                   >
-                    Save and Finish this Rotation
+                    Save Rotation first step
                     <Save size={16} />
                   </button>
                 </div>

@@ -19,6 +19,7 @@ import api from "~/services/api";
 import { getRegistries, handleUpdatedFields } from "~/functions";
 import FormLoading from "~/components/RegisterForm/FormLoading";
 import { FullGridContext } from "../..";
+import FindGeneric from "~/components/Finds/FindGeneric";
 
 export const InputContext = createContext({});
 
@@ -127,19 +128,6 @@ export default function PagePreview({
         toast(err.response.data.error, { type: "error", autoClose: 3000 });
       }
     }
-    async function getDefaultOptions() {
-      try {
-        const { data } = await api.get(`programcategories`);
-        const programCategories = [];
-        data.map((d) => {
-          return programCategories.push({ value: d.id, label: d.name });
-        });
-        setProgramCategoriesOptions(programCategories);
-      } catch (err) {
-        toast(err.response.data.error, { type: "error", autoClose: 3000 });
-      }
-    }
-    getDefaultOptions();
     if (id === "new") {
       setFormType("full");
     } else if (id) {
@@ -230,19 +218,43 @@ export default function PagePreview({
                               defaultValue={pageData.total_hours}
                               InputContext={InputContext}
                             />
-                            <SelectPopover
-                              name="programcategory_id"
-                              title="Type"
-                              grow
-                              generalForm={generalForm}
-                              options={programCategoriesOptions}
-                              defaultValue={{
-                                value: pageData.programcategory_id,
-                                label: pageData.Programcategory.name,
-                              }}
-                              InputContext={InputContext}
-                            />
                           </InputLine>
+                          <FindGeneric
+                            route="programcategories"
+                            title="Program Category"
+                            scope="programcategory"
+                            name="programcategory_id"
+                            required
+                            InputContext={InputContext}
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                            defaultValue={{
+                              id: pageData?.Programcategory?.id,
+                              name: pageData?.Programcategory?.name,
+                            }}
+                          />
+                          <FindGeneric
+                            route="levels"
+                            title="Previous Level"
+                            scope="previous_level"
+                            name="level_id"
+                            required
+                            InputContext={InputContext}
+                            fields={[
+                              {
+                                title: "Name",
+                                name: "name",
+                              },
+                            ]}
+                            defaultValue={{
+                              id: pageData?.previous_level?.id,
+                              name: pageData?.previous_level?.name,
+                            }}
+                          />
                         </InputLineGroup>
                       </>
                     ) : (

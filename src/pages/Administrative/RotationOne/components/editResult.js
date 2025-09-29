@@ -3,14 +3,10 @@ import { useRef } from "react";
 import { toast } from "react-toastify";
 import api from "~/services/api";
 
-export default function EditResult({ studentGroup, setEdit, group }) {
-  if (!studentGroup) return null;
-  const { name, last_name } = studentGroup.frequency.student;
-  const totalInGroup = studentGroup?.frequency?.totals?.groups.find(
-    (g) => g.group.id === group.id
-  ) || { frequency: 0 };
-  const frequency = parseInt(totalInGroup.frequency?.toFixed(0)) || 0;
-  const score = totalInGroup.score;
+export default function EditResult({ student, setEdit }) {
+  if (!student) return null;
+  const { name } = student;
+  const { frequency, final_average_score } = student;
   const options = [
     {
       label: "PASS",
@@ -30,11 +26,17 @@ export default function EditResult({ studentGroup, setEdit, group }) {
       return;
     }
     try {
-      const { data } = await api.put(`/rotation/students/${studentGroup.id}`, {
-        result: resultRef.current.value,
-        reason: reasonRef.current.value,
+      const { data } = await api.put(
+        `/rotation/students/${student.student_id}`,
+        {
+          ...student,
+          result: resultRef.current.value,
+          reason: reasonRef.current.value,
+        }
+      );
+      toast(`${resultRef.current.value} Result for ${name}`, {
+        autoClose: 1000,
       });
-      toast(`${result} Result for ${name} ${last_name}`, { autoClose: 1000 });
       setEdit(null);
     } catch (err) {
       console.log(err);
@@ -47,9 +49,7 @@ export default function EditResult({ studentGroup, setEdit, group }) {
         <div className="w-full max-w-md bg-white rounded-lg shadow-lg">
           <div className="flex flex-col items-center justify-center gap-4 p-4">
             <div className="w-full flex flex-row items-center justify-between gap-4 pb-2 border-b">
-              <h1 className="text-sm font-bold">
-                {name} <span className="font-extralight">{last_name}</span>
-              </h1>
+              <h1 className="text-sm font-bold">{name}</h1>
               <div className="text-xl font-bold cursor-pointer">
                 <X size={22} onClick={() => setEdit(null)} />
               </div>
@@ -71,7 +71,9 @@ export default function EditResult({ studentGroup, setEdit, group }) {
                     Final Average Score
                   </label>
                   <div className="flex flex-row items-center justify-center gap-2 w-full">
-                    <span className="text-sm font-bold">{score || 0}</span>
+                    <span className="text-sm font-bold">
+                      {final_average_score || 0}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -90,8 +92,9 @@ export default function EditResult({ studentGroup, setEdit, group }) {
                     >
                       {options.map((option, index) => {
                         const selected =
-                          (score >= 80 && option.value === "PASS") ||
-                          (score < 80 && option.value === "FAIL");
+                          (final_average_score >= 80 &&
+                            option.value === "PASS") ||
+                          (final_average_score < 80 && option.value === "FAIL");
 
                         return (
                           <option

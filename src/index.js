@@ -92,7 +92,8 @@ import ReportFinancialReceivables, {
 } from "./pages/Reports/Financial/Receivables";
 import Report from "./pages/Reports";
 import ReportDashboard from "./pages/Reports/Dashboard";
-import Rotation from "./pages/Administrative/Rotation";
+import RotationOne from "./pages/Administrative/RotationOne";
+import RotationTwo from "./pages/Administrative/RotationTwo";
 
 injectStore(store);
 
@@ -202,8 +203,12 @@ const router = createBrowserRouter([
             element: <Studentgroups />,
           },
           {
-            path: "/Administrative/Rotation",
-            element: <Rotation />,
+            path: "/Administrative/RotationFaseOne",
+            element: <RotationOne />,
+          },
+          {
+            path: "/Administrative/RotationFaseTwo",
+            element: <RotationTwo />,
           },
           {
             path: "/Administrative/*",

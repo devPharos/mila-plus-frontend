@@ -4,24 +4,36 @@ import { getCurrentPage } from "~/functions";
 import PageHeader from "~/components/PageHeader";
 import Breadcrumbs from "~/components/Breadcrumbs";
 import FiltersBar from "~/components/FiltersBar";
-import { CalendarX2, Edit, Eye, Filter, Search } from "lucide-react";
+import {
+  CalendarX2,
+  Edit,
+  Eye,
+  Filter,
+  Save,
+  Search,
+  Send,
+} from "lucide-react";
 import api from "~/services/api";
 import { format, parseISO } from "date-fns";
 import StudentDetail from "./components/studentDetail";
 import EditResult from "./components/editResult";
+import { toast } from "react-toastify";
 
-export default function Rotation() {
+export default function RotationOne() {
   const [loading, setLoading] = useState(true);
   const currentPage = getCurrentPage();
   const [groups, setGroups] = useState([]);
   const groupRef = useRef();
   const statusRef = useRef();
   const [error, setError] = useState(false);
-  const [statuses, setStatuses] = useState([]);
+  const [statuses, setStatuses] = useState(["Ongoing"]);
   const [status, setStatus] = useState("");
-  const [group, setGroup] = useState(null);
+  const [data, setData] = useState(null);
   const [showDetails, setShowDetails] = useState(null);
   const [edit, setEdit] = useState(null);
+
+  const group = data?.studentGroup;
+  const students = data?.students;
 
   const {
     accessModule,
@@ -55,14 +67,12 @@ export default function Rotation() {
     totalRows,
   } = useContext(FullGridContext);
 
-  const pageAccess = accessModule.children.find(
-    (el) => el.alias === "rotation"
-  );
-
   async function getGroup(id) {
+    setLoading(true);
     try {
-      const { data } = await api.get(`/rotation/groups/${id}`);
-      setGroup(data);
+      const { data } = await api.get(`/rotation/group/${id}`);
+      console.log(data);
+      setData(data);
       setLoading(false);
     } catch (err) {
       console.log(err);
@@ -81,15 +91,14 @@ export default function Rotation() {
 
   async function getGroups() {
     try {
-      const { data } = await api.get("/studentgroups?limit=500");
+      const { data } = await api.get(`/rotation/listGroups?status=${status}`);
       setGroups(
-        data.rows.map((group) => ({
+        data.map((group) => ({
           id: group.id,
           name: group.name,
           status: group.status,
         }))
       );
-      setStatuses([...new Set(data.rows.map((group) => group.status))]);
       setLoading(false);
     } catch (err) {
       console.log(err);
@@ -97,9 +106,26 @@ export default function Rotation() {
     }
   }
 
+  async function handleFinishRotation() {
+    try {
+      const { data } = await api.post(`/rotation`, { students });
+      toast(`The 1st step was saved successfully`, { autoClose: 1000 });
+      getGroup(id);
+    } catch (err) {
+      console.log(err);
+      toast(err.response?.data?.error, { type: "error", autoClose: 3000 });
+    }
+  }
+
   useEffect(() => {
     getGroups();
-  }, []);
+  }, [status]);
+
+  useEffect(() => {
+    if (group?.id && !edit) {
+      getGroup(group.id);
+    }
+  }, [edit]);
 
   return (
     <>
@@ -112,8 +138,8 @@ export default function Rotation() {
         </PageHeader>
 
         <div className="flex flex-col w-full gap-4 justify-start items-start rounded-tr-2xl overflow-y-scroll pb-8">
-          <div className="flex flex-row px-4 justify-start items-start rounded-tr-2xl">
-            <div className="bg-zinc-50 flex flex-col items-center gap-2 border rounded-lg duration-300 ease-in-out hover:bg-zinc-50 hover:border-zinc-400">
+          <div className="w-full flex flex-row px-4 justify-start items-center rounded-tr-2xl gap-4">
+            <div className="bg-zinc-50 h-20 flex flex-col items-center gap-2 border rounded-lg duration-300 ease-in-out hover:bg-zinc-50 hover:border-zinc-400">
               <div className="flex flex-row items-end gap-2 p-2">
                 <div className="flex flex-col gap-2">
                   <label className="text-xs font-bold flex-1 text-left">
@@ -148,13 +174,11 @@ export default function Rotation() {
                   >
                     <option value="">...</option>
                     {groups.length > 0 &&
-                      groups
-                        .filter((group) => group.status === status || !status)
-                        .map((group) => (
-                          <option value={group.id} key={group.id}>
-                            {group.name}
-                          </option>
-                        ))}
+                      groups.map((group) => (
+                        <option value={group.id} key={group.id}>
+                          {group.name}
+                        </option>
+                      ))}
                   </select>
                 </div>
                 <div className="flex flex-col gap-2">
@@ -374,7 +398,31 @@ export default function Rotation() {
               </div>
             </div>
           )}
-          {group?.studentxgroups?.length > 0 && (
+          {group && (
+            <>
+              {group.content_percentage === 100 &&
+              group.class_percentage === 100 ? (
+                <div className="flex w-full flex-row gap-4 px-4 py-0 justify-end items-start rounded-tr-2xl">
+                  <button
+                    type="button"
+                    onClick={handleFinishRotation}
+                    className="text-md font-bold bg-white border border-primary text-primary hover:border-white hover:bg-primary hover:text-white rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1 transition ease-in-out duration-300"
+                  >
+                    Save and Finish this Rotation
+                    <Save size={16} />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex w-full flex-row gap-4 px-4 py-0 justify-end items-start rounded-tr-2xl text-sm text-black/60 ">
+                  <div className="border border-red-400 text-red-400 p-1 rounded border-dashed">
+                    To conclude this rotation, all class and content must be
+                    given...
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+          {students?.length > 0 && (
             <div className="flex-1 flex w-full flex-row gap-4 px-4 py-0 justify-start items-start rounded-tr-2xl">
               <div className="flex w-full flex-col items-center gap-2 border rounded-lg duration-300 ease-in-out hover:border-zinc-400">
                 <table className="w-full text-sm text-center">
@@ -405,153 +453,144 @@ export default function Rotation() {
                         Level History
                       </th>
                       <th className="border rounded p-2 hover:bg-gray-100 text-center">
+                        Next Level
+                      </th>
+                      <th className="border rounded p-2 hover:bg-gray-100 text-center">
                         Start Date
                       </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {group?.studentxgroups
-                      ?.sort((a, b) =>
-                        a.frequency?.student?.name +
-                          a.frequency?.student?.last_name >
-                        b.frequency?.student?.name +
-                          b.frequency?.student?.last_name
-                          ? 1
-                          : -1
-                      )
-                      .map((studentGroup, index) => {
-                        const totalInGroup =
-                          studentGroup?.frequency?.totals?.groups.find(
-                            (g) => g.group.id === group.id
-                          ) || { frequency: 0 };
-                        const frequency =
-                          parseInt(totalInGroup.frequency?.toFixed(0)) || 0;
-                        const score = totalInGroup.score;
-                        return (
-                          <tr
-                            key={index}
-                            className="border-b even:bg-zinc-50 text-zinc-500 h-12 hover:bg-zinc-100"
-                          >
-                            <td>{(index + 1).toString()}</td>
-                            <td className="text-left">
-                              {studentGroup?.frequency?.student?.name}{" "}
-                              {studentGroup?.frequency?.student?.last_name}
-                            </td>
-                            <td>
-                              {studentGroup?.vacation_days > 0 && (
-                                <div className="w-full flex flex-row justify-center gap-1 items-center">
-                                  {studentGroup?.vacation_days}
-                                  <CalendarX2 size={12} />
-                                </div>
-                              )}
-                            </td>
-                            <td>
-                              <div className="w-full flex flex-row justify-center items-center">
-                                <div
-                                  className={`${
-                                    frequency >= 80
-                                      ? "bg-emerald-400"
-                                      : "bg-red-400"
-                                  } text-black/80 w-16 rounded`}
-                                >
-                                  {frequency}%
-                                </div>
+                    {students.map((student, index) => {
+                      const {
+                        name,
+                        frequency,
+                        vacation_days,
+                        final_average_score,
+                        start_date,
+                        result,
+                        next_level_name,
+                      } = student;
+                      return (
+                        <tr
+                          key={index}
+                          className="border-b even:bg-zinc-50 text-zinc-500 h-12 hover:bg-zinc-100"
+                        >
+                          <td>{(index + 1).toString()}</td>
+                          <td className="text-left">{name}</td>
+                          <td>
+                            {vacation_days > 0 && (
+                              <div className="w-full flex flex-row justify-center gap-1 items-center">
+                                {vacation_days}
+                                <CalendarX2 size={12} />
                               </div>
-                            </td>
-                            <td>
-                              <div className="w-full flex flex-row justify-center items-center">
-                                <div
-                                  className={`${
-                                    score >= 80
-                                      ? "bg-emerald-400"
-                                      : "bg-red-400"
-                                  } text-black/80 w-16 rounded`}
-                                >
-                                  {score || 0}
-                                </div>
+                            )}
+                          </td>
+                          <td>
+                            <div className="w-full flex flex-row justify-center items-center">
+                              <div
+                                className={`${
+                                  frequency >= 80
+                                    ? "bg-emerald-400"
+                                    : "bg-red-400"
+                                } text-black/80 w-16 rounded`}
+                              >
+                                {frequency}%
                               </div>
-                            </td>
-                            <td>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="w-full flex flex-row justify-center items-center">
+                              <div
+                                className={`${
+                                  final_average_score >= 80
+                                    ? "bg-emerald-400"
+                                    : "bg-red-400"
+                                } text-black/80 w-16 rounded`}
+                              >
+                                {final_average_score || 0}
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="w-full flex flex-row justify-center items-center gap-1">
+                              <div
+                                className={`${
+                                  result === "PASS"
+                                    ? "bg-emerald-400"
+                                    : "bg-red-400"
+                                } text-black/80 w-20 rounded`}
+                              >
+                                {result}
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="w-full flex flex-row justify-center items-center">
+                              <button
+                                onClick={() => setShowDetails(student)}
+                                className="p-2 rounded hover:bg-zinc-200 cursor-pointer"
+                              >
+                                <Eye size={16} />
+                              </button>
+                              <button
+                                onClick={() => setEdit(student)}
+                                className="p-2 rounded hover:bg-zinc-200 cursor-pointer"
+                              >
+                                <Edit size={16} />
+                              </button>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="w-full flex flex-col justify-center items-center gap-1">
                               <div className="w-full flex flex-row justify-center items-center gap-1">
                                 <div
                                   className={`${
-                                    score >= 80
+                                    result === "PASS"
                                       ? "bg-emerald-400"
                                       : "bg-red-400"
-                                  } text-black/80 w-20 rounded`}
-                                >
-                                  {score >= 80 ? "PASS" : "FAIL"}
-                                </div>
+                                  } text-black/80 w-4 h-4 rounded`}
+                                ></div>
+                                <div
+                                  className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
+                                ></div>
+                                <div
+                                  className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
+                                ></div>
+                                <div
+                                  className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
+                                ></div>
+                                <div
+                                  className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
+                                ></div>
                               </div>
-                            </td>
-                            <td>
-                              <div className="w-full flex flex-row justify-center items-center">
-                                <button
-                                  onClick={() => setShowDetails(studentGroup)}
-                                  className="p-2 rounded hover:bg-zinc-200 cursor-pointer"
-                                >
-                                  <Eye size={16} />
-                                </button>
-                                <button
-                                  onClick={() => setEdit(studentGroup)}
-                                  className="p-2 rounded hover:bg-zinc-200 cursor-pointer"
-                                >
-                                  <Edit size={16} />
-                                </button>
+                              <div className="w-full flex flex-row justify-center items-center gap-1">
+                                <div
+                                  className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
+                                ></div>
+                                <div
+                                  className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
+                                ></div>
+                                <div
+                                  className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
+                                ></div>
+                                <div
+                                  className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
+                                ></div>
+                                <div
+                                  className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
+                                ></div>
                               </div>
-                            </td>
-                            <td>
-                              <div className="w-full flex flex-col justify-center items-center gap-1">
-                                <div className="w-full flex flex-row justify-center items-center gap-1">
-                                  <div
-                                    className={`${
-                                      score >= 80
-                                        ? "bg-emerald-400"
-                                        : "bg-red-400"
-                                    } text-black/80 w-4 h-4 rounded`}
-                                  ></div>
-                                  <div
-                                    className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
-                                  ></div>
-                                  <div
-                                    className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
-                                  ></div>
-                                  <div
-                                    className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
-                                  ></div>
-                                  <div
-                                    className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
-                                  ></div>
-                                </div>
-                                <div className="w-full flex flex-row justify-center items-center gap-1">
-                                  <div
-                                    className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
-                                  ></div>
-                                  <div
-                                    className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
-                                  ></div>
-                                  <div
-                                    className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
-                                  ></div>
-                                  <div
-                                    className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
-                                  ></div>
-                                  <div
-                                    className={`bg-zinc-300 text-black/80 w-4 h-4 rounded`}
-                                  ></div>
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              {studentGroup.start_date &&
-                                format(
-                                  parseISO(studentGroup.start_date),
-                                  "MM/dd/yyyy"
-                                )}
-                            </td>
-                          </tr>
-                        );
-                      })}
+                            </div>
+                          </td>
+                          <td className="text-xs">{next_level_name}</td>
+                          <td className="text-xs">
+                            {start_date &&
+                              format(parseISO(start_date), "MM/dd/yyyy")}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -561,16 +600,10 @@ export default function Rotation() {
       </div>
       {/* Modal */}
       {showDetails && (
-        <StudentDetail
-          setShowDetails={setShowDetails}
-          studentGroup={showDetails}
-          group={group}
-        />
+        <StudentDetail setShowDetails={setShowDetails} student={showDetails} />
       )}
 
-      {edit && (
-        <EditResult setEdit={setEdit} studentGroup={edit} group={group} />
-      )}
+      {edit && <EditResult setEdit={setEdit} student={edit} />}
       {loading && (
         <div className="flex justify-center items-center h-screen absolute top-0 left-0 w-full bg-gray-500 bg-opacity-50">
           <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-700" />

@@ -36,6 +36,12 @@ export default function AdministrativeStudent() {
       filter: false,
     },
     {
+      title: "Phone Number",
+      name: "phone",
+      type: "text",
+      filter: false,
+    },
+    {
       title: "Group",
       name: ["studentgroup", "name"],
       type: "text",
@@ -56,6 +62,12 @@ export default function AdministrativeStudent() {
     {
       title: "Status",
       name: "status",
+      type: "text",
+      filter: true,
+    },
+    {
+      title: "Resp. Agent",
+      name: ["agent", "name"],
       type: "text",
       filter: true,
     },
@@ -265,6 +277,8 @@ export default function AdministrativeStudent() {
           id,
           name,
           last_name,
+          phone,
+          agent,
           studentgroup,
           teacher,
           category,
@@ -281,6 +295,10 @@ export default function AdministrativeStudent() {
         if (teacher) {
           teacher_name = teacher.name;
         }
+        let agent_name = "";
+        if (agent) {
+          agent_name = agent.name;
+        }
         const ret = {
           show: true,
           id,
@@ -288,10 +306,12 @@ export default function AdministrativeStudent() {
             registration_number,
             name,
             last_name,
+            phone,
             studentgroup_name,
             teacher_name,
             category,
             status,
+            agent_name,
           ],
           selectable: "In Class;Waiting;Inactive".includes(status),
           canceled: canceled_at,

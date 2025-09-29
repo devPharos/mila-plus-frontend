@@ -11,6 +11,7 @@ import { getCurrentPage } from "~/functions";
 export default function FinancialDashboard() {
   const { profile } = useSelector((state) => state.user);
   const currentPage = getCurrentPage();
+  const isAdmin = profile.id === 1;
 
   return (
     <div className="h-full bg-white flex flex-1 flex-col justify-start items-start rounded-tr-2xl px-4">
@@ -30,7 +31,7 @@ export default function FinancialDashboard() {
           paddingTop: 24,
         }}
       >
-        {profile.id === 1 && (
+        {isAdmin && (
           <>
             <ChartFinancialOutstanding />
           </>

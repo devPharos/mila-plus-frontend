@@ -1,25 +1,10 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
-import { FullGridContext } from "..";
+import React, { useEffect, useRef, useState } from "react";
 import { getCurrentPage } from "~/functions";
 import PageHeader from "~/components/PageHeader";
 import Breadcrumbs from "~/components/Breadcrumbs";
 import FiltersBar from "~/components/FiltersBar";
-import {
-  CalendarX2,
-  Edit,
-  Eye,
-  Filter,
-  Save,
-  Search,
-  Send,
-  Sheet,
-  Table2,
-} from "lucide-react";
+import { Filter, Search, Table2 } from "lucide-react";
 import api, { baseURL } from "~/services/api";
-import { format, parseISO } from "date-fns";
-import StudentDetail from "./components/studentDetail";
-import EditResult from "./components/editResult";
-import { toast } from "react-toastify";
 
 export default function RotationTwo() {
   const [loading, setLoading] = useState(true);
@@ -29,6 +14,10 @@ export default function RotationTwo() {
   const shiftRef = useRef();
   const [shift, setShift] = useState("");
   const [level, setLevel] = useState("");
+
+  const showGroups = groups.filter(
+    (group) => group.level.name === level && group.shift === shift
+  );
 
   async function getGroups() {
     try {
@@ -184,30 +173,56 @@ export default function RotationTwo() {
               <div className="flex w-full flex-col items-center gap-2 border rounded-lg duration-300 ease-in-out hover:bg-zinc-50 hover:border-zinc-400">
                 <div className="flex flex-row w-full items-end gap-4 p-2">
                   <div className="flex flex-grow flex-col gap-1">
-                    <label className="text-xs font-bold flex-1 text-left">
-                      Resume
-                    </label>
-                    <div className="flex flex-row items-start justify-start gap-2 w-full">
-                      {groups
-                        .filter(
-                          (group) =>
-                            group.level.name === level && group.shift === shift
-                        )
-                        .map((group, index) => {
-                          return (
-                            <div
-                              key={index}
-                              className="w-64 border p-2 text-sm rounded-lg flex flex-col gap-1 justify-start items-start"
-                            >
-                              <div className="text-xs font-bold">
-                                {group?.staff?.name} {group?.staff?.last_name}
-                              </div>
+                    <div className="flex flex-row items-start justify-start gap-2 w-full text-xs">
+                      <div className="p-2 rounded-lg flex flex-col gap-1 justify-start items-start font-bold">
+                        <div className="">Teachers</div>
+                        <div className="">In Vacation</div>
+                        <div className="">Medical Excuse</div>
+                        <div className="">Active</div>
+                      </div>
+                      {showGroups.map((group, index) => {
+                        return (
+                          <div
+                            key={index}
+                            className="p-2 text-xs rounded-lg flex flex-col gap-1 justify-start items-start"
+                          >
+                            <div className="text-center w-full">
+                              {group?.staff?.name} {group?.staff?.last_name}
                             </div>
-                          );
-                        })}
+                            <div className="text-center w-full">
+                              {group?.vacation?.length || 0}
+                            </div>
+                            <div className="text-center w-full">
+                              {group?.medical_excuse?.length || 0}
+                            </div>
+                            <div className="text-center w-full">
+                              {group?.active?.length || 0}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {shift && level && (
+            <div className="flex w-full flex-row gap-4 px-4 justify-start items-start rounded-tr-2xl">
+              <div className="flex flex-row items-start justify-start gap-2 w-full text-xs">
+                {showGroups.map((group, index) => {
+                  return (
+                    <div
+                      key={index}
+                      className="p-2 text-xs rounded-lg flex flex-col gap-1 justify-start items-start border"
+                    >
+                      <div className="text-center w-full">
+                        New Class {index + 1}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}

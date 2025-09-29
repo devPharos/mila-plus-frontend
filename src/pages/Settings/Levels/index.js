@@ -27,6 +27,12 @@ export default function Levels() {
       type: "text",
       filter: true,
     },
+    {
+      title: "Previous Level",
+      name: "previous_level_id",
+      type: "text",
+      filter: true,
+    },
   ];
 
   const {
@@ -83,12 +89,18 @@ export default function Levels() {
       return;
     }
     const gridDataValues = data.map(
-      ({ id, name, total_hours, Programcategory }, index) => {
-        const programcategory = Programcategory.name;
+      ({ id, name, total_hours, Programcategory, previous_level }, index) => {
+        const programcategory = Programcategory?.name;
+        const previous_level_name = previous_level?.name;
         return {
           show: true,
           id,
-          fields: [name, total_hours.toString() + "h", programcategory],
+          fields: [
+            name,
+            total_hours.toString() + "h",
+            programcategory,
+            previous_level_name,
+          ],
           page: Math.ceil((index + 1) / limit),
         };
       }

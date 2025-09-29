@@ -58,9 +58,9 @@ function PageContainer({
     <div className="h-full bg-white flex flex-1 flex-col justify-start items-start rounded-tr-2xl px-4">
       <PageHeader>
         <Breadcrumbs currentPage={currentPage} />
-        <FiltersBar>
+        {/* <FiltersBar>
           <Filter size={14} /> Custom Filters
-        </FiltersBar>
+        </FiltersBar> */}
       </PageHeader>
       <Filters
         access={pageAccess}

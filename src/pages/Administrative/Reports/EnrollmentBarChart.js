@@ -44,12 +44,12 @@ export default function EnrollmentBarChart({ year }) {
   const [selectedMonth, setSelectedMonth] = useState(null);
 
   const categoryColors = [
-    "#41caecff", 
-    "#41caecff", 
-    "#41caecff", 
-    "#41caecff", 
-    "#56ec48ff", 
-    "#56ec48ff", 
+    "#8884d8", 
+    "#8884d8", 
+    "#8884d8", 
+    "#8884d8", 
+    "#ee5827", 
+    "#ee5827", 
   ];
 
   async function fetchData() {
@@ -159,13 +159,13 @@ export default function EnrollmentBarChart({ year }) {
             <h1 className="text-xl font-bold">
               {viewMode === "months"
                 ? "Students in Class"
-                : `Process Status - ${format(parseISO(selectedMonth + "-01"), "MMMM yyyy")}`}
+                : `Students In Class - Process Type`}
             </h1>
           </div>
           <h1 className="text-base font-extralight text-gray-500">
             {viewMode === "months"
               ? (year ? `Year ${year}` : "This year")
-              : `Total: ${processData?.total_active_students || 0} students`}
+              : `${format(parseISO(selectedMonth + "-01"), "MMMM yyyy")} - Total: ${processData?.total_active_students || 0} students`}
           </h1>
         </div>
 
@@ -195,15 +195,14 @@ export default function EnrollmentBarChart({ year }) {
           
             <div className="text-xl font-bold border-b border-l p-2 rounded w-40">
               <div className="flex items-center gap-1"> 
-                <div className="w-3 h-3 rounded-sm bg-[#41caecff]"></div> 
+                <div className="w-3 h-3 rounded-sm bg-[#8884d8]"></div> 
                 <h2 className="text-sm font-light text-gray-500">F1</h2>
               </div>
               <span>{processData.process_types.f1.toLocaleString()}</span>
             </div>
-            {/* Box Non-F1 com legenda de cor verde */}
             <div className="text-xl font-bold border-b border-l p-2 rounded w-40">
               <div className="flex items-center gap-1"> 
-                <div className="w-3 h-3 rounded-sm bg-[#56ec48ff]"></div> 
+                <div className="w-3 h-3 rounded-sm bg-[#ee5827]"></div> 
                 <h2 className="text-base font-light text-gray-500">Non-F1</h2>
               </div>
               <span>{processData.process_types.non_f1.toLocaleString()}</span>
@@ -278,7 +277,6 @@ export default function EnrollmentBarChart({ year }) {
             </Bar>
           </BarChart>
         ) : (
-          // GRÁFICO DE CATEGORIAS
           <BarChart data={processData?.categories || []}>
             <Tooltip
               contentStyle={{ backgroundColor: "transparent", border: "none" }}
@@ -307,28 +305,28 @@ export default function EnrollmentBarChart({ year }) {
 
             <defs>
               <linearGradient id="colorCategory0" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#41caecff" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#41caecff" stopOpacity={0} />
+                <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="colorCategory1" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#41caecff" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#41caecff" stopOpacity={0} />
+                <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="colorCategory2" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#41caecff" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#41caecff" stopOpacity={0} />
+                <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="colorCategory3" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#41caecff" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#41caecff" stopOpacity={0} />
+                <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
+                <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="colorCategory4" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#56ec48ff" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#56ec48ff" stopOpacity={0} />
+                <stop offset="5%" stopColor="#ee5827" stopOpacity={1} />
+                <stop offset="95%" stopColor="#ee5827" stopOpacity={0.2} />
               </linearGradient>
               <linearGradient id="colorCategory5" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#56ec48ff" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#56ec48ff" stopOpacity={0} />
+                <stop offset="5%" stopColor="#ee5827" stopOpacity={1} />
+                <stop offset="95%" stopColor="#ee5827" stopOpacity={0.2} />
               </linearGradient>
             </defs>
 

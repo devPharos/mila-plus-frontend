@@ -416,7 +416,13 @@ export default function RotationTwo() {
                               <div className="text-center w-full">
                                 {group?.staff?.name} {group?.staff?.last_name}
                               </div>
-                              <div className="text-center w-full font-bold text-red-400">
+                              <div
+                                className={`text-center w-full font-bold ${
+                                  group?.rotation_status === "Not started"
+                                    ? "text-red-400"
+                                    : "text-emerald-400"
+                                }`}
+                              >
                                 {group?.rotation_status}
                               </div>
                             </div>

@@ -139,7 +139,7 @@ export default function RotationOne() {
   }, [edit]);
 
   const finished =
-    group?.content_percentage !== 100 && group?.class_percentage !== 100;
+    group?.content_percentage === 100 && group?.class_percentage === 100;
 
   return (
     <>

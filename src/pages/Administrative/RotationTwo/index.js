@@ -402,24 +402,26 @@ export default function RotationTwo() {
                         <div className="">Teachers</div>
                         <div className="">Status</div>
                       </div>
-                      {requiredGroups.map((group, index) => {
-                        return (
-                          <div
-                            key={index}
-                            className="p-2 text-xs rounded-lg flex flex-col gap-1 justify-start items-start"
-                          >
-                            <div className="text-center w-full">
-                              {group?.name}
+                      {requiredGroups
+                        .sort((a, b) => (a.name > b.name ? 1 : -1))
+                        .map((group, index) => {
+                          return (
+                            <div
+                              key={index}
+                              className="p-2 text-xs rounded-lg flex flex-col gap-1 justify-start items-start"
+                            >
+                              <div className="text-center w-full">
+                                {group?.name}
+                              </div>
+                              <div className="text-center w-full">
+                                {group?.staff?.name} {group?.staff?.last_name}
+                              </div>
+                              <div className="text-center w-full font-bold text-red-400">
+                                {group?.rotation_status}
+                              </div>
                             </div>
-                            <div className="text-center w-full">
-                              {group?.staff?.name} {group?.staff?.last_name}
-                            </div>
-                            <div className="text-center w-full font-bold text-red-400">
-                              {group?.rotation_status}
-                            </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
                     </div>
                   </div>
                 </div>

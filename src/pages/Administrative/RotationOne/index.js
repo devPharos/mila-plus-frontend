@@ -108,13 +108,22 @@ export default function RotationOne() {
 
   async function handleFinishRotation() {
     try {
-      const { data } = await api.post(`/rotation`, { students });
+      await api.post(`/rotation`, { students });
       toast(`The 1st step was saved successfully`, { autoClose: 1000 });
-      getGroup(id);
+      // getGroup(id);
+      reset();
     } catch (err) {
       console.log(err);
       toast(err.response?.data?.error, { type: "error", autoClose: 3000 });
     }
+  }
+
+  function reset() {
+    setData(null);
+    groupRef.current.value = "";
+    setEdit(null);
+    setShowDetails(null);
+    statusRef.current.value = "";
   }
 
   useEffect(() => {
@@ -126,6 +135,9 @@ export default function RotationOne() {
       getGroup(group.id);
     }
   }, [edit]);
+
+  const finished =
+    group?.content_percentage !== 100 && group?.class_percentage !== 100;
 
   return (
     <>
@@ -400,9 +412,8 @@ export default function RotationOne() {
           )}
           {group && (
             <>
-              {group.content_percentage === 100 &&
-              group.class_percentage === 100 ? (
-                <div className="flex w-full flex-row gap-4 px-4 py-0 justify-end items-start rounded-tr-2xl">
+              {finished ? (
+                <div className="flex w-full flex-row gap-4 px-4 py-0 justify-end items-start rounded-tr-2x  l">
                   <button
                     type="button"
                     onClick={handleFinishRotation}
@@ -446,9 +457,11 @@ export default function RotationOne() {
                       <th className="border rounded p-2 hover:bg-gray-100 text-center">
                         Result
                       </th>
-                      <th className="border rounded p-2 hover:bg-gray-100 text-center">
-                        Actions
-                      </th>
+                      {finished && (
+                        <th className="border rounded p-2 hover:bg-gray-100 text-center">
+                          Actions
+                        </th>
+                      )}
                       <th className="border rounded p-2 hover:bg-gray-100 text-center">
                         Level History
                       </th>
@@ -525,22 +538,24 @@ export default function RotationOne() {
                               </div>
                             </div>
                           </td>
-                          <td>
-                            <div className="w-full flex flex-row justify-center items-center">
-                              <button
-                                onClick={() => setShowDetails(student)}
-                                className="p-2 rounded hover:bg-zinc-200 cursor-pointer"
-                              >
-                                <Eye size={16} />
-                              </button>
-                              <button
-                                onClick={() => setEdit(student)}
-                                className="p-2 rounded hover:bg-zinc-200 cursor-pointer"
-                              >
-                                <Edit size={16} />
-                              </button>
-                            </div>
-                          </td>
+                          {finished && (
+                            <td>
+                              <div className="w-full flex flex-row justify-center items-center">
+                                <button
+                                  onClick={() => setShowDetails(student)}
+                                  className="p-2 rounded hover:bg-zinc-200 cursor-pointer"
+                                >
+                                  <Eye size={16} />
+                                </button>
+                                <button
+                                  onClick={() => setEdit(student)}
+                                  className="p-2 rounded hover:bg-zinc-200 cursor-pointer"
+                                >
+                                  <Edit size={16} />
+                                </button>
+                              </div>
+                            </td>
+                          )}
                           <td>
                             <div className="w-full flex flex-col justify-center items-center gap-1">
                               <div className="w-full flex flex-row justify-center items-center gap-1">

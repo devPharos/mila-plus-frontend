@@ -33,7 +33,7 @@ export function ReportFinancialInbounds() {
 }
 
 export default function ReportFinancialReceivables() {
-  const { profile } = useSelector((state) => state.user);
+  const { profile } = useSelector((state) => state.auth);
   const currentPage = getCurrentPage();
   const { filters, setFilters, chartOfAccountSelected } = useReportsStore();
   const [loading, setLoading] = useState(true);

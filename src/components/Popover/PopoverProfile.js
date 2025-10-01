@@ -75,37 +75,36 @@ export default function PopoverProfile() {
     setCroppedAreaPixels(croppedPixels);
   }, []);
 
-  const handleSumbit = useCallback(
-    async (data) => {
-      setLoading(true);
-      try {
-        formRef.current.setErrors({});
-        await schema.validate(data, { abortEarly: false });
+  const handleSumbit = async (data) => {
+    setLoading(true);
+    try {
+      formRef.current.setErrors({});
+      await schema.validate(data, { abortEarly: false });
 
-        const formData = new FormData();
-        formData.append("name", data.name);
-        formData.append("email", data.email);
-        if (data.password) formData.append("password", data.password);
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("email", data.email);
+      if (data.password) formData.append("password", data.password);
 
-        if (avatarFile) {
-          formData.append("avatar", avatarFile, "avatar.png");
-        }
-
-        setLoading(false);
-        dispatch(updateProfileRequest(formData));
-      } catch (err) {
-        setLoading(false);
-        if (err instanceof Yup.ValidationError) {
-          const validationErrors = {};
-          err.inner.forEach((error) => {
-            validationErrors[error.path] = error.message;
-          });
-          formRef.current.setErrors(validationErrors);
-        }
+      if (avatarFile) {
+        formData.append("avatar", avatarFile, "avatar.png");
       }
-    },
-    [dispatch, avatarFile]
-  );
+
+      dispatch(updateProfileRequest(formData));
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
+    } catch (err) {
+      setLoading(false);
+      if (err instanceof Yup.ValidationError) {
+        const validationErrors = {};
+        err.inner.forEach((error) => {
+          validationErrors[error.path] = error.message;
+        });
+        formRef.current.setErrors(validationErrors);
+      }
+    }
+  };
 
   const onFileChange = async (e) => {
     const file = e.target.files?.[0];
@@ -153,24 +152,24 @@ export default function PopoverProfile() {
       >
         <div className="flex items-center space-x-3">
           <div className="relative">
-            {preview ? (
+            {/* {preview ? (
               <img
                 src={preview}
                 alt="avatar"
                 className="w-10 h-10 rounded-full object-cover"
               />
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-[#ee5827] flex items-center justify-center">
-                <User size={16} className="text-white" />
-              </div>
-            )}
-            <input
+            ) : ( */}
+            <div className="w-10 h-10 rounded-full bg-[#ee5827] flex items-center justify-center">
+              <User size={16} className="text-white" />
+            </div>
+            {/* )} */}
+            {/* <input
               ref={inputRef}
               type="file"
               accept="image/*"
               onChange={onFileChange}
               className="absolute inset-0 opacity-0 cursor-pointer"
-            />
+            /> */}
           </div>
           <div>
             <h3 className="text-xs font-semibold text-foreground">

@@ -39,7 +39,6 @@ export default function auth(state = INITIAL_STATE, action) {
         break;
       }
       case "@auth/LOGOUT": {
-        console.log("LOGOUT");
         draft.token = null;
         draft.signed = false;
         draft.loading = false;
@@ -48,7 +47,6 @@ export default function auth(state = INITIAL_STATE, action) {
         break;
       }
       case "@auth/UPDATE_PROFILE_REQUEST": {
-        console.log("UPDATE_PROFILE_REQUEST");
         draft.loading = true;
         break;
       }
@@ -58,7 +56,6 @@ export default function auth(state = INITIAL_STATE, action) {
         break;
       }
       case "@auth/UPDATE_PROFILE_FAILURE": {
-        console.log("UPDATE_PROFILE_FAILURE");
         draft.loading = false;
         break;
       }

@@ -77,6 +77,7 @@ export default function Financial() {
 
   return (
     <div className="w-full bg-gradient-to-br from-gray-300 via-indigo-300 to-mila_orange flex flex-1 flex-row justify-between items-center px-4 pt-8 shadow-lg overflow-y-scroll">
+      {console.log(routeName.toLowerCase())}
       <Sidebar
         main={routeName.toLowerCase()}
         pages={pages && pages.find((page) => page.name === routeName).children}

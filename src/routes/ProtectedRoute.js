@@ -1,23 +1,13 @@
-import { Form } from "@unform/web";
-import React, { createContext, useState } from "react";
+import React, { createContext } from "react";
 import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import FormHeader from "~/components/RegisterForm/FormHeader";
-import Input from "~/components/RegisterForm/Input";
-import InputLine from "~/components/RegisterForm/InputLine";
-import InputLineGroup from "~/components/RegisterForm/InputLineGroup";
 import Header from "~/Header";
 import api from "~/services/api";
 
 function ProtectedRoute({ children }) {
-  const { signed } = useSelector((state) => state.auth);
-  const { profile } = useSelector((state) => state.user);
-  const [successfullyUpdated, setSuccessfullyUpdated] = useState(true);
-  // console.log(auth)
+  const { signed, profile } = useSelector((state) => state.auth);
   if (!signed) {
-    console.log(state);
-    // user is not authenticated
     return <Navigate to="/login" />;
   }
   const InputContext = createContext({});

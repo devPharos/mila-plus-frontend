@@ -13,7 +13,6 @@ import AttendanceReport from "./Attendance Report";
 export default function Studentgroups() {
   const filial = useSelector((state) => state.auth.filial);
   const [loading, setLoading] = useState(false);
-  const { profile } = useSelector((state) => state.user);
   const defaultOrderBy = { column: "name", asc: true };
   const defaultGridHeader = [
     {

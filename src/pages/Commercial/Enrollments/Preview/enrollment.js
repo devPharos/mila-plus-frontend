@@ -84,7 +84,7 @@ export default function EnrollmentOutside({
   setOpened,
   defaultFormType = "preview",
 }) {
-  const { profile } = useSelector((state) => state.user);
+  const { profile } = useSelector((state) => state.auth);
   const [searchparams, setSearchParams] = useSearchParams();
   const [pageData, setPageData] = useState({
     enrollmentemergencies: [

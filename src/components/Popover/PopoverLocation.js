@@ -5,7 +5,6 @@ import { HeaderContext } from "~/Header";
 import { filial_change } from "~/store/modules/auth/actions";
 
 export default function PopoverLocation() {
-  // const { profile } = useSelector((state) => state.user);
   const { filial, profile } = useSelector((state) => state.auth);
 
   const dispatch = useDispatch();

@@ -45,7 +45,7 @@ function MapCount() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto mt-10" onClick={handleBackgroundClick}>
+    <div className="w-full max-w mx-auto mt-10" onClick={handleBackgroundClick}>
       <div className="flex gap-6 h-[360px]">
         <div className="flex-1 bg-gray-50 rounded-lg overflow-hidden border border-gray-200 relative">
           <ComposableMap

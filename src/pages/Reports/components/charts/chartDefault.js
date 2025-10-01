@@ -85,7 +85,7 @@ export default function ChartDefaultRate({ filters }) {
     <div className="w-full p-3 px-5 border rounded-lg mb-4">
       <div className="flex flex-row items-center justify-between mb-5">
         <div className="flex flex-col items-start justify-center">
-          <h1 className="text-lg font-bold">Default Rate Index</h1>
+          <h1 className="text-lg font-bold">Delinquency Index</h1>
           <h1 className="text-sm font-extralight text-gray-500">
             Overdue receivables / Total billing
           </h1>

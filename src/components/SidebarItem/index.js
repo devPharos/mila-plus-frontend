@@ -20,18 +20,19 @@ export default function SidebarItem({
       : ChevronRight
     : Icon;
 
-  const iconProps = {
-    color: isParentActive ? activeMenu.color : inactiveMenu.color,
-    size: 20,
-  };
-
   return (
     <NavLink to={page.path} className="w-full">
       {({ isActive }) => {
         page.isActive = isActive;
         return (
           <div className={isActive ? activeMenu.class : inactiveMenu.class}>
-            {page.icon && <IconComponent {...iconProps} name={page.icon} />}
+            {page.icon && (
+              <IconComponent
+                color={isActive ? activeMenu.color : inactiveMenu.color}
+                size={20}
+                name={page.icon}
+              />
+            )}
             {oppened && (
               <div
                 className={`flex-1 ${

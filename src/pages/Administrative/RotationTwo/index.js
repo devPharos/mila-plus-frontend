@@ -321,7 +321,9 @@ export default function RotationTwo() {
   }
 
   const requiredGroupsConcluded =
-    requiredGroups?.length === newGroups?.length && requiredGroups.length > 0;
+    requiredGroups?.length === newGroups?.length &&
+    requiredGroups?.length > 0 &&
+    groups?.length > 0;
 
   return (
     <>
@@ -462,41 +464,43 @@ export default function RotationTwo() {
                           <div className="">Medical Excuse</div>
                           <div className="">Active</div>
                         </div>
-                        {groups.map((group, index) => {
-                          return (
-                            <div
-                              key={index}
-                              className="p-2 text-xs rounded-lg flex flex-col gap-1 justify-start items-start"
-                            >
-                              <div className="text-center w-full">
-                                {group?.name}
+                        {groups?.length &&
+                          groups.map((group, index) => {
+                            return (
+                              <div
+                                key={index}
+                                className="p-2 text-xs rounded-lg flex flex-col gap-1 justify-start items-start"
+                              >
+                                <div className="text-center w-full">
+                                  {group?.name}
+                                </div>
+                                <div className="text-center w-full">
+                                  {group?.staff?.name} {group?.staff?.last_name}
+                                </div>
+                                <div className="text-center w-full">
+                                  {group?.rotations?.filter(
+                                    (rotation) =>
+                                      rotation.student.vacations.length > 0
+                                  )?.length || 0}
+                                </div>
+                                <div className="text-center w-full">
+                                  {group?.rotations?.filter(
+                                    (rotation) =>
+                                      rotation.student.medical_excuses.length >
+                                      0
+                                  )?.length || 0}
+                                </div>
+                                <div className="text-center w-full">
+                                  {group?.rotations?.filter(
+                                    (rotation) =>
+                                      rotation.student.medical_excuses
+                                        .length === 0 &&
+                                      rotation.student.vacations.length === 0
+                                  )?.length || 0}
+                                </div>
                               </div>
-                              <div className="text-center w-full">
-                                {group?.staff?.name} {group?.staff?.last_name}
-                              </div>
-                              <div className="text-center w-full">
-                                {group?.rotations?.filter(
-                                  (rotation) =>
-                                    rotation.student.vacations.length > 0
-                                )?.length || 0}
-                              </div>
-                              <div className="text-center w-full">
-                                {group?.rotations?.filter(
-                                  (rotation) =>
-                                    rotation.student.medical_excuses.length > 0
-                                )?.length || 0}
-                              </div>
-                              <div className="text-center w-full">
-                                {group?.rotations?.filter(
-                                  (rotation) =>
-                                    rotation.student.medical_excuses.length ===
-                                      0 &&
-                                    rotation.student.vacations.length === 0
-                                )?.length || 0}
-                              </div>
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
                       </div>
                     </div>
                   </div>

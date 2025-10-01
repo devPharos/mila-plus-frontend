@@ -9,11 +9,12 @@ import ClassSchedule from "./Reports/ClassSchedule";
 import EvaluationChart from "./Reports/EvaluationChart";
 import EnrollmentBarChart from "./Reports/EnrollmentBarChart";
 import PeriodDropdown from "./Reports/PeriodDropdown";
+import MapCount from "./Reports/MapCount";
 import { useSelector } from "react-redux";
 
 export default function AdministrativeDashboard() {
   const currentPage = getCurrentPage();
-  const { profile } = useSelector((state) => state.user);
+  const { profile } = useSelector((state) => state.auth);
   const isAdmin = profile.id === 1;
 
   const [periodChoice, setPeriodChoice] = useState("2025");
@@ -32,6 +33,7 @@ export default function AdministrativeDashboard() {
         <>
           <PeriodDropdown value={periodChoice} onChange={setPeriodChoice} />
           <EnrollmentBarChart year={year} />
+          <MapCount></MapCount>
         </>
       )}
 

@@ -52,7 +52,7 @@ export default function SponsorOutside({
   access = { view: true, create: true, edit: true, inactivate: false },
   handleOpened,
 }) {
-  const { profile } = useSelector((state) => state.user);
+  const { profile } = useSelector((state) => state.auth);
   const [pageData, setPageData] = useState({
     enrollmentemergencies: [
       {

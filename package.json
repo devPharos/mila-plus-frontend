@@ -37,6 +37,7 @@
     "react-scripts": "^5.0.1",
     "react-select": "^5.8.1",
     "react-signature-pad-wrapper": "^4.0.4",
+    "react-simple-maps": "^3.0.0",
     "react-toastify": "^10.0.6",
     "recharts": "^3.0.2",
     "redux": "^5.0.1",

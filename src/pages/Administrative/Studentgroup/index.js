@@ -13,7 +13,6 @@ import AttendanceReport from "./Attendance Report";
 export default function Studentgroups() {
   const filial = useSelector((state) => state.auth.filial);
   const [loading, setLoading] = useState(false);
-  const { profile } = useSelector((state) => state.user);
   const defaultOrderBy = { column: "name", asc: true };
   const defaultGridHeader = [
     {
@@ -211,10 +210,10 @@ export default function Studentgroups() {
         },
         index
       ) => {
-        const { class_number: classroom_name } = classroom;
-        const { name: workload_name } = workload;
-        const { name: staff_name } = staff;
-        const { name: level_name } = level;
+        const { class_number: classroom_name } = classroom ?? {};
+        const { name: workload_name } = workload ?? {};
+        const { name: staff_name } = staff ?? {};
+        const { name: level_name } = level ?? {};
 
         const ret = {
           show: true,
@@ -227,7 +226,7 @@ export default function Studentgroups() {
             workload_name,
             staff_name,
             students.length,
-            format(parseISO(start_date), "MM/dd/yyyy"),
+            start_date ? format(parseISO(start_date), "MM/dd/yyyy") : "",
             end_date ? format(parseISO(end_date), "MM/dd/yyyy") : "",
           ],
           others: {

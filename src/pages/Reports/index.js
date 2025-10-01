@@ -26,7 +26,6 @@ export default function Report() {
   const [limit, setLimit] = useState(50);
   const [search, setSearch] = useState("");
   const [totalRows, setTotalRows] = useState(0);
-  const { chartOfAccountSelected } = useReportsStore();
   const [gridDetails, setGridDetails] = useState({
     totalRows: 0,
     pages: 1,
@@ -77,7 +76,7 @@ export default function Report() {
 
   return (
     <div className="w-full bg-gradient-to-br from-gray-300 via-indigo-300 to-mila_orange flex flex-1 flex-row justify-between items-center px-4 pt-8 shadow-lg overflow-y-scroll">
-      {console.log(routeName)}
+      {console.log(routeName.toLowerCase())}
       <Sidebar
         main={routeName.toLowerCase()}
         pages={pages && pages.find((page) => page.name === routeName).children}

@@ -6,12 +6,14 @@ import Breadcrumbs from "~/components/Breadcrumbs";
 import FiltersBar from "~/components/FiltersBar";
 import {
   CalendarX2,
+  Check,
   Edit,
   Eye,
   Filter,
   Save,
   Search,
   Send,
+  X,
 } from "lucide-react";
 import api from "~/services/api";
 import { format, parseISO } from "date-fns";
@@ -108,13 +110,22 @@ export default function RotationOne() {
 
   async function handleFinishRotation() {
     try {
-      const { data } = await api.post(`/rotation`, { students });
+      await api.post(`/rotation`, { students });
       toast(`The 1st step was saved successfully`, { autoClose: 1000 });
-      getGroup(id);
+      // getGroup(id);
+      reset();
     } catch (err) {
       console.log(err);
       toast(err.response?.data?.error, { type: "error", autoClose: 3000 });
     }
+  }
+
+  function reset() {
+    setData(null);
+    groupRef.current.value = "";
+    setEdit(null);
+    setShowDetails(null);
+    statusRef.current.value = "";
   }
 
   useEffect(() => {
@@ -126,6 +137,9 @@ export default function RotationOne() {
       getGroup(group.id);
     }
   }, [edit]);
+
+  const finished =
+    group?.content_percentage === 100 && group?.class_percentage === 100;
 
   return (
     <>
@@ -193,6 +207,44 @@ export default function RotationOne() {
                 </div>
               </div>
             </div>
+            {group && (
+              <div className="bg-zinc-50 h-20 flex flex-col items-center gap-2 border rounded-lg duration-300 ease-in-out border-zinc-400">
+                <div className="flex flex-row items-end gap-4 p-2">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-bold flex-1 text-left">
+                      1st Step
+                    </label>
+                    <div
+                      className={`w-full transition ease-in-out duration-300 w-36 text-xs bg-white text-emerald-500 p-2 border border-zinc-400 rounded flex flex-row items-center justify-center`}
+                    >
+                      {group?.rotation_status !== "Not started" ? (
+                        <Check size={16} />
+                      ) : (
+                        <span className="text-red-400">
+                          <X size={16} />
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-bold flex-1 text-left">
+                      2nd Step
+                    </label>
+                    <div
+                      className={`w-full transition ease-in-out duration-300 w-36 text-xs bg-white text-emerald-500 p-2 border border-zinc-400 rounded flex flex-row items-center justify-center`}
+                    >
+                      {group?.rotation_status === "Second Step Done" ? (
+                        <Check size={16} />
+                      ) : (
+                        <span className="text-red-400">
+                          <X size={16} />
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           {group && (
             <div className="flex w-full flex-row gap-4 px-4 justify-start items-start rounded-tr-2xl">
@@ -400,9 +452,14 @@ export default function RotationOne() {
           )}
           {group && (
             <>
-              {group.content_percentage === 100 &&
-              group.class_percentage === 100 ? (
-                <div className="flex w-full flex-row gap-4 px-4 py-0 justify-end items-start rounded-tr-2xl">
+              {group?.rotation_status === "Second Step Done" ? (
+                <div className="flex w-full flex-row gap-4 px-4 py-0 justify-end items-start rounded-tr-2xl text-sm text-black/60 ">
+                  <div className="border border-red-600 text-red-600 p-1 px-4 rounded">
+                    This rotation is finished
+                  </div>
+                </div>
+              ) : finished ? (
+                <div className="flex w-full flex-row gap-4 px-4 py-0 justify-end items-start rounded-tr-2x  l">
                   <button
                     type="button"
                     onClick={handleFinishRotation}
@@ -414,7 +471,7 @@ export default function RotationOne() {
                 </div>
               ) : (
                 <div className="flex w-full flex-row gap-4 px-4 py-0 justify-end items-start rounded-tr-2xl text-sm text-black/60 ">
-                  <div className="border border-red-400 text-red-400 p-1 rounded border-dashed">
+                  <div className="border border-red-400 text-red-400 p-1 px-4 rounded border-dashed">
                     To conclude this rotation, all class and content must be
                     given...
                   </div>
@@ -446,9 +503,12 @@ export default function RotationOne() {
                       <th className="border rounded p-2 hover:bg-gray-100 text-center">
                         Result
                       </th>
-                      <th className="border rounded p-2 hover:bg-gray-100 text-center">
-                        Actions
-                      </th>
+                      {finished &&
+                        group?.rotation_status !== "Second Step Done" && (
+                          <th className="border rounded p-2 hover:bg-gray-100 text-center">
+                            Actions
+                          </th>
+                        )}
                       <th className="border rounded p-2 hover:bg-gray-100 text-center">
                         Level History
                       </th>
@@ -525,22 +585,25 @@ export default function RotationOne() {
                               </div>
                             </div>
                           </td>
-                          <td>
-                            <div className="w-full flex flex-row justify-center items-center">
-                              <button
-                                onClick={() => setShowDetails(student)}
-                                className="p-2 rounded hover:bg-zinc-200 cursor-pointer"
-                              >
-                                <Eye size={16} />
-                              </button>
-                              <button
-                                onClick={() => setEdit(student)}
-                                className="p-2 rounded hover:bg-zinc-200 cursor-pointer"
-                              >
-                                <Edit size={16} />
-                              </button>
-                            </div>
-                          </td>
+                          {finished &&
+                            group?.rotation_status !== "Second Step Done" && (
+                              <td>
+                                <div className="w-full flex flex-row justify-center items-center">
+                                  <button
+                                    onClick={() => setShowDetails(student)}
+                                    className="p-2 rounded hover:bg-zinc-200 cursor-pointer"
+                                  >
+                                    <Eye size={16} />
+                                  </button>
+                                  <button
+                                    onClick={() => setEdit(student)}
+                                    className="p-2 rounded hover:bg-zinc-200 cursor-pointer"
+                                  >
+                                    <Edit size={16} />
+                                  </button>
+                                </div>
+                              </td>
+                            )}
                           <td>
                             <div className="w-full flex flex-col justify-center items-center gap-1">
                               <div className="w-full flex flex-row justify-center items-center gap-1">

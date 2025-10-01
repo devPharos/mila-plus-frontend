@@ -1,8 +1,10 @@
+// GridReceivables.jsx (Refatorado)
 import { format, parseISO } from "date-fns";
 import { ChevronRight, Eye, EyeOff, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { USDollar } from "~/functions";
 import useReportsStore from "~/store/reportsStore";
+import AccountRow from "../accountRow";
 
 export default function GridReceivables({ data }) {
   if (!data) return null;
@@ -12,12 +14,6 @@ export default function GridReceivables({ data }) {
     useReportsStore();
 
   useEffect(() => {
-    console.log({
-      chartOfAccountSelected,
-      index: data?.byChartOfAccount?.findIndex(
-        (item) => item.code === chartOfAccountSelected
-      ),
-    });
     if (!chartOfAccountSelected) {
       setFirstLevelIndex(null);
     } else {
@@ -31,20 +27,21 @@ export default function GridReceivables({ data }) {
       className="flex w-full flex-1 flex-col justify-center items-center mt-4 select-none overflow-x-scroll"
     >
       <div className="w-full flex flex-row items-center justify-end gap-2 my-2">
-        <button
-          onClick={() => setShowAll(!showAll)}
-          className="flex flex-row items-center gap-2 hover:bg-zinc-100 p-2 rounded"
-        >
-          {showAll ? (
-            <>
-              <EyeOff size={12} /> Show only with values
-            </>
-          ) : (
-            <>
-              <Eye size={12} /> Show all chart of accounts
-            </>
-          )}
-        </button>
+        {showAll ? (
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className="flex flex-row items-center gap-2 hover:bg-zinc-100 p-2 rounded"
+          >
+            <EyeOff size={12} /> Show only with values
+          </button>
+        ) : (
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className="flex flex-row items-center gap-2 hover:bg-zinc-100 p-2 rounded"
+          >
+            <Eye size={12} /> Show all chart of accounts
+          </button>
+        )}
       </div>
       {chartOfAccountSelected && (
         <div className="w-full flex flex-row items-center justify-start gap-2 my-2">
@@ -62,7 +59,7 @@ export default function GridReceivables({ data }) {
               {
                 data?.byChartOfAccount?.find(
                   (item) => item.code === chartOfAccountSelected
-                ).name
+                )?.name
               }
             </strong>
           </span>
@@ -90,68 +87,15 @@ export default function GridReceivables({ data }) {
                 showAll ||
                 item.periods.reduce((acc, period) => acc + period.total, 0) > 0
             )
-            ?.map((item, index) => {
-              return (
-                <>
-                  <tr
-                    key={index}
-                    className="bg-white odd:bg-zinc-50 hover:bg-zinc-200 group"
-                  >
-                    <td
-                      onClick={() =>
-                        setFirstLevelIndex(
-                          index === firstLevelIndex ? null : index
-                        )
-                      }
-                      className="min-w-[250px] text-left font-bold border-b py-2 px-1 cursor-pointer gap-2 sticky left-0 group-hover:bg-zinc-200 bg-white group-odd:bg-zinc-50"
-                    >
-                      <div className="flex flex-row items-center gap-2">
-                        <ChevronRight
-                          size={16}
-                          className={`transition duration-300 ${
-                            index === firstLevelIndex && "rotate-90"
-                          }`}
-                        />
-                        {item.name}
-                      </div>
-                    </td>
-                    {item.periods.map((item, index) => (
-                      <td className="border-b py-2 px-1 min-w-16" key={index}>
-                        {USDollar.format(Math.round(item.total))}
-                      </td>
-                    ))}
-                  </tr>
-                  {firstLevelIndex === index &&
-                    item.children?.map((item, index) => (
-                      <tr
-                        key={index}
-                        className="bg-white odd:bg-zinc-50 hover:bg-zinc-100 group"
-                      >
-                        <td className="text-left font-bold border-b py-2 px-1 pl-8 sticky left-0 group-hover:bg-zinc-100 bg-white group-odd:bg-zinc-50">
-                          <div className="flex flex-row items-center gap-2">
-                            {item.children?.length ? (
-                              <ChevronRight
-                                size={16}
-                                className={`transition duration-300 ${
-                                  index === firstLevelIndex && "rotate-90"
-                                }`}
-                              />
-                            ) : (
-                              <div className="w-0"></div>
-                            )}
-                            {item.name}
-                          </div>
-                        </td>
-                        {item.periods.map((item, index) => (
-                          <td className="border-b py-2 px-1" key={index}>
-                            {USDollar.format(Math.round(item.total))}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                </>
-              );
-            })}
+            ?.map((item, index) => (
+              <AccountRow
+                key={index}
+                item={item}
+                index={index}
+                firstLevelIndex={firstLevelIndex}
+                setFirstLevelIndex={setFirstLevelIndex}
+              />
+            ))}
         </table>
       </div>
     </div>

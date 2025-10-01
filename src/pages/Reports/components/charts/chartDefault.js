@@ -128,8 +128,8 @@ export default function ChartDefaultRate({ filters }) {
             />
             <defs>
               <linearGradient id="colorDefaultRate" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#ee5827" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#ee5827" stopOpacity={0.1} />
+                <stop offset="5%" stopColor="#8884d8" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#8884d8" stopOpacity={0.1} />
               </linearGradient>
             </defs>
             <Bar dataKey="rate">
@@ -137,7 +137,7 @@ export default function ChartDefaultRate({ filters }) {
               {evolutionData.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
-                  stroke="#ee5827"
+                  stroke="#8884d8"
                   fill="url(#colorDefaultRate)"
                 />
               ))}

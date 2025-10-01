@@ -1,5 +1,7 @@
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from "react-simple-maps";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
+import api from "~/services/api";
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
@@ -7,20 +9,39 @@ function MapCount() {
   const [tooltipContent, setTooltipContent] = useState("");
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [showTooltip, setShowTooltip] = useState(false);
+  const [countryData, setCountryData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [totalStudents, setTotalStudents] = useState(0);
 
-  const countryData = [
-    { name: "Brazil", students: 500, code: "BRA" },
-    { name: "United States of America", students: 200, code: "USA" },
-    { name: "Russia", students: 100, code: "RUS" }
-  ];
+  useEffect(() => {
+    fetchCountryData();
+  }, []);
 
-  const dataMap = {
-    "Brazil": 500,
-    "United States of America": 200,
-    "Russia": 100
-  };
+  async function fetchCountryData() {
+    try {
+      setLoading(true);
+      const resp = await api.get("/enrollment-stats/by-country");
+      const data = resp.data || {};
 
-  const maxStudents = Math.max(...countryData.map(c => c.students));
+      setCountryData(data.countries || []);
+      setTotalStudents(data.total_active_students || 0);
+    } catch (err) {
+      console.error("Error fetching country stats:", err);
+      setCountryData([]);
+      setTotalStudents(0);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const dataMap = countryData.reduce((acc, item) => {
+    acc[item.country] = item.active_students;
+    return acc;
+  }, {});
+
+  const maxStudents = countryData.length > 0
+    ? Math.max(...countryData.map(c => c.active_students))
+    : 0;
 
   const getColor = (countryName) => {
     return dataMap[countryName] ? "#8884d8" : "#e5e7eb";
@@ -29,13 +50,13 @@ function MapCount() {
   const handleClick = (geo, event) => {
     const countryName = geo.properties.name;
     const students = dataMap[countryName];
-    
+
     if (students) {
       setTooltipContent(`${countryName}: ${students.toLocaleString()} students`);
     } else {
       setTooltipContent(`${countryName}: 0 students`);
     }
-    
+
     setTooltipPosition({ x: event.clientX, y: event.clientY });
     setShowTooltip(true);
   };
@@ -43,6 +64,21 @@ function MapCount() {
   const handleBackgroundClick = () => {
     setShowTooltip(false);
   };
+
+  if (loading) {
+    return (
+      <div className="w-full max-w mx-auto mt-10">
+        <div className="flex gap-6 h-[360px]">
+          <div className="flex-1 bg-gray-50 rounded-lg overflow-hidden border border-gray-200 flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+          </div>
+          <div className="w-80 bg-white rounded-lg p-6 shadow-lg border border-gray-200 flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w mx-auto mt-10" onClick={handleBackgroundClick}>
@@ -124,32 +160,39 @@ function MapCount() {
               <span className="text-xs font-semibold text-gray-500 uppercase">Active Students</span>
             </div>
 
-            {countryData.map((country) => {
-              const percentage = (country.students / maxStudents) * 100;
-              return (
-                <div key={country.code} className="py-3 border-b border-gray-100 last:border-0">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-gray-800">
-                      {country.name === "United States of America" ? "United States" : country.name}
-                    </span>
-                    <span className="text-sm font-bold text-gray-900">
-                      {country.students.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="h-2 rounded-full transition-all duration-500"
-                      style={{
-                        width: `${percentage}%`,
-                        backgroundColor: "#8884d8"
-                      }}
-                    />
-                  </div>
+            <div className="max-h-[200px] overflow-y-auto pr-1">
+              {countryData.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  No data available
                 </div>
-              );
-            })}
+              ) : (
+                countryData.map((country) => {
+                  const percentage = (country.active_students / maxStudents) * 100;
+                  return (
+                    <div key={country.country} className="py-3 border-b border-gray-100 last:border-0">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-medium text-gray-800">
+                          {country.country === "United States of America" ? "United States" : country.country}
+                        </span>
+                        <span className="text-sm font-bold text-gray-900">
+                          {country.active_students.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className="h-2 rounded-full transition-all duration-500"
+                          style={{
+                            width: `${percentage}%`,
+                            backgroundColor: "#8884d8"
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
-
         </div>
       </div>
     </div>

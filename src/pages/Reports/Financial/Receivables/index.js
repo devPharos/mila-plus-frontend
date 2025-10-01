@@ -109,7 +109,7 @@ export default function ReportFinancialReceivables() {
           <div className="flex w-full flex-row justify-start items-start rounded-tr-2xl p-2 gap-4">
             {isAdmin && (
               <>
-                {filters.report === "Defaulted" ? (
+                {filters.report === "Delinquency" ? (
                   <DefaultRateFilter />
                 ) : (
                   <>
@@ -122,7 +122,7 @@ export default function ReportFinancialReceivables() {
           </div>
 
           <div className="flex w-full flex-1 flex-col justify-start items-start">
-            {filters.report === "Defaulted" ? (
+            {filters.report === "Delinquency" ? (
               <ChartDefaultRate filters={filters} />
             ) : (
               <>

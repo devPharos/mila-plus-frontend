@@ -91,7 +91,7 @@ export default function ReportFinancialReceivables() {
           <div className="text-sm p-2 py-4">
             <strong>Receivable Reports</strong>
           </div>
-          {["Received", "Outstanding", "Renegotiated", "Custom", "Defaulted"].map(
+          {["Received", "Outstanding", "Renegotiated", "Custom", "Delinquency"].map(
             (report, index) => (
               <button
                 key={index}

@@ -17,35 +17,25 @@ export default function FinancialDashboard() {
   const isAdmin = profile.id === 1;
 
   return (
-    <div className="h-full bg-white flex flex-1 flex-col justify-start items-start rounded-tr-2xl px-4">
+    <div className="h-full bg-white flex flex-1 flex-col justify-start items-start rounded-tr-2xl px-4 overflow-hidden">
       <PageHeader>
         <Breadcrumbs currentPage={currentPage} />
         <FiltersBar></FiltersBar>
       </PageHeader>
 
-    
-
-      <div
-        style={{
-          flex: 1,
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "start",
-          alignItems: "start",
-          paddingTop: 24,
-        }}
-      >
+      <div className="flex-1 w-full flex flex-col pt-6 overflow-x-auto overflow-y-auto">
         {isAdmin && (
-          <>
+          <div className="min-w-[1200px] w-full">
             <ChartFinancialOutstanding />
-              {isAdmin && (
-        <div className="w-full pt-6">
-          <DefaultRateFilter />
-        </div>
-      )}
-            <ChartDefaultRate filters={filters} />
-          </>
+
+            <div className="w-full pt-6">
+              <DefaultRateFilter />
+            </div>
+
+            <div className="pb-6">
+              <ChartDefaultRate filters={filters} />
+            </div>
+          </div>
         )}
       </div>
     </div>

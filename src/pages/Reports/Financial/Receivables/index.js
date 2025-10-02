@@ -8,14 +8,12 @@ import Breadcrumbs from "~/components/Breadcrumbs";
 import FiltersBar from "~/components/FiltersBar";
 import PeriodFilter from "../../components/filters/periodFilter";
 import PeriodByFilter from "../../components/filters/periodByFilter";
-import DefaultRateFilter from "../../components/filters/defaultFilter";
 import ChartReceivables from "../../components/charts/chartReceivables";
 import GridReceivables from "../../components/grids/gridReceivables";
 import api from "~/services/api";
 import useReportsStore from "~/store/reportsStore";
 import { format } from "date-fns";
 import { toast } from "react-toastify";
-import ChartDefaultRate from "../../components/charts/chartDefault";
 
 export function ReportFinancialInbounds() {
   const { pathname } = useLocation();
@@ -91,7 +89,7 @@ export default function ReportFinancialReceivables() {
           <div className="text-sm p-2 py-4">
             <strong>Receivable Reports</strong>
           </div>
-          {["Received", "Outstanding", "Renegotiated", "Custom", "Delinquency"].map(
+          {["Received", "Outstanding", "Renegotiated", "Custom"].map(
             (report, index) => (
               <button
                 key={index}
@@ -109,27 +107,15 @@ export default function ReportFinancialReceivables() {
           <div className="flex w-full flex-row justify-start items-start rounded-tr-2xl p-2 gap-4">
             {isAdmin && (
               <>
-                {filters.report === "Delinquency" ? (
-                  <DefaultRateFilter />
-                ) : (
-                  <>
-                    <PeriodFilter />
-                    {filters.report === "Custom" && <PeriodByFilter />}
-                  </>
-                )}
+                <PeriodFilter />
+                {filters.report === "Custom" && <PeriodByFilter />}
               </>
             )}
           </div>
 
           <div className="flex w-full flex-1 flex-col justify-start items-start">
-            {filters.report === "Delinquency" ? (
-              <ChartDefaultRate filters={filters} />
-            ) : (
-              <>
-                <ChartReceivables data={data} />
-                <GridReceivables data={data} setData={setData} />
-              </>
-            )}
+            <ChartReceivables data={data} />
+            <GridReceivables data={data} setData={setData} />
           </div>
 
           {loading && (

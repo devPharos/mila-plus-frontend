@@ -5,11 +5,14 @@ import Breadcrumbs from "~/components/Breadcrumbs";
 import ChartFinancialOutstanding from "~/components/Charts/FinancialOutstanding";
 import FiltersBar from "~/components/FiltersBar";
 import PageHeader from "~/components/PageHeader";
-
+import useReportsStore from "~/store/reportsStore";
+import ChartDefaultRate from "./Reports/chartDelinquecy";
+import DefaultRateFilter from "./Reports/filters/defaultFilter";
 import { getCurrentPage } from "~/functions";
 
 export default function FinancialDashboard() {
   const { profile } = useSelector((state) => state.auth);
+  const { filters } = useReportsStore();
   const currentPage = getCurrentPage();
   const isAdmin = profile.id === 1;
 
@@ -20,13 +23,15 @@ export default function FinancialDashboard() {
         <FiltersBar></FiltersBar>
       </PageHeader>
 
+    
+
       <div
         style={{
           flex: 1,
           width: "100%",
           display: "flex",
-          flexDirection: "row",
-          justifyContent: "space-between",
+          flexDirection: "column",
+          justifyContent: "start",
           alignItems: "start",
           paddingTop: 24,
         }}
@@ -34,6 +39,12 @@ export default function FinancialDashboard() {
         {isAdmin && (
           <>
             <ChartFinancialOutstanding />
+              {isAdmin && (
+        <div className="w-full pt-6">
+          <DefaultRateFilter />
+        </div>
+      )}
+            <ChartDefaultRate filters={filters} />
           </>
         )}
       </div>

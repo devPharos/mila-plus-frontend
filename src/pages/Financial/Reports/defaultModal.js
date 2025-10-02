@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { X, Loader2, ChevronLeft, ChevronRight, FileSpreadsheet, Search } from "lucide-react";
 import api, { baseURL } from "~/services/api";
 import { toast } from "react-toastify";
 import { saveAs } from "file-saver";
 
-const USDollar = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
+const USDollar = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
 });
+
+const DEBOUNCE_MS = 450;
 
 export default function DefaultRateModal({ isOpen, onClose, periodData }) {
   const [loading, setLoading] = useState(false);
@@ -16,50 +18,51 @@ export default function DefaultRateModal({ isOpen, onClose, periodData }) {
   const [isMobile, setIsMobile] = useState(typeof window !== "undefined" ? window.innerWidth < 768 : false);
   const [exportingExcel, setExportingExcel] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedTerm, setDebouncedTerm] = useState("");
   const limit = 10;
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedTerm((searchTerm || "").trim()), DEBOUNCE_MS);
+    return () => clearTimeout(t);
+  }, [searchTerm]);
 
   useEffect(() => {
     if (isOpen && periodData) {
       setCurrentPage(1);
       setSearchTerm("");
-      loadDetailData(1, "");
+      setDebouncedTerm("");
+      loadDetailData(1);
     }
   }, [isOpen, periodData]);
 
-  async function loadDetailData(page, search = "") {
-    if (!periodData) return;
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedTerm]);
 
+  async function loadDetailData(page) {
+    if (!periodData) return;
     setLoading(true);
     try {
       const params = {
         period_from: periodData.from,
         period_to: periodData.to,
-        period_by: 'Due Date',
-        orderBy: 'due_date',
-        orderASC: 'ASC',
+        period_by: "Due Date",
+        orderBy: "due_date",
+        orderASC: "ASC",
         limit,
         page,
+        _t: Date.now(),
       };
-      
-      if (search && search.trim() !== "") {
-        params.search = search.trim();
-      }
-      
-      console.log('Sending request with params:', params);
-      
-      const response = await api.get('/reports/default-rate/detail', { params });
-      
-      console.log('Response received:', response.data);
-      
+      const response = await api.get("/reports/default-rate/detail", { params });
       setData(response.data);
     } catch (err) {
-      console.error('Error loading default rate detail:', err);
+      console.error("Error loading default rate detail:", err);
       toast(err?.response?.data?.error || "Error loading detail data", {
         type: "error",
         autoClose: 3000,
@@ -73,12 +76,12 @@ export default function DefaultRateModal({ isOpen, onClose, periodData }) {
     if (!periodData) return;
     setExportingExcel(true);
     try {
-      const response = await api.get('/reports/default-rate/detail/excel', {
+      const response = await api.get("/reports/default-rate/detail/excel", {
         params: {
           period_from: periodData.from,
           period_to: periodData.to,
-          period_by: 'Due Date',
-        }
+          period_by: "Due Date",
+        },
       });
       const { name } = response.data;
       saveAs(`${baseURL}/get-file/${name}`, name);
@@ -87,7 +90,7 @@ export default function DefaultRateModal({ isOpen, onClose, periodData }) {
         autoClose: 3000,
       });
     } catch (err) {
-      console.error('Error exporting to Excel:', err);
+      console.error("Error exporting to Excel:", err);
       toast(err?.response?.data?.error || "Error exporting to Excel", {
         type: "error",
         autoClose: 3000,
@@ -99,67 +102,69 @@ export default function DefaultRateModal({ isOpen, onClose, periodData }) {
 
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
-    loadDetailData(newPage, searchTerm);
-  };
-
-  const handleSearch = () => {
-    const trimmedSearch = searchTerm.trim();
-    console.log('Search triggered with term:', trimmedSearch);
-    setCurrentPage(1);
-    loadDetailData(1, trimmedSearch);
   };
 
   const handleSearchInputChange = (e) => {
-    const value = e.target.value;
-    setSearchTerm(value);
-  };
-
-  const handleSearchKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleSearch();
-    }
+    setSearchTerm(e.target.value);
   };
 
   const handleClearSearch = () => {
-    console.log('Clearing search');
     setSearchTerm("");
-    setCurrentPage(1);
-    loadDetailData(1, "");
   };
 
   const formatDate = (dateStr) => {
-    if (!dateStr) return '-';
+    if (!dateStr) return "-";
     const year = dateStr.substring(0, 4);
     const month = dateStr.substring(4, 6);
     const day = dateStr.substring(6, 8);
     return `${month}/${day}/${year}`;
   };
 
-  if (!isOpen) return null;
+  const normalized = (s) =>
+    (s || "")
+      .toString()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
 
-  const totalPages = data ? Math.ceil(data.totalRows / limit) : 0;
-  const startRecord = data ? ((currentPage - 1) * limit) + 1 : 0;
-  const endRecord = data ? Math.min(currentPage * limit, data.totalRows) : 0;
+  const clientFilteredRows = useMemo(() => {
+    if (!data?.rows) return [];
+    const term = normalized(debouncedTerm);
+    if (!term) return data.rows;
+    return data.rows.filter((row) => {
+      const invoice = normalized(row.invoice_number);
+      const issuer = normalized(row.issuer?.name);
+      const branch = normalized(row.filial?.name);
+      return invoice.includes(term) || issuer.includes(term) || branch.includes(term);
+    });
+  }, [data?.rows, debouncedTerm]);
+
+  const totalRowsUI = clientFilteredRows.length;
+  const totalPages = totalRowsUI ? Math.ceil(totalRowsUI / limit) : 0;
+
+  const pageSlice = useMemo(() => {
+    const start = (currentPage - 1) * limit;
+    return clientFilteredRows.slice(start, start + limit);
+  }, [clientFilteredRows, currentPage]);
+
+  const startRecord = totalRowsUI ? (currentPage - 1) * limit + 1 : 0;
+  const endRecord = totalRowsUI ? Math.min(currentPage * limit, totalRowsUI) : 0;
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div className={`bg-white rounded-lg shadow-xl ${isMobile ? 'w-full h-full' : 'w-full max-w-7xl max-h-[90vh]'} flex flex-col`}>
+      <div className={`bg-white rounded-lg shadow-xl ${isMobile ? "w-full h-full" : "w-full max-w-7xl max-h-[90vh]"} flex flex-col`}>
         <div className="flex items-center justify-between p-4 border-b">
           <div>
-            <h2 className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold`}>
-              Delinquency Details - {periodData?.period}
-            </h2>
-            {data && (
+            <h2 className={`${isMobile ? "text-lg" : "text-xl"} font-bold`}>Delinquency Details - {periodData?.period}</h2>
+            {data?.period && (
               <p className="text-sm text-gray-600 mt-1">
-                {data.period.rate.toFixed(2)}% delinquency rate • {USDollar.format(data.period.overdue)} overdue of {USDollar.format(data.period.total)}
+                {Number(data.period.rate ?? 0).toFixed(2)}% delinquency rate • {USDollar.format(data.period.overdue || 0)} overdue of {USDollar.format(data.period.total || 0)}
               </p>
             )}
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
             <X size={24} />
           </button>
         </div>
@@ -167,10 +172,10 @@ export default function DefaultRateModal({ isOpen, onClose, periodData }) {
         <div className="p-4 border-b bg-gray-50">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3 text-sm text-gray-700">
-              {data && data.totalRows > 0 && (
+              {totalRowsUI > 0 && (
                 <>
                   <span>
-                    Showing <span className="font-semibold">{startRecord}</span> to <span className="font-semibold">{endRecord}</span> of <span className="font-semibold">{data?.totalRows || 0}</span> rows
+                    Showing <span className="font-semibold">{startRecord}</span> to <span className="font-semibold">{endRecord}</span> of <span className="font-semibold">{totalRowsUI}</span> rows
                   </span>
                   <span className="text-gray-400">|</span>
                   <span>Page</span>
@@ -178,7 +183,7 @@ export default function DefaultRateModal({ isOpen, onClose, periodData }) {
                     value={currentPage}
                     onChange={(e) => handlePageChange(Number(e.target.value))}
                     className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-                    disabled={loading}
+                    disabled={loading || totalPages <= 1}
                   >
                     {Array.from({ length: totalPages || 1 }, (_, i) => i + 1).map((page) => (
                       <option key={page} value={page}>
@@ -199,37 +204,22 @@ export default function DefaultRateModal({ isOpen, onClose, periodData }) {
                     placeholder="Search by invoice, issuer, branch..."
                     value={searchTerm}
                     onChange={handleSearchInputChange}
-                    onKeyDown={handleSearchKeyDown}
                     className="w-full sm:w-80 pl-10 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                   {searchTerm && (
-                    <button
-                      onClick={handleClearSearch}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
+                    <button onClick={handleClearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                       <X size={18} />
                     </button>
                   )}
                 </div>
               </div>
               <button
-                onClick={handleSearch}
-                disabled={loading}
-                className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors disabled:opacity-50 whitespace-nowrap"
-              >
-                Search
-              </button>
-              <button
                 onClick={handleExportExcel}
                 disabled={exportingExcel || !data}
                 className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
               >
-                {exportingExcel ? (
-                  <Loader2 className="animate-spin" size={18} />
-                ) : (
-                  <FileSpreadsheet size={18} />
-                )}
+                {exportingExcel ? <Loader2 className="animate-spin" size={18} /> : <FileSpreadsheet size={18} />}
                 <span>Excel</span>
               </button>
             </div>
@@ -241,7 +231,7 @@ export default function DefaultRateModal({ isOpen, onClose, periodData }) {
             <div className="flex items-center justify-center h-64">
               <Loader2 className="animate-spin" size={36} />
             </div>
-          ) : data && data.rows.length > 0 ? (
+          ) : data && clientFilteredRows.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead className="sticky top-0 bg-white shadow-sm">
@@ -256,11 +246,14 @@ export default function DefaultRateModal({ isOpen, onClose, periodData }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.rows.map((row, idx) => (
-                    <tr key={row.id} className={`border-b hover:bg-green-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}>
+                  {pageSlice.map((row, idx) => (
+                    <tr
+                      key={row.id ?? `${row.invoice_number}-${idx}`}
+                      className={`border-b hover:bg-green-50 transition-colors ${idx % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
+                    >
                       <td className="p-3 text-sm font-medium text-gray-900">{row.invoice_number}</td>
-                      <td className="p-3 text-sm text-gray-700">{row.issuer?.name || '-'}</td>
-                      {!isMobile && <td className="p-3 text-sm text-gray-700">{row.filial?.name || '-'}</td>}
+                      <td className="p-3 text-sm text-gray-700">{row.issuer?.name || "-"}</td>
+                      {!isMobile && <td className="p-3 text-sm text-gray-700">{row.filial?.name || "-"}</td>}
                       <td className="p-3 text-sm text-gray-700">{formatDate(row.due_date)}</td>
                       <td className="p-3 text-sm text-right text-gray-900">{USDollar.format(row.total)}</td>
                       <td className="p-3 text-sm text-right font-semibold text-gray-900">{USDollar.format(row.balance)}</td>
@@ -278,16 +271,14 @@ export default function DefaultRateModal({ isOpen, onClose, periodData }) {
             </div>
           ) : (
             <div className="flex items-center justify-center h-64 text-gray-500">
-              {searchTerm ? `No results found for "${searchTerm}"` : "No overdue receivables found for this period"}
+              {debouncedTerm ? `No results found for "${debouncedTerm}"` : "No overdue receivables found for this period"}
             </div>
           )}
         </div>
 
-        {data && data.totalRows > 0 && (
+        {totalRowsUI > 0 && (
           <div className="flex items-center justify-between p-4 border-t bg-gray-50">
-            <div className="text-sm text-gray-600">
-              Page {currentPage} of {totalPages}
-            </div>
+            <div className="text-sm text-gray-600">Page {currentPage} of {totalPages}</div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}

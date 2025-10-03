@@ -338,7 +338,7 @@ export default function RotationTwo() {
   }
 
   const requiredGroupsConcluded =
-    (requiredGroups?.length === newGroups?.length &&
+    (requiredGroups?.length <= groups?.length &&
       requiredGroups?.length > 0 &&
       groups?.length > 0) ||
     editting;

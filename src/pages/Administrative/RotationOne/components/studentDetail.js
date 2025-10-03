@@ -103,7 +103,7 @@ export default function StudentDetail({ student, setShowDetails }) {
                     <td>
                       <div
                         className={`${
-                          student.final_average_score >= 80
+                          student.final_average_score >= 70
                             ? "bg-emerald-400"
                             : "bg-red-400"
                         } rounded text-white p-1`}

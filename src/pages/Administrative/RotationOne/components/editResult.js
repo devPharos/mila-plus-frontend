@@ -92,7 +92,7 @@ export default function EditResult({ student, setEdit }) {
                     >
                       {options.map((option, index) => {
                         const selected =
-                          (final_average_score >= 80 &&
+                          (final_average_score >= 70 &&
                             option.value === "PASS") ||
                           (final_average_score < 80 && option.value === "FAIL");
 

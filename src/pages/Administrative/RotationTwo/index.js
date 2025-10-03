@@ -356,6 +356,17 @@ export default function RotationTwo() {
 
         <div className="flex flex-col w-full gap-4 justify-start items-start rounded-tr-2xl overflow-y-scroll pb-8">
           <div className="w-full flex flex-row px-4 justify-start items-center rounded-tr-2xl gap-4">
+            <button
+              type="button"
+              disabled={loading}
+              onClick={handleRotationAnalysis}
+              className="text-md font-bold bg-secondary border text-zinc-500 hover:border-primary hover:text-primary rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1"
+            >
+              Rotation Analysis
+              <Table2 size={16} />
+            </button>
+          </div>
+          <div className="w-full flex flex-row px-4 justify-start items-center rounded-tr-2xl gap-4">
             <div className="bg-zinc-50 h-20 flex flex-col items-center gap-2 border rounded-lg duration-300 ease-in-out hover:bg-zinc-50 hover:border-zinc-400">
               <div className="flex flex-row items-end gap-2 p-2">
                 <div className="flex min-w-36 flex-col gap-2">
@@ -407,24 +418,6 @@ export default function RotationTwo() {
                   >
                     <Search size={16} />
                   </button>
-                  {shift &&
-                    filterOptions?.levels?.find((l) => l.id === level)
-                      ?.name && (
-                      <button
-                        type="button"
-                        disabled={loading}
-                        onClick={handleRotationAnalysis}
-                        className="text-md font-bold bg-secondary border text-zinc-500 hover:border-primary hover:text-primary rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1"
-                      >
-                        {shift.name} -{" "}
-                        {
-                          filterOptions?.levels?.find((l) => l.id === level)
-                            ?.name
-                        }{" "}
-                        - Rotation Analysis
-                        <Table2 size={16} />
-                      </button>
-                    )}
                   <button
                     type="button"
                     disabled={loading}

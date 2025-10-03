@@ -563,7 +563,7 @@ export default function RotationOne() {
                             <div className="w-full flex flex-row justify-center items-center">
                               <div
                                 className={`${
-                                  final_average_score >= 80
+                                  final_average_score >= 70
                                     ? "bg-emerald-400"
                                     : "bg-red-400"
                                 } text-black/80 w-16 rounded`}

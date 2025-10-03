@@ -14,7 +14,7 @@ import {
   TreePalm,
   X,
 } from "lucide-react";
-import api from "~/services/api";
+import api, { baseURL } from "~/services/api";
 import { AlertContext } from "~/App";
 import { toast } from "react-toastify";
 
@@ -51,19 +51,19 @@ export default function RotationTwo() {
 
   async function handlePassAndFailAnalysis() {
     console.log({ level, shift });
-    // api
-    //   .post(`/reports/passAndFailAnalysis`, {
-    //     shift,
-    //     level,
-    //   })
-    //   .then(({ data }) => {
-    //     saveAs(`${baseURL}/get-file/${data.name}`, `${data.name}.xlsx`);
-    //     setLoading(false);
-    //   })
-    //   .catch((err) => {
-    //     console.log(err);
-    //     setLoading(false);
-    //   });
+    api
+      .post(`/reports/passAndFailAnalysis`, {
+        shift,
+        level,
+      })
+      .then(({ data }) => {
+        saveAs(`${baseURL}/get-file/${data.name}`, `${data.name}.xlsx`);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoading(false);
+      });
   }
   async function getGroups() {
     try {
@@ -440,7 +440,7 @@ export default function RotationTwo() {
             </div>
           ) : null}
 
-          {/* {newGroups.length > 0 && (
+          {requiredGroupsConcluded && (
             <div className="flex w-full flex-row gap-4 px-4 justify-start items-start rounded-tr-2xl">
               <button
                 type="button"
@@ -452,7 +452,7 @@ export default function RotationTwo() {
                 <Table2 size={16} />
               </button>
             </div>
-          )} */}
+          )}
           {requiredGroupsConcluded && (
             <>
               <div className="flex w-full flex-row gap-4 px-4 justify-start items-start rounded-tr-2xl">

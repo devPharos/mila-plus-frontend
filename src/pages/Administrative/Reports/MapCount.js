@@ -43,9 +43,22 @@ function MapCount() {
     ? Math.max(...countryData.map(c => c.active_students))
     : 0;
 
-  const getColor = (countryName) => {
-    return dataMap[countryName] ? "#8884d8" : "#e5e7eb";
+    const getColor = (countryName) => {
+    const students = dataMap[countryName] || 0;
+
+    if (students === 0) return "#e5e7eb";
+
+    const logValue = Math.log10(students + 1);
+    const maxLogValue = Math.log10(maxStudents + 1);
+    const intensity = logValue / maxLogValue;
+
+    const minLightness = 75;
+    const maxLightness = 45;
+    const lightness = minLightness - (intensity * (minLightness - maxLightness));
+
+    return `hsl(250, 60%, ${lightness}%)`;
   };
+
 
   const handleClick = (geo, event) => {
     const countryName = geo.properties.name;

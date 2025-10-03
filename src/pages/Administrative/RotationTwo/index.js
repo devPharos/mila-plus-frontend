@@ -65,6 +65,22 @@ export default function RotationTwo() {
         setLoading(false);
       });
   }
+
+  async function handleRotationAnalysis() {
+    api
+      .post(`/reports/rotationAnalysis`, {
+        level,
+        shift,
+      })
+      .then(({ data }) => {
+        saveAs(`${baseURL}/get-file/${data.name}`, `${data.name}.xlsx`);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoading(false);
+      });
+  }
   async function getGroups() {
     try {
       const { data } = await api.get(
@@ -391,6 +407,24 @@ export default function RotationTwo() {
                   >
                     <Search size={16} />
                   </button>
+                  {shift &&
+                    filterOptions?.levels?.find((l) => l.id === level)
+                      ?.name && (
+                      <button
+                        type="button"
+                        disabled={loading}
+                        onClick={handleRotationAnalysis}
+                        className="text-md font-bold bg-secondary border text-zinc-500 hover:border-primary hover:text-primary rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1"
+                      >
+                        {shift.name} -{" "}
+                        {
+                          filterOptions?.levels?.find((l) => l.id === level)
+                            ?.name
+                        }{" "}
+                        - Rotation Analysis
+                        <Table2 size={16} />
+                      </button>
+                    )}
                   <button
                     type="button"
                     disabled={loading}

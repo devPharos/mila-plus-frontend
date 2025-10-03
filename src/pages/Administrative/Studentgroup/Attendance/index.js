@@ -231,8 +231,8 @@ export default function Attendance({
             >
               <Building size={16} /> Attendance
             </RegisterFormMenu>
-            {pageData.studentgroupclass?.paceguides?.find((paceguide) =>
-              paceguide.type.includes("Test")
+            {pageData.studentgroupclass?.paceguides?.find(
+              (paceguide) => paceguide.percentage > 0
             ) && (
               <RegisterFormMenu
                 setActiveMenu={setActiveMenu}
@@ -367,8 +367,8 @@ export default function Attendance({
                                           </span>
                                         )}
                                       </div>
-                                      {otherClass.paceguides.find((paceguide) =>
-                                        paceguide.type.includes("Test")
+                                      {otherClass.paceguides.find(
+                                        (paceguide) => paceguide.percentage > 0
                                       ) ? (
                                         <div className="flex flex-row items-center gap-2 h-6">
                                           <span className="text-nowrap w-full flex flex-row items-center justify-center gap-2">
@@ -719,12 +719,10 @@ export default function Attendance({
                         activeMenu={activeMenu === "grades"}
                       >
                         {pageData.studentgroupclass?.paceguides
-                          ?.filter((paceguide) =>
-                            paceguide.type.includes("Test")
-                          )
+                          ?.filter((paceguide) => paceguide.percentage > 0)
                           .map((paceguide, index) => {
                             return (
-                              <Scope path={`grades`} key={index}>
+                              <Scope path={`grades.${index}`} key={index}>
                                 <InputLine title={paceguide.description}>
                                   <Input
                                     type="hidden"

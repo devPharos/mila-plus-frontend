@@ -32,6 +32,7 @@ export default function RotationTwo() {
     levels: [],
     shifts: [],
   });
+  const [editting, setEditting] = useState(false);
   const defaultNewGroup = {
     rotations: [],
     classroom_id: null,
@@ -218,6 +219,7 @@ export default function RotationTwo() {
   }
 
   function handleRemoveEmptyClass(group) {
+    setEditting(true);
     setNewGroups(newGroups.filter((el) => el.id !== group.id));
   }
 
@@ -321,9 +323,10 @@ export default function RotationTwo() {
   }
 
   const requiredGroupsConcluded =
-    requiredGroups?.length === newGroups?.length &&
-    requiredGroups?.length > 0 &&
-    groups?.length > 0;
+    (requiredGroups?.length === newGroups?.length &&
+      requiredGroups?.length > 0 &&
+      groups?.length > 0) ||
+    editting;
 
   return (
     <>

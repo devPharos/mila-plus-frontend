@@ -50,7 +50,6 @@ export default function RotationTwo() {
   }
 
   async function handlePassAndFailAnalysis() {
-    console.log({ level, shift });
     api
       .post(`/reports/passAndFailAnalysis`, {
         shift,
@@ -377,8 +376,8 @@ export default function RotationTwo() {
                     className={`w-full transition ease-in-out duration-300 w-36 text-xs bg-white text-gray-500 p-2 border rounded`}
                     onChange={(e) =>
                       setShift(
-                        filterOptions?.shifts.find(
-                          (shift) => shift.name === e.target.value
+                        filterOptions?.shifts?.find(
+                          (shift) => shift?.name === e.target.value
                         )
                       )
                     }
@@ -386,8 +385,8 @@ export default function RotationTwo() {
                   >
                     <option value="">Please select...</option>
                     {filterOptions?.shifts?.map((shift, index) => (
-                      <option value={shift.name} key={index}>
-                        {shift.name}
+                      <option value={shift?.name} key={index}>
+                        {shift?.name}
                       </option>
                     ))}
                   </select>
@@ -424,7 +423,7 @@ export default function RotationTwo() {
                     onClick={handlePassAndFailAnalysis}
                     className="text-md font-bold bg-secondary border text-zinc-500 hover:border-primary hover:text-primary rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1"
                   >
-                    {shift.name || "All periods"} - Pass & Fail Analysis
+                    {shift?.name || "All periods"} - Pass & Fail Analysis
                     <Table2 size={16} />
                   </button>
                 </div>

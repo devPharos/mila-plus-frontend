@@ -65,6 +65,22 @@ export default function RotationTwo() {
         setLoading(false);
       });
   }
+
+  async function handleRotationAnalysis() {
+    api
+      .post(`/reports/rotationAnalysis`, {
+        level,
+        shift,
+      })
+      .then(({ data }) => {
+        saveAs(`${baseURL}/get-file/${data.name}`, `${data.name}.xlsx`);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoading(false);
+      });
+  }
   async function getGroups() {
     try {
       const { data } = await api.get(
@@ -382,7 +398,7 @@ export default function RotationTwo() {
                     ))}
                   </select>
                 </div>
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-row gap-2">
                   <button
                     type="button"
                     disabled={loading}
@@ -390,6 +406,33 @@ export default function RotationTwo() {
                     className="text-md font-bold bg-secondary border text-zinc-500 hover:border-primary hover:text-primary rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1"
                   >
                     <Search size={16} />
+                  </button>
+                  {shift &&
+                    filterOptions?.levels?.find((l) => l.id === level)
+                      ?.name && (
+                      <button
+                        type="button"
+                        disabled={loading}
+                        onClick={handleRotationAnalysis}
+                        className="text-md font-bold bg-secondary border text-zinc-500 hover:border-primary hover:text-primary rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1"
+                      >
+                        {shift.name} -{" "}
+                        {
+                          filterOptions?.levels?.find((l) => l.id === level)
+                            ?.name
+                        }{" "}
+                        - Rotation Analysis
+                        <Table2 size={16} />
+                      </button>
+                    )}
+                  <button
+                    type="button"
+                    disabled={loading}
+                    onClick={handlePassAndFailAnalysis}
+                    className="text-md font-bold bg-secondary border text-zinc-500 hover:border-primary hover:text-primary rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1"
+                  >
+                    {shift.name || "All periods"} - Pass & Fail Analysis
+                    <Table2 size={16} />
                   </button>
                 </div>
               </div>
@@ -440,19 +483,6 @@ export default function RotationTwo() {
             </div>
           ) : null}
 
-          {requiredGroupsConcluded && (
-            <div className="flex w-full flex-row gap-4 px-4 justify-start items-start rounded-tr-2xl">
-              <button
-                type="button"
-                disabled={loading}
-                onClick={handlePassAndFailAnalysis}
-                className="text-md font-bold bg-secondary border text-zinc-500 hover:border-primary hover:text-primary rounded-md p-4 h-6 flex flex-row items-center justify-center text-xs gap-1"
-              >
-                {shift.name} - {level.name} - Pass & Fail Analysis
-                <Table2 size={16} />
-              </button>
-            </div>
-          )}
           {requiredGroupsConcluded && (
             <>
               <div className="flex w-full flex-row gap-4 px-4 justify-start items-start rounded-tr-2xl">

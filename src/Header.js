@@ -96,8 +96,7 @@ export default function Header() {
                   if (
                     auth.accesses?.hierarchy?.find(
                       (access) => access.alias === module.alias
-                    )?.children.length > 0 ||
-                    module.alias === "reports"
+                    )?.children.length > 0
                   ) {
                     return (
                       <NavLink

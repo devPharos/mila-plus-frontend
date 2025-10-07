@@ -649,9 +649,9 @@ export default function PagePreview({
                                   title="Inactivation Date"
                                   InputContext={InputContext}
                                   defaultValue={
-                                    pageData.inactivation?.date
+                                    pageData.inactivation_date
                                       ? format(
-                                          parseISO(pageData.inactivation?.date),
+                                          parseISO(pageData.inactivation_date),
                                           "MM/dd/yyyy"
                                         )
                                       : null

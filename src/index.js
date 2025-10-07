@@ -94,6 +94,7 @@ import Report from "./pages/Reports";
 import ReportDashboard from "./pages/Reports/Dashboard";
 import RotationOne from "./pages/Administrative/RotationOne";
 import RotationTwo from "./pages/Administrative/RotationTwo";
+import AdministrativeReports from "./pages/Administrative/Reports";
 
 injectStore(store);
 
@@ -209,6 +210,10 @@ const router = createBrowserRouter([
           {
             path: "/Administrative/RotationFaseTwo",
             element: <RotationTwo />,
+          },
+          {
+            path: "/Administrative/Reports",
+            element: <AdministrativeReports />,
           },
           {
             path: "/Administrative/*",

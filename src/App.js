@@ -84,6 +84,12 @@ function App() {
           title: "Rotation 2st Step",
           icon: "Rotate3d",
         },
+        {
+          alias: "administrative-reports",
+          path: "/Administrative/Reports",
+          title: "Reports",
+          icon: "ChartLine",
+        },
       ],
     },
     {

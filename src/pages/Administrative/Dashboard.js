@@ -18,7 +18,7 @@ export default function AdministrativeDashboard() {
   const isAdmin = profile.id === 1;
 
   const [periodChoice, setPeriodChoice] = useState("2025");
-  const year = periodChoice === "2024" ? 2024 : undefined;
+  const year = Number(periodChoice);
 
   return (
     <div className="h-full bg-white flex flex-1 flex-col justify-start items-start rounded-tr-2xl px-4 overflow-y-scroll">

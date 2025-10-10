@@ -371,6 +371,12 @@ function App() {
               title: "Receivables",
               icon: "BadgeDollarSign",
             },
+            {
+              alias: "report-financial-delinquency",
+              path: "/Reports/Financial/Delinquency",
+              title: "Delinquency",
+              icon: "TrendingDown",
+            },
           ],
         },
       ],

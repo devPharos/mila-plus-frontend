@@ -90,6 +90,7 @@ import CampaignRegistration from "./pages/Commercial/CampaignRegistration";
 import ReportFinancialReceivables, {
   ReportFinancialInbounds,
 } from "./pages/Reports/Financial/Receivables";
+import ReportFinancialDelinquency from "./pages/Reports/Financial/Delinquency";
 import Report from "./pages/Reports";
 import ReportDashboard from "./pages/Reports/Dashboard";
 import RotationOne from "./pages/Administrative/RotationOne";
@@ -462,6 +463,10 @@ const router = createBrowserRouter([
               {
                 path: "/Reports/Financial/Receivables",
                 element: <ReportFinancialReceivables />,
+              },
+              {
+                path: "/Reports/Financial/Delinquency",
+                element: <ReportFinancialDelinquency />,
               },
             ],
           },
